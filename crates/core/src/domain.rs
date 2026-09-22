@@ -267,6 +267,71 @@ pub struct MergeDecision {
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
+pub struct EntityInput {
+    pub name: String,
+    pub kind: EntityKind,
+    pub identifiers: Vec<Identifier>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ObservationInput {
+    pub entity_id: String,
+    pub field: String,
+    pub value: String,
+    pub anchor: SourceAnchor,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum IdentityOutcome {
+    KeepSeparate,
+    Defer,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct IdentityDecision {
+    pub id: String,
+    pub left_id: String,
+    pub right_id: String,
+    pub outcome: IdentityOutcome,
+    pub reason: String,
+    pub at: String,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(rename_all = "snake_case")]
+pub enum ComparisonSignal {
+    InsufficientReviewedEvidence,
+    SharedReviewedValues,
+    DifferentReviewedValues,
+    MixedReviewedValues,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ComparisonField {
+    pub field: String,
+    pub left: Vec<Observation>,
+    pub right: Vec<Observation>,
+    pub signal: ComparisonSignal,
+    pub source_groups: Vec<String>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct IdentityComparison {
+    pub workspace_revision: u64,
+    pub left: Entity,
+    pub right: Entity,
+    pub fields: Vec<ComparisonField>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct SourceExcerpt {
+    pub evidence_id: String,
+    pub workspace_revision: u64,
+    pub location: String,
+    pub quote: String,
+    pub truncated: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct WorkspaceView {
     pub schema_version: u32,
     pub revision: u64,
@@ -283,6 +348,8 @@ pub struct WorkspaceView {
     pub hypotheses: Vec<Hypothesis>,
     pub decisions: Vec<ReviewDecision>,
     pub merges: Vec<MergeDecision>,
+    #[serde(default)]
+    pub identity_decisions: Vec<IdentityDecision>,
     pub reports: Vec<ReportSnapshot>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -302,6 +369,49 @@ pub enum Command {
     Import {
         name: String,
         bytes: Vec<u8>,
+    },
+    AddEntity {
+        entity: EntityInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    UpdateEntity {
+        id: String,
+        entity: EntityInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    AddObservation {
+        observation: ObservationInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    CorrectObservation {
+        id: String,
+        value: String,
+        anchor: SourceAnchor,
+        reason: String,
+        expected_revision: u64,
+    },
+    ReviewObservation {
+        id: String,
+        state: ReviewState,
+        reason: String,
+        expected_revision: u64,
+    },
+    CompareEntities {
+        left_id: String,
+        right_id: String,
+    },
+    InspectSource {
+        anchor: SourceAnchor,
+    },
+    DecideIdentity {
+        left_id: String,
+        right_id: String,
+        outcome: IdentityOutcome,
+        reason: String,
+        expected_revision: u64,
     },
     ReviewTransaction {
         id: String,

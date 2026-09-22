@@ -9,6 +9,7 @@ use std::{
     path::{Path, PathBuf},
 };
 use uuid::Uuid;
+mod identity;
 
 const SCHEMA: u32 = 1;
 pub struct Workspace {
@@ -211,12 +212,16 @@ impl Workspace {
             hypotheses: all(&self.conn, "hypothesis")?,
             decisions: all(&self.conn, "decision")?,
             merges: all(&self.conn, "merge")?,
+            identity_decisions: all(&self.conn, "identity_decision")?,
             reports: all(&self.conn, "report")?,
         })
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
         match command {
             Command::View {} => {}
+            Command::InspectSource { anchor } => {
+                return Ok(serde_json::to_value(self.inspect_source(&anchor)?)?);
+            }
             Command::Search { query } => {
                 let runtime = self.runtime.as_ref().ok_or_else(|| {
                     Error::Blocked(
@@ -240,6 +245,59 @@ impl Workspace {
             Command::SeedDemo {} => self.seed_demo()?,
             Command::Import { name, bytes } => {
                 self.import(&name, &bytes)?;
+            }
+            Command::AddEntity {
+                entity,
+                reason,
+                expected_revision,
+            } => {
+                self.add_entity(entity, &reason, expected_revision)?;
+            }
+            Command::UpdateEntity {
+                id,
+                entity,
+                reason,
+                expected_revision,
+            } => {
+                self.update_entity(&id, entity, &reason, expected_revision)?;
+            }
+            Command::AddObservation {
+                observation,
+                reason,
+                expected_revision,
+            } => {
+                self.add_observation(observation, &reason, expected_revision)?;
+            }
+            Command::CorrectObservation {
+                id,
+                value,
+                anchor,
+                reason,
+                expected_revision,
+            } => {
+                self.correct_observation(&id, &value, anchor, &reason, expected_revision)?;
+            }
+            Command::ReviewObservation {
+                id,
+                state,
+                reason,
+                expected_revision,
+            } => {
+                self.review_observation(&id, state, &reason, expected_revision)?;
+            }
+            Command::CompareEntities { left_id, right_id } => {
+                return Ok(serde_json::to_value(
+                    self.compare_entities(&left_id, &right_id)?,
+                )?);
+            }
+            Command::DecideIdentity {
+                left_id,
+                right_id,
+                outcome,
+                reason,
+                expected_revision,
+            } => {
+                self.decide_identity(&left_id, &right_id, outcome, &reason, expected_revision)?;
             }
             Command::ReviewTransaction {
                 id,

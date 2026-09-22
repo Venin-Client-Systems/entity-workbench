@@ -2,7 +2,7 @@
 
 An independently branded desktop investigation workbench. Preserve sources, review observations, distinguish identities and produce cited findings with an inspectable history.
 
-**Status: active development, not an approved investigative release.** The current macOS development application supports local text/CSV evidence, transaction review, identity merge/reversal, graph and coordinate views, direct website collection, local Lucene search and HTML assessment snapshots. The complete release gates have **not** passed. See [implementation status](docs/STATUS.md) and the [security review entry point](SECURITY.md).
+**Status: active development, not an approved investigative release.** The current macOS development application supports local text/CSV evidence, transaction review, general entity/observation authoring, reviewed identity comparison and merge/reversal, graph and coordinate views, direct website collection, local Lucene search and HTML assessment snapshots. The complete release gates have **not** passed. See [implementation status](docs/STATUS.md) and the [security review entry point](SECURITY.md).
 
 No hosted search service, account, API key or generative model is used. The application collects analyst-selected public websites directly and searches its own local index. Coverage consists of collected and imported sources. It does not claim a global web index or comprehensive open-web results.
 
@@ -42,7 +42,7 @@ These bootstrap scripts run only on the developer's machine. They are not first-
 1. Load the fictional North Quay investigation in an empty workspace.
 2. Open Transactions and inspect the café debit against its source row. Correct `-180.00` to `-18.00` with a reason, then accept the corrected row.
 3. Review both transfer rows and explicitly match the counterpart transactions. Matching is never inferred solely from equal amounts.
-4. Compare the two people with the same name and different birth years. A merge retains both source identities; reverse it to restore separate records.
+4. Create or edit entities in Entities, preserving reference namespaces and leading zeros. Add observations anchored to retained text lines or CSV cells, inspect the exact excerpt and review each observation. Compare any two records; keep them separate, defer the decision or record a reversible merge. Comparison signals use accepted exact values and do not represent identity probabilities.
 5. In Discovery, preview selected HTTPS seed URLs, then collect their public pages. Only selected hosts are in scope. Robots requests and redirects count against the request limit.
 6. Search the imported/collected corpus in Evidence. The macOS bundle supports Boolean, phrase, proximity, fuzzy and fielded Lucene queries.
 7. Save an assessment snapshot. Subsequent corrections flag current findings without changing previous exports.

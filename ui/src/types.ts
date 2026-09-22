@@ -9,12 +9,56 @@ export type Anchor = {
   column?: string;
   sheet?: string;
 };
-export type Entity = {
+export type EntityKind =
+  | "person"
+  | "organisation"
+  | "group"
+  | "account"
+  | "place"
+  | "digital_identifier";
+export type EntityInput = {
+  name: string;
+  kind: EntityKind;
+  identifiers: { namespace: string; value: string }[];
+};
+export type Entity = EntityInput & {
   id: string;
   name: string;
-  kind: string;
+  kind: EntityKind;
   identifiers: { namespace: string; value: string }[];
   merged_into: string | null;
+};
+export type Observation = {
+  id: string;
+  entity_id: string;
+  field: string;
+  value: string;
+  anchor: Anchor;
+  extraction_quality: number | null;
+  review: ReviewState;
+};
+export type IdentityComparison = {
+  workspace_revision: number;
+  left: Entity;
+  right: Entity;
+  fields: {
+    field: string;
+    left: Observation[];
+    right: Observation[];
+    source_groups: string[];
+    signal:
+      | "insufficient_reviewed_evidence"
+      | "shared_reviewed_values"
+      | "different_reviewed_values"
+      | "mixed_reviewed_values";
+  }[];
+};
+export type SourceExcerpt = {
+  evidence_id: string;
+  workspace_revision: number;
+  location: string;
+  quote: string;
+  truncated: boolean;
 };
 export type Evidence = {
   id: string;
@@ -56,14 +100,7 @@ export type Workspace = {
   entities: Entity[];
   evidence: Evidence[];
   transactions: Transaction[];
-  observations: {
-    id: string;
-    entity_id: string;
-    field: string;
-    value: string;
-    anchor: Anchor;
-    review: ReviewState;
-  }[];
+  observations: Observation[];
   assertions: {
     id: string;
     subject_id: string;
@@ -116,6 +153,14 @@ export type Workspace = {
     target: string;
     reason: string;
     reversed: boolean;
+  }[];
+  identity_decisions: {
+    id: string;
+    left_id: string;
+    right_id: string;
+    outcome: "keep_separate" | "defer";
+    reason: string;
+    at: string;
   }[];
   reports: {
     id: string;

@@ -51,5 +51,10 @@
       "manual_review_rules": []
     }
   ],
-  "limits": "Automated results do not establish WCAG conformance or visual design approval."
+  "limits": "Automated results do not establish WCAG conformance or visual design approval.",
+  "additional_workflow": {
+    "state": "Authored namesakes after accepted source review, keep-separate/defer decisions and a correction returned to pending",
+    "violation_count": 0,
+    "manual_review_rules": []
+  }
 }

@@ -377,6 +377,45 @@
       ],
       "type": "object"
     },
+    "IdentityDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "left_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/IdentityOutcome"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "right_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "left_id",
+        "right_id",
+        "outcome",
+        "reason",
+        "at"
+      ],
+      "type": "object"
+    },
+    "IdentityOutcome": {
+      "enum": [
+        "keep_separate",
+        "defer"
+      ],
+      "type": "string"
+    },
     "JobState": {
       "enum": [
         "queued",
@@ -888,6 +927,13 @@
     "hypotheses": {
       "items": {
         "$ref": "#/$defs/Hypothesis"
+      },
+      "type": "array"
+    },
+    "identity_decisions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/IdentityDecision"
       },
       "type": "array"
     },

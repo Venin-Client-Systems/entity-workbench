@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "evidence_id": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "truncated": {
+      "type": "boolean"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "evidence_id",
+    "workspace_revision",
+    "location",
+    "quote",
+    "truncated"
+  ],
+  "title": "SourceExcerpt",
+  "type": "object"
+}

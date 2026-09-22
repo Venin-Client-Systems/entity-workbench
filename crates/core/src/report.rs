@@ -50,16 +50,55 @@ pub fn html(view: &WorkspaceView, report_id: &str) -> Result<String> {
     for t in &view.transactions {
         let _=write!(out,"<tr id=\"{}\"><td>{}</td><td>{}</td><td>{}</td><td>{} {}</td><td>{:?}</td><td><a href=\"#{}\">{}</a></td></tr>",escape(&t.id),escape(&t.date),escape(&t.account),escape(&t.description),escape(&t.amount),escape(&t.currency),t.review,escape(t.anchor.evidence_id()),escape(&serde_json::to_string(&t.anchor)?));
     }
-    out.push_str("</table><h2>Observations</h2>");
+    out.push_str("</table><h2>Entity register</h2>");
+    for e in &view.entities {
+        let _ = write!(out, "<section id=\"{}\"><h3>{}</h3><p>Kind: {:?}<br>Reference Numbers: {}<br>Merged into: {}</p></section>", escape(&e.id), escape(&e.name), e.kind, escape(&e.identifiers.iter().map(|i| format!("{}:{}", i.namespace, i.value)).collect::<Vec<_>>().join("; ")), escape(e.merged_into.as_deref().unwrap_or("Separate record")));
+    }
+    out.push_str("<h2>Identity decisions</h2>");
+    for d in &view.identity_decisions {
+        let _ = write!(
+            out,
+            "<p>{} / {} · {:?} · {}<br>{}</p>",
+            escape(&d.left_id),
+            escape(&d.right_id),
+            d.outcome,
+            escape(&d.at),
+            escape(&d.reason)
+        );
+    }
+    for m in &view.merges {
+        let _ = write!(
+            out,
+            "<p>Merge {} → {} · Reversed: {}<br>{}</p>",
+            escape(&m.source),
+            escape(&m.target),
+            m.reversed,
+            escape(&m.reason)
+        );
+    }
+    out.push_str("<h2>Review history</h2>");
+    for d in &view.decisions {
+        let _ = write!(
+            out,
+            "<p>Record {} · {:?} · {}<br>{}</p>",
+            escape(&d.target_id),
+            d.state,
+            escape(&d.at),
+            escape(&d.reason)
+        );
+    }
+    out.push_str("<h2>Observations</h2>");
     for o in &view.observations {
         let _ = write!(
             out,
-            "<p id=\"{}\">{}: {} <a href=\"#{}\">Source</a> · {:?}</p>",
+            "<p id=\"{}\">{}: {} <a href=\"#{}\">Source</a> · {:?} · Entity <a href=\"#{}\">{}</a></p>",
             escape(&o.id),
             escape(&o.field),
             escape(&o.value),
             escape(o.anchor.evidence_id()),
-            o.review
+            o.review,
+            escape(&o.entity_id),
+            escape(&o.entity_id),
         );
     }
     out.push_str("<h2>Evidence register</h2>");

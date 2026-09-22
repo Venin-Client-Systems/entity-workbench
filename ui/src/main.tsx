@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { command } from "./api";
-import type { Response, Transaction, Evidence } from "./types";
+import type { Response, Transaction, Evidence, Anchor } from "./types";
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { Dialog } from "./Dialog";
+import { EntityWorkbench } from "./EntityWorkbench";
+import { SourceContent } from "./SourceContent";
 import "./style.css";
 import "./accessibility.css";
 const sections = [
@@ -27,7 +29,14 @@ function App() {
     [reviewFilter, setReviewFilter] = useState("all"),
     [currency, setCurrency] = useState("all"),
     [selected, setSelected] = useState<Transaction | null>(null),
-    [evidence, setEvidence] = useState<Evidence | null>(null);
+    [evidence, updateEvidence] = useState<Evidence | null>(null);
+  const [sourceAnchor, setSourceAnchor] = useState<Anchor | undefined>(
+    undefined,
+  );
+  const setEvidence = (item: Evidence | null, anchor?: Anchor) => {
+    updateEvidence(item);
+    setSourceAnchor(anchor);
+  };
   const [why, setWhy] = useState(""),
     [corrected, setCorrected] = useState(""),
     [transfer, setTransfer] = useState(""),
@@ -158,7 +167,7 @@ function App() {
         </div>
         <div className="workspace-label">INVESTIGATION WORKSPACE</div>
         <div className="case-name">
-          North Quay <span>LOCAL</span>
+          Local workspace <span>LOCAL</span>
         </div>
         <nav aria-label="Workbench sections">
           {sections.map((s, i) => (
@@ -246,7 +255,11 @@ function App() {
                 }
               </p>
             </div>
-            <span className="pill synthetic">SYNTHETIC DEMONSTRATION</span>
+            <span className="pill synthetic">
+              {w?.entities.some((e) => e.id === "person-a")
+                ? "DEMO RECORDS PRESENT"
+                : "LOCAL WORKSPACE"}
+            </span>
           </div>
           {error && (
             <div className="alert error" role="alert">
@@ -455,117 +468,14 @@ function App() {
                 </section>
               )}
               {section === "Entities" && (
-                <>
-                  <div className="entity-grid">
-                    {w.entities.map((e) => (
-                      <section
-                        className={`panel entity-card ${entityId === e.id ? "selected" : ""}`}
-                        key={e.id}
-                      >
-                        <span className="avatar">
-                          {e.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .slice(0, 2)
-                            .join("")}
-                        </span>
-                        <span className="pill">
-                          {e.kind.replaceAll("_", " ")}
-                        </span>
-                        <h2>{e.name}</h2>
-                        {e.identifiers.map((i) => (
-                          <p key={i.namespace + i.value}>
-                            <span className="muted">Reference Number</span>
-                            <br />
-                            <code>
-                              {i.namespace}:{i.value}
-                            </code>
-                          </p>
-                        ))}
-                        {w.observations
-                          .filter((o) => o.entity_id === e.id)
-                          .map((o) => (
-                            <div className="observation" key={o.id}>
-                              <strong>{o.field.replaceAll("_", " ")}</strong>
-                              <p>{o.value}</p>
-                              <span className="pill">{o.review}</span>
-                              <button
-                                className="text-button"
-                                onClick={() =>
-                                  setEvidence(
-                                    w.evidence.find(
-                                      (e) => e.id === o.anchor.evidence_id,
-                                    ) ?? null,
-                                  )
-                                }
-                              >
-                                Source ↗
-                              </button>
-                            </div>
-                          ))}
-                        {e.merged_into && (
-                          <div className="alert">
-                            Merged into {e.merged_into}; original observations
-                            retained.
-                          </div>
-                        )}
-                      </section>
-                    ))}
-                  </div>
-                  <section className="panel">
-                    <h2>Identity review</h2>
-                    <p>
-                      Compare the two fictional people. Conflicting birth years
-                      are a reason to retain separate identities; a merge is
-                      always reversible.
-                    </p>
-                    <input
-                      aria-label="Identity decision reason"
-                      placeholder="Reason for the identity decision"
-                      value={why}
-                      onChange={(e) => setWhy(e.target.value)}
-                    />
-                    <div className="actions">
-                      <button
-                        className="button"
-                        disabled={
-                          busy ||
-                          !why ||
-                          w.entities.length < 2 ||
-                          w.entities[0].merged_into !== null
-                        }
-                        onClick={() =>
-                          void act({
-                            action: "merge",
-                            source: "person-a",
-                            target: "person-b",
-                            reason: why,
-                          })
-                        }
-                      >
-                        Record merge of the two people
-                      </button>
-                      {w.merges
-                        .filter((m) => !m.reversed)
-                        .map((m) => (
-                          <button
-                            key={m.id}
-                            className="button"
-                            disabled={busy || !why}
-                            onClick={() =>
-                              void act({
-                                action: "reverse_merge",
-                                id: m.id,
-                                reason: why,
-                              })
-                            }
-                          >
-                            Reverse merge
-                          </button>
-                        ))}
-                    </div>
-                  </section>
-                </>
+                <EntityWorkbench
+                  workspace={w}
+                  busy={busy}
+                  run={run}
+                  selectedId={entityId}
+                  onSource={setEvidence}
+                  error={error}
+                />
               )}
               {section === "Transactions" && (
                 <>
@@ -1221,10 +1131,11 @@ function App() {
               {capture.url}
             </p>
           ))}
-          <pre className="source-text">
-            {evidence.text ??
-              "No text derivative is available. The original is retained in the content-addressed evidence store."}
-          </pre>
+          <SourceContent
+            key={evidence.id + JSON.stringify(sourceAnchor)}
+            evidence={evidence}
+            anchor={sourceAnchor}
+          />
         </Dialog>
       )}
     </div>

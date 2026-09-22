@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
-test.beforeAll(() =>
+test.beforeEach(() =>
   rmSync(resolve("artifacts/synthetic-ui-workspace"), {
     recursive: true,
     force: true,
@@ -100,15 +100,13 @@ test("synthetic investigation flows through the real Rust workspace", async ({
     .getByRole("button", { name: "Entities", exact: false })
     .first()
     .click();
-  await expect(page.getByText("DEMO:000042")).toBeVisible();
+  await expect(page.getByText("000042", { exact: true })).toBeVisible();
   await page
     .getByLabel("Identity decision reason")
     .fill("Synthetic mistaken identity decision");
-  await page
-    .getByRole("button", { name: "Record merge of the two people" })
-    .click();
+  await page.getByRole("button", { name: "Merge selected records" }).click();
   await expect(
-    page.getByText("Merged into person-b; original observations retained."),
+    page.getByText(/Merged into Rowan Ellis.*original observations retained/),
   ).toBeVisible();
   await expect(
     page.getByText("Processing workspace action…"),
@@ -120,7 +118,7 @@ test("synthetic investigation flows through the real Rust workspace", async ({
     .getByRole("button", { name: "Reverse merge", exact: true })
     .click();
   await expect(
-    page.getByText("Merged into person-b; original observations retained."),
+    page.getByText(/Merged into Rowan Ellis.*original observations retained/),
   ).not.toBeVisible();
   await page
     .getByRole("button", { name: "Locations", exact: false })
@@ -197,6 +195,197 @@ test("synthetic investigation flows through the real Rust workspace", async ({
     path: "artifacts/ui-transactions-minimum.png",
     fullPage: true,
   });
+  expect(external).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
+test("analyst-authored identities retain sources, decisions and corrections", async ({
+  page,
+}) => {
+  const external: string[] = [],
+    errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  page.on("request", (r) => {
+    if (
+      !r.url().startsWith("http://127.0.0.1:1420") &&
+      !r.url().startsWith("blob:") &&
+      !r.url().startsWith("data:")
+    )
+      external.push(r.url());
+  });
+  await page.goto("/");
+  await expect(
+    page.getByRole("button", { name: "Load synthetic investigation" }),
+  ).toBeVisible();
+  await page
+    .locator("input[type=file]")
+    .setInputFiles({
+      name: "identities.txt",
+      mimeType: "text/plain",
+      buffer: Buffer.from("Avery Vale born 1982\nAvery Vale born 1990\n"),
+    });
+  await expect(
+    page.getByRole("button", { name: /TXT identities.txt/ }),
+  ).toBeVisible();
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: /Entities/ })
+    .click();
+  for (const number of ["000021", "000022"]) {
+    await page.getByRole("button", { name: "Add entity", exact: true }).click();
+    await page.getByLabel("Entity name", { exact: true }).fill("Avery Vale");
+    await page
+      .getByLabel("Reference namespace 1", { exact: true })
+      .fill("CASE");
+    await page.getByLabel("Reference Number 1", { exact: true }).fill(number);
+    await page
+      .getByLabel("Entity change reason")
+      .fill("Created from a distinct synthetic source mention");
+    await page
+      .getByRole("button", { name: "Save entity", exact: true })
+      .click();
+    await expect(
+      page.getByRole("region", {
+        name: `Avery Vale · CASE:${number}`,
+        exact: true,
+      }),
+    ).toBeVisible();
+  }
+  await expect(
+    page.getByText("DEMO RECORDS PRESENT", { exact: true }),
+  ).not.toBeVisible();
+  await page
+    .getByLabel("First entity", { exact: true })
+    .selectOption({ label: "Avery Vale · CASE:000021" });
+  await page
+    .getByLabel("Second entity", { exact: true })
+    .selectOption({ label: "Avery Vale · CASE:000022" });
+  for (const [number, year, line] of [
+    ["000021", "1982", "1"],
+    ["000022", "1990", "2"],
+  ]) {
+    const card = page.getByRole("region", {
+      name: `Avery Vale · CASE:${number}`,
+      exact: true,
+    });
+    await card
+      .getByRole("button", { name: "Add observation", exact: true })
+      .click();
+    await page
+      .getByLabel("Observation field", { exact: true })
+      .fill("birth_year");
+    await page.getByLabel("Observation value", { exact: true }).fill(year);
+    await page.getByLabel("First source line", { exact: true }).fill(line);
+    await page.getByLabel("Last source line", { exact: true }).fill(line);
+    await page
+      .getByLabel("Observation change reason")
+      .fill("Transcribed a synthetic source mention");
+    await page
+      .getByRole("button", { name: "Save observation", exact: true })
+      .click();
+    await card
+      .getByRole("button", { name: "Review observation", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Inspect observation source" })
+      .click();
+    await expect(
+      page.getByRole("region", { name: "Source anchor excerpt" }),
+    ).toContainText(`Avery Vale born ${year}`);
+    await page
+      .getByRole("button", { name: "Close source", exact: true })
+      .click();
+    await page
+      .getByLabel("Observation review reason")
+      .fill("Inspected the cited source line");
+    await page
+      .getByRole("button", { name: "Accept observation", exact: true })
+      .click();
+    await expect(
+      page.getByRole("dialog", { name: "Observation review" }),
+    ).not.toBeVisible();
+  }
+  await expect(
+    page.getByRole("heading", {
+      name: "birth year · Different reviewed values",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("1 source groups among accepted observations"),
+  ).toBeVisible();
+  await page
+    .getByLabel("Identity decision reason")
+    .fill("Conflicting birth years; retain namesakes");
+  await page
+    .getByRole("button", { name: "Keep separate", exact: true })
+    .click();
+  await expect(
+    page.getByText("Conflicting birth years; retain namesakes"),
+  ).toBeVisible();
+  await page
+    .getByLabel("Identity decision reason")
+    .fill("Await an independent confirming record");
+  await page.getByRole("button", { name: "Defer identity decision" }).click();
+  await expect(
+    page.getByText("Await an independent confirming record"),
+  ).toBeVisible();
+  const second = page.getByRole("region", {
+    name: "Avery Vale · CASE:000022",
+    exact: true,
+  });
+  await second.getByRole("button", { name: "Review observation" }).click();
+  await page
+    .getByRole("button", { name: "Correct observation", exact: true })
+    .click();
+  await page.getByLabel("Observation value", { exact: true }).fill("1982");
+  await page
+    .getByLabel("Observation change reason")
+    .fill("Synthetic correction; original source retained");
+  await page
+    .getByRole("button", { name: "Save observation correction" })
+    .click();
+  await expect(
+    page.getByRole("heading", {
+      name: "birth year · Insufficient reviewed evidence",
+    }),
+  ).toBeVisible();
+  await second
+    .getByRole("button", { name: "Inspect source", exact: true })
+    .click();
+  await expect(
+    page.getByRole("region", { name: "Source anchor excerpt" }),
+  ).toContainText("Avery Vale born 1990");
+  await page.getByRole("button", { name: "Close source", exact: true }).click();
+  const audit = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze();
+  writeFileSync(
+    "artifacts/identity-accessibility-audit.json",
+    JSON.stringify(
+      { violations: audit.violations, incomplete: audit.incomplete },
+      null,
+      2,
+    ),
+  );
+  expect(audit.violations).toEqual([]);
+  await page.screenshot({
+    path: "artifacts/ui-identity-authoring.png",
+    fullPage: true,
+  });
+  await page.reload();
+  await page
+    .getByRole("navigation")
+    .getByRole("button", { name: /Entities/ })
+    .click();
+  await expect(
+    page.getByText("Conflicting birth years; retain namesakes"),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Await an independent confirming record"),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("region", { name: "Avery Vale · CASE:000021", exact: true }),
+  ).toBeVisible();
   expect(external).toEqual([]);
   expect(errors).toEqual([]);
 });

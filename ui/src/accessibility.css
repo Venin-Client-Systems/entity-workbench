@@ -89,3 +89,34 @@ caption {
   padding: 12px 0;
   color: var(--text-secondary);
 }
+
+.source-quote {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.source-lines {
+  font:
+    12px/1.9 ui-monospace,
+    monospace;
+  max-height: 40vh;
+  overflow: auto;
+  padding: 16px 16px 16px 64px;
+  background: #f0f3e9;
+}
+.source-lines li {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding-left: 8px;
+}
+.entity-card .actions {
+  align-items: flex-start;
+}
+.entity-card p {
+  overflow-wrap: anywhere;
+}
+.table-scroll table {
+  min-width: 720px;
+}
+.table-scroll td:first-child {
+  white-space: nowrap;
+}

@@ -55,10 +55,12 @@ Use shared components and semantic tokens for text, surfaces, borders, focus, se
 - Native modal component: `ui/src/Dialog.tsx`; keyboard verification belongs in the existing real-workspace UI test.
 - Editable Figma file: pending connection; no placeholder URL.
 - Final palette, typography, icon family and layout density: pending tool-based design pass.
-- Public interface publication: held while the design pass is pending.
+- Source publication: explicitly labelled a development prototype. Final visual sign-off remains pending the editable design pass.
 
 References: [W3C modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/), [text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html), [target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html).
 
 ## Prototype inspection notes
 
 The native macOS app was launched and its corpus phrase query returned the expected synthetic source. The 960 px browser capture retains the toolbar but wraps statement dates; table density and fixed-width date/amount columns need to be resolved in the editable design. Automated measurements found 40 overview contrast failures before targeted corrections and zero violations in the eight subsequently tested section states. Incomplete rules still require manual checks. No final visual sign-off is recorded.
+
+The next implementation pass replaced demonstration-specific identity actions with general entity/observation authoring and comparison using the existing provisional components. Namespaces, leading-zero references, cited excerpts, review states and decision history are now represented in the functional workflow. This is functional work, not a completed Figma design.

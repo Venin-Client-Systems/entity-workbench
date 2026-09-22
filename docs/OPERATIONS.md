@@ -28,3 +28,5 @@ There are no background update checks. A future supported update is an explicit 
 ## Current lifecycle limits
 
 Originals, decisions and report snapshots are retained; no automatic evidence deletion is implemented. Rebuildable index/cache directories may be removed only while the app is closed. Failed jobs and partial originals remain inspectable. Full durable job resume and scratch garbage collection remain work items; do not describe an interrupted collection as complete.
+
+Source verification pins Rust 1.90.0 in CI, matching the locally verified compiler. Updating that pin requires rerunning the supported source-build matrix; it does not change the end-user requirement to install no developer tools.

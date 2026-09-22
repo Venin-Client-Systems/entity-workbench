@@ -36,13 +36,21 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 "analysis-manifest",
                 serde_json::to_value(schemars::schema_for!(AnalysisManifest))?,
             ),
+            (
+                "identity-comparison",
+                serde_json::to_value(schemars::schema_for!(IdentityComparison))?,
+            ),
+            (
+                "source-excerpt",
+                serde_json::to_value(schemars::schema_for!(SourceExcerpt))?,
+            ),
         ] {
             std::fs::write(
                 root.join(format!("{name}.v1.schema.json")),
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":4}));
+        return Ok(serde_json::json!({"schemas":6}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();
