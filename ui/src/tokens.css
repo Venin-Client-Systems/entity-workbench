@@ -1,0 +1,31 @@
+/* Native Figma foundations: O50ISV0LGG8nKDcFORNMbO, frame 2:790.
+ * Status text uses darker tones than the generated specimens for contrast. */
+@font-face {
+  font-family: Inter;
+  src: url("/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --canvas: #faf8f5;
+  --surface: #ffffff;
+  --navy: #0f172a;
+  --navy-light: #1e293b;
+  --ink: #18181b;
+  --muted: #515159;
+  --muted-on-navy: #cbd5e1;
+  --accent: #0f766e;
+  --accent-hover: #115e59;
+  --selection: #f0fdfa;
+  --subtle: #f8fafc;
+  --border: #e4e4e7;
+  --control-border: #92929b;
+  --focus: #0f766e;
+  --warning: #92400e;
+  --warning-bg: #fef3c7;
+  --success: #166534;
+  --success-bg: #dcfce7;
+  --danger: #b91c1c;
+  --danger-bg: #fee2e2;
+}

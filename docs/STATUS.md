@@ -4,7 +4,7 @@ This is an initial integrated development implementation. None of the three mile
 
 | Area | Implemented and verified | Remaining work |
 |---|---|---|
-| Product design | Functional prototype; axe and keyboard measurements; design brief and component/state specification | Editable Figma design pass awaiting connection; final design review and implementation comparison |
+| Product design | Native editable Figma frames, styles and component sets; applied foundation tokens and bundled Inter; desktop transaction panel and compact dialog; exported comparisons, axe and keyboard verification | Remaining frame discrepancies, full workflow designs, icon/typography refinement, manual accessibility and final visual sign-off |
 | Workspace | Rust-owned SQLite, revision history, content-addressed originals, strict commands, recoverable backup/restore, newer-schema refusal | Real migration paths and failure injection; full Windows ACL implementation; workspace management UI |
 | Evidence | UTF-8 text/CSV import, hash deduplication, source rows, escaped text review | OCR and page/cell-region review; complex tables; Office/email workflows; versioned derivative UI |
 | Transactions | Exact decimals, separate currencies, review decisions, reversible corrections, probable duplicate examples, explicit transfer pairs, source-linked totals | Mapping profiles; recurring/refund/merchant classification; account-flow graphs; paginated analytical snapshots |

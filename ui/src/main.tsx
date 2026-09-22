@@ -1,11 +1,19 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { command } from "./api";
-import type { Response, Transaction, Evidence, Anchor } from "./types";
+import type {
+  Response,
+  Transaction,
+  Evidence,
+  Anchor,
+  SourceExcerpt,
+} from "./types";
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { Dialog } from "./Dialog";
+import { ReviewSurface } from "./ReviewSurface";
 import { EntityWorkbench } from "./EntityWorkbench";
 import { SourceContent } from "./SourceContent";
+import "./tokens.css";
 import "./style.css";
 import "./accessibility.css";
 const sections = [
@@ -88,6 +96,7 @@ function App() {
     void run({ action: "view" });
   }, [run]);
   const navigate = (s: Section) => {
+    setSelected(null);
     setSection(s);
     setQuery("");
     setSearchHits(null);
@@ -153,16 +162,22 @@ function App() {
             .includes(query.toLowerCase()),
     ) ?? [];
   return (
-    <div className="shell">
+    <div
+      className={`shell${selected && section === "Transactions" ? " review-open" : ""}`}
+      onClickCapture={(event) => {
+        // WebKit does not focus buttons on pointer/AX activation. Establish the
+        // real opener before mounting a dialog so source review can return to it.
+        if (event.target instanceof Element)
+          event.target
+            .closest<HTMLButtonElement>("button")
+            ?.focus({ preventScroll: true });
+      }}
+    >
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-symbol">
-            e<span>·</span>
-          </span>
           <div>
-            ENTITY
-            <br />
-            <strong>WORKBENCH</strong>
+            <strong>Entity Workbench</strong>
+            <span className="brand-caption">EVIDENCE WORKSPACE</span>
           </div>
         </div>
         <div className="workspace-label">INVESTIGATION WORKSPACE</div>
@@ -174,6 +189,7 @@ function App() {
             <button
               key={s}
               className={section === s ? "active" : ""}
+              aria-current={section === s ? "page" : undefined}
               onClick={() => navigate(s)}
             >
               <span className="nav-index">
@@ -557,8 +573,17 @@ function App() {
                         Export JSON
                       </button>
                     </div>
-                    <div className="table-scroll">
+                    <div
+                      className="table-scroll"
+                      role="region"
+                      aria-label="Transaction ledger"
+                      tabIndex={0}
+                    >
                       <table>
+                        <caption>
+                          {transactions.length} transactions in the current view
+                          · amounts retain their original currency
+                        </caption>
                         <thead>
                           <tr>
                             <th>Date</th>
@@ -573,12 +598,18 @@ function App() {
                           {transactions.map((t) => (
                             <tr
                               key={t.id}
+                              className={
+                                selected?.id === t.id
+                                  ? "selected-row"
+                                  : undefined
+                              }
                               onClick={() => inspectTransaction(t)}
                             >
                               <td>{t.date}</td>
                               <td>
                                 <button
                                   className="cell-button"
+                                  id={`transaction-${t.id}`}
                                   onClick={() => inspectTransaction(t)}
                                 >
                                   {t.description}
@@ -975,7 +1006,12 @@ function App() {
         </main>
       </div>
       {selected && w && (
-        <Dialog label="Transaction review" onClose={() => setSelected(null)}>
+        <ReviewSurface
+          onClose={() => setSelected(null)}
+          restoreFocus={() =>
+            document.getElementById(`transaction-${selected.id}`)?.focus()
+          }
+        >
           <button
             className="close"
             aria-label="Close review"
@@ -993,6 +1029,11 @@ function App() {
           <p>
             {selected.date} · {selected.account} · {selected.review}
           </p>
+          {!transactions.some((t) => t.id === selected.id) && (
+            <p className="alert" role="status">
+              Selected transaction is outside the current filters.
+            </p>
+          )}
           <div className="disclosure">
             <strong>Source anchor</strong>
             <p>
@@ -1006,12 +1047,17 @@ function App() {
                   w.evidence.find(
                     (e) => e.id === selected.anchor.evidence_id,
                   ) ?? null,
+                  selected.anchor,
                 )
               }
             >
               Inspect preserved source ↗
             </button>
           </div>
+          <TransactionExcerpt
+            key={selected.id + ":" + selected.version}
+            transaction={selected}
+          />
           <label>
             Decision reason
             <input
@@ -1107,7 +1153,7 @@ function App() {
           >
             Match internal transfer
           </button>
-        </Dialog>
+        </ReviewSurface>
       )}
       {evidence && (
         <Dialog label="Evidence source" wide onClose={() => setEvidence(null)}>
@@ -1188,3 +1234,42 @@ function EvidenceRows({
   );
 }
 createRoot(document.getElementById("root")!).render(<App />);
+
+function TransactionExcerpt({ transaction }: { transaction: Transaction }) {
+  const [excerpt, setExcerpt] = useState<SourceExcerpt | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    void command<SourceExcerpt>({
+      action: "inspect_source",
+      anchor: transaction.anchor,
+    })
+      .then((value) => {
+        if (active) setExcerpt(value);
+      })
+      .catch((value) => {
+        if (active) setError(String(value));
+      });
+    return () => {
+      active = false;
+    };
+  }, [transaction.anchor]);
+  return (
+    <section
+      className="original-excerpt"
+      aria-label="Original transaction excerpt"
+    >
+      <h3>Preserved source value</h3>
+      {error ? (
+        <p role="alert">{error}</p>
+      ) : excerpt ? (
+        <>
+          <pre className="source-quote">{excerpt.quote}</pre>
+          <p className="muted">{excerpt.location} · original evidence</p>
+        </>
+      ) : (
+        <p role="status">Resolving source anchor…</p>
+      )}
+    </section>
+  );
+}

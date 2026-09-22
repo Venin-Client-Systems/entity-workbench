@@ -1,0 +1,54 @@
+{
+  "method": "WCAG relative luminance; opaque declared token pairs, not all rendered states",
+  "results": [
+    {
+      "token_pair": "body",
+      "foreground": "#18181b",
+      "background": "#ffffff",
+      "contrast_ratio": 17.72,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "secondary",
+      "foreground": "#515159",
+      "background": "#ffffff",
+      "contrast_ratio": 7.86,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "primary",
+      "foreground": "#ffffff",
+      "background": "#0f766e",
+      "contrast_ratio": 5.47,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "accepted",
+      "foreground": "#166534",
+      "background": "#dcfce7",
+      "contrast_ratio": 6.49,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "pending",
+      "foreground": "#92400e",
+      "background": "#fef3c7",
+      "contrast_ratio": 6.37,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "rejected",
+      "foreground": "#b91c1c",
+      "background": "#fee2e2",
+      "contrast_ratio": 5.3,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "nav",
+      "foreground": "#cbd5e1",
+      "background": "#0f172a",
+      "contrast_ratio": 12.02,
+      "normal_text_4_5": true
+    }
+  ]
+}
