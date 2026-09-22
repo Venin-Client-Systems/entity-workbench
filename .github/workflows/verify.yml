@@ -34,7 +34,9 @@ jobs:
       - name: Confirm release status remains explicit
         run: python scripts/release_gate.py --check-policy
   browser:
-    runs-on: ubuntu-24.04
+    # Keep Chromium's sandbox enabled on a supported application target.
+    # Ubuntu's hosted AppArmor policy blocks this browser's user namespace.
+    runs-on: macos-15
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
