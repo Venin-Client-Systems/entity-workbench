@@ -10,8 +10,9 @@ use std::{
 };
 use uuid::Uuid;
 mod identity;
+mod statements;
 
-const SCHEMA: u32 = 1;
+const SCHEMA: u32 = 2;
 pub struct Workspace {
     root: PathBuf,
     conn: Connection,
@@ -129,7 +130,7 @@ impl Workspace {
                 CREATE TABLE records(sequence INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL CHECK(json_valid(body)), UNIQUE(kind,id));
                 CREATE TABLE history(sequence INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT NOT NULL,id TEXT NOT NULL,body TEXT NOT NULL,revision INTEGER NOT NULL);
                 CREATE TABLE events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,revision INTEGER NOT NULL,action TEXT NOT NULL,at TEXT NOT NULL);
-                PRAGMA user_version=1;")?;
+                PRAGMA user_version=2;")?;
             tx.commit()?;
         }
         conn.execute_batch(
@@ -142,6 +143,16 @@ impl Workspace {
             conn,
             runtime: None,
         };
+        if version == 1 {
+            // A v1 reader does not know mapped CSV dialects. Back up database and
+            // referenced originals before raising the compatibility boundary.
+            workspace.backup()?;
+            workspace.change(None, "workspace.schema_v2", false, |conn| {
+                conn.pragma_update(None, "user_version", SCHEMA)?;
+                let actual: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
+                require(actual == SCHEMA, "Schema upgrade postcondition failed")
+            })?;
+        }
         let interrupted: Vec<CollectionJob> = all::<CollectionJob>(&workspace.conn, "job")?
             .into_iter()
             .filter(|j| matches!(j.state, JobState::Running))
@@ -214,6 +225,8 @@ impl Workspace {
             merges: all(&self.conn, "merge")?,
             identity_decisions: all(&self.conn, "identity_decision")?,
             reports: all(&self.conn, "report")?,
+            statement_profiles: all(&self.conn, "statement_profile")?,
+            statement_imports: all(&self.conn, "statement_import")?,
         })
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
@@ -245,6 +258,37 @@ impl Workspace {
             Command::SeedDemo {} => self.seed_demo()?,
             Command::Import { name, bytes } => {
                 self.import(&name, &bytes)?;
+            }
+            Command::InspectStatement { bytes, delimiter } => {
+                return Ok(serde_json::to_value(crate::statements::sample(
+                    &bytes, delimiter,
+                )?)?);
+            }
+            Command::PreviewStatement {
+                name,
+                bytes,
+                mapping,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.preview_statement(&name, &bytes, &mapping)?,
+                )?);
+            }
+            Command::ImportStatement {
+                name,
+                bytes,
+                mapping,
+                preview_token,
+                save_profile_name,
+                expected_revision,
+            } => {
+                self.import_statement(
+                    &name,
+                    &bytes,
+                    mapping,
+                    &preview_token,
+                    save_profile_name.as_deref(),
+                    expected_revision,
+                )?;
             }
             Command::AddEntity {
                 entity,
@@ -361,17 +405,7 @@ impl Workspace {
         Ok(json!({"analysis":analytics::analyse(&view.transactions)?,"workspace":view}))
     }
     pub fn import(&mut self, name: &str, bytes: &[u8]) -> Result<String> {
-        require(
-            !bytes.is_empty() && bytes.len() <= policy::MAX_IMPORT_BYTES,
-            "Import must contain 1 byte to 16 MiB",
-        )?;
-        require(
-            !name.is_empty()
-                && name.len() <= 180
-                && !name.contains(['/', '\\', ':'])
-                && !name.chars().any(char::is_control),
-            "Invalid display filename",
-        )?;
+        validate_import_input(name, bytes)?;
         let digest = hash(bytes);
         if get::<Evidence>(&self.conn, "evidence", &digest).is_ok() {
             return Ok(digest);
@@ -393,55 +427,13 @@ impl Workspace {
         };
         let mut transactions = vec![];
         if extension == "csv" {
-            let mut reader = csv::ReaderBuilder::new().from_reader(bytes);
-            let headers = reader.headers()?.clone();
-            let column = |field: &str| {
-                headers.iter().position(|h| h == field).ok_or_else(|| {
-                    Error::Validation(format!("CSV mapping requires column '{field}'"))
-                })
-            };
-            let (account, date, description, amount, currency) = (
-                column("account")?,
-                column("date")?,
-                column("description")?,
-                column("amount")?,
-                column("currency")?,
-            );
-            let optional = |record: &csv::StringRecord, field: &str| {
-                headers
-                    .iter()
-                    .position(|h| h == field)
-                    .and_then(|i| record.get(i))
-                    .filter(|s| !s.is_empty())
-                    .map(str::to_string)
-            };
-            for (index, row) in reader.records().enumerate() {
-                require(index < 100_000, "CSV row limit exceeded")?;
-                let row = row?;
-                let t = Transaction {
-                    id: format!("{digest}:{}", index + 2),
-                    account: row[account].into(),
-                    date: row[date].into(),
-                    posting_date: optional(&row, "posting_date"),
-                    description: row[description].into(),
-                    amount: row[amount].into(),
-                    currency: row[currency].into(),
-                    balance: optional(&row, "balance"),
-                    anchor: SourceAnchor::Cell {
-                        evidence_id: digest.clone(),
-                        sheet: "CSV".into(),
-                        row: (index + 2) as u32,
-                        column: "amount".into(),
-                    },
-                    review: ReviewState::Pending,
-                    duplicate_candidates: vec![],
-                    transfer_peer: None,
-                    merchant: None,
-                    version: 1,
-                };
-                analytics::validate_transaction(&t)?;
-                transactions.push(t);
-            }
+            let sample = crate::statements::sample(bytes, crate::statements::Delimiter::Comma)?;
+            let parsed = crate::statements::parse(bytes, &sample.suggested_mapping)?;
+            require(
+                parsed.invalid_rows == 0,
+                "Transaction CSV contains invalid rows; use statement preview for row details",
+            )?;
+            transactions = parsed.transactions;
         }
         let evidence = Evidence {
             id: digest.clone(),
@@ -467,19 +459,7 @@ impl Workspace {
             text,
             acquisitions: vec![],
         };
-        let path = self.root.join("originals").join(&digest);
-        if path.exists() {
-            self.verify_original(&evidence)?;
-        } else {
-            let mut file = OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(&path)?;
-            private_file(&path, 0o600)?;
-            file.write_all(bytes)?;
-            file.sync_all()?;
-            private_file(&path, 0o400)?;
-        }
+        retain_original(&self.root, &evidence, bytes)?;
         self.change(None, "evidence.import", true, |conn| {
             put(conn, "evidence", &digest, &evidence)?;
             for t in &transactions {
@@ -618,20 +598,7 @@ impl Workspace {
         })
     }
     fn verify_original(&self, e: &Evidence) -> Result<()> {
-        require(
-            e.sha256.len() == 64 && e.sha256.bytes().all(|b| b.is_ascii_hexdigit()),
-            "Invalid evidence digest",
-        )?;
-        let path = self.root.join("originals").join(&e.sha256);
-        let meta = fs::symlink_metadata(&path)?;
-        require(
-            meta.is_file() && !meta.file_type().is_symlink() && meta.len() == e.bytes,
-            "Missing or altered original evidence",
-        )?;
-        require(
-            hash(&fs::read(path)?) == e.sha256,
-            "Original evidence checksum mismatch",
-        )
+        verify_original(&self.root, e)
     }
     pub fn backup(&mut self) -> Result<PathBuf> {
         let evidence = all::<Evidence>(&self.conn, "evidence")?;
@@ -651,7 +618,7 @@ impl Workspace {
         fs::write(
             path.join("manifest.json"),
             serde_json::to_vec_pretty(
-                &json!({"schema_version":SCHEMA,"revision":self.revision()?,"evidence":evidence.iter().map(|e|&e.sha256).collect::<Vec<_>>()}),
+                &json!({"schema_version":self.conn.pragma_query_value::<u32, _>(None, "user_version", |r| r.get(0))?,"revision":self.revision()?,"evidence":evidence.iter().map(|e|&e.sha256).collect::<Vec<_>>()}),
             )?,
         )?;
         private_file(&path.join("manifest.json"), 0o600)?;
@@ -670,7 +637,10 @@ impl Workspace {
         let version: u32 = source
             .conn
             .pragma_query_value(None, "user_version", |r| r.get(0))?;
-        require(version == SCHEMA, "Backup schema is unsupported")?;
+        require(
+            (1..=SCHEMA).contains(&version),
+            "Backup schema is unsupported",
+        )?;
         let evidence = all::<Evidence>(&source.conn, "evidence")?;
         for e in &evidence {
             source.verify_original(e)?;
@@ -860,6 +830,53 @@ fn refresh_duplicates(conn: &Connection) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn validate_import_input(name: &str, bytes: &[u8]) -> Result<()> {
+    require(
+        !bytes.is_empty() && bytes.len() <= policy::MAX_IMPORT_BYTES,
+        "Import must contain 1 byte to 16 MiB",
+    )?;
+    require(
+        !name.is_empty()
+            && name.len() <= 180
+            && !name.contains(['/', '\\', ':'])
+            && !name.chars().any(char::is_control),
+        "Invalid display filename",
+    )?;
+    Ok(())
+}
+
+fn verify_original(root: &Path, e: &Evidence) -> Result<()> {
+    require(
+        e.sha256.len() == 64 && e.sha256.bytes().all(|b| b.is_ascii_hexdigit()),
+        "Invalid evidence digest",
+    )?;
+    let path = root.join("originals").join(&e.sha256);
+    let meta = fs::symlink_metadata(&path)?;
+    require(
+        meta.is_file() && !meta.file_type().is_symlink() && meta.len() == e.bytes,
+        "Missing or altered original evidence",
+    )?;
+    require(
+        hash(&fs::read(path)?) == e.sha256,
+        "Original evidence checksum mismatch",
+    )
+}
+
+fn retain_original(root: &Path, evidence: &Evidence, bytes: &[u8]) -> Result<()> {
+    let path = root.join("originals").join(&evidence.sha256);
+    if path.exists() {
+        return verify_original(root, evidence);
+    }
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)?;
+    private_file(&path, 0o600)?;
+    file.write_all(bytes)?;
+    file.sync_all()?;
+    private_file(&path, 0o400)
 }
 
 #[cfg(test)]

@@ -1321,3 +1321,62 @@ footer {
     padding: 10px 6px;
   }
 }
+
+/* Statement import reuses the industrial form and ledger primitives. */
+.statement-import h2 {
+  padding-right: 28px;
+  overflow-wrap: anywhere;
+}
+.statement-import fieldset {
+  min-width: 0;
+  border: 1px solid var(--border);
+  margin: 16px 0;
+  padding: 0 12px 12px;
+}
+.statement-import legend {
+  font: 12px var(--mono);
+  text-transform: uppercase;
+  padding: 0 6px;
+}
+.statement-import .form-grid {
+  gap: 0 16px;
+}
+.statement-import label {
+  margin: 10px 0;
+}
+.statement-import .source-sample {
+  background: var(--subtle);
+  border: 1px solid var(--border);
+  padding: 12px;
+  margin: 12px 0;
+}
+.statement-import summary {
+  cursor: pointer;
+  font-size: 12px;
+}
+.statement-import .source-sample .table-scroll {
+  max-height: 180px;
+}
+.statement-import td {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 220px;
+}
+.statement-import .check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.statement-import .check-label input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.statement-import .stats {
+  margin-top: 16px;
+}
+.statement-import .hash {
+  font-size: 11px;
+}

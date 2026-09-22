@@ -6,11 +6,13 @@ import { useLayoutEffect, useRef, type ReactNode } from "react";
 export function Dialog({
   label,
   wide,
+  preventClose,
   onClose,
   children,
 }: {
   label: string;
   wide?: boolean;
+  preventClose?: boolean;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -33,6 +35,9 @@ export function Dialog({
       className={`modal${wide ? " wide" : ""}`}
       aria-label={label}
       onClose={onClose}
+      onCancel={(event) => {
+        if (preventClose) event.preventDefault();
+      }}
       onKeyDown={(event) => {
         if (event.key !== "Tab" || event.defaultPrevented) return;
         const items = [

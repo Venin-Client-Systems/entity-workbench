@@ -38,7 +38,7 @@ fn validate_anchor(conn: &Connection, anchor: &SourceAnchor) -> Result<()> {
         SourceAnchor::Cell { sheet, row, column, .. } => {
             require(e.media_type == "text/csv" && sheet == "CSV" && *row >= 2, "Cell anchors currently require an imported CSV data row")?;
             let text = e.text.as_deref().ok_or_else(|| Error::Validation("CSV source has no text".into()))?;
-            let mut reader = csv::Reader::from_reader(text.as_bytes());
+            let mut reader = crate::statements::reader(text.as_bytes(), super::statements::source_delimiter(conn, &e.id)?)?;
             require(reader.headers()?.iter().any(|h| h == column), "Source column does not exist")?;
             let record = reader.records().nth((*row - 2) as usize).transpose()?;
             require(record.is_some(), "Source row does not exist")
@@ -84,7 +84,10 @@ impl Workspace {
             SourceAnchor::Cell {
                 sheet, row, column, ..
             } => {
-                let mut reader = csv::Reader::from_reader(text.as_bytes());
+                let mut reader = crate::statements::reader(
+                    text.as_bytes(),
+                    super::statements::source_delimiter(&tx, &e.id)?,
+                )?;
                 let column_index = reader
                     .headers()?
                     .iter()

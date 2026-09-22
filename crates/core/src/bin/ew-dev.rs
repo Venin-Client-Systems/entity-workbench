@@ -3,7 +3,12 @@ use std::{
     io::{self, Read},
     path::PathBuf,
 };
-use workbench_core::{domain::*, policy::WorkerRequest, store::Workspace};
+use workbench_core::{
+    domain::*,
+    policy::WorkerRequest,
+    statements::{StatementMapping, StatementPreview, StatementSample},
+    store::Workspace,
+};
 fn main() {
     let result = run();
     match result {
@@ -19,38 +24,59 @@ fn run() -> workbench_core::Result<serde_json::Value> {
     if arg == "schemas" {
         let root = PathBuf::from("schemas");
         std::fs::create_dir_all(&root)?;
-        for (name, value) in [
+        for (name, version, value) in [
             (
                 "workspace",
+                2,
                 serde_json::to_value(schemars::schema_for!(WorkspaceView))?,
             ),
             (
                 "command",
+                2,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (
                 "worker-request",
+                1,
                 serde_json::to_value(schemars::schema_for!(WorkerRequest))?,
             ),
             (
                 "analysis-manifest",
+                1,
                 serde_json::to_value(schemars::schema_for!(AnalysisManifest))?,
             ),
             (
                 "identity-comparison",
+                1,
                 serde_json::to_value(schemars::schema_for!(IdentityComparison))?,
             ),
             (
                 "source-excerpt",
+                1,
                 serde_json::to_value(schemars::schema_for!(SourceExcerpt))?,
+            ),
+            (
+                "statement-mapping",
+                1,
+                serde_json::to_value(schemars::schema_for!(StatementMapping))?,
+            ),
+            (
+                "statement-sample",
+                1,
+                serde_json::to_value(schemars::schema_for!(StatementSample))?,
+            ),
+            (
+                "statement-preview",
+                1,
+                serde_json::to_value(schemars::schema_for!(StatementPreview))?,
             ),
         ] {
             std::fs::write(
-                root.join(format!("{name}.v1.schema.json")),
+                root.join(format!("{name}.v{version}.schema.json")),
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":6}));
+        return Ok(serde_json::json!({"schemas":9}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();

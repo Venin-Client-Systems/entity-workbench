@@ -51,10 +51,10 @@ These are inspectable design comparisons, not pixel-difference acceptance tests.
 
 ## Verification and remaining work
 
-- Both browser workflows pass against the real Rust core, including correction/acceptance, source anchors, resize drafts, filtered selection, compact modal keyboard containment, identity decisions and persistence. Tests assert no external browser requests or uncaught page errors.
+- All four browser workflows pass against the real Rust core, including correction/acceptance, source anchors, resize drafts, filtered selection, compact modal keyboard containment, identity decisions and persistence. Tests assert no external browser requests or uncaught page errors.
 - Automated axe checks cover the eight main section states, authored identities and both transaction review layouts. Ten declared text/background pairs pass 4.5:1, with a lowest measured ratio of 5.30:1. See `contrast-results.json` and `accessibility-results.json`. These checks do not establish full WCAG conformance.
 - The rebuilt Apple Silicon development app displays the revised interface and bundled fonts. Native source inspection and Escape/focus return are checked separately from Chromium.
-- The current industrial Figma revision covers the desktop transaction workflow. Compact and remaining workflow frames still need the same design treatment. All eight application sections use the revised styles, but this is not a claim that eight industrial design frames have been completed.
+- The current industrial Figma revisions cover the desktop transaction workflow and statement mapping/preview. Compact and remaining workflow frames still need the same design treatment. All eight application sections use the revised styles, but this is not a claim that eight industrial design frames have been completed.
 - Full 1280 px design coverage, 200% zoom, assistive-technology checks, complex empty/error/long-content states, final icon refinement and owner visual approval remain open. The synthetic ten-row ledger is not a large-data performance benchmark.
 - Complete bundled installation, signing, platform confinement and broad-web coverage remain separate unpassed release gates.
 
@@ -63,3 +63,7 @@ These are inspectable design comparisons, not pixel-difference acceptance tests.
 The first warm/teal direction is retained as design history, not the current target: [foundations 2:790](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-790), [transaction review 2:6](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-6), [compact identity 2:576](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-576), and [collection jobs 2:255](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-255). Earlier exports remain in `review/`.
 
 The separate Figma Make experiment is not the application. Its generated identity and collection logic is not authoritative; known illustrative comparison errors must not be copied into domain rules.
+
+## Statement import extension
+
+The two-stage local statement workflow now has [editable Figma frames, component specifications and rendered comparisons](STATEMENT-IMPORT.md). It preserves the industrial visual language while separating source mapping, full-row validation and pending import.

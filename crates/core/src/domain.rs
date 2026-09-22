@@ -351,6 +351,10 @@ pub struct WorkspaceView {
     #[serde(default)]
     pub identity_decisions: Vec<IdentityDecision>,
     pub reports: Vec<ReportSnapshot>,
+    #[serde(default)]
+    pub statement_profiles: Vec<crate::statements::StatementProfile>,
+    #[serde(default)]
+    pub statement_imports: Vec<crate::statements::StatementImport>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
@@ -369,6 +373,23 @@ pub enum Command {
     Import {
         name: String,
         bytes: Vec<u8>,
+    },
+    InspectStatement {
+        bytes: Vec<u8>,
+        delimiter: crate::statements::Delimiter,
+    },
+    PreviewStatement {
+        name: String,
+        bytes: Vec<u8>,
+        mapping: crate::statements::StatementMapping,
+    },
+    ImportStatement {
+        name: String,
+        bytes: Vec<u8>,
+        mapping: crate::statements::StatementMapping,
+        preview_token: String,
+        save_profile_name: Option<String>,
+        expected_revision: u64,
     },
     AddEntity {
         entity: EntityInput,

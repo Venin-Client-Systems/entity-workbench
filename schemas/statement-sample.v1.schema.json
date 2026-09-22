@@ -1,0 +1,206 @@
+{
+  "$defs": {
+    "AmountMapping": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "column": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "signed",
+              "type": "string"
+            },
+            "positive_is_debit": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "column",
+            "positive_is_debit"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "credit": {
+              "type": "string"
+            },
+            "debit": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "debit_credit",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "debit",
+            "credit"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "DateFormat": {
+      "enum": [
+        "iso",
+        "day_first",
+        "month_first"
+      ],
+      "type": "string"
+    },
+    "Delimiter": {
+      "enum": [
+        "comma",
+        "semicolon",
+        "tab"
+      ],
+      "type": "string"
+    },
+    "NumberFormat": {
+      "enum": [
+        "dot_decimal",
+        "comma_decimal"
+      ],
+      "type": "string"
+    },
+    "RowOrder": {
+      "enum": [
+        "oldest_first",
+        "newest_first"
+      ],
+      "type": "string"
+    },
+    "StatementMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "$ref": "#/$defs/ValueMapping"
+        },
+        "amount": {
+          "$ref": "#/$defs/AmountMapping"
+        },
+        "balance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "$ref": "#/$defs/ValueMapping"
+        },
+        "date": {
+          "type": "string"
+        },
+        "date_format": {
+          "$ref": "#/$defs/DateFormat"
+        },
+        "delimiter": {
+          "$ref": "#/$defs/Delimiter"
+        },
+        "description": {
+          "type": "string"
+        },
+        "number_format": {
+          "$ref": "#/$defs/NumberFormat"
+        },
+        "posting_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "row_order": {
+          "$ref": "#/$defs/RowOrder"
+        }
+      },
+      "required": [
+        "delimiter",
+        "date_format",
+        "number_format",
+        "row_order",
+        "date",
+        "description",
+        "amount",
+        "account",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "ValueMapping": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "column": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "column",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "column"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "constant",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "headers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "sample_rows": {
+      "items": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "type": "array"
+    },
+    "sha256": {
+      "type": "string"
+    },
+    "suggested_mapping": {
+      "$ref": "#/$defs/StatementMapping"
+    }
+  },
+  "required": [
+    "sha256",
+    "headers",
+    "sample_rows",
+    "suggested_mapping"
+  ],
+  "title": "StatementSample",
+  "type": "object"
+}

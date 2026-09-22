@@ -5,6 +5,7 @@ pub mod domain;
 pub mod engines;
 pub mod policy;
 pub mod report;
+pub mod statements;
 pub mod store;
 
 use thiserror::Error;

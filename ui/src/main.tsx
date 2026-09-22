@@ -12,6 +12,7 @@ import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { Dialog } from "./Dialog";
 import { ReviewSurface } from "./ReviewSurface";
 import { EntityWorkbench } from "./EntityWorkbench";
+import { StatementImport, type StatementFile } from "./StatementImport";
 import { SourceContent } from "./SourceContent";
 import "./tokens.css";
 import "./style.css";
@@ -59,6 +60,9 @@ function App() {
     { id: string; name: string; score: number }[] | null
   >(null);
   const upload = useRef<HTMLInputElement>(null);
+  const [statementFile, setStatementFile] = useState<StatementFile | null>(
+    null,
+  );
   const searchCorpus = async () => {
     setBusy(true);
     setError("");
@@ -137,11 +141,13 @@ function App() {
       setError("Import limit is 16 MiB per file.");
       return;
     }
-    await run({
-      action: "import",
-      name: file.name,
-      bytes: Array.from(new Uint8Array(await file.arrayBuffer())),
-    });
+    const bytes = Array.from(new Uint8Array(await file.arrayBuffer()));
+    if (/\.(csv|tsv)$/i.test(file.name)) {
+      setSelected(null);
+      setStatementFile({ name: file.name, bytes });
+      return;
+    }
+    await run({ action: "import", name: file.name, bytes });
     setSection("Evidence");
   };
   const transactions =
@@ -478,9 +484,10 @@ function App() {
                   </p>
                   <EvidenceRows evidence={evidenceList} onOpen={setEvidence} />
                   <p className="context-note">
-                    UTF-8 text and the documented transaction CSV profile are
-                    active. Other formats are preserved and labelled unsupported
-                    until isolated parsing workers are available.
+                    UTF-8 text and mapped CSV/TSV statements are active.
+                    Statement imports are previewed locally before publication.
+                    Other formats are preserved and labelled unsupported until
+                    isolated parsing workers are available.
                   </p>
                 </section>
               )}
@@ -1155,6 +1162,19 @@ function App() {
             Match internal transfer
           </button>
         </ReviewSurface>
+      )}
+      {statementFile && w && (
+        <StatementImport
+          file={statementFile}
+          profiles={w.statement_profiles}
+          onClose={() => setStatementFile(null)}
+          onImported={(response, count) => {
+            setData(response);
+            setStatementFile(null);
+            setSection("Transactions");
+            setNotice(`Imported ${count} transactions as pending review.`);
+          }}
+        />
       )}
       {evidence && (
         <Dialog label="Evidence source" wide onClose={() => setEvidence(null)}>

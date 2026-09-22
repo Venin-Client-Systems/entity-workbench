@@ -4,7 +4,7 @@ The application manages its workspace under the operating system's app-local dat
 
 Use **Back up** to make a consistent database copy and copy every referenced original after checksum verification. The Rust `Workspace::restore` API restores into a new destination, checks evidence hashes and refuses an existing destination or unsupported schema. The restore UI is not yet implemented. Keep the original backup unchanged and test recovery before relying on it.
 
-Newer schemas are refused. Only initial schema creation is currently implemented; no upgrade migration is advertised. A future migration must create a recoverable backup, apply transactional changes and verify postconditions before admitting the workspace.
+Newer schemas are refused. Opening a version 1 workspace creates a consistent backup of the database and every referenced original, then transactionally advances it to version 2 and records a revision/event. This compatibility boundary prevents older readers from misinterpreting mapped CSV dialects. If backup verification or the migration fails, opening fails; the migration transaction rolls back. Failure-injection tests verify version/revision rollback and recovery of the referenced evidence. The backup manifest records the actual source schema. Restoring a version 1 backup into a new destination applies the same guarded upgrade. Keep backups if an older application version is needed. Further migration paths and interrupted-process tests remain open.
 
 ## Dependencies and build commands
 

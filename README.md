@@ -2,7 +2,7 @@
 
 An independently branded desktop investigation workbench. Preserve sources, review observations, distinguish identities and produce cited findings with an inspectable history.
 
-**Status: active development, not an approved investigative release.** The current macOS development application supports local text/CSV evidence, transaction review, general entity/observation authoring, reviewed identity comparison and merge/reversal, graph and coordinate views, direct website collection, local Lucene search and HTML assessment snapshots. The complete release gates have **not** passed. See [implementation status](docs/STATUS.md) and the [security review entry point](SECURITY.md).
+**Status: active development, not an approved investigative release.** The current macOS development application supports local text/CSV/TSV evidence, reusable statement mappings and preview, transaction review, general entity/observation authoring, reviewed identity comparison and merge/reversal, graph and coordinate views, direct website collection, local Lucene search and HTML assessment snapshots. The complete release gates have **not** passed. See [implementation status](docs/STATUS.md) and the [security review entry point](SECURITY.md).
 
 No hosted search service, account, API key or generative model is used. The application collects analyst-selected public websites directly and searches its own local index. Coverage consists of collected and imported sources. It does not claim a global web index or comprehensive open-web results.
 
@@ -49,16 +49,18 @@ These bootstrap scripts run only on the developer's machine. They are not first-
 
 All repository fixtures, screenshots and automated workflow tests are synthetic. Live network smoke tests use harmless public documentation pages and are excluded from CI.
 
-## Transaction CSV profile
+## Statement mapping and preview
 
-The development profile accepts UTF-8 CSV with these headers:
+Use **Import evidence** with a UTF-8 CSV or TSV file. Choose a separator, map source columns, and explicitly select date, decimal and debit/credit interpretation. Preview validates every row before import; any invalid row blocks the whole file. Save a named mapping for later statements. All imported transactions start pending review. See [statement import formats, limits and provenance](docs/STATEMENT-IMPORT.md).
+
+The standard example can use the suggested column mapping:
 
 ```csv
 account,date,posting_date,description,amount,currency,balance
 DEMO-001,2025-03-01,2025-03-02,Fictional purchase,-12.30,AUD,87.70
 ```
 
-Required: `account`, `date`, `description`, `amount`, `currency`. Optional: `posting_date`, `balance`. Dates use `YYYY-MM-DD`. Amounts are exact decimal strings; negative means debit and positive means credit. Currency is a three-letter uppercase code. No currency conversion occurs. Original row descriptions and source anchors are retained. Other statement layouts need the mapping-profile workflow, which is not implemented yet.
+Required: `account`, `date`, `description`, `amount`, `currency`. Optional: `posting_date`, `balance`. Dates use `YYYY-MM-DD`. Amounts are exact decimal strings; negative means debit and positive means credit. Currency is a three-letter uppercase code. No currency conversion occurs. Original row descriptions and source anchors are retained. CSV and TSV mapping are implemented; XLSX and PDF/OCR statement extraction remain future work.
 
 ## Architecture and review
 

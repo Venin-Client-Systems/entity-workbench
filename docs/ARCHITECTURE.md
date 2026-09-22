@@ -20,7 +20,7 @@ Only Rust writes canonical records. Every mutation runs in an immediate SQLite t
 
 Originals are named by SHA-256. Imported display names never become filesystem paths. Existing content is deduplicated without deleting repeated transaction rows. Corrections modify canonical transaction records, preserve the original bytes, invalidate current findings and clear affected transfer matches. Snapshot HTML and its digest are retained independently of future corrections.
 
-The current schema uses typed JSON records in a constrained SQLite table, with explicit Rust validation at mutation boundaries. SQL is fixed application code and never accepted from the interface or a recipe. This is an initial schema; normalized analytical access, migrations, pagination and high-volume snapshots remain work items.
+The current schema uses typed JSON records in a constrained SQLite table, with explicit Rust validation at mutation boundaries. SQL is fixed application code and never accepted from the interface or a recipe. Schema version 2 adds a compatibility boundary for retained statement mappings and source dialects; version 1 upgrades require a recoverable evidence-inclusive backup and transactional postcondition checks. Normalized analytical access, further migrations, pagination and high-volume snapshots remain work items.
 
 Local Lucene indexes are disposable, contain derived text and identify their source workspace revision. The Rust supervisor validates returned IDs and revision before showing results. The native application selects the runtime from bundled resources; the UI cannot choose an executable or classpath.
 

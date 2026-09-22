@@ -1,3 +1,7 @@
+import type {
+  StatementProfile,
+  StatementImportRecord,
+} from "./statement-types";
 export type ReviewState = "pending" | "accepted" | "rejected" | "deferred";
 export type Anchor = {
   kind: string;
@@ -97,6 +101,8 @@ export type Finding = {
 };
 export type Workspace = {
   revision: number;
+  statement_profiles: StatementProfile[];
+  statement_imports: StatementImportRecord[];
   entities: Entity[];
   evidence: Evidence[];
   transactions: Transaction[];
