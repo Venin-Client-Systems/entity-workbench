@@ -1,63 +1,65 @@
 # Editable design and implementation comparison
 
-Review date: 2026-09-22. This is the first applied design pass, not final visual or accessibility sign-off. All case content is synthetic.
+Review date: 2026-09-22. Current direction: **industrial / technical**, selected by the owner. This is a revised development interface; final visual and accessibility sign-off remains open. Case content is synthetic.
 
-## Design source
+## Current design source
 
-The native Figma file contains real frames, auto layout, colour/text styles and reusable component sets. The authoring session verified frame dimensions and exported pixels through Figma itself. The separate Make experiment is not the application and its generated business logic is not used.
+[Instrument — transaction review, Figma frame 6:2](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=6-2) is the current editable reference, 1440 × 1000. It was duplicated from the first transaction frame and edited through Figma's native layer, auto-layout, colour and dimension controls. The original frames remain intact for comparison. This revision is a native frame with editable text and controls, not a flattened screenshot or a generated application imported as the design.
 
-| Reference | Frame | Observed dimensions |
-|---|---|---|
-| [Foundations and components](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-790) | `2:790` | 1440 × 1777 |
-| [Transaction review](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-6) | `2:6` | 1440 × 1000 |
-| [Compact identity comparison](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-576) | `2:576` | 960 × 640 |
-| [Collection jobs](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-255) | `2:255` | 1440 × 1000 |
+The revised frame has a 208 px graphite navigation rail, 56 px header, 360 px inspector, joined metric cells, 16 px panel padding and square 36 px action/search controls. The ledger gutters and navigation spacing are tighter. Burnt amber marks selection and actions. Status text was darkened in Figma as well as the app.
 
-The canvas also contains desktop identity, compact transaction/collection variants and the reusable-component board. Native components include buttons, inputs, review badges, citations and job-state pills. The file remains editable in Figma; links do not change its sharing permissions.
+The application applies this visual system across its eight sections. The overview uses joined metric cells and ruled section headings. Transaction review keeps the ledger beside the source and decision controls. Graph nodes, chart bars and map markers use the same graphite/amber family. Plain section names replace the overview's promotional headline.
 
 ## Applied foundation
 
 | Token | Applied value |
 |---|---|
-| Canvas / surface | `#FAF8F5` / `#FFFFFF` |
-| Navigation / selected navigation | `#0F172A` / `#1E293B` |
-| Text / secondary text | `#18181B` / `#515159` |
-| Action and focus / selected row | `#0F766E` / `#F0FDFA` |
+| Canvas / surface | `#E7EAE8` / `#F4F5F3` |
+| Navigation / selected navigation | `#232A2C` / `#394347` |
+| Text / secondary text | `#202729` / `#4F5C60` |
+| Action and focus / selected row | `#A64814` / `#F5E5C5` |
+| Panel rule / control outline | `#BCC3C0` / `#747F7C` |
 | Accepted text / background | `#166534` / `#DCFCE7` |
 | Pending text / background | `#92400E` / `#FEF3C7` |
 | Rejected text / background | `#B91C1C` / `#FEE2E2` |
-| Navigation width / header height | 224 px / 64 px |
-| Body and table / secondary labels | 14 px / 12 px |
-| Main controls | 40 px minimum height |
-| Typography | Bundled Inter 4.1; local system monospace for identifiers and source values |
+| Navigation / header / desktop inspector | 208 / 56 / 360 px |
+| Body and table / secondary labels | 13 / 12 px |
+| Main controls / navigation row | 36 / 38 px minimum height |
+| Panel padding / ledger cell padding | 16 px / 6 px vertically, 10 px horizontally |
+| Corners | Square |
+| Typography | Bundled Inter 4.1; bundled JetBrains Mono 2.304 for references, amounts and instrument labels |
 
-The original generated status colours are too light for some small-text combinations. The application darkens status text rather than copying a generated claim of conformance. The native foundation's unverified “PASS” and conformance labels were manually replaced with a contrast target and a verification requirement. Token definitions are in `ui/src/tokens.css`; third-party font licensing ships in `ui/public/fonts/Inter-LICENSE.txt` and `NOTICE`. The font is unmodified from [the official Inter 4.1 release](https://github.com/rsms/inter/releases/tag/v4.1); there is no font service request at runtime.
+Both typefaces ship locally with their SIL Open Font License files. The unmodified fonts come from the official [Inter release](https://github.com/rsms/inter/releases/tag/v4.1) and [JetBrains Mono release](https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304). Exact asset hashes and sources are in `sbom/bundled-assets.json`. No font service or first-run font download is used. Source typography disables ligatures so literal identifiers remain legible.
 
-## Working transaction review
+## Working review behaviour
 
-At 1280 px and above, a persistent review panel keeps the transaction ledger available. Smaller windows use a named native dialog. Source inspection remains a separate modal. The review draft survives crossing the layout breakpoint. Filters remain usable alongside desktop review, and an explicit message appears when the selected transaction falls outside the current filters.
+At 1280 px and above, a persistent inspector leaves the ledger available. Smaller windows use a named native dialog. Review drafts survive crossing the breakpoint. Source inspection is a separate modal, opening the actual anchored row/cell. Escape restores focus to its opener. Filtering out the selected transaction displays an explicit message.
 
-The selected row is highlighted. The review panel retrieves the original anchored value from Rust, while the editable amount remains a separate value. The source dialog now receives that anchor, so it opens the actual cited row/cell. Decisions still require a reason; corrections preserve evidence and reopen review. All totals, source validation and writes remain in Rust.
+Original source values and editable values remain separate. Decisions require a reason; corrections preserve originals and reopen review. All validation, calculations and writes remain in Rust. The design revision adds no analytical decision logic.
 
-The native WebKit inspection exposed focus-return behaviour differing from Chromium. Buttons now establish their focus before opening a dialog, and dialog cleanup explicitly restores the connected opener. The native build is checked separately from browser tests.
+The native macOS check exposed default select controls shrinking despite minimum-height styling. Explicit select appearance now preserves the native option menu while applying the square 36 px control box; forced-colour mode restores system appearance. Graph action groups and the local map now have explicit semantic roles for their accessible names.
 
 ## Rendered comparison evidence
 
-- [Native transaction design export](review/figma-transaction-1440.png).
-- [Working desktop review, 1440 × 1000](review/implementation-transaction-1440.png).
-- [Working compact review, 960 × 640](review/implementation-transaction-960.png).
-- [Native compact identity design export](review/figma-identity-960.png).
-- [Native collection design export](review/figma-collection-1440.png).
+- [Native Figma industrial export, 1440 × 1000](review/industrial/figma-transaction-1440.png).
+- [Working desktop review, 1440 × 1000](review/industrial/implementation-transaction-1440.png).
+- [Working compact review, 960 × 640](review/industrial/implementation-transaction-960.png).
+- [Working overview, 1440 × 1000](review/industrial/implementation-overview-1440.png).
+- [SHA-256 image inventory](review/industrial/checksums.json).
 
-These are inspectable references, not pixel-difference acceptance tests. The native design has illustrative values and incomplete labels. The application screenshots use the actual repository fixtures and real Rust commands; their amounts and dates intentionally differ.
+These are inspectable design comparisons, not pixel-difference acceptance tests. Figma contains illustrative amounts and dates; application images show repository fixtures and real Rust commands. The app retains separate checks/review columns, posting dates, original currencies, transfer controls and its eight-section navigation rather than inheriting missing or conflated concepts from the original generated specimen.
 
-## Verification and open discrepancies
+## Verification and remaining work
 
-- Browser workflows check transaction correction/acceptance, source anchors, draft retention through resize, filtered selections, keyboard restoration, compact modal containment, identity decisions and persistence. Application requests stay local in these tests.
-- Automated axe checks cover the eight main section states, authored identities and both transaction review layouts. Measured token pairs are recorded in `contrast-results.json`. Manual results remain distinct from automated checks.
-- The full-size native transaction frame was resized to the specified height and its crowded balance/status header corrected through Figma. The application's table uses independent checks and review columns, exact currencies, posting dates and a named horizontal scrolling region.
-- Generated identity badges conflate conflicts with review status. The application retains separate domain signals and the real pending/accepted/rejected/deferred review states. The Make experiment also labels an identical identifier as conflicting; it is not accepted as a logic specification.
-- The generated collection frames contain illustrative source names, incomplete disclosure wording and controls for jobs not yet implemented. They do not prove provider-free broad coverage or cancellation support. The application keeps its actual broker disclosure, supported HTTPS scope and distinct job outcomes.
-- At compact sizes, generated header metadata clips. The application uses a reachable review dialog and tested controls instead of reproducing that clipping. The complete set of 1280 px frames, 200% zoom inspection and all eight workflow designs remains open.
-- Monospace typography uses OS fonts rather than the generated JetBrains Mono choice. The numbered navigation remains; a reviewed icon family is still pending.
-- Further native keyboard/screen-reader checks, complex empty/error/long-content states, final frame corrections and visual approval remain open. An automated zero-violation result does not establish WCAG conformance.
+- Both browser workflows pass against the real Rust core, including correction/acceptance, source anchors, resize drafts, filtered selection, compact modal keyboard containment, identity decisions and persistence. Tests assert no external browser requests or uncaught page errors.
+- Automated axe checks cover the eight main section states, authored identities and both transaction review layouts. Ten declared text/background pairs pass 4.5:1, with a lowest measured ratio of 5.30:1. See `contrast-results.json` and `accessibility-results.json`. These checks do not establish full WCAG conformance.
+- The rebuilt Apple Silicon development app displays the revised interface and bundled fonts. Native source inspection and Escape/focus return are checked separately from Chromium.
+- The current industrial Figma revision covers the desktop transaction workflow. Compact and remaining workflow frames still need the same design treatment. All eight application sections use the revised styles, but this is not a claim that eight industrial design frames have been completed.
+- Full 1280 px design coverage, 200% zoom, assistive-technology checks, complex empty/error/long-content states, final icon refinement and owner visual approval remain open. The synthetic ten-row ledger is not a large-data performance benchmark.
+- Complete bundled installation, signing, platform confinement and broad-web coverage remain separate unpassed release gates.
+
+## Previous direction
+
+The first warm/teal direction is retained as design history, not the current target: [foundations 2:790](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-790), [transaction review 2:6](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-6), [compact identity 2:576](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-576), and [collection jobs 2:255](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=2-255). Earlier exports remain in `review/`.
+
+The separate Figma Make experiment is not the application. Its generated identity and collection logic is not authoritative; known illustrative comparison errors must not be copied into domain rules.

@@ -1,25 +1,46 @@
 {
-  "method": "WCAG relative luminance; opaque declared token pairs, not all rendered states",
+  "method": "WCAG relative luminance; opaque industrial token pairs, not all rendered states",
   "results": [
     {
       "token_pair": "body",
-      "foreground": "#18181b",
-      "background": "#ffffff",
-      "contrast_ratio": 17.72,
+      "foreground": "#202729",
+      "background": "#f4f5f3",
+      "contrast_ratio": 13.88,
       "normal_text_4_5": true
     },
     {
       "token_pair": "secondary",
-      "foreground": "#515159",
-      "background": "#ffffff",
-      "contrast_ratio": 7.86,
+      "foreground": "#4f5c60",
+      "background": "#f4f5f3",
+      "contrast_ratio": 6.33,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "secondary on canvas",
+      "foreground": "#4f5c60",
+      "background": "#e7eae8",
+      "contrast_ratio": 5.72,
       "normal_text_4_5": true
     },
     {
       "token_pair": "primary",
       "foreground": "#ffffff",
-      "background": "#0f766e",
-      "contrast_ratio": 5.47,
+      "background": "#a64814",
+      "contrast_ratio": 5.9,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "accent link",
+      "foreground": "#a64814",
+      "background": "#f4f5f3",
+      "contrast_ratio": 5.4,
+      "normal_text_4_5": true
+    },
+    {
+      "token_pair": "selected row",
+      "foreground": "#202729",
+      "background": "#f5e5c5",
+      "contrast_ratio": 12.21,
       "normal_text_4_5": true
     },
     {
@@ -44,10 +65,10 @@
       "normal_text_4_5": true
     },
     {
-      "token_pair": "nav",
-      "foreground": "#cbd5e1",
-      "background": "#0f172a",
-      "contrast_ratio": 12.02,
+      "token_pair": "navigation",
+      "foreground": "#cbd1ce",
+      "background": "#232a2c",
+      "contrast_ratio": 9.42,
       "normal_text_4_5": true
     }
   ]

@@ -19,26 +19,26 @@
     {
       "screen": "Entities",
       "violation_count": 0,
-      "manual_review_rules": []
+      "manual_review_rules": [
+        "color-contrast"
+      ]
     },
     {
       "screen": "Transactions",
       "violation_count": 0,
-      "manual_review_rules": []
+      "manual_review_rules": [
+        "color-contrast"
+      ]
     },
     {
       "screen": "Relationships",
       "violation_count": 0,
-      "manual_review_rules": [
-        "aria-prohibited-attr"
-      ]
+      "manual_review_rules": []
     },
     {
       "screen": "Locations",
       "violation_count": 0,
-      "manual_review_rules": [
-        "aria-prohibited-attr"
-      ]
+      "manual_review_rules": []
     },
     {
       "screen": "Discovery",
@@ -48,8 +48,11 @@
     {
       "screen": "Assessment",
       "violation_count": 0,
-      "manual_review_rules": []
+      "manual_review_rules": [
+        "color-contrast"
+      ]
     }
   ],
-  "limitations": "Automated checks do not establish accessibility conformance; native and assistive-technology review remains open."
+  "limitations": "Automated checks do not establish accessibility conformance; native and assistive-technology review remains open.",
+  "design_revision": "Industrial / technical \u2014 Figma 6:2"
 }

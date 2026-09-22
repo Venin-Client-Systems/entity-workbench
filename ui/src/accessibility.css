@@ -86,7 +86,7 @@ nav button {
 }
 caption {
   text-align: left;
-  padding: 12px 0;
+  padding: 8px 0;
   color: var(--text-secondary);
 }
 
@@ -95,9 +95,9 @@ caption {
   overflow-wrap: anywhere;
 }
 .source-lines {
-  font:
-    12px/1.9 ui-monospace,
-    monospace;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.9;
   max-height: 40vh;
   overflow: auto;
   padding: 16px 16px 16px 64px;

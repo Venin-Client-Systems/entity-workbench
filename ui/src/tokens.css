@@ -1,4 +1,4 @@
-/* Native Figma foundations: O50ISV0LGG8nKDcFORNMbO, frame 2:790.
+/* Industrial Figma revision: O50ISV0LGG8nKDcFORNMbO, frame 6:2.
  * Status text uses darker tones than the generated specimens for contrast. */
 @font-face {
   font-family: Inter;
@@ -7,21 +7,38 @@
   font-style: normal;
   font-display: swap;
 }
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
-  --canvas: #faf8f5;
-  --surface: #ffffff;
-  --navy: #0f172a;
-  --navy-light: #1e293b;
-  --ink: #18181b;
-  --muted: #515159;
-  --muted-on-navy: #cbd5e1;
-  --accent: #0f766e;
-  --accent-hover: #115e59;
-  --selection: #f0fdfa;
-  --subtle: #f8fafc;
-  --border: #e4e4e7;
-  --control-border: #92929b;
-  --focus: #0f766e;
+  --mono:
+    "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas,
+    "Liberation Mono", monospace;
+  --canvas: #e7eae8;
+  --surface: #f4f5f3;
+  --navy: #232a2c;
+  --navy-light: #394347;
+  --ink: #202729;
+  --muted: #4f5c60;
+  --muted-on-navy: #cbd1ce;
+  --accent: #a64814;
+  --accent-hover: #82370e;
+  --selection: #f5e5c5;
+  --subtle: #e9ece9;
+  --border: #bcc3c0;
+  --control-border: #747f7c;
+  --focus: #a64814;
   --warning: #92400e;
   --warning-bg: #fef3c7;
   --success: #166534;

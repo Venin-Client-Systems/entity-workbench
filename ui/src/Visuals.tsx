@@ -39,9 +39,9 @@ export function Graph({
         {
           selector: "node",
           style: {
-            "background-color": "#176b63",
+            "background-color": "#394347",
             label: "data(label)",
-            color: "#17363a",
+            color: "#202729",
             "font-size": 13,
             "text-valign": "bottom",
             "text-margin-y": 12,
@@ -51,18 +51,18 @@ export function Graph({
         },
         {
           selector: 'node[kind="organisation"]',
-          style: { shape: "round-rectangle", "background-color": "#c37f39" },
+          style: { shape: "rectangle", "background-color": "#a64814" },
         },
         {
           selector: "edge",
           style: {
             width: 2,
-            "line-color": "#92ada6",
+            "line-color": "#747f7c",
             "curve-style": "bezier",
             "line-style": "dashed",
             label: "data(label)",
             "font-size": 11,
-            color: "#667878",
+            color: "#4f5c60",
             "text-rotation": "autorotate",
             "text-margin-y": -12,
           },
@@ -81,7 +81,7 @@ export function Graph({
         ref={ref}
         aria-label="Entity relationships"
       />
-      <div className="actions" aria-label="Inspect graph entities">
+      <div className="actions" role="group" aria-label="Inspect graph entities">
         {workspace.entities.map((e) => (
           <button key={e.id} className="button" onClick={() => onSelect(e.id)}>
             {e.name} · {e.identifiers.map((i) => i.value).join(", ")}
@@ -117,7 +117,7 @@ export function LocalMap({ workspace }: { workspace: Workspace }) {
           {
             id: "background",
             type: "background",
-            paint: { "background-color": "#e7eeea" },
+            paint: { "background-color": "#e7eae8" },
           },
         ],
       },
@@ -131,7 +131,7 @@ export function LocalMap({ workspace }: { workspace: Workspace }) {
         lon: a.longitude,
         lat: a.latitude,
         label: a.label,
-        color: "#176b63",
+        color: "#394347",
       })),
       ...workspace.locations
         .filter((l) => l.latitude !== null && l.longitude !== null)
@@ -139,7 +139,7 @@ export function LocalMap({ workspace }: { workspace: Workspace }) {
           lon: l.longitude!,
           lat: l.latitude!,
           label: `${l.merchant} · ${l.branch} · unresolved`,
-          color: "#bd7a35",
+          color: "#a64814",
         })),
     ];
     points.forEach((p) => {
@@ -159,6 +159,7 @@ export function LocalMap({ workspace }: { workspace: Workspace }) {
   return (
     <div
       className="map"
+      role="region"
       ref={ref}
       aria-label="Local coordinate map with no external basemap"
     />
@@ -186,13 +187,13 @@ export function TotalsChart({
           name: "Credits",
           type: "bar",
           data: analysis.totals.map((t) => Number(t.credits)),
-          itemStyle: { color: "#176b63", borderRadius: [4, 4, 0, 0] },
+          itemStyle: { color: "#394347", borderRadius: 0 },
         },
         {
           name: "Debits",
           type: "bar",
           data: analysis.totals.map((t) => Number(t.debits)),
-          itemStyle: { color: "#c18b48", borderRadius: [4, 4, 0, 0] },
+          itemStyle: { color: "#a64814", borderRadius: 0 },
         },
       ],
     });

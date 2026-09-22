@@ -14,3 +14,7 @@ Apache Tika, Lucene, PDFBox and POI retain their upstream notices.
 Inter 4.1 font, Copyright 2016 The Inter Project Authors.
 Licensed under SIL Open Font License 1.1; see ui/public/fonts/Inter-LICENSE.txt.
 Unmodified font bundled from https://github.com/rsms/inter/releases/tag/v4.1.
+
+JetBrains Mono 2.304 font, Copyright 2020 The JetBrains Mono Project Authors.
+Licensed under SIL Open Font License 1.1; see ui/public/fonts/JetBrainsMono-LICENSE.txt.
+Unmodified fonts bundled from https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304.

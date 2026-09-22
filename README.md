@@ -74,4 +74,4 @@ Original project code is licensed under [Apache-2.0](LICENSE). Bundled dependenc
 
 ## Product design status
 
-The current interface is a development prototype with a first design pass applied from [native editable Figma frames](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO). See the [design handoff and rendered comparisons](docs/design/HANDOFF.md), [design brief](docs/design/BRIEF.md) and [measured accessibility results](docs/design/accessibility-results.json). Final visual approval remains open. Automated checks do not establish full accessibility conformance.
+The current interface is a development prototype with an industrial/technical design applied from an [editable Figma revision](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=6-2). See the [design handoff and rendered comparisons](docs/design/HANDOFF.md), [design brief](docs/design/BRIEF.md) and [measured accessibility results](docs/design/accessibility-results.json). Final visual approval remains open. Automated checks do not establish full accessibility conformance.

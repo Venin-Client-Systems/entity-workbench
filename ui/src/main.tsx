@@ -180,7 +180,7 @@ function App() {
             <span className="brand-caption">EVIDENCE WORKSPACE</span>
           </div>
         </div>
-        <div className="workspace-label">INVESTIGATION WORKSPACE</div>
+        <div className="workspace-label">ACTIVE WORKSPACE</div>
         <div className="case-name">
           Local workspace <span>LOCAL</span>
         </div>
@@ -242,17 +242,18 @@ function App() {
         <main>
           <div className="page-heading">
             <div>
-              <p className="eyebrow">EVIDENCE → UNDERSTANDING</p>
+              <p className="eyebrow">
+                WORKSPACE /{" "}
+                {String(sections.indexOf(section) + 1).padStart(2, "0")}
+              </p>
               <h1>
-                {section === "Overview"
-                  ? "An investigation, connected."
-                  : section}
+                {section === "Overview" ? "Investigation overview" : section}
               </h1>
               <p className="subtitle">
                 {
                   {
                     Overview:
-                      "Follow the evidence. Keep every conclusion traceable.",
+                      "Open questions, preserved sources and outstanding review decisions.",
                     Evidence:
                       "Preserved originals, reviewable derivatives and source anchors.",
                     Entities:
