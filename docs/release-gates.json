@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "complete_release": false,
+  "gates": {
+    "integrated_workflows": false,
+    "windows_appcontainer": false,
+    "macos_signed_helpers": false,
+    "all_runtime_dependencies_bundled": false,
+    "offline_clean_install_three_targets": false,
+    "hostile_input_and_resource_exhaustion": false,
+    "broad_local_web_coverage": false,
+    "recovery_and_migration_failures": false,
+    "benchmark_16gb_target": false,
+    "dependency_license_and_security_review": false,
+    "signed_and_notarized_artifacts": false,
+    "downloaded_artifact_verification": false
+  }
+}

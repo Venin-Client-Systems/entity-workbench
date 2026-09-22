@@ -1,0 +1,21 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion><groupId>org.entityworkbench</groupId><artifactId>workers</artifactId><version>0.1.0</version>
+  <name>Entity Workbench engine adapters</name><licenses><license><name>Apache License 2.0</name><url>https://www.apache.org/licenses/LICENSE-2.0</url></license></licenses>
+  <properties><maven.compiler.release>21</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
+  <dependencies>
+    <dependency><groupId>org.apache.tika</groupId><artifactId>tika-core</artifactId><version>3.3.2</version></dependency>
+    <dependency><groupId>org.apache.tika</groupId><artifactId>tika-parsers-standard-package</artifactId><version>3.3.2</version></dependency>
+    <dependency><groupId>org.apache.pdfbox</groupId><artifactId>pdfbox</artifactId><version>3.0.8</version></dependency>
+    <dependency><groupId>org.apache.lucene</groupId><artifactId>lucene-core</artifactId><version>10.5.1</version></dependency>
+    <dependency><groupId>org.apache.lucene</groupId><artifactId>lucene-analysis-common</artifactId><version>10.5.1</version></dependency>
+    <dependency><groupId>org.apache.lucene</groupId><artifactId>lucene-queryparser</artifactId><version>10.5.1</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>2.22.3</version></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>5.13.4</version><scope>test</scope></dependency>
+  </dependencies>
+  <build><plugins>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-dependency-plugin</artifactId><version>3.8.1</version><executions><execution><id>copy-runtime</id><phase>package</phase><goals><goal>copy-dependencies</goal></goals><configuration><includeScope>runtime</includeScope><outputDirectory>${project.build.directory}/lib</outputDirectory></configuration></execution></executions></plugin>
+    <plugin><groupId>org.cyclonedx</groupId><artifactId>cyclonedx-maven-plugin</artifactId><version>2.9.1</version><executions><execution><phase>package</phase><goals><goal>makeAggregateBom</goal></goals></execution></executions></plugin>
+  </plugins></build>
+</project>

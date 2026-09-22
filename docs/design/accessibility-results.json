@@ -1,0 +1,55 @@
+{
+  "tool": "axe-core/playwright 4.13.0",
+  "date": "2026-09-22",
+  "fixture": "synthetic investigation",
+  "states": "Main section after reviewed transaction, merge reversal and saved report; overview captured before those actions",
+  "screens": [
+    {
+      "screen": "Overview",
+      "violation_count": 0,
+      "manual_review_rules": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "Evidence",
+      "violation_count": 0,
+      "manual_review_rules": []
+    },
+    {
+      "screen": "Entities",
+      "violation_count": 0,
+      "manual_review_rules": []
+    },
+    {
+      "screen": "Transactions",
+      "violation_count": 0,
+      "manual_review_rules": []
+    },
+    {
+      "screen": "Relationships",
+      "violation_count": 0,
+      "manual_review_rules": [
+        "aria-prohibited-attr"
+      ]
+    },
+    {
+      "screen": "Locations",
+      "violation_count": 0,
+      "manual_review_rules": [
+        "aria-prohibited-attr"
+      ]
+    },
+    {
+      "screen": "Discovery",
+      "violation_count": 0,
+      "manual_review_rules": []
+    },
+    {
+      "screen": "Assessment",
+      "violation_count": 0,
+      "manual_review_rules": []
+    }
+  ],
+  "limits": "Automated results do not establish WCAG conformance or visual design approval."
+}

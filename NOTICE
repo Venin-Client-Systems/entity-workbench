@@ -1,0 +1,12 @@
+Entity Workbench
+Copyright 2026 Entity Workbench contributors
+
+Original project code is licensed under the Apache License, Version 2.0.
+Third-party components retain their respective copyrights and licences.
+Dependency inventories in sbom/ identify resolved components; release bundles
+must include the corresponding upstream licence and notice files.
+
+This project is independently branded. It is not endorsed by Apache Software
+Foundation, Tauri, Eclipse Adoptium or the other upstream projects it uses.
+The experimental Java runtime is Eclipse Temurin (GPLv2 with Classpath Exception).
+Apache Tika, Lucene, PDFBox and POI retain their upstream notices.

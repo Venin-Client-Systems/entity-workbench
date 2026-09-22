@@ -1,0 +1,30 @@
+# Build, local data and recovery
+
+The application manages its workspace under the operating system's app-local data directory for `org.entityworkbench.desktop`, in `workspaces/default`. The directory contains `workspace.db`, `originals/`, `indexes/`, `scratch/`, `backups/` and `exports/`. The app does not encrypt these files. OS/storage encryption must also cover backups, exports, caches and swap.
+
+Use **Back up** to make a consistent database copy and copy every referenced original after checksum verification. The Rust `Workspace::restore` API restores into a new destination, checks evidence hashes and refuses an existing destination or unsupported schema. The restore UI is not yet implemented. Keep the original backup unchanged and test recovery before relying on it.
+
+Newer schemas are refused. Only initial schema creation is currently implemented; no upgrade migration is advertised. A future migration must create a recoverable backup, apply transactional changes and verify postconditions before admitting the workspace.
+
+## Dependencies and build commands
+
+- Rust dependencies: `cargo test -p workbench-core --locked`; `cargo clippy -p workbench-core --all-targets -- -D warnings`.
+- UI: `npm ci`; `npm run build`; `npx playwright install chromium`; `npm run test:ui`.
+- Java: bootstrap Maven and Java using the README commands, build the pinned POM, run `scripts/test_java_workers.py` and the macOS confinement probe.
+- Python: `uv sync --project workers/python --frozen`; `uv run --project workers/python pytest workers/python -q`.
+- Schemas: `cargo run -p workbench-core --bin ew-dev -- schemas`.
+- Inventory: `python3 scripts/generate_sbom.py` after resolving all dependency locks and building Java.
+- Release policy consistency: `python3 scripts/release_gate.py --check-policy`.
+- Actual release gate: `python3 scripts/release_gate.py` (currently fails by design).
+
+The developer bootstraps obtain upstream components with checksums. Normal app launch does not execute them. The staged macOS bundle currently includes Java and Lucene only; Python, OCR, Chromium, Spatial and regional data are not complete release components yet.
+
+A supported release must provide a signed Windows installer and signed/notarized macOS packages, complete checksums, upstream licence/notice files, SBOMs and tests against the actual downloadable binaries on clean offline machines. No signing credential is stored in this repository. Development app bundles must remain labelled development.
+
+## Update procedure
+
+There are no background update checks. A future supported update is an explicit installer action: verify the release signature/checksum, back up the workspace and referenced evidence, install the matching platform artifact, and run post-upgrade integrity checks. Roll back using the consistent backup if a migration fails. Windows Fixed WebView2 and bundled Chromium/Java/Python updates are the release maintainer's responsibility.
+
+## Current lifecycle limits
+
+Originals, decisions and report snapshots are retained; no automatic evidence deletion is implemented. Rebuildable index/cache directories may be removed only while the app is closed. Failed jobs and partial originals remain inspectable. Full durable job resume and scratch garbage collection remain work items; do not describe an interrupted collection as complete.

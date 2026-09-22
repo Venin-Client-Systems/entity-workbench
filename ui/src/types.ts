@@ -1,0 +1,154 @@
+export type ReviewState = "pending" | "accepted" | "rejected" | "deferred";
+export type Anchor = {
+  kind: string;
+  evidence_id: string;
+  line_start?: number;
+  line_end?: number;
+  page?: number;
+  row?: number;
+  column?: string;
+  sheet?: string;
+};
+export type Entity = {
+  id: string;
+  name: string;
+  kind: string;
+  identifiers: { namespace: string; value: string }[];
+  merged_into: string | null;
+};
+export type Evidence = {
+  id: string;
+  name: string;
+  sha256: string;
+  bytes: number;
+  media_type: string;
+  origin_group: string;
+  extraction_status: string;
+  text: string | null;
+  acquisitions: { job_id: string; url: string; retrieved_at: string }[];
+};
+export type Transaction = {
+  id: string;
+  account: string;
+  date: string;
+  posting_date: string | null;
+  description: string;
+  amount: string;
+  currency: string;
+  balance: string | null;
+  anchor: Anchor;
+  review: ReviewState;
+  duplicate_candidates: string[];
+  transfer_peer: string | null;
+  version: number;
+};
+export type Finding = {
+  id: string;
+  title: string;
+  assessment: string;
+  supporting_ids: string[];
+  contradicting_ids: string[];
+  limitations: string;
+  needs_review: boolean;
+};
+export type Workspace = {
+  revision: number;
+  entities: Entity[];
+  evidence: Evidence[];
+  transactions: Transaction[];
+  observations: {
+    id: string;
+    entity_id: string;
+    field: string;
+    value: string;
+    anchor: Anchor;
+    review: ReviewState;
+  }[];
+  assertions: {
+    id: string;
+    subject_id: string;
+    object_id: string;
+    predicate: string;
+    review: ReviewState;
+  }[];
+  findings: Finding[];
+  hypotheses: {
+    id: string;
+    question: string;
+    proposition: string;
+    alternatives: string[];
+    gaps: string[];
+  }[];
+  leads: {
+    id: string;
+    label: string;
+    identifier: { namespace: string; value: string };
+    state: ReviewState;
+  }[];
+  addresses: {
+    id: string;
+    label: string;
+    latitude: number;
+    longitude: number;
+    valid_from: string;
+    valid_to: string | null;
+  }[];
+  locations: {
+    id: string;
+    merchant: string;
+    branch: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    review: ReviewState;
+  }[];
+  jobs: {
+    id: string;
+    queries: string[];
+    adapters: string[];
+    state: string;
+    requests_used: number;
+    max_requests: number;
+    detail: string;
+  }[];
+  merges: {
+    id: string;
+    source: string;
+    target: string;
+    reason: string;
+    reversed: boolean;
+  }[];
+  reports: {
+    id: string;
+    workspace_revision: number;
+    created_at: string;
+    sha256: string;
+    html: string;
+  }[];
+  decisions: {
+    id: string;
+    target_id: string;
+    state: ReviewState;
+    reason: string;
+    at: string;
+  }[];
+};
+export type Analysis = {
+  pending: number;
+  duplicate_candidates: number;
+  totals: {
+    currency: string;
+    credits: string;
+    debits: string;
+    net: string;
+    transaction_ids: string[];
+    excluded_transfer_ids: string[];
+  }[];
+  balance_checks: {
+    transaction_id: string;
+    previous_id: string;
+    transaction_ids: string[];
+    difference: string;
+    reconciled: boolean;
+  }[];
+};
+export type Response = { workspace: Workspace; analysis: Analysis };

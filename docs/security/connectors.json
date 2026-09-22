@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "external_search_providers": [],
+  "automatic_network": false,
+  "connectors": [{
+    "id": "direct_web",
+    "destinations": "Exact HTTPS hosts from analyst-selected seed URLs; public addresses only",
+    "disclosed": ["Explicit seed URL path and query", "Same-host discovered paths within previewed hop limit", "Source IP address", "EntityWorkbench user-agent", "Ordinary TLS and HTTP connection metadata"],
+    "never_automatically_disclosed": ["Canonical workspace", "Client addresses", "Transactions", "Original statements", "Reference numbers", "Local search queries", "User credentials"],
+    "defaults": {"max_hops":2,"max_requests":50,"max_seconds":600,"response_bytes":2097152},
+    "request_budget_includes": ["robots.txt", "redirects", "page requests", "failed reservations"],
+    "cookies": false,
+    "proxy_environment": false,
+    "redirects": "Manual revalidation; selected hosts only",
+    "robots": "Deny on unavailable policy except 404; crawl-delay directives currently block automatic collection",
+    "retention": "Original bytes and static text retained locally in the selected workspace",
+    "runtime_account_or_key": false
+  }]
+}

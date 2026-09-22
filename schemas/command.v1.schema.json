@@ -1,0 +1,347 @@
+{
+  "$defs": {
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "view",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "search",
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "query"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "collect_web",
+          "type": "string"
+        },
+        "max_hops": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_requests": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_seconds": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "urls": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "action",
+        "urls",
+        "max_hops",
+        "max_requests",
+        "max_seconds"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "seed_demo",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "import",
+          "type": "string"
+        },
+        "bytes": {
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "name",
+        "bytes"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "review_transaction",
+          "type": "string"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/ReviewState"
+        }
+      },
+      "required": [
+        "action",
+        "id",
+        "state",
+        "reason",
+        "expected_revision"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "correct_transaction",
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "id",
+        "amount",
+        "reason",
+        "expected_revision"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "match_transfer",
+          "type": "string"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "first": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "second": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "first",
+        "second",
+        "reason",
+        "expected_revision"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "merge",
+          "type": "string"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "source",
+        "target",
+        "reason",
+        "expected_revision"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "reverse_merge",
+          "type": "string"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "id",
+        "reason",
+        "expected_revision"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "add_finding",
+          "type": "string"
+        },
+        "assessment": {
+          "type": "string"
+        },
+        "contradicting_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "limitations": {
+          "type": "string"
+        },
+        "supporting_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "title",
+        "assessment",
+        "supporting_ids",
+        "contradicting_ids",
+        "limitations",
+        "expected_revision"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "save_report",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "const": "backup",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "type": "object"
+    }
+  ],
+  "title": "Command"
+}

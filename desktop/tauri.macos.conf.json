@@ -1,0 +1,1 @@
+{"bundle":{"active":true,"targets":["app"],"resources":{"../runtime/staged/engines/":"engines/"},"icon":["icons/icon.icns","icons/icon.png"]}}

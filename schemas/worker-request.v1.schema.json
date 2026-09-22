@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "WorkerLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "archive_depth": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "archive_members": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "expanded_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "output_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pages": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pixels": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "seconds": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "seconds",
+        "output_bytes",
+        "pages",
+        "pixels",
+        "archive_members",
+        "archive_depth",
+        "expanded_bytes"
+      ],
+      "type": "object"
+    },
+    "WorkerOperation": {
+      "enum": [
+        "parse",
+        "ocr",
+        "index",
+        "search",
+        "analyse"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "inputs": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "limits": {
+      "$ref": "#/$defs/WorkerLimits"
+    },
+    "operation": {
+      "$ref": "#/$defs/WorkerOperation"
+    },
+    "output": {
+      "type": "string"
+    },
+    "protocol_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "protocol_version",
+    "job_id",
+    "operation",
+    "inputs",
+    "output",
+    "limits"
+  ],
+  "title": "WorkerRequest",
+  "type": "object"
+}

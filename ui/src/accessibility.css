@@ -1,0 +1,91 @@
+/* Measured prototype accessibility corrections. Final design tokens remain pending. */
+:root {
+  --text-secondary: #52665a;
+  --text-warning: #795118;
+  --text-rejected: #8c3e34;
+}
+.nav-index {
+  opacity: 1;
+}
+.revision,
+.eyebrow,
+.subtitle,
+h4,
+.stat > span,
+.stat p,
+.question > p,
+.line-item,
+.priority p,
+.context-note,
+.evidence-row small,
+.evidence-row code,
+.file-icon,
+footer,
+.toolbar > span,
+label,
+th,
+td small,
+.avatar,
+.observation strong,
+.list-card p,
+.muted,
+.scope-grid span,
+.welcome p,
+.hash,
+.amount-large span,
+.big-number span,
+.map-legend {
+  color: var(--text-secondary);
+}
+.pill.synthetic {
+  color: #53583a;
+}
+.pill.warning,
+.pill.pending,
+.alert,
+.map-legend span:last-child {
+  color: var(--text-warning);
+}
+.pill.rejected,
+.error {
+  color: var(--text-rejected);
+}
+.revision,
+.eyebrow,
+h4,
+.stat > span,
+.stat p,
+.priority p,
+.context-note,
+.evidence-row small,
+.evidence-row code,
+footer,
+.toolbar > span,
+label,
+th,
+td small,
+.observation strong,
+.muted,
+.scope-grid span,
+.hash,
+.map-legend,
+.pill {
+  font-size: 12px;
+}
+.close {
+  min-width: 32px;
+  min-height: 32px;
+}
+.text-button {
+  min-height: 28px;
+}
+
+/* Immediate state changes keep text and its background in sync. */
+nav button {
+  transition: none;
+}
+caption {
+  text-align: left;
+  padding: 12px 0;
+  color: var(--text-secondary);
+}

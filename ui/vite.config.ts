@@ -1,0 +1,76 @@
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { spawn } from "node:child_process";
+import { resolve } from "node:path";
+// Development-only synthetic harness. Never included in native or production assets.
+export default defineConfig({
+  root: "ui",
+  plugins: [
+    react(),
+    {
+      name: "synthetic-workspace-bridge",
+      configureServer(server) {
+        server.middlewares.use("/api/workbench", (req, res) => {
+          if (
+            req.method !== "POST" ||
+            req.headers.host !== "127.0.0.1:1420" ||
+            req.headers.origin !== "http://127.0.0.1:1420"
+          ) {
+            res.statusCode = 403;
+            res.end(
+              '{"error":"Development bridge accepts same-origin loopback requests only"}',
+            );
+            return;
+          }
+          let body = "",
+            size = 0;
+          req.on("data", (chunk) => {
+            size += chunk.length;
+            if (size > 40 * 1024 * 1024) req.destroy();
+            else body += chunk;
+          });
+          req.on("end", () => {
+            try {
+              const value = JSON.parse(body);
+              if (value.action === "collect_web") {
+                res.statusCode = 403;
+                res.end(
+                  '{"error":"Direct collection is available through the native desktop only"}',
+                );
+                return;
+              }
+            } catch {
+              res.statusCode = 400;
+              res.end('{"error":"Invalid JSON"}');
+              return;
+            }
+            const child = spawn(
+              resolve("target/debug/ew-dev"),
+              [resolve("artifacts/synthetic-ui-workspace")],
+              { stdio: ["pipe", "pipe", "pipe"] },
+            );
+            let output = "";
+            child.stdout.on("data", (d) => (output += d));
+            child.on("error", () => {
+              res.statusCode = 503;
+              res.end(
+                '{"error":"Build the Rust development harness first: cargo build -p workbench-core --bin ew-dev"}',
+              );
+            });
+            child.on("close", (code) => {
+              if (!res.writableEnded) {
+                res.setHeader("Content-Type", "application/json");
+                res.statusCode = code === 0 ? 200 : 400;
+                res.end(output || '{"error":"Core command failed"}');
+              }
+            });
+            child.stdin.end(body);
+          });
+        });
+      },
+    },
+  ],
+  clearScreen: false,
+  server: { host: "127.0.0.1", port: 1420, strictPort: true },
+  build: { outDir: "dist", sourcemap: false, chunkSizeWarningLimit: 1200 },
+});

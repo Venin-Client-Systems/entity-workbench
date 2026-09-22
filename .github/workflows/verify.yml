@@ -1,0 +1,47 @@
+name: Synthetic source verification
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+        with:
+          components: rustfmt, clippy
+      - run: npm ci
+      - run: cargo fmt --all -- --check
+      - run: cargo test -p workbench-core --locked
+      - run: cargo clippy -p workbench-core --all-targets --locked -- -D warnings
+      - run: npm run build
+      - name: Compile native development binary (not a complete distribution)
+        working-directory: desktop
+        run: npx tauri build --no-bundle --config tauri.ci.conf.json
+      - name: Confirm release status remains explicit
+        run: python scripts/release_gate.py --check-policy
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+      - run: npm ci
+      - run: cargo build -p workbench-core --bin ew-dev --locked
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:ui
