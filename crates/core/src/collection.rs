@@ -37,21 +37,7 @@ pub fn validate_seeds(seeds: &[String]) -> Result<Vec<Url>> {
     )?;
     seeds
         .iter()
-        .map(|raw| {
-            require(raw.len() <= 2048, "Seed URL exceeds 2048 bytes")?;
-            let mut url =
-                Url::parse(raw).map_err(|_| Error::Validation("Invalid seed URL".into()))?;
-            require(
-                url.scheme() == "https"
-                    && url.host_str().is_some()
-                    && url.username().is_empty()
-                    && url.password().is_none()
-                    && url.port_or_known_default() == Some(443),
-                "Seeds require credential-free HTTPS on port 443",
-            )?;
-            url.set_fragment(None);
-            Ok(url)
-        })
+        .map(|raw| policy::validate_https_url(raw))
         .collect()
 }
 struct Broker {
@@ -66,15 +52,31 @@ struct Fetched {
     redirect: Option<String>,
     content_type: String,
 }
-impl Broker {
+trait Transport {
+    fn fetch(&mut self, url: &Url, hop: u32) -> Result<Fetched>;
+    fn requests_used(&self) -> u32;
+    fn elapsed_seconds(&self) -> u64;
+}
+impl Transport for Broker {
+    fn requests_used(&self) -> u32 {
+        self.budget.used
+    }
+    fn elapsed_seconds(&self) -> u64 {
+        self.started.elapsed().as_secs()
+    }
     fn fetch(&mut self, url: &Url, hop: u32) -> Result<Fetched> {
         self.budget
             .reserve(hop, self.started.elapsed().as_secs(), u32::MAX)?;
+        policy::validate_https_url(url.as_str())?;
         let remaining = self
             .budget
             .seconds
             .saturating_sub(self.started.elapsed().as_secs());
-        require(remaining > 0, "Collection time limit exhausted")?;
+        if remaining == 0 {
+            return Err(Error::QuotaExhausted(
+                "Collection time limit exhausted".into(),
+            ));
+        }
         let host = url
             .host_str()
             .ok_or_else(|| Error::Validation("Missing host".into()))?
@@ -93,7 +95,7 @@ impl Broker {
         });
         let addresses = receiver
             .recv_timeout(Duration::from_secs(5.min(remaining)))
-            .map_err(|_| Error::Blocked("DNS resolution timed out".into()))??;
+            .map_err(|_| Error::Network("DNS resolution timed out".into()))??;
         let hosts: Vec<_> = self.hosts.iter().map(String::as_str).collect();
         policy::validate_destination(
             url.as_str(),
@@ -111,7 +113,9 @@ impl Broker {
             .seconds
             .saturating_sub(self.started.elapsed().as_secs());
         if remaining == 0 {
-            return Err(Error::Blocked("Collection time limit exhausted".into()));
+            return Err(Error::QuotaExhausted(
+                "Collection time limit exhausted".into(),
+            ));
         }
         let client = Client::builder()
             .no_proxy()
@@ -123,14 +127,14 @@ impl Broker {
             .resolve_to_addrs(&host, &addresses)
             .user_agent("EntityWorkbench/0.1 (analyst-directed public collection)")
             .build()
-            .map_err(|_| Error::Blocked("TLS transport could not initialise".into()))?;
+            .map_err(|_| Error::Network("TLS transport could not initialise".into()))?;
         self.last_request = Some(Instant::now());
         let response = client
             .get(url.as_str())
             .header("Accept", "text/html, text/plain;q=0.9")
             .send()
             .map_err(|_| {
-                Error::Blocked("HTTPS request failed; TLS verification remains enabled".into())
+                Error::Network("HTTPS request failed; TLS verification remains enabled".into())
             })?;
         let status = response.status().as_u16();
         let redirect = response
@@ -191,11 +195,7 @@ pub fn extract_html(raw: &str, base: &Url) -> (String, Vec<Url>) {
         .select(&selector)
         .take(1000)
         .filter_map(|a| base.join(a.value().attr("href")?).ok())
-        .filter(|u| u.scheme() == "https" && u.username().is_empty() && u.password().is_none())
-        .map(|mut u| {
-            u.set_fragment(None);
-            u
-        })
+        .filter_map(|u| policy::validate_https_url(u.as_str()).ok())
         .collect();
     (text, links)
 }
@@ -210,7 +210,7 @@ pub fn collect(
         hops <= 2 && requests > 0 && requests <= 50 && seconds > 0 && seconds <= 600,
         "Collection bounds exceed policy",
     )?;
-    let mut broker = Broker {
+    let broker = Broker {
         hosts: seeds
             .iter()
             .filter_map(|s| s.host_str().map(str::to_owned))
@@ -224,28 +224,42 @@ pub fn collect(
         started: Instant::now(),
         last_request: None,
     };
+    collect_with_transport(seeds, hops, requests, seconds, broker)
+}
+
+// The production path always supplies the DNS-pinned HTTPS broker. This internal
+// seam lets synthetic tests exercise stop reasons without any live networking.
+fn collect_with_transport(
+    seeds: Vec<Url>,
+    hops: u32,
+    requests: u32,
+    seconds: u64,
+    mut broker: impl Transport,
+) -> Result<CollectionResult> {
+    let hosts: Vec<_> = seeds
+        .iter()
+        .filter_map(|s| s.host_str().map(str::to_owned))
+        .collect();
     let mut queue: VecDeque<_> = seeds.into_iter().map(|s| (s, 0, 0)).collect();
     let mut visited = HashSet::new();
-    let mut robots: BTreeMap<String, String> = BTreeMap::new();
+    let mut robots: BTreeMap<String, Option<String>> = BTreeMap::new();
     let mut pages = vec![];
     let mut notes = vec![];
-    let mut exhausted = false;
-    let mut blocked = false;
-    let mut failed = false;
+    let mut outcome = Outcome::default();
     while let Some((url, hop, redirects)) = queue.pop_front() {
         if visited.len() >= 500 {
-            exhausted = true;
+            outcome.exhausted = true;
             break;
         }
-        if broker.budget.used >= requests || broker.started.elapsed().as_secs() >= seconds {
-            exhausted = true;
+        if broker.requests_used() >= requests || broker.elapsed_seconds() >= seconds {
+            outcome.exhausted = true;
             break;
         }
         if !visited.insert(url.to_string()) {
             continue;
         }
         let host = url.host_str().unwrap_or_default().to_owned();
-        if !broker.hosts.contains(&host) {
+        if !hosts.contains(&host) {
             continue;
         }
         if !robots.contains_key(&host) {
@@ -254,27 +268,62 @@ pub fn collect(
             robots_url.set_query(None);
             match broker.fetch(&robots_url, hop) {
                 Ok(r) if r.status == 404 => {
-                    robots.insert(host.clone(), String::new());
+                    robots.insert(host.clone(), Some(String::new()));
                 }
                 Ok(r) if r.status == 200 && r.body.len() <= 512_000 => {
-                    robots.insert(host.clone(), String::from_utf8_lossy(&r.body).into_owned());
+                    match String::from_utf8(r.body) {
+                        Ok(policy) => {
+                            robots.insert(host.clone(), Some(policy));
+                        }
+                        Err(_) => {
+                            outcome.blocked = true;
+                            notes.push(format!(
+                                "Robots policy encoding unsupported for {host}; host skipped"
+                            ));
+                            robots.insert(host.clone(), None);
+                        }
+                    }
                 }
-                _ => {
-                    blocked = true;
+                Ok(r) if r.status == 429 => {
+                    outcome.exhausted = true;
                     notes.push(format!(
-                        "Robots policy unavailable for {host}; host blocked"
+                        "Website rate limit reached for {host} robots policy; no retries"
                     ));
-                    robots.insert(host.clone(), "User-agent: *\nDisallow: /".into());
+                    break;
+                }
+                Ok(r) => {
+                    if r.status >= 500 {
+                        outcome.failed = true;
+                    } else {
+                        outcome.blocked = true;
+                    }
+                    notes.push(format!(
+                        "Robots policy unavailable for {host} (HTTP {}); host skipped",
+                        r.status
+                    ));
+                    robots.insert(host.clone(), None);
+                }
+                Err(error) => {
+                    outcome.record_error(&error);
+                    notes.push(format!(
+                        "Robots policy unavailable for {host}; host skipped. {error}"
+                    ));
+                    robots.insert(host.clone(), None);
+                    if outcome.exhausted {
+                        break;
+                    }
                 }
             }
         }
-        let policy = robots.get(&host).expect("robots policy populated");
+        let Some(policy) = robots.get(&host).and_then(Option::as_ref) else {
+            continue;
+        };
         if !robotstxt::DefaultMatcher::default().one_agent_allowed_by_robots(
             policy,
             AGENT,
             url.as_str(),
         ) {
-            blocked = true;
+            outcome.blocked = true;
             notes.push(format!("Robots policy denied {}", url.path()));
             continue;
         }
@@ -284,37 +333,45 @@ pub fn collect(
             .lines()
             .any(|l| l.trim().to_ascii_lowercase().starts_with("crawl-delay:"))
         {
-            blocked = true;
+            outcome.blocked = true;
             notes.push(format!(
                 "Crawl-delay policy requires manual scheduling for {host}"
             ));
             continue;
         }
-        if broker.budget.used >= requests {
-            exhausted = true;
+        if broker.requests_used() >= requests {
+            outcome.exhausted = true;
             break;
         }
         match broker.fetch(&url, hop) {
             Ok(r) if [301, 302, 303, 307, 308].contains(&r.status) => {
                 if redirects >= 5 {
-                    blocked = true;
+                    outcome.blocked = true;
                     notes.push("Redirect limit reached".into());
                     continue;
                 }
                 if let Some(next) = r.redirect.and_then(|s| url.join(&s).ok()) {
-                    if next
-                        .host_str()
-                        .is_some_and(|h| broker.hosts.iter().any(|s| s == h))
-                    {
-                        queue.push_front((next, hop, redirects + 1));
+                    if let Ok(next) = policy::validate_https_url(next.as_str()) {
+                        if next
+                            .host_str()
+                            .is_some_and(|h| hosts.iter().any(|s| s == h))
+                        {
+                            queue.push_front((next, hop, redirects + 1));
+                        } else {
+                            outcome.blocked = true;
+                            notes.push("Redirect leaves selected hosts".into());
+                        }
                     } else {
-                        blocked = true;
-                        notes.push("Redirect leaves selected hosts".into());
+                        outcome.blocked = true;
+                        notes.push("Redirect violates the HTTPS URL policy".into());
                     }
+                } else {
+                    outcome.failed = true;
+                    notes.push(format!("Redirect from {host} has no valid destination"));
                 }
             }
             Ok(r) if r.status == 429 => {
-                exhausted = true;
+                outcome.exhausted = true;
                 notes.push("Website rate limit reached; no retries".into());
                 break;
             }
@@ -322,11 +379,17 @@ pub fn collect(
                 if !r.content_type.starts_with("text/html")
                     && !r.content_type.starts_with("text/plain")
                 {
-                    notes.push(format!("Unsupported response type from {host}"));
+                    outcome.failed = true;
+                    notes.push(format!(
+                        "Unsupported response type from {host}; no source retained"
+                    ));
                     continue;
                 }
                 let Ok(raw) = std::str::from_utf8(&r.body) else {
-                    notes.push("Non-UTF-8 page retained only by a future encoding adapter".into());
+                    outcome.failed = true;
+                    notes.push(format!(
+                        "Non-UTF-8 response from {host}; no source retained"
+                    ));
                     continue;
                 };
                 let (text, links) = if r.content_type.starts_with("text/html") {
@@ -339,7 +402,7 @@ pub fn collect(
                         if queue.len() < 500
                             && link
                                 .host_str()
-                                .is_some_and(|h| broker.hosts.iter().any(|s| s == h))
+                                .is_some_and(|h| hosts.iter().any(|s| s == h))
                         {
                             queue.push_back((link, hop + 1, 0));
                         }
@@ -351,32 +414,64 @@ pub fn collect(
                     text,
                 });
             }
+            Ok(r) if [204, 205].contains(&r.status) => {
+                notes.push(format!(
+                    "HTTP {} from {host}; no source content returned",
+                    r.status
+                ));
+            }
             Ok(r) => {
-                failed = true;
+                outcome.failed = true;
                 notes.push(format!("HTTP {} from {host}", r.status));
             }
             Err(e) => {
-                blocked = true;
+                outcome.record_error(&e);
                 notes.push(e.to_string());
+                if outcome.exhausted {
+                    break;
+                }
             }
         }
     }
-    use crate::domain::JobState::*;
-    let state = if exhausted {
-        QuotaExhausted
-    } else if blocked {
-        Blocked
-    } else if failed {
-        Failed
-    } else if pages.is_empty() {
-        SuccessfulNoResults
-    } else {
-        Successful
-    };
+    let state = outcome.state(pages.is_empty());
     Ok(CollectionResult {
         pages,
-        requests: broker.budget.used,
+        requests: broker.requests_used(),
         state,
         notes,
     })
 }
+
+#[derive(Default)]
+struct Outcome {
+    exhausted: bool,
+    blocked: bool,
+    failed: bool,
+}
+impl Outcome {
+    fn record_error(&mut self, error: &Error) {
+        match error {
+            Error::QuotaExhausted(_) => self.exhausted = true,
+            Error::Blocked(_) | Error::Validation(_) => self.blocked = true,
+            _ => self.failed = true,
+        }
+    }
+    fn state(&self, empty: bool) -> crate::domain::JobState {
+        use crate::domain::JobState::*;
+        if self.exhausted {
+            QuotaExhausted
+        } else if self.blocked {
+            Blocked
+        } else if self.failed {
+            Failed
+        } else if empty {
+            SuccessfulNoResults
+        } else {
+            Successful
+        }
+    }
+}
+
+#[cfg(test)]
+#[path = "collection_tests.rs"]
+mod tests;

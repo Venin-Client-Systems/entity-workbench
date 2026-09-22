@@ -8,6 +8,10 @@ test.beforeEach(() =>
     force: true,
   }),
 );
+test.afterEach(async ({ page }, info) => {
+  if (info.status !== info.expectedStatus)
+    console.log("Workspace alerts:", await page.getByRole("alert").allTextContents());
+});
 test("synthetic investigation flows through the real Rust workspace", async ({
   page,
 }) => {
@@ -313,21 +317,42 @@ test("analyst-authored identities retain sources, decisions and corrections", as
   await expect(
     page.getByText("1 source groups among accepted observations"),
   ).toBeVisible();
+  // Keep the next real comparison response in flight while a decision changes
+  // the workspace revision. A previous comparison must not enable a new action.
+  let releaseComparison!: () => void;
+  let heldComparison = false;
+  const comparisonGate = new Promise<void>((resolve) => {
+    releaseComparison = resolve;
+  });
+  await page.route("**/api/workbench", async (route) => {
+    if (route.request().postDataJSON()?.action === "compare_entities") {
+      const response = await route.fetch();
+      heldComparison = true;
+      await comparisonGate;
+      await route.fulfill({ response });
+    } else await route.continue();
+  });
   await page
     .getByLabel("Identity decision reason")
     .fill("Conflicting birth years; retain namesakes");
   await page
     .getByRole("button", { name: "Keep separate", exact: true })
     .click();
+  const decisionHistory = page.getByRole("region", { name: "Identity decision history" });
   await expect(
-    page.getByText("Conflicting birth years; retain namesakes"),
+    decisionHistory.getByText("Conflicting birth years; retain namesakes"),
   ).toBeVisible();
   await page
     .getByLabel("Identity decision reason")
     .fill("Await an independent confirming record");
+  await expect.poll(() => heldComparison).toBe(true);
+  await expect(page.getByRole("button", { name: "Defer identity decision" })).toBeDisabled();
+  releaseComparison();
+  await expect(page.getByRole("button", { name: "Defer identity decision" })).toBeEnabled();
+  await expect(page.getByLabel("Identity decision reason")).toHaveValue("Await an independent confirming record");
   await page.getByRole("button", { name: "Defer identity decision" }).click();
   await expect(
-    page.getByText("Await an independent confirming record"),
+    decisionHistory.getByText("Await an independent confirming record"),
   ).toBeVisible();
   const second = page.getByRole("region", {
     name: "Avery Vale · CASE:000022",
@@ -378,10 +403,10 @@ test("analyst-authored identities retain sources, decisions and corrections", as
     .getByRole("button", { name: /Entities/ })
     .click();
   await expect(
-    page.getByText("Conflicting birth years; retain namesakes"),
+    decisionHistory.getByText("Conflicting birth years; retain namesakes"),
   ).toBeVisible();
   await expect(
-    page.getByText("Await an independent confirming record"),
+    decisionHistory.getByText("Await an independent confirming record"),
   ).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Avery Vale · CASE:000021", exact: true }),

@@ -121,11 +121,9 @@ fn public_v4(v: Ipv4Addr) -> bool {
         || (a == 198 && b == 51 && c == 100)
         || (a == 203 && b == 0 && c == 113))
 }
-/// Every redirect must be revalidated. A future transport must connect only to these
-/// pinned addresses with TLS verification for the original host; validation alone
-/// does not prevent rebinding. No transport is currently enabled.
-pub fn validate_destination(raw: &str, resolved: &[IpAddr], allowed_hosts: &[&str]) -> Result<Url> {
-    let url = Url::parse(raw).map_err(|_| Error::Validation("Invalid URL".into()))?;
+pub fn validate_https_url(raw: &str) -> Result<Url> {
+    require(raw.len() <= 2048, "Collection URL exceeds 2048 bytes")?;
+    let mut url = Url::parse(raw).map_err(|_| Error::Validation("Invalid URL".into()))?;
     require(
         url.scheme() == "https"
             && url.username().is_empty()
@@ -133,6 +131,15 @@ pub fn validate_destination(raw: &str, resolved: &[IpAddr], allowed_hosts: &[&st
             && url.port_or_known_default() == Some(443),
         "Only credential-free HTTPS on port 443 is allowed",
     )?;
+    require(url.host_str().is_some(), "Missing host")?;
+    url.set_fragment(None);
+    Ok(url)
+}
+/// Every redirect must be revalidated. The broker connects only to these pinned
+/// addresses with TLS verification for the original host. Validation alone does
+/// not prevent rebinding; callers must use the broker for live requests.
+pub fn validate_destination(raw: &str, resolved: &[IpAddr], allowed_hosts: &[&str]) -> Result<Url> {
+    let url = validate_https_url(raw)?;
     let host = url
         .host_str()
         .ok_or_else(|| Error::Validation("Missing host".into()))?;
@@ -165,7 +172,7 @@ impl DiscoveryBudget {
             || elapsed_seconds >= self.seconds
             || provider_remaining == 0
         {
-            return Err(Error::Blocked("Discovery quota exhausted".into()));
+            return Err(Error::QuotaExhausted("Discovery quota exhausted".into()));
         }
         self.used += 1;
         Ok(())

@@ -1,4 +1,4 @@
-//! Canonical workspace ownership and domain rules. No network or worker execution.
+//! Canonical workspace ownership, domain rules and reviewed engine coordination.
 pub mod analytics;
 pub mod collection;
 pub mod domain;
@@ -16,6 +16,10 @@ pub enum Error {
     Conflict(String),
     #[error("Capability blocked: {0}")]
     Blocked(String),
+    #[error("Collection limit exhausted: {0}")]
+    QuotaExhausted(String),
+    #[error("Network request failed: {0}")]
+    Network(String),
     #[error("Database: {0}")]
     Database(#[from] rusqlite::Error),
     #[error("Filesystem: {0}")]

@@ -116,6 +116,7 @@ export function EntityWorkbench({
   };
   const activePair =
     !!comparison &&
+    comparison.workspace_revision === w.revision &&
     !comparison.left.merged_into &&
     !comparison.right.merged_into;
   return (
@@ -419,7 +420,7 @@ export function EntityWorkbench({
           </article>
         ))}
         {w.identity_decisions.length > 0 && (
-          <>
+          <section aria-label="Identity decision history">
             <h3>Previous identity decisions</h3>
             {w.identity_decisions.map((d) => (
               <article className="list-card" key={d.id}>
@@ -433,7 +434,7 @@ export function EntityWorkbench({
                 <small>{new Date(d.at).toLocaleString()}</small>
               </article>
             ))}
-          </>
+          </section>
         )}
       </section>
       {addFor && (
