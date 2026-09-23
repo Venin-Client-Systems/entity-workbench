@@ -214,7 +214,9 @@ def verify(bundle_root, inventory_path, target):
                     if key in actual_keys:
                         error('path_collision', 'Bundle paths collide across supported filesystems', path=path)
                     actual_keys.add(key)
-                    info = child.stat(follow_symlinks=False)
+                    # DirEntry.stat reports zero link/identity fields on Windows.
+                    # Read real metadata without following reparse points.
+                    info = os.stat(child.path, follow_symlinks=False)
                     if is_link(info):
                         error('unsafe_link', 'Symlinks and reparse points are forbidden', path=path)
                     elif stat.S_ISDIR(info.st_mode):
