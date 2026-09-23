@@ -9,6 +9,7 @@ import type {
   SourceExcerpt,
 } from "./types";
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
+import { AssessmentWorkbench } from "./AssessmentWorkbench";
 import { Dialog } from "./Dialog";
 import { ReviewSurface } from "./ReviewSurface";
 import { EntityWorkbench } from "./EntityWorkbench";
@@ -52,10 +53,6 @@ function App() {
     [entityId, setEntityId] = useState(""),
     [seeds, setSeeds] = useState("https://example.com/"),
     [previewed, setPreviewed] = useState(false);
-  const [findingTitle, setFindingTitle] = useState(""),
-    [assessment, setAssessment] = useState(""),
-    [limitation, setLimitation] = useState(""),
-    [citation, setCitation] = useState("");
   const [searchHits, setSearchHits] = useState<
     { id: string; name: string; score: number }[] | null
   >(null);
@@ -865,144 +862,14 @@ function App() {
                 </>
               )}
               {section === "Assessment" && (
-                <>
-                  <section className="panel">
-                    <div className="panel-heading">
-                      <h2>Findings</h2>
-                      <button
-                        className="button primary"
-                        disabled={busy}
-                        onClick={() => void run({ action: "save_report" })}
-                      >
-                        Save report snapshot
-                      </button>
-                    </div>
-                    {w.findings.map((f) => (
-                      <article className="finding" key={f.id}>
-                        <span
-                          className={`pill ${f.needs_review ? "warning" : "accepted"}`}
-                        >
-                          {f.needs_review ? "Review required" : "Current"}
-                        </span>
-                        <h3>{f.title}</h3>
-                        <p>{f.assessment}</p>
-                        <p className="muted">{f.limitations}</p>
-                        <div className="actions">
-                          {f.supporting_ids.map((key) => (
-                            <button
-                              className="text-button"
-                              key={key}
-                              onClick={() => {
-                                const t = w.transactions.find(
-                                  (t) => t.id === key,
-                                );
-                                if (t) inspectTransaction(t);
-                                else
-                                  setEvidence(
-                                    w.evidence.find((e) => e.id === key) ??
-                                      null,
-                                  );
-                              }}
-                            >
-                              Supporting source ↗
-                            </button>
-                          ))}
-                        </div>
-                      </article>
-                    ))}
-                  </section>
-                  <section className="panel">
-                    <h2>Add a cited finding</h2>
-                    <div className="form-grid">
-                      <label>
-                        Title
-                        <input
-                          value={findingTitle}
-                          onChange={(e) => setFindingTitle(e.target.value)}
-                        />
-                      </label>
-                      <label>
-                        Supporting evidence
-                        <select
-                          value={citation}
-                          onChange={(e) => setCitation(e.target.value)}
-                        >
-                          <option value="">Choose a source</option>
-                          {w.evidence.map((e) => (
-                            <option value={e.id} key={e.id}>
-                              {e.name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                    <label>
-                      Assessment
-                      <textarea
-                        value={assessment}
-                        onChange={(e) => setAssessment(e.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Limitations and outstanding enquiries
-                      <textarea
-                        value={limitation}
-                        onChange={(e) => setLimitation(e.target.value)}
-                      />
-                    </label>
-                    <button
-                      className="button"
-                      disabled={
-                        busy ||
-                        !findingTitle ||
-                        !assessment ||
-                        !citation ||
-                        !limitation
-                      }
-                      onClick={() =>
-                        void act({
-                          action: "add_finding",
-                          title: findingTitle,
-                          assessment,
-                          supporting_ids: [citation],
-                          contradicting_ids: [],
-                          limitations: limitation,
-                        })
-                      }
-                    >
-                      Save finding
-                    </button>
-                  </section>
-                  <section className="panel">
-                    <h2>Immutable report snapshots</h2>
-                    {w.reports.map((r) => (
-                      <article className="list-card" key={r.id}>
-                        <span className="pill">REV {r.workspace_revision}</span>
-                        <h3>{new Date(r.created_at).toLocaleString()}</h3>
-                        <p>
-                          <code>{r.sha256}</code>
-                        </p>
-                        <button
-                          className="button"
-                          onClick={() =>
-                            download(
-                              r.html,
-                              `assessment-${r.id}.html`,
-                              "text/html",
-                            )
-                          }
-                        >
-                          Export self-contained HTML
-                        </button>
-                      </article>
-                    ))}
-                    <p className="context-note">
-                      Corrections flag current findings for review. Previous
-                      snapshots remain unchanged. Editable DOCX export is a
-                      remaining release gate.
-                    </p>
-                  </section>
-                </>
+                <AssessmentWorkbench
+                  workspace={w}
+                  busy={busy}
+                  error={error}
+                  run={run}
+                  onSource={setEvidence}
+                  download={download}
+                />
               )}
             </>
           )}

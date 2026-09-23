@@ -28,7 +28,7 @@ fn validate_entity(input: &EntityInput) -> Result<()> {
     Ok(())
 }
 
-fn validate_anchor(conn: &Connection, anchor: &SourceAnchor) -> Result<()> {
+pub(super) fn validate_anchor(conn: &Connection, anchor: &SourceAnchor) -> Result<()> {
     let e: Evidence = get(conn, "evidence", anchor.evidence_id())?;
     match anchor {
         SourceAnchor::Text { line_start, line_end, .. } => {

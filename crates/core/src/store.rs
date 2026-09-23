@@ -9,10 +9,11 @@ use std::{
     path::{Path, PathBuf},
 };
 use uuid::Uuid;
+mod assessment;
 mod identity;
 mod statements;
 
-const SCHEMA: u32 = 2;
+const SCHEMA: u32 = 3;
 pub struct Workspace {
     root: PathBuf,
     conn: Connection,
@@ -130,7 +131,7 @@ impl Workspace {
                 CREATE TABLE records(sequence INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL CHECK(json_valid(body)), UNIQUE(kind,id));
                 CREATE TABLE history(sequence INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT NOT NULL,id TEXT NOT NULL,body TEXT NOT NULL,revision INTEGER NOT NULL);
                 CREATE TABLE events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,revision INTEGER NOT NULL,action TEXT NOT NULL,at TEXT NOT NULL);
-                PRAGMA user_version=2;")?;
+                PRAGMA user_version=3;")?;
             tx.commit()?;
         }
         conn.execute_batch(
@@ -143,11 +144,11 @@ impl Workspace {
             conn,
             runtime: None,
         };
-        if version == 1 {
-            // A v1 reader does not know mapped CSV dialects. Back up database and
-            // referenced originals before raising the compatibility boundary.
+        if (1..SCHEMA).contains(&version) {
+            // Older readers lack mapping or finding-review semantics. Retain a
+            // complete recovery point before changing records or compatibility.
             workspace.backup()?;
-            workspace.change(None, "workspace.schema_v2", false, |conn| {
+            workspace.change(None, "workspace.schema_v3", true, |conn| {
                 conn.pragma_update(None, "user_version", SCHEMA)?;
                 let actual: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
                 require(actual == SCHEMA, "Schema upgrade postcondition failed")
@@ -372,26 +373,56 @@ impl Workspace {
                 reason,
                 expected_revision,
             } => self.reverse_merge(&id, &reason, expected_revision)?,
+            Command::AddQuestion {
+                question,
+                reason,
+                expected_revision,
+            } => {
+                self.save_question(None, question, &reason, expected_revision)?;
+            }
+            Command::UpdateQuestion {
+                id,
+                question,
+                reason,
+                expected_revision,
+            } => {
+                self.save_question(Some(&id), question, &reason, expected_revision)?;
+            }
             Command::AddFinding {
                 title,
                 assessment,
                 supporting_ids,
                 contradicting_ids,
                 limitations,
+                hypothesis_ids,
                 expected_revision,
             } => {
-                reason(&title)?;
-                reason(&assessment)?;
-                reason(&limitations)?;
-                self.change(Some(expected_revision),"finding.add",false,|conn|{
-                    require(!supporting_ids.is_empty()||!contradicting_ids.is_empty(),"Cite at least one evidence item, observation or transaction")?;
-                    for key in supporting_ids.iter().chain(&contradicting_ids) {
-                        let count:u32=conn.query_row("SELECT count(*) FROM records WHERE id=? AND kind IN ('evidence','observation','transaction')",[key],|r|r.get(0))?;
-                        require(count==1,"Finding citation is unresolved")?;
-                    }
-                    let finding=Finding{id:id(),title,assessment,supporting_ids,contradicting_ids,limitations,needs_review:false};
-                    put(conn,"finding",&finding.id,&finding)
-                })?;
+                self.add_finding(
+                    FindingInput {
+                        title,
+                        assessment,
+                        supporting_ids,
+                        contradicting_ids,
+                        limitations,
+                        hypothesis_ids,
+                    },
+                    expected_revision,
+                )?;
+            }
+            Command::UpdateFinding {
+                id,
+                finding,
+                reason,
+                expected_revision,
+            } => {
+                self.update_finding(&id, finding, &reason, expected_revision)?;
+            }
+            Command::ReviewFinding {
+                id,
+                reason,
+                expected_revision,
+            } => {
+                self.review_finding(&id, &reason, expected_revision)?;
             }
             Command::SaveReport {} => {
                 self.save_report()?;
@@ -713,7 +744,7 @@ impl Workspace {
             for (key,branch,lat,lon) in [("branch-a","Branch A",-34.921,138.607),("branch-b","Branch B",-34.887,138.63)] {
                 let m=MerchantLocation{id:key.into(),transaction_id:format!("{statement}:3"),merchant:"North Quay Market".into(),branch:Some(branch.into()),channel:Channel::InPerson,latitude:Some(lat),longitude:Some(lon),uncertainty_m:50.0,retrieved_at:"2025-03-10".into(),valid_from:None,valid_to:None,anchor:anchor(9),review:ReviewState::Pending};put(conn,"location",key,&m)?;
             }
-            let f=Finding{id:"finding-a".into(),title:"A café amount requires source review".into(),assessment:"The imported debit does not reconcile with the adjacent balances. The original remains unchanged.".into(),supporting_ids:vec![format!("{statement}:10")],contradicting_ids:vec![],limitations:"Synthetic demonstration; review the source before accepting any correction.".into(),needs_review:true};put(conn,"finding",&f.id,&f)?;
+            let f=Finding{id:"finding-a".into(),hypothesis_ids:vec!["question-a".into()],title:"A café amount requires source review".into(),assessment:"The imported debit does not reconcile with the adjacent balances. The original remains unchanged.".into(),supporting_ids:vec![format!("{statement}:10")],contradicting_ids:vec![],limitations:"Synthetic demonstration; review the source before accepting any correction.".into(),needs_review:true};put(conn,"finding",&f.id,&f)?;
             Ok(())
         })
     }

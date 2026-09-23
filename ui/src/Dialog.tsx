@@ -7,12 +7,14 @@ export function Dialog({
   label,
   wide,
   preventClose,
+  restoreFocus,
   onClose,
   children,
 }: {
   label: string;
   wide?: boolean;
   preventClose?: boolean;
+  restoreFocus?: () => void;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -26,7 +28,12 @@ export function Dialog({
     dialog.showModal();
     return () => {
       dialog.close();
-      if (opener?.isConnected) opener.focus({ preventScroll: true });
+      // Commit may also re-enable the opener or mount a replacement modal.
+      // Restore after those DOM changes; an active modal keeps its background inert.
+      queueMicrotask(() => {
+        if (restoreFocus) restoreFocus();
+        else if (opener?.isConnected) opener.focus({ preventScroll: true });
+      });
     };
   }, []);
   return (

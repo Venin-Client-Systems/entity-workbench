@@ -1380,3 +1380,98 @@ footer {
 .statement-import .hash {
   font-size: 11px;
 }
+
+/* Assessment instruments: Figma finding-review frame 25:361. */
+.assessment-workbench h2 {
+  padding-right: 28px;
+}
+.assessment-workbench .finding h3 {
+  font-size: 18px;
+  font-weight: 600;
+}
+.assessment-workbench .plain-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.assessment-workbench fieldset {
+  border: 1px solid var(--border);
+  margin: 16px 0;
+  min-width: 0;
+}
+.assessment-workbench legend {
+  font: 12px var(--mono);
+  text-transform: uppercase;
+}
+.assessment-workbench .form-grid {
+  gap: 0 16px;
+}
+.assessment-workbench .check-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.assessment-workbench .check-label input {
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+.assessment-workbench .preserve-lines {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.citation-row {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--control-border);
+  background: var(--subtle);
+  padding: 12px;
+  margin: 8px 0;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.citation-row > div:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.citation-row p {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 5px 0 0;
+}
+.citation-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+.citation-role {
+  margin: 0;
+}
+.citation-role select {
+  margin: 4px 0 0;
+}
+.citation-picker {
+  max-height: 320px;
+  overflow: auto;
+  padding: 3px;
+}
+.inline-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+@media (max-width: 760px) {
+  .citation-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .assessment-workbench .panel-heading {
+    flex-wrap: wrap;
+  }
+}

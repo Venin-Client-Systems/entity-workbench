@@ -8,13 +8,34 @@ pub fn escape(value: &str) -> String {
         .replace('"', "&quot;")
         .replace('\'', "&#39;")
 }
+fn citation(view: &WorkspaceView, key: &str) -> String {
+    if let Some(o) = view.observations.iter().find(|o| o.id == key) {
+        let name = view
+            .entities
+            .iter()
+            .find(|e| e.id == o.entity_id)
+            .map(|e| e.name.as_str())
+            .unwrap_or(&o.entity_id);
+        format!("{name} · {}: {} · {:?}", o.field, o.value, o.review)
+    } else if let Some(t) = view.transactions.iter().find(|t| t.id == key) {
+        format!(
+            "{} · {} · {} {} · {:?}",
+            t.date, t.description, t.amount, t.currency, t.review
+        )
+    } else if let Some(e) = view.evidence.iter().find(|e| e.id == key) {
+        format!("Whole source: {}", e.name)
+    } else {
+        format!("Unresolved citation: {key}")
+    }
+}
 pub fn html(view: &WorkspaceView, report_id: &str) -> Result<String> {
     let mut out=format!("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'\"><title>Entity Workbench assessment</title><style>body{{font:16px/1.6 system-ui;max-width:1100px;margin:48px auto;padding:0 24px;color:#172d31}}h1,h2{{line-height:1.2}}table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #ccc;overflow-wrap:anywhere}}code{{overflow-wrap:anywhere}}.notice{{background:#fff1d6;padding:16px}}@media print{{body{{margin:0}}tr{{break-inside:avoid}}}}</style><h1>Investigation assessment</h1><p>Snapshot {} · Workspace revision {}</p><p class=\"notice\">Development assessment. Pending evidence is not an accepted conclusion. Amounts are exact decimal values, grouped by currency. Transfers are excluded only after explicit matching. Source origin groups do not establish independence by themselves.</p>",escape(report_id),view.revision);
     out.push_str("<h2>Questions and alternatives</h2>");
     for h in &view.hypotheses {
         let _ = write!(
             out,
-            "<h3>{}</h3><p>{}</p><p>Alternatives: {}</p><p>Collection gaps: {}</p>",
+            "<h3 id=\"{}\">{}</h3><p>{}</p><p>Alternatives: {}</p><p>Collection gaps: {}</p>",
+            escape(&h.id),
             escape(&h.question),
             escape(&h.proposition),
             escape(&h.alternatives.join("; ")),
@@ -32,11 +53,31 @@ pub fn html(view: &WorkspaceView, report_id: &str) -> Result<String> {
             escape(&f.limitations)
         );
         for key in &f.supporting_ids {
-            let _ = write!(out, "<a href=\"#{}\">{}</a> ", escape(key), escape(key));
+            let _ = write!(
+                out,
+                "<a href=\"#{}\">{}</a> ",
+                escape(key),
+                escape(&citation(view, key))
+            );
         }
         out.push_str("</p><p>Contradicting: ");
         for key in &f.contradicting_ids {
-            let _ = write!(out, "<a href=\"#{}\">{}</a> ", escape(key), escape(key));
+            let _ = write!(
+                out,
+                "<a href=\"#{}\">{}</a> ",
+                escape(key),
+                escape(&citation(view, key))
+            );
+        }
+        out.push_str("</p><p>Linked questions: ");
+        for key in &f.hypothesis_ids {
+            let label = view
+                .hypotheses
+                .iter()
+                .find(|h| &h.id == key)
+                .map(|h| h.question.as_str())
+                .unwrap_or("Unresolved question");
+            let _ = write!(out, "<a href=\"#{}\">{}</a> ", escape(key), escape(label));
         }
         out.push_str("</p>");
     }
@@ -91,7 +132,7 @@ pub fn html(view: &WorkspaceView, report_id: &str) -> Result<String> {
     for o in &view.observations {
         let _ = write!(
             out,
-            "<p id=\"{}\">{}: {} <a href=\"#{}\">Source</a> · {:?} · Entity <a href=\"#{}\">{}</a></p>",
+            "<p id=\"{}\">{}: {} <a href=\"#{}\">Source</a> · {:?} · Entity <a href=\"#{}\">{}</a><br>Source anchor: {}</p>",
             escape(&o.id),
             escape(&o.field),
             escape(&o.value),
@@ -99,6 +140,7 @@ pub fn html(view: &WorkspaceView, report_id: &str) -> Result<String> {
             o.review,
             escape(&o.entity_id),
             escape(&o.entity_id),
+            escape(&serde_json::to_string(&o.anchor)?),
         );
     }
     out.push_str("<h2>Evidence register</h2>");

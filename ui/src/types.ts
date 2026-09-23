@@ -90,7 +90,15 @@ export type Transaction = {
   transfer_peer: string | null;
   version: number;
 };
+export type Hypothesis = {
+  id: string;
+  question: string;
+  proposition: string;
+  alternatives: string[];
+  gaps: string[];
+};
 export type Finding = {
+  hypothesis_ids: string[];
   id: string;
   title: string;
   assessment: string;
@@ -115,13 +123,7 @@ export type Workspace = {
     review: ReviewState;
   }[];
   findings: Finding[];
-  hypotheses: {
-    id: string;
-    question: string;
-    proposition: string;
-    alternatives: string[];
-    gaps: string[];
-  }[];
+  hypotheses: Hypothesis[];
   leads: {
     id: string;
     label: string;

@@ -67,3 +67,5 @@ The separate Figma Make experiment is not the application. Its generated identit
 ## Statement import extension
 
 The two-stage local statement workflow now has [editable Figma frames, component specifications and rendered comparisons](STATEMENT-IMPORT.md). It preserves the industrial visual language while separating source mapping, full-row validation and pending import.
+
+The next assessment increment adds an [editable finding-review frame and working authoring/review flow](ASSESSMENT-REVIEW.md). Its source export, 1440/960 comparisons, accessibility observations and remaining frame scope are retained there.

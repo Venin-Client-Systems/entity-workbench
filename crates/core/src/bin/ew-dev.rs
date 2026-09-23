@@ -27,12 +27,12 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         for (name, version, value) in [
             (
                 "workspace",
-                2,
+                3,
                 serde_json::to_value(schemars::schema_for!(WorkspaceView))?,
             ),
             (
                 "command",
-                2,
+                3,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (

@@ -205,12 +205,32 @@ pub struct Hypothesis {
 #[serde(deny_unknown_fields)]
 pub struct Finding {
     pub id: String,
+    #[serde(default)]
+    pub hypothesis_ids: Vec<String>,
     pub title: String,
     pub assessment: String,
     pub supporting_ids: Vec<String>,
     pub contradicting_ids: Vec<String>,
     pub limitations: String,
     pub needs_review: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct HypothesisInput {
+    pub question: String,
+    pub proposition: String,
+    pub alternatives: Vec<String>,
+    pub gaps: Vec<String>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct FindingInput {
+    pub title: String,
+    pub assessment: String,
+    pub supporting_ids: Vec<String>,
+    pub contradicting_ids: Vec<String>,
+    pub limitations: String,
+    pub hypothesis_ids: Vec<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -463,7 +483,31 @@ pub enum Command {
         reason: String,
         expected_revision: u64,
     },
+    AddQuestion {
+        question: HypothesisInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    UpdateQuestion {
+        id: String,
+        question: HypothesisInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    UpdateFinding {
+        id: String,
+        finding: FindingInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    ReviewFinding {
+        id: String,
+        reason: String,
+        expected_revision: u64,
+    },
     AddFinding {
+        #[serde(default)]
+        hypothesis_ids: Vec<String>,
         title: String,
         assessment: String,
         supporting_ids: Vec<String>,
