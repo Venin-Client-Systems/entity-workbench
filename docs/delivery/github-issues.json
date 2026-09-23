@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "repository": "Venin-Client-Systems/entity-workbench",
+  "programme": {
+    "number": 4,
+    "id": 5554429594,
+    "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/4"
+  },
+  "milestones": {
+    "1": {
+      "number": 1,
+      "title": "S1 \u2014 Risk and contracts",
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/milestone/1",
+      "due_on": "2026-10-06T00:00:00Z"
+    },
+    "2": {
+      "number": 2,
+      "title": "S2 \u2014 Packaged foundations",
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/milestone/2",
+      "due_on": "2026-10-20T00:00:00Z"
+    },
+    "3": {
+      "number": 3,
+      "title": "S3 \u2014 Evidence and finance",
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/milestone/3",
+      "due_on": "2026-11-03T00:00:00Z"
+    },
+    "4": {
+      "number": 4,
+      "title": "S4 \u2014 Investigation and geography",
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/milestone/4",
+      "due_on": "2026-11-17T00:00:00Z"
+    },
+    "5": {
+      "number": 5,
+      "title": "S5 \u2014 Integrated analyst acceptance",
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/milestone/5",
+      "due_on": "2026-12-01T00:00:00Z"
+    },
+    "6": {
+      "number": 6,
+      "title": "S6 \u2014 Release candidate",
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/milestone/6",
+      "due_on": "2026-12-15T00:00:00Z"
+    },
+    "7": {
+      "number": 7,
+      "title": "Release buffer \u2014 Final acceptance",
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/milestone/7",
+      "due_on": "2026-12-23T00:00:00Z"
+    }
+  },
+  "issues": {
+    "EW-01": {
+      "number": 5,
+      "id": 5554429989,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/5"
+    },
+    "EW-02": {
+      "number": 6,
+      "id": 5554431035,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/6"
+    },
+    "EW-03": {
+      "number": 7,
+      "id": 5554432782,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/7"
+    },
+    "EW-04": {
+      "number": 8,
+      "id": 5554434356,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/8"
+    },
+    "EW-05": {
+      "number": 9,
+      "id": 5554436022,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/9"
+    },
+    "EW-06": {
+      "number": 10,
+      "id": 5554437065,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/10"
+    },
+    "EW-07": {
+      "number": 11,
+      "id": 5554439477,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/11"
+    },
+    "EW-08": {
+      "number": 12,
+      "id": 5554441956,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/12"
+    },
+    "EW-09": {
+      "number": 13,
+      "id": 5554443120,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/13"
+    },
+    "EW-10": {
+      "number": 14,
+      "id": 5554446815,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/14"
+    },
+    "EW-11": {
+      "number": 15,
+      "id": 5554448498,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/15"
+    },
+    "EW-12": {
+      "number": 16,
+      "id": 5554450514,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/16"
+    },
+    "EW-13": {
+      "number": 17,
+      "id": 5554453487,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/17"
+    },
+    "EW-14": {
+      "number": 18,
+      "id": 5554456196,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/18"
+    },
+    "EW-15": {
+      "number": 19,
+      "id": 5554458277,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/19"
+    },
+    "EW-16": {
+      "number": 20,
+      "id": 5554460913,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/20"
+    },
+    "EW-17": {
+      "number": 21,
+      "id": 5554463109,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/21"
+    },
+    "EW-18": {
+      "number": 22,
+      "id": 5554465320,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/22"
+    },
+    "EW-19": {
+      "number": 23,
+      "id": 5554467508,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/23"
+    },
+    "EW-20": {
+      "number": 24,
+      "id": 5554469672,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/24"
+    },
+    "EW-22": {
+      "number": 25,
+      "id": 5554471958,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/25"
+    },
+    "EW-21": {
+      "number": 26,
+      "id": 5554474364,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/26"
+    },
+    "EW-23": {
+      "number": 27,
+      "id": 5554476694,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/27"
+    },
+    "EW-24": {
+      "number": 28,
+      "id": 5554478425,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/28"
+    },
+    "EW-25": {
+      "number": 29,
+      "id": 5554481460,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/29"
+    },
+    "EW-26": {
+      "number": 30,
+      "id": 5554484292,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/30"
+    },
+    "EW-27": {
+      "number": 31,
+      "id": 5554487099,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/31"
+    },
+    "EW-28": {
+      "number": 32,
+      "id": 5554489953,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/32"
+    },
+    "EW-29": {
+      "number": 33,
+      "id": 5554492825,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/33"
+    },
+    "EW-30": {
+      "number": 34,
+      "id": 5554496567,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/34"
+    },
+    "EW-31": {
+      "number": 35,
+      "id": 5554499365,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/35"
+    },
+    "EW-32": {
+      "number": 36,
+      "id": 5554500615,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/36"
+    },
+    "EW-33": {
+      "number": 37,
+      "id": 5554503952,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/37"
+    },
+    "EW-34": {
+      "number": 38,
+      "id": 5554510779,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/38"
+    },
+    "EW-35": {
+      "number": 39,
+      "id": 5554515240,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/39"
+    },
+    "EW-36": {
+      "number": 40,
+      "id": 5554519016,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/40"
+    },
+    "EW-37": {
+      "number": 41,
+      "id": 5554522427,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/41"
+    },
+    "EW-41": {
+      "number": 42,
+      "id": 5554525986,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/42"
+    },
+    "EW-38": {
+      "number": 43,
+      "id": 5554527398,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/43"
+    },
+    "EW-39": {
+      "number": 44,
+      "id": 5554532008,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/44"
+    },
+    "EW-40": {
+      "number": 45,
+      "id": 5554534179,
+      "html_url": "https://github.com/Venin-Client-Systems/entity-workbench/issues/45"
+    }
+  }
+}

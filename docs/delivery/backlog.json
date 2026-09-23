@@ -1,0 +1,861 @@
+{
+  "schema_version": 1,
+  "programme": "Entity Workbench v1",
+  "start": "2026-09-23",
+  "target": "2026-12-23",
+  "baseline_revision": "73b34438c220efd89253bdbc44538b9af5688b9c",
+  "items": [
+    {
+      "key": "EW-01",
+      "title": "Verify app-local runtime inventories before packaging",
+      "sprint": 1,
+      "area": "distribution",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [],
+      "outcome": "Replace informal runtime-completeness claims with a versioned inventory contract and an offline validator for the three release targets.",
+      "acceptance": [
+        "Declare required runtime/component IDs per target, including Fixed WebView2 only on Windows, every advertised OCR language and regional pack.",
+        "Validate exact versions, file sizes and SHA-256 hashes beneath one bundle root; reject unsafe paths, links, duplicate declarations, missing files and mismatched targets.",
+        "Provide machine-readable missing/invalid component results; a partial development bundle must fail release completeness without downloading anything.",
+        "Add synthetic positive/negative tests and run them in the native CI matrix; document that inventory validation alone proves neither isolation nor licence approval."
+      ],
+      "verification": "Synthetic inventories cover all three targets, corruption, traversal, symlinks, missing advertised assets and partial-bundle rejection. Record the actual current development inventory as incomplete."
+    },
+    {
+      "key": "EW-02",
+      "title": "Bind release gates to reproducible acceptance evidence",
+      "sprint": 1,
+      "area": "verification",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-01"
+      ],
+      "outcome": "Build a release evidence ledger and synthetic acceptance-fixture catalogue so a green source build cannot be mistaken for a supported release.",
+      "acceptance": [
+        "Map all 12 existing release gates and the ten end-to-end scenarios to issues, test procedures and required platform/artifact evidence.",
+        "Require versioned evidence records with source revision, artifact checksum, OS/architecture, command/procedure and result; reject unsupported schemas, missing evidence and inconsistent release claims.",
+        "Create synthetic fixture manifests for documents, scans, namesakes, copied origins, historical locations, overlaps, refunds, transfers and multiple currencies.",
+        "Keep negative evidence and failed attempts visible; CI policy checks remain distinct from full release acceptance."
+      ],
+      "verification": "Exercise missing, stale, corrupt and wrong-platform evidence; verify every release gate has an owner issue and that all current gates remain unpassed."
+    },
+    {
+      "key": "EW-03",
+      "title": "Prove Windows AppContainer isolation for specialist workers",
+      "sprint": 1,
+      "area": "security",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-01"
+      ],
+      "outcome": "Establish a fail-closed Windows worker launcher before enabling document, analytical or browser jobs.",
+      "acceptance": [
+        "Launch Java, Python, OCR and a browser compatibility probe under AppContainer with no direct network capabilities and minimum assigned read/write access.",
+        "Hostile probes attempt another workspace read, original modification, direct DNS/TCP/HTTP, inherited-handle access and child-process escape; control probes establish the tests are effective.",
+        "Enforce process-tree timeout, memory/output/disk limits and cleanup; expose explicit blocked status if confinement cannot be established.",
+        "Record real Windows 11 x64 runtime evidence and narrow/document any required native or unsafe boundary; server CI compilation is not Windows 11 acceptance."
+      ],
+      "verification": "Run benign workload and hostile probes from the packaged paths on Windows 11; retain sanitized per-operation denials and successful assigned I/O."
+    },
+    {
+      "key": "EW-04",
+      "title": "Prove macOS helper confinement on both architectures",
+      "sprint": 1,
+      "area": "security",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-01"
+      ],
+      "outcome": "Replace the experimental search-only confinement assumption with a documented helper design that supports the required workers.",
+      "acceptance": [
+        "Select and document the supported macOS confinement mechanism, helper boundaries, entitlements, library access and minimum OS matrix.",
+        "Run Java/PDF/OCR/Python/Chromium compatibility and hostile probes on Apple Silicon and Intel; deny cross-workspace reads, original writes and direct networking.",
+        "Bound descendants, inherited descriptors, IPC, memory, time, scratch and output; parser and Lucene remain separate processes.",
+        "Test signed helper behaviour using available signing access; development/ad-hoc probes cannot close the signed-helper release gate."
+      ],
+      "verification": "Retain per-architecture compatibility and hostile-probe results; mark any unavailable signing/platform result as blocked rather than successful."
+    },
+    {
+      "key": "EW-05",
+      "title": "Demonstrate useful direct-web discovery without a search provider",
+      "sprint": 1,
+      "area": "discovery",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [],
+      "outcome": "Resolve the highest product risk early: obtaining useful leads from incomplete inputs using direct public websites and a locally owned index.",
+      "acceptance": [
+        "Freeze a harmless public benchmark with 30 name/organisation/domain tasks across at least six independent publisher domains, source labels and collection-date expectations before measuring results.",
+        "Record allowed direct access, selected seed policy, exact disclosed queries, robots/use constraints and cold-corpus limitations; no search API, metasearch service, account, key or remote operator.",
+        "Demonstrate real results inside the application and at least one identifier-to-further-lead chain within two hops, 50 requests and ten minutes or lower limits.",
+        "Report relevant-result yield, lead-expansion yield, request/time cost, blocked cases and missing coverage. Proposed minimums are 60% relevant-result yield and 30% useful expansion; changing them requires a recorded product decision, not a silent gate reduction.",
+        "If the benchmark cannot pass, record the concrete architectural/product blocker by the end of Sprint 1 and continue independent local work; never substitute a browser handoff, mock result or an exhaustive-web claim."
+      ],
+      "verification": "Preserve sanitized live acquisition receipts, original hashes, local-search results and independently reviewed relevance labels. CI replays synthetic equivalents; live public results are measured separately."
+    },
+    {
+      "key": "EW-06",
+      "title": "Package Java parsing, Lucene and OCR on every target",
+      "sprint": 2,
+      "area": "distribution",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-01",
+        "EW-03",
+        "EW-04"
+      ],
+      "outcome": "Ship Java 21, separate parser/search adapters and Tesseract without first-run installation.",
+      "acceptance": [
+        "Pin upstream versions and checksums for Windows x64, macOS arm64 and macOS x64; resolve transitive JARs and native-library dependencies reproducibly.",
+        "Bundle Tika/PDFBox/POI and Tesseract with every advertised language; English is the initial advertised OCR language until additional packs are verified.",
+        "Run isolated parse/render/OCR/index/search from application resources, not developer PATH, user package caches or system Java.",
+        "Produce inventory records, runtime notices and smoke evidence; malformed input cannot crash or expose the separate search process."
+      ],
+      "verification": "Install the candidate package on clean targets and parse a synthetic PDF/Office file, OCR one scan and query the result while offline."
+    },
+    {
+      "key": "EW-07",
+      "title": "Package Python, analytical assets and browser capture runtime",
+      "sprint": 2,
+      "area": "distribution",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-01",
+        "EW-03",
+        "EW-04"
+      ],
+      "outcome": "Bundle the remaining specialist runtimes and their exact compatible assets.",
+      "acceptance": [
+        "Package Python and native wheels for spaCy, Splink, NetworkX, Arrow and DuckDB on all three targets; include advertised conventional model assets locally.",
+        "Pin DuckDB and matching Spatial extension; prohibit runtime extension/model/package downloads.",
+        "Bundle Playwright, its internal driver and matching Chromium; add app-local Fixed Version WebView2 for Windows.",
+        "Verify relocatability, architecture, loader paths, licence material, sandbox compatibility and offline startup; no developer tools are required by the installed application."
+      ],
+      "verification": "Exercise each packaged runtime in a clean environment with developer PATH/cache access removed and direct worker networking denied."
+    },
+    {
+      "key": "EW-08",
+      "title": "Resolve signing, clean-machine and release-review access",
+      "sprint": 1,
+      "area": "delivery",
+      "priority": "P0",
+      "size": "S",
+      "depends_on": [],
+      "outcome": "Make the delivery dependencies visible early without exposing credentials or creating paid accounts automatically.",
+      "acceptance": [
+        "Record secure availability/owner for macOS Developer ID and notarization access, Windows signing, Windows 11 x64 and both Mac clean test environments, and a 16 GB benchmark machine.",
+        "Confirm minimum supported OS versions and a maintainer/security reviewer for release acceptance; record gaps by the first sprint exit.",
+        "Keep certificates, tokens, identity documents, access details and private exclusion lists outside the public repository and issue; public status only.",
+        "Assign needed-by dates: platform probe access during Sprint 1, signing rehearsal by Sprint 2 and final clean/downloaded-artifact testing in Sprint 6."
+      ],
+      "verification": "A sanitized readiness checklist names responsible roles and dates. Owner-assisted credentials/account actions remain explicit dependencies, never inferred as supplied."
+    },
+    {
+      "key": "EW-09",
+      "title": "Run the complete packaged foundation slice on three targets",
+      "sprint": 2,
+      "area": "verification",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-02",
+        "EW-03",
+        "EW-04",
+        "EW-06",
+        "EW-07"
+      ],
+      "outcome": "Close the foundation milestone with an actual installed vertical slice, not unrelated engine demonstrations.",
+      "acceptance": [
+        "From the installed app import one document, OCR one scan, index/search it, analyse a transaction table and render a local map.",
+        "Run with network unavailable and no developer tools; capture launch/dependency failures and application-initiated traffic.",
+        "Run hostile workers beside the successful slice and confirm other workspace/original protection and direct-network denial.",
+        "Retain one evidence package per target including installer/app hash, source revision and runtime inventory; leave the foundation unpassed on any target failure."
+      ],
+      "verification": "Repeat the same synthetic fixture and UI procedure on Windows 11 x64 and both native Mac architectures."
+    },
+    {
+      "key": "EW-10",
+      "title": "Persist bounded jobs, cancellation and restart recovery",
+      "sprint": 2,
+      "area": "core",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-02"
+      ],
+      "outcome": "Move expensive work behind the Rust job coordinator with bounded concurrency and durable state.",
+      "acceptance": [
+        "Persist queued/running/partial/blocked/quota-exhausted/failed/cancelled/completed states and explicit retry policy.",
+        "Use stable job/input/result identities so a crash or retry cannot publish duplicate observations; validate results before an atomic canonical commit.",
+        "Cancel the process tree and broker work, bound worker concurrency and clean scratch through the documented lifecycle.",
+        "Expose progress and recovery in the industrial UI, with source outputs preserved when a later step fails."
+      ],
+      "verification": "Kill coordinator and workers before/after publication; restart and verify exactly-once canonical results, bounded resources and continued UI responsiveness."
+    },
+    {
+      "key": "EW-11",
+      "title": "Add workspace management and usable backup/restore",
+      "sprint": 2,
+      "area": "core",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-02",
+        "EW-03"
+      ],
+      "outcome": "Allow analysts to create, open, back up and restore isolated local investigations through the native application.",
+      "acceptance": [
+        "Provide typed workspace selection/creation and explicit synthetic-demo import; preserve leading-zero reference namespaces and per-workspace state.",
+        "Implement Windows restricted ACLs and verify macOS permissions for databases, originals, caches, backups and exports.",
+        "Restore into a new destination with hash verification and supported-schema checks; surface failed/partial recovery without replacing an existing workspace.",
+        "Document storage-encryption requirements and data lifecycle without claiming application encryption; stale tasks cannot write into a switched workspace."
+      ],
+      "verification": "Native create/switch/backup/restore workflows on all targets, evidence-inclusive recovery, wrong-workspace job and permission-negative tests."
+    },
+    {
+      "key": "EW-12",
+      "title": "Integrate bounded PDF, Office, image and email extraction",
+      "sprint": 2,
+      "area": "documents",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-03",
+        "EW-04",
+        "EW-06",
+        "EW-10"
+      ],
+      "outcome": "Enable the disposable parser through Rust with validated derivative manifests and source anchors.",
+      "acceptance": [
+        "Detect supported formats from content and safely import PDFs, Office/spreadsheets, text/HTML, images and declared EML/MBOX exported-email variants.",
+        "Extract text and metadata with page regions, cells, attachments and message anchors; originals remain immutable and each extraction is versioned.",
+        "Bound archives, nesting, expanded bytes, member count, page/pixel count, time and output; reject traversal, unsafe links and unsupported/encrypted input explicitly.",
+        "Treat output as untrusted: publish escaped text, structured results or validated page images, never extracted active markup in the privileged UI."
+      ],
+      "verification": "Synthetic format matrix with malformed archives, embedded content, encrypted files, unsupported formats and parser termination; verify source-anchored partial results."
+    },
+    {
+      "key": "EW-13",
+      "title": "Integrate offline OCR with reviewable page regions",
+      "sprint": 2,
+      "area": "documents",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-06",
+        "EW-10",
+        "EW-12"
+      ],
+      "outcome": "Turn scanned documents into bounded, reviewable derivatives with preserved visual provenance.",
+      "acceptance": [
+        "Run packaged Tesseract only inside the assigned job; record language/assets/version, page images and word/line bounding boxes.",
+        "Keep extraction quality separate from source truth and analyst confidence; show missing pages, skew/rotation and uncertain characters.",
+        "Support OCR retry/correction as new derivatives while preserving previous outputs and affected finding review state.",
+        "Avoid full-document unbounded image loading; page/pixel/CPU limits and cancellation must work on all targets."
+      ],
+      "verification": "Synthetic scans include rotation, low contrast, numeric confusions and oversized pages; compare output anchors to rendered originals and record throughput."
+    },
+    {
+      "key": "EW-14",
+      "title": "Finish evidence review, derivative history and extraction acceptance",
+      "sprint": 3,
+      "area": "documents",
+      "priority": "P1",
+      "size": "L",
+      "depends_on": [
+        "EW-12",
+        "EW-13"
+      ],
+      "outcome": "Make difficult imports usable through a source-linked review screen.",
+      "acceptance": [
+        "Create editable Figma page/image, cell/table and email review frames before implementing their interactions.",
+        "Show original page region/cell/message beside candidate text, metadata and entities; accept/reject/defer with reason and version history.",
+        "Retain duplicate originals, acquisition history, copied-source origin groups and incomplete/unsupported status without silently dropping records.",
+        "Provide page navigation, search highlights, exhibit selection and keyboard workflows at 1440 and 960 widths; native rendering cannot execute collected content."
+      ],
+      "verification": "Wrapped tables, OCR errors, duplicated captures and email attachments remain reviewable with exact source drillthrough and restored focus."
+    },
+    {
+      "key": "EW-15",
+      "title": "Make local corpus search incremental and scalable",
+      "sprint": 3,
+      "area": "search",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-06",
+        "EW-10",
+        "EW-12"
+      ],
+      "outcome": "Finish Lucene corpus integration for growing imported and directly collected sources.",
+      "acceptance": [
+        "Index versioned derivatives incrementally using bounded manifests and a rebuildable revision-labelled index.",
+        "Support Boolean, phrase, proximity, fuzzy and fielded queries with pagination, stable result IDs and source-region navigation.",
+        "Show stale index state and rebuild progress; parser failure or interruption must not corrupt or terminate the separate search worker.",
+        "Handle index loss/schema changes safely and prohibit remote search requests; ordinary queries have a benchmark target of p95 below two seconds."
+      ],
+      "verification": "10,000-page synthetic corpus, partial import/reindex interruption, stale results and all five query forms; record actual latency on the benchmark target."
+    },
+    {
+      "key": "EW-16",
+      "title": "Extend statement mapping to XLSX and searchable/scanned PDFs",
+      "sprint": 3,
+      "area": "transactions",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-13",
+        "EW-14"
+      ],
+      "outcome": "Reuse the existing strict mapping/reconciliation domain rules for real document-derived statements.",
+      "acceptance": [
+        "Map sheet cells and PDF/OCR table regions with reusable profiles and explicit date, currency, debit/credit and balance interpretation.",
+        "Preserve original descriptions, exact decimal amounts, transaction/posting dates and original cell/region anchors; never infer leading-zero accounts as numbers.",
+        "Review wrapped rows, headers/footers, missing columns, amount errors and available opening/closing totals before acceptance.",
+        "Flag overlap and probable duplicates without deleting repeated purchases; reject or explicitly retain partial extraction without plausible-looking fabricated totals."
+      ],
+      "verification": "Synthetic XLSX/searchable PDF/scanned statement equivalence plus deliberate OCR amount errors, overlap, refunds, repeated purchases, transfers and currencies."
+    },
+    {
+      "key": "EW-17",
+      "title": "Publish typed analytical snapshots with revision validation",
+      "sprint": 3,
+      "area": "analysis",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-07",
+        "EW-10"
+      ],
+      "outcome": "Connect DuckDB/Spatial and Python analyses through typed, rebuildable Parquet snapshots while Rust remains authoritative.",
+      "acceptance": [
+        "Publish versioned transaction/entity/observation/relationship schemas and bounded snapshot manifests with source revision and hashes.",
+        "Validate returned IDs, types, counts, finite coordinates, decimals and revision before publishing results; reject stale or oversized outputs.",
+        "Expose analytical freshness and refresh actions; jobs never open or write canonical SQLite.",
+        "Disable arbitrary SQL and external DuckDB access/downloads; select only reviewed analytical recipes."
+      ],
+      "verification": "Malformed/stale/tampered snapshots, interrupted publish and schema round-trips; exact totals agree with canonical Rust calculations."
+    },
+    {
+      "key": "EW-18",
+      "title": "Complete transaction patterns, comparisons and account-flow analysis",
+      "sprint": 3,
+      "area": "transactions",
+      "priority": "P1",
+      "size": "L",
+      "depends_on": [
+        "EW-16",
+        "EW-17"
+      ],
+      "outcome": "Provide the promised financial analysis with explainable totals and source drillthrough.",
+      "acceptance": [
+        "Add recurring-payment candidates, merchant totals, cash withdrawals, refunds and period comparisons with explicit rules and parameters.",
+        "Show internal transfer candidates for analyst matching; exclude only reviewed matches and retain direction, currency and account identity.",
+        "Every aggregate and account-flow edge resolves to its contributing transactions and calculation details; unresolved/rejected rows remain visible in denominators.",
+        "Corrections refresh tables/charts/flows and flag affected findings while previous report snapshots remain unchanged."
+      ],
+      "verification": "Independently calculated synthetic ledger covers repeated purchases, near-matches, refunds, cross-currency records and corrected transfer peers."
+    },
+    {
+      "key": "EW-19",
+      "title": "Calibrate identity candidates and preserve reversible decisions",
+      "sprint": 4,
+      "area": "identity",
+      "priority": "P1",
+      "size": "L",
+      "depends_on": [
+        "EW-14",
+        "EW-17"
+      ],
+      "outcome": "Add explainable statistical candidate matching without turning scores into identity conclusions.",
+      "acceptance": [
+        "Version a Splink configuration and conventional feature extraction with synthetic labelled evaluation data, held-out namesakes and conflicting dates.",
+        "Publish calibration/error results and limitations; keep extraction quality, source-origin groups, match output and analyst confidence separate.",
+        "Compare candidate support/conflict, missing values and temporal compatibility; accept/reject/defer and reversible merges preserve original observations.",
+        "Support grouped/bulk candidate review without auto-merging or overwriting namespaces and leading-zero identifiers."
+      ],
+      "verification": "Held-out candidate evaluation, copied-source dependence, false-positive namesakes and mistaken-merge reversal with downstream review invalidation."
+    },
+    {
+      "key": "EW-20",
+      "title": "Add temporal relationships and explainable graph paths",
+      "sprint": 4,
+      "area": "relationships",
+      "priority": "P1",
+      "size": "M",
+      "depends_on": [
+        "EW-17",
+        "EW-19"
+      ],
+      "outcome": "Make graph relationships analyst-authored, temporal and traceable to accepted observations.",
+      "acceptance": [
+        "Create/review temporal assertions with valid-from/to bounds, source anchors and explicit predicate semantics.",
+        "Show shared counterparties and path explanations with each contributing assertion and its source; distinguish unsupported/pending edges.",
+        "Respect date filters and reversals; no graph inference can silently create canonical relationships.",
+        "Add editable Figma graph/edge review interactions and scalable selection/filtering with keyboard alternatives."
+      ],
+      "verification": "Date-limited paths, contradictory assertions, removed/reversed identity links and correction propagation produce explainable graph results."
+    },
+    {
+      "key": "EW-21",
+      "title": "Complete lead inbox, case tasks and hypothesis-driven pivots",
+      "sprint": 4,
+      "area": "workflow",
+      "priority": "P1",
+      "size": "M",
+      "depends_on": [
+        "EW-14",
+        "EW-22"
+      ],
+      "outcome": "Connect investigation questions and findings to actionable leads and collection history.",
+      "acceptance": [
+        "Provide lead accept/reject/defer, task ownership/status, collection gaps and links to hypotheses, findings and acquisition jobs.",
+        "Pivot from reviewed names, aliases, usernames, organisations, domains, addresses and document mentions using explicit source selection.",
+        "Preview exactly what leaves the machine; never automatically submit client addresses, reference numbers, account details or case contents.",
+        "Show copied-source origins and contradictory evidence alongside lead provenance and prior collection attempts."
+      ],
+      "verification": "Incomplete synthetic input yields a new identifier and another relevant lead; task/lead state survives restart without duplicate observations."
+    },
+    {
+      "key": "EW-22",
+      "title": "Make direct collection durable, cancellable and policy-bounded",
+      "sprint": 3,
+      "area": "discovery",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-05",
+        "EW-10"
+      ],
+      "outcome": "Extend the current broker/collector into a persistent multi-step discovery job.",
+      "acceptance": [
+        "Persist frontier, deduplication, request accounting, hops, robots state and source receipts; restart resumes without duplicate acquisition records.",
+        "Preserve defaults of two hops, 50 external requests and ten minutes, stopping at the first limit or lower source quota, including redirects/robots.",
+        "Make DNS resolution, redirects, TLS and body reads cancellable and bounded; reject all private/local/link-local/rebinding destinations throughout.",
+        "Keep blocked, quota exhausted, cancelled, failed, partial and successful-empty outcomes distinct; source scripts and service workers never run in the privileged interface."
+      ],
+      "verification": "Synthetic multi-host transport tests plus harmless live publisher collection; verify cancel/restart, redirect/rebinding attempts and exact request budgets."
+    },
+    {
+      "key": "EW-23",
+      "title": "Add reviewed direct-source discovery adapters",
+      "sprint": 4,
+      "area": "discovery",
+      "priority": "P1",
+      "size": "L",
+      "depends_on": [
+        "EW-22"
+      ],
+      "outcome": "Implement bounded source-specific pivots through the central broker without an unrestricted OSINT framework.",
+      "acceptance": [
+        "Add selected authoritative DNS/RDAP, certificate/public certificate records, public archive discovery, public profiles and website adapters with versioned manifests.",
+        "For each adapter record destination scope, permissible direct access, disclosed fields, attribution/reuse constraints, request limits and unsupported/authentication states.",
+        "Return provenance-linked leads and captures, not independent canonical writes; no paid/account/key search or hosted metasearch dependency.",
+        "Preview scope per adapter and keep user credentials/browser profiles out of collection; denied sources remain clearly unavailable."
+      ],
+      "verification": "Synthetic replay contracts per adapter and sanitized live checks on permitted public sources; verify no hidden destinations or local-case data disclosure."
+    },
+    {
+      "key": "EW-24",
+      "title": "Capture dynamic pages in a broker-only sandboxed browser",
+      "sprint": 4,
+      "area": "discovery",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-03",
+        "EW-04",
+        "EW-07",
+        "EW-22"
+      ],
+      "outcome": "Add dynamic capture while keeping case data and direct networking outside Chromium.",
+      "acceptance": [
+        "Create a fresh disposable profile with no case database or credentials; explicitly enable Chromium sandboxing and block service workers.",
+        "Fulfil permitted page requests only through the Rust broker, checking every destination/redirect; deny direct browser and child-process networking.",
+        "Return bounded page images, escaped text and acquisition metadata; reject unsupported downloads, scripts in the main UI, unbounded pages and timeouts.",
+        "Verify profile/scratch cleanup and resources on all three targets before enabling the adapter."
+      ],
+      "verification": "Hostile synthetic pages attempt service-worker, websocket, redirect, local-file and direct-network escape; a benign dynamic page captures successfully within the same confinement."
+    },
+    {
+      "key": "EW-25",
+      "title": "Publish typed discovery and analysis recipes",
+      "sprint": 4,
+      "area": "core",
+      "priority": "P1",
+      "size": "M",
+      "depends_on": [
+        "EW-17",
+        "EW-21",
+        "EW-23"
+      ],
+      "outcome": "Make repeatable investigations configurable through reviewed operations, not arbitrary executable extensions.",
+      "acceptance": [
+        "Define versioned recipes with typed inputs, allowed operations, limits, dependencies and output schemas.",
+        "Validate scope and show a concrete execution preview before launch; every network step uses the broker and job budget.",
+        "Document adapter interfaces and compatibility; reject downloaded code, shell, Python and arbitrary SQL in recipes.",
+        "Save/run/retry recipes with provenance and revision-labelled outputs while retaining partial failures."
+      ],
+      "verification": "Schema/limit/cycle/injection negatives plus one collection-to-entity-to-analysis recipe operating on synthetic local evidence and permitted public sources."
+    },
+    {
+      "key": "EW-26",
+      "title": "Deliver versioned offline map and address data packs",
+      "sprint": 4,
+      "area": "geography",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-01",
+        "EW-07",
+        "EW-17"
+      ],
+      "outcome": "Provide usable offline geography with explicit licensed regional coverage.",
+      "acceptance": [
+        "Identify an initial release region and redistribution-compatible map/address sources during Sprint 1; record the selection and licensing before implementation.",
+        "Build/import a versioned pack with hashes, attribution, extent, address schema and compatibility; include required packs in each distribution advertising that region.",
+        "Keep map rendering and client-address resolution local; permit coordinates, local lookup and analyst-confirmed placement with provenance.",
+        "Display missing/outdated coverage and pack version visibly; global coordinate plotting must not be advertised as complete street/address coverage."
+      ],
+      "verification": "Clean offline pack installation, local address lookup, out-of-region lookup, damaged/incompatible packs and import/export privacy tests."
+    },
+    {
+      "key": "EW-27",
+      "title": "Complete merchant, channel and historical proximity analysis",
+      "sprint": 5,
+      "area": "geography",
+      "priority": "P1",
+      "size": "L",
+      "depends_on": [
+        "EW-18",
+        "EW-23",
+        "EW-26"
+      ],
+      "outcome": "Resolve merchant identity, branch and transaction channel separately and carry uncertainty into distance findings.",
+      "acceptance": [
+        "Retain competing merchant/branch locations, source anchors, precision, retrieval dates and known validity periods; never pick a branch because it is nearest the subject.",
+        "Add time-bounded reference addresses and analyst-confirmed coordinates; use the address valid at the transaction date.",
+        "Calculate labelled geodesic distance with configurable bands; online channels, ambiguous branches and insufficient precision stay unresolved/uncertain.",
+        "Show unresolved denominators and drillthrough; reviewed public merchant queries disclose only the selected public merchant information, never accounts/statements/client addresses."
+      ],
+      "verification": "Ambiguous branches, online purchase, relocated merchant and changed home address scenarios produce independently checked distances and appropriate uncertainty."
+    },
+    {
+      "key": "EW-28",
+      "title": "Connect timelines, maps, graphs and tables to reviewed evidence",
+      "sprint": 5,
+      "area": "workflow",
+      "priority": "P1",
+      "size": "M",
+      "depends_on": [
+        "EW-18",
+        "EW-20",
+        "EW-27"
+      ],
+      "outcome": "Make every analytical view a consistent projection of the same canonical records.",
+      "acceptance": [
+        "Provide shared date/entity/account filters and stable cross-view selections, with source drillthrough from every displayed event/edge/point/aggregate.",
+        "Distinguish pending versus accepted observations and stale analytical snapshots without combining incompatible revisions.",
+        "Propagate corrections to all current views and affected findings, preserving prior report snapshots.",
+        "Finish editable Figma interaction frames and test compact/wide layouts, long labels and keyboard alternatives."
+      ],
+      "verification": "One integrated correction scenario updates all four views and review flags with reconciled counts and no lost source anchors."
+    },
+    {
+      "key": "EW-29",
+      "title": "Finish DOCX and HTML report assembly with cited exhibits",
+      "sprint": 5,
+      "area": "reporting",
+      "priority": "P1",
+      "size": "L",
+      "depends_on": [
+        "EW-14",
+        "EW-18",
+        "EW-20",
+        "EW-27"
+      ],
+      "outcome": "Export usable assessments with selected findings, opposing evidence, exhibits and calculation details.",
+      "acceptance": [
+        "Add report assembly/order/selection and locally bundled templates/fonts; DOCX remains editable and HTML self-contained.",
+        "Include stable citations, page/cell/message anchors, exhibits, provenance/origin groups, calculation inputs, limitations and outstanding enquiries.",
+        "Save an identifiable source-revision snapshot; corrections flag current findings without changing previous exported bytes.",
+        "Escape hostile content and review generated layouts, page breaks, tables and images in real renderers; no remote resources in exports."
+      ],
+      "verification": "Synthetic long assessment with tables/figures/opposing evidence, DOCX render inspection, HTML offline inspection and checksum-preserving corrections."
+    },
+    {
+      "key": "EW-30",
+      "title": "Export CSV, JSON, Parquet and graph interchange",
+      "sprint": 5,
+      "area": "reporting",
+      "priority": "P1",
+      "size": "M",
+      "depends_on": [
+        "EW-17",
+        "EW-20"
+      ],
+      "outcome": "Provide documented machine-readable exports that preserve types and provenance.",
+      "acceptance": [
+        "Export selected reviewed and explicitly requested pending records with stable IDs, source revision, anchors and a data dictionary.",
+        "Preserve exact decimals, currencies, namespace text, leading zeros, date/time semantics and temporal edge metadata across formats.",
+        "Prevent spreadsheet formula execution through a documented safe CSV export mode while retaining originals and unambiguous raw typed exports.",
+        "Export graph interchange with assertion/source identifiers; export cannot execute arbitrary code or SQL."
+      ],
+      "verification": "Round-trip import into independent readers, formula-injection fixtures, Unicode/quoting, decimal extremes and mixed review-state selections."
+    },
+    {
+      "key": "EW-31",
+      "title": "Complete industrial design and accessibility acceptance",
+      "sprint": 5,
+      "area": "design",
+      "priority": "P1",
+      "size": "L",
+      "depends_on": [],
+      "outcome": "Finish the product design as an industrial desktop instrument across every workflow, not just the existing specimens.",
+      "acceptance": [
+        "Maintain editable Figma components/frames for workspace, import/review, jobs, discovery, entity, graph, map, timeline, assessment and recovery states before each screen implementation.",
+        "Keep hard edges, compact controls, readable type and coherent status/error/empty/loading states; record 1440/960 implementation comparisons.",
+        "Verify keyboard-only operation, screen-reader names/order, focus restoration, 200% zoom, contrast and long-content/error cases on native platforms.",
+        "Run final owner visual acceptance in Sprint 5 and record remaining defects; automated axe success alone cannot close accessibility acceptance."
+      ],
+      "verification": "Frame links, component specifications, screenshots, automated checks and a completed manual/native accessibility matrix with no unresolved critical usability defects."
+    },
+    {
+      "key": "EW-32",
+      "title": "Verify network disclosure and destination enforcement end to end",
+      "sprint": 5,
+      "area": "security",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-22",
+        "EW-23",
+        "EW-24",
+        "EW-27"
+      ],
+      "outcome": "Prove the privacy promise across all online operations and local maps.",
+      "acceptance": [
+        "Record the complete connector/disclosed-data manifest and compare runtime requests with previewed analyst scope.",
+        "Exercise redirects, DNS rebinding, IPv4/IPv6 special ranges, proxies, TLS failure, cookies, referrers, websocket and native child paths.",
+        "Verify local addresses, statements, reference numbers and case contents are never submitted automatically; maps and local analyses initiate no traffic.",
+        "Keep telemetry, crash uploads and background update checks disabled; document residual network limitations and cancellation semantics."
+      ],
+      "verification": "Synthetic traffic capture with secret sentinel values plus permitted live public lookups; any unintended destination or sentinel disclosure blocks release."
+    },
+    {
+      "key": "EW-33",
+      "title": "Pass the complete synthetic investigation acceptance suite",
+      "sprint": 5,
+      "area": "verification",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-09",
+        "EW-11",
+        "EW-15",
+        "EW-18",
+        "EW-19",
+        "EW-21",
+        "EW-24",
+        "EW-25",
+        "EW-27",
+        "EW-28",
+        "EW-29",
+        "EW-30"
+      ],
+      "outcome": "Verify the full intended analyst journey with one shared fictional investigation.",
+      "acceptance": [
+        "Automate incomplete-input discovery, difficult import, identity ambiguity/reversal, statement reconciliation, proximity uncertainty and correction propagation.",
+        "Test corpus search, lead/task/hypothesis flow and cited reports against the same evidence/entity model rather than disconnected demonstration data.",
+        "Record expected totals, source anchors, graph paths, uncertainty denominators and saved snapshot hashes independently of implementation.",
+        "Run native Windows and both Mac architectures; separate source CI, installed-app automation and manual acceptance results."
+      ],
+      "verification": "All ten original end-to-end scenarios map to saved evidence; security/offline/recovery/broad-coverage scenarios also require their dedicated gates."
+    },
+    {
+      "key": "EW-34",
+      "title": "Run hostile-input, IPC and resource-exhaustion campaigns",
+      "sprint": 6,
+      "area": "security",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-03",
+        "EW-04",
+        "EW-12",
+        "EW-13",
+        "EW-24",
+        "EW-32"
+      ],
+      "outcome": "Validate security boundaries against adversarial inputs in the packaged application.",
+      "acceptance": [
+        "Fuzz worker/IPC manifests, archives, documents, HTML/SVG, links, filenames, formula-like data and injection paths using synthetic fixtures.",
+        "Verify CPU/memory/disk/pixel/member/output limits, timeout/cancel, process-tree cleanup and concurrent worker bounds on each target.",
+        "Repeat cross-workspace/original/network/IPC/descriptor probes against signed candidate helpers and actual packaged native libraries.",
+        "Retain failed cases and fixes; no worker/process separation claim substitutes for successful confinement evidence."
+      ],
+      "verification": "Published sanitized test matrix and regression corpus; no unresolved release-blocking boundary escape or resource-denial failure."
+    },
+    {
+      "key": "EW-35",
+      "title": "Prove crash recovery, migrations and correction consistency",
+      "sprint": 5,
+      "area": "core",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-10",
+        "EW-11",
+        "EW-17",
+        "EW-28"
+      ],
+      "outcome": "Recover a usable investigation after interruption without losing evidence or duplicating results.",
+      "acceptance": [
+        "Inject process termination at migration, import, derivative publish, snapshot, backup and restore boundaries.",
+        "Verify consistent pre-migration backups include every referenced original; unsupported newer schemas are refused and failed upgrades leave a recoverable state.",
+        "Resume interrupted jobs exactly once and detect corrupt/missing derivatives, indexes, manifests and originals.",
+        "Rebuild derived stores at the correct revision and check correction impact across assertions, transfers, maps, tables, graphs and findings while prior exports remain unchanged."
+      ],
+      "verification": "Crash/failure matrix on all targets with deterministic recovered record counts, evidence hashes and subsequent usable UI workflows."
+    },
+    {
+      "key": "EW-36",
+      "title": "Meet measured 16 GB performance and responsiveness targets",
+      "sprint": 6,
+      "area": "performance",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-15",
+        "EW-17",
+        "EW-28",
+        "EW-33"
+      ],
+      "outcome": "Measure and optimise the specified workload before publishing performance claims.",
+      "acceptance": [
+        "Use a documented 16 GB machine with 100,000 transactions and 10,000 document pages including 1,000 scans, plus concurrent map/graph use.",
+        "Measure cold/warm indexed search and transaction filters; target p95 below two seconds with disclosed query mix, revision and sample count.",
+        "Record import/OCR throughput, total/runtime peak memory, disk growth, cancel latency and UI responsiveness; workers start on demand with bounded concurrency.",
+        "Profile and repair bottlenecks, rerun the same workload and publish actual results including misses; do not substitute small synthetic timings."
+      ],
+      "verification": "Reproducible generator/workload, raw measurements, machine specification and before/after traces for any optimisation."
+    },
+    {
+      "key": "EW-37",
+      "title": "Publish security, licence and supply-chain review materials",
+      "sprint": 6,
+      "area": "delivery",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-06",
+        "EW-07",
+        "EW-26",
+        "EW-32",
+        "EW-34"
+      ],
+      "outcome": "Complete the review package for public distribution and ongoing maintenance.",
+      "acceptance": [
+        "Publish process/data-flow and filesystem/network/IPC permissions, threat assumptions, residual risks, decision records and connector disclosures.",
+        "Produce artifact-matched SBOMs, exact locks, bundled licences/notices and upstream source/redistribution obligations for runtimes, data and model assets.",
+        "Audit public source/history, build paths, screenshots, logs and candidate artifacts against the private exclusion list; remove credentials/private attribution before publication.",
+        "Define vulnerability intake, supported-platform/patch policy and manual update procedure, including fixed browser/runtime patch responsibility and storage-encryption guidance."
+      ],
+      "verification": "Independent maintainer/security review has no unaddressed release blocker; SBOM/inventory/license sets reconcile with the actual packaged files."
+    },
+    {
+      "key": "EW-38",
+      "title": "Produce signed installers and notarized Mac release candidates",
+      "sprint": 6,
+      "area": "distribution",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-08",
+        "EW-09",
+        "EW-33",
+        "EW-34",
+        "EW-35",
+        "EW-37",
+        "EW-41"
+      ],
+      "outcome": "Build the actual three native distribution artifacts with all advertised local features bundled.",
+      "acceptance": [
+        "Create Windows 11 x64 installer with app-local Fixed WebView2 and separate Apple Silicon/Intel Mac packages with signed helpers and notarization.",
+        "Verify signatures, entitlements, architecture, inventories, checksums and included regional/language packs; first launch never fetches dependencies.",
+        "Rehearse installer/upgrade/uninstall and preserve user workspace/recovery data through documented choices.",
+        "Keep candidate artifacts explicitly unreleased until downloaded-artifact and clean-offline tests pass; credentials remain outside repository and logs."
+      ],
+      "verification": "Artifact manifests and signing/notarization receipts identify exact binaries; missing signing access is a delivery blocker, never replaced by an unsigned release claim."
+    },
+    {
+      "key": "EW-39",
+      "title": "Verify actual downloaded artifacts on clean offline machines",
+      "sprint": 6,
+      "area": "verification",
+      "priority": "P0",
+      "size": "L",
+      "depends_on": [
+        "EW-36",
+        "EW-38"
+      ],
+      "outcome": "Close distribution acceptance using the same files users will download.",
+      "acceptance": [
+        "Download each candidate from the intended release destination and verify checksum/signature, rather than testing only a local build directory.",
+        "Install on clean Windows 11 x64 and native Apple Silicon/Intel Mac environments without developer tools; disable internet before install/first launch/local scenarios.",
+        "Exercise all advertised local features, packaged-language OCR, search, analysis, local maps, recovery and exports with no application-initiated network or downloads.",
+        "Repeat hostile-helper and upgrade smoke checks against those exact installed artifacts; retain per-target evidence and rerun affected checks after any binary change."
+      ],
+      "verification": "Clean-machine procedures, environment inventory and traffic capture reconcile with signed artifact hashes and all required release gates."
+    },
+    {
+      "key": "EW-40",
+      "title": "Finish bundled help, acceptance sign-off and v1 publication",
+      "sprint": 7,
+      "area": "delivery",
+      "priority": "P0",
+      "size": "M",
+      "depends_on": [
+        "EW-05",
+        "EW-31",
+        "EW-33",
+        "EW-34",
+        "EW-35",
+        "EW-36",
+        "EW-37",
+        "EW-39"
+      ],
+      "outcome": "Publish v1 only when the agreed product and distribution evidence is complete.",
+      "acceptance": [
+        "Bundle offline help, synthetic tutorial, source-review/calculation explanations, recovery/update instructions and visible feature/coverage limitations.",
+        "Reconcile every issue, acceptance scenario, licence and release gate; require no unresolved P0 or correctness/privacy defect and document any lower-impact accepted defect.",
+        "Obtain maintainer/security acceptance and owner design/product acceptance; reconcile signing and regional coverage claims with actual downloaded artifacts.",
+        "Publish the signed packages, checksums, SBOMs, notices, review entry point and release notes. If a required gate is unpassed, keep the candidate unreleased and record the revised forecast."
+      ],
+      "verification": "A fresh user completes the synthetic tutorial from offline install to cited assessment; gate checker and evidence review both pass for the identical release artifacts."
+    },
+    {
+      "key": "EW-41",
+      "title": "Review and integrate the existing pull-request chain",
+      "sprint": 1,
+      "area": "delivery",
+      "priority": "P0",
+      "size": "S",
+      "depends_on": [],
+      "outcome": "Establish a reviewed main-branch baseline without bypassing the existing review requirement.",
+      "acceptance": [
+        "Review PRs #1, #2 and #3 in dependency order and address feedback; retain their existing successful check evidence.",
+        "Merge only when repository-required reviews and checks permit it, retarget/rebase dependent PRs deliberately and rerun affected checks.",
+        "Record the resulting main revision and keep new issue branches traceable to their true base; work can proceed on the current pinned source while review is pending.",
+        "Do not force-push shared history, self-approve required reviews or mark an issue delivered solely because its PR was opened."
+      ],
+      "verification": "Main contains the reviewed feature chain with clean source CI, preserved history and no unreviewed bypass."
+    }
+  ]
+}

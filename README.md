@@ -4,6 +4,8 @@ An independently branded desktop investigation workbench. Preserve sources, revi
 
 **Status: active development, not an approved investigative release.** The current macOS development application supports local text/CSV/TSV evidence, reusable statement mappings and preview, transaction review, general entity/observation authoring, reviewed identity comparison and merge/reversal, graph and coordinate views, direct website collection, local Lucene search and HTML assessment snapshots. The complete release gates have **not** passed. See [implementation status](docs/STATUS.md) and the [security review entry point](SECURITY.md).
 
+The [three-month delivery programme](docs/delivery/THREE-MONTH-PLAN.md) runs from 23 September to a conditional 23 December 2026 target. Follow [GitHub programme #4](https://github.com/Venin-Client-Systems/entity-workbench/issues/4), the [dependency-linked issue index](docs/delivery/ISSUES.md) and the [runtime inventory contract](packaging/README.md).
+
 No hosted search service, account, API key or generative model is used. The application collects analyst-selected public websites directly and searches its own local index. Coverage consists of collected and imported sources. It does not claim a global web index or comprehensive open-web results.
 
 ![Synthetic investigation overview](docs/overview.png)

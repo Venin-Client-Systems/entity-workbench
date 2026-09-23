@@ -32,6 +32,8 @@ jobs:
             target
           key: native-${{ runner.os }}-${{ runner.arch }}-rust-1.90-${{ hashFiles('Cargo.lock') }}
       - run: npm ci
+      - name: Verify runtime inventory contract with synthetic fixtures
+        run: python -m unittest discover -s scripts/tests -p 'test_*.py' -v
       - run: cargo fmt --all -- --check
       - run: cargo test -p workbench-core --locked
       - run: cargo clippy -p workbench-core --all-targets --locked -- -D warnings

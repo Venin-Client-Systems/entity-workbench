@@ -15,7 +15,7 @@ This is an initial integrated development implementation. None of the three mile
 | Assessment | Question/hypothesis authoring, alternatives/gaps, multiple supporting/contradictory citations, explicit finding review and re-review, source inspection, immutable self-contained HTML snapshots, JSON transaction export | DOCX, CSV/Parquet/graph exports; report assembly and exhibit controls |
 | Java engines | Java 21 adapter builds; Tika text parse and Lucene query verification; hostile Seatbelt development probe | Confined PDF/OCR compatibility, signed helpers, Windows AppContainer, resource exhaustion tests |
 | Python engines | DuckDB exact totals with Parquet drillthrough, NetworkX reviewed paths, spaCy phrase candidates | Packaged Python/native libraries; Spatial extension; calibrated Splink; app integration and confinement |
-| Distribution | All three native targets compile in source CI; Apple Silicon development app with Java/Lucene staging | Complete runtime inventory on all targets; Windows Fixed WebView2; offline clean-machine tests; signing/notarization |
+| Distribution | All three native targets compile in source CI; Apple Silicon development app with Java/Lucene staging; versioned offline runtime inventory validator with synthetic target-policy tests and actual partial-staging rejection | Complete runtime inventory generation and validation on all targets; Windows Fixed WebView2; offline clean-machine tests; signing/notarization |
 | Performance | Small synthetic tests only | Required 16 GB / 100,000 transactions / 10,000 pages benchmark and measured p95 |
 
 ## Scope clarification
@@ -25,3 +25,7 @@ The implementation request was clarified to prohibit external search providers. 
 ## Gate policy
 
 The release checker fails while any required gate is unpassed. A successful source build, local engine test or development sandbox probe must not be relabelled as a complete approved release. Development `.app` builds are not signed/notarized product releases.
+
+## Delivery programme
+
+The [23 September–23 December programme](delivery/THREE-MONTH-PLAN.md) tracks 41 required work items through six fortnightly sprints and a release buffer. [GitHub programme #4](https://github.com/Venin-Client-Systems/entity-workbench/issues/4) owns the milestones and dependency graph. The target assumes concurrent engineering capacity and early platform/access validation; it is not a promise to waive remaining release gates. EW-01 implements the inventory contract; packaging remains incomplete.

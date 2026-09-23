@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Entity Workbench runtime inventory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "target",
+    "ocr_languages",
+    "regions",
+    "components",
+    "files"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "target": {
+      "enum": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ]
+    },
+    "ocr_languages": {
+      "$ref": "#/$defs/identifiers"
+    },
+    "regions": {
+      "$ref": "#/$defs/identifiers"
+    },
+    "components": {
+      "type": "array",
+      "maxItems": 2100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "version",
+          "files"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^[0-9][A-Za-z0-9._+\\-]{0,127}$"
+          },
+          "files": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100000,
+            "uniqueItems": true,
+            "items": {
+              "$ref": "#/$defs/path"
+            }
+          }
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "size",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "$ref": "#/$defs/path"
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 8589934592
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "identifiers": {
+      "type": "array",
+      "maxItems": 1000,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9_-]{0,63}$"
+      }
+    },
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "description": "Portable bundle-relative POSIX path. The offline validator additionally rejects traversal, links, reserved filenames and case/Unicode collisions."
+    }
+  }
+}
