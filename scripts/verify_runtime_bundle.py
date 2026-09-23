@@ -85,6 +85,10 @@ def is_link(info):
     )
 
 
+def file_identity(info):
+    return info.st_dev, info.st_ino, info.st_size, info.st_nlink
+
+
 def fingerprint(info):
     return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns
 
@@ -239,7 +243,8 @@ def verify(bundle_root, inventory_path, target):
                 digest = hashlib.sha256()
                 flags = os.O_RDONLY | getattr(os, 'O_BINARY', 0) | getattr(os, 'O_NOFOLLOW', 0)
                 with os.fdopen(os.open(root / path, flags), 'rb') as stream:
-                    if fingerprint(os.fstat(stream.fileno())) != fingerprint(before):
+                    opened = os.fstat(stream.fileno())
+                    if file_identity(opened) != file_identity(before):
                         error('file_changed', 'File changed before hashing', path=path)
                         continue
                     count = 0
@@ -248,8 +253,10 @@ def verify(bundle_root, inventory_path, target):
                         if count > entry['size']:
                             break
                         digest.update(block)
-                    changed = fingerprint(os.fstat(stream.fileno())) != fingerprint(before)
-                changed |= fingerprint((root / path).lstat()) != fingerprint(before)
+                    # Compare timestamps from the same descriptor API: Windows
+                    # path queries and handle queries can expose different times.
+                    changed = fingerprint(os.fstat(stream.fileno())) != fingerprint(opened)
+                    changed |= file_identity((root / path).lstat()) != file_identity(opened)
                 if changed or count != entry['size']:
                     error('file_changed', 'File changed during hashing', path=path)
                 elif digest.hexdigest() != entry['sha256']:

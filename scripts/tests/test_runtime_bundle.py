@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'verify_runtime_bundle.py'
 SPEC = importlib.util.spec_from_file_location('runtime_bundle', SCRIPT)
@@ -75,6 +76,51 @@ class RuntimeInventoryTests(unittest.TestCase):
         result = self.failed('missing_components')
         self.assertIn('java-runtime', result['missing_components'])
         self.assertIn('ocr-language:eng', result['missing_components'])
+
+    def test_path_and_handle_timestamp_differences_do_not_reject_valid_bytes(self):
+        real_stat = os.stat
+
+        class PathMetadata:
+            def __init__(self, info):
+                self.info = info
+
+            def __getattr__(self, name):
+                value = getattr(self.info, name)
+                return value + 1 if name in ('st_mtime_ns', 'st_ctime_ns') else value
+
+        def path_stat(*args, **kwargs):
+            return PathMetadata(real_stat(*args, **kwargs))
+
+        with patch.object(validator.os, 'stat', side_effect=path_stat):
+            result = self.verify()
+        self.assertTrue(result['complete'], result)
+
+    def test_file_mutation_during_hashing_is_rejected(self):
+        real_sha256 = hashlib.sha256
+        target = self.root / self.manifest['files'][0]['path']
+        changed = False
+
+        class ChangingDigest:
+            def __init__(self):
+                self.digest = real_sha256()
+
+            def update(self, content):
+                nonlocal changed
+                self.digest.update(content)
+                if not changed:
+                    changed = True
+                    info = target.stat()
+                    target.write_bytes(b'X' * info.st_size)
+                    os.utime(target, ns=(info.st_atime_ns, info.st_mtime_ns + 1_000_000_000))
+
+            def hexdigest(self):
+                return self.digest.hexdigest()
+
+        def digest(*args):
+            return real_sha256(*args) if args else ChangingDigest()
+
+        with patch.object(validator.hashlib, 'sha256', side_effect=digest):
+            self.failed('file_changed')
 
     def test_windows_requires_fixed_webview(self):
         self.manifest['target'] = 'windows-x86_64'
