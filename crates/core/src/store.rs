@@ -254,6 +254,22 @@ impl Workspace {
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
         match command {
+            Command::QueuePdfPageOcr {
+                evidence_id,
+                request_key,
+                page_number,
+                dpi,
+            } => {
+                return Ok(serde_json::to_value(self.queue_pdf_page_ocr(
+                    &evidence_id,
+                    &request_key,
+                    page_number,
+                    dpi,
+                )?)?)
+            }
+            Command::InspectPdfExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(self.pdf_extraction(&extraction_id)?)?)
+            }
             Command::QueueImageOcr {
                 evidence_id,
                 request_key,

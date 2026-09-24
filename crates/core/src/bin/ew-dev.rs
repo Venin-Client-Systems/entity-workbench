@@ -32,6 +32,15 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         return Ok(serde_json::to_value(workspace.view()?)?);
     }
     #[cfg(debug_assertions)]
+    if arg == "seed-pdf-processing-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_pdf_processing_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
     if arg == "seed-image-processing-review" {
         let path = std::env::args().nth(2).ok_or_else(|| {
             workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
@@ -66,7 +75,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                8,
+                9,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (
@@ -99,7 +108,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "processing-job",
-                2,
+                3,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ProcessingJob
                 ))?,
@@ -109,6 +118,13 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 1,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ExtractionRecord
+                ))?,
+            ),
+            (
+                "pdf-extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::PdfExtractionRecord
                 ))?,
             ),
             (
@@ -164,7 +180,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":15}));
+        return Ok(serde_json::json!({"schemas":16}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();

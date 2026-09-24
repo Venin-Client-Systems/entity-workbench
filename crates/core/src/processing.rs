@@ -28,6 +28,13 @@ pub enum ProcessingInput {
         sha256: String,
         bytes: u64,
     },
+    PdfPageOcr {
+        evidence_id: String,
+        sha256: String,
+        bytes: u64,
+        page_number: u32,
+        dpi: u32,
+    },
 }
 
 impl ProcessingInput {
@@ -42,6 +49,12 @@ impl ProcessingInput {
                 evidence_id,
                 sha256,
                 bytes,
+            }
+            | Self::PdfPageOcr {
+                evidence_id,
+                sha256,
+                bytes,
+                ..
             } => (evidence_id, sha256, *bytes),
         }
     }
@@ -80,6 +93,8 @@ pub enum ProcessingFailure {
     UnsupportedFormat,
     DocumentFailed,
     ImageDecodeFailed,
+    EncryptedDocument,
+    PdfRenderFailed,
     CancelledByAnalyst,
     CleanupFailed,
     WorkerExitUnverified,
@@ -142,6 +157,7 @@ pub(crate) struct PreparedProcessingJob {
 pub(crate) enum ProcessingOutput {
     Document(crate::engines::parser::ParseResult),
     Image(Box<crate::engines::image::ImageOcr>),
+    Pdf(Box<crate::engines::pdf_render::PdfOcr>),
 }
 
 /// An immutable, unreviewed derivative. Parsing does not replace source text or accept facts.
@@ -179,4 +195,39 @@ pub struct ImageExtractionRecord {
     pub created_at: String,
     pub result_sha256: String,
     pub result: ImageExtractionResult,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
+pub enum PdfPageOcrInput {
+    PdfPageOcr {
+        evidence_id: String,
+        sha256: String,
+        bytes: u64,
+        page_number: u32,
+        dpi: u32,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PdfExtractionResult {
+    pub render: crate::engines::pdf_render::PdfRenderResult,
+    pub recognition: Option<crate::engines::ocr::OcrResult>,
+    /// Always false: the raster was checked during publication, then discarded.
+    pub raster_retained: bool,
+}
+
+/// Immutable unreviewed page recognition and renderer provenance; no accepted word regions.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct PdfExtractionRecord {
+    pub schema_version: u32,
+    pub id: String,
+    pub job_id: String,
+    pub attempt: u32,
+    pub input: PdfPageOcrInput,
+    pub created_at: String,
+    pub result_sha256: String,
+    pub result: PdfExtractionResult,
 }

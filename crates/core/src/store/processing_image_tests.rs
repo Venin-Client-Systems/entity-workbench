@@ -17,7 +17,7 @@ fn image_request_keys_bind_operation_and_preserve_parse_v1_schema() {
     let (_temp, mut workspace, evidence) = workspace();
     let key = id();
     let image = workspace.queue_image_ocr(&evidence, &key).unwrap();
-    assert_eq!(image.schema_version, 2);
+    assert_eq!(image.schema_version, 3);
     let before = workspace.revision().unwrap();
     assert_eq!(
         workspace.queue_image_ocr(&evidence, &key).unwrap().id,

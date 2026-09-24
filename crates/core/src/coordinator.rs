@@ -56,6 +56,11 @@ impl JobCoordinator {
                     ProcessingInput::ParseDocument { .. } => runtime
                         .parse_with_cancel(scratch, bytes, token)
                         .map(ProcessingOutput::Document),
+                    ProcessingInput::PdfPageOcr {
+                        page_number, dpi, ..
+                    } => runtime
+                        .ocr_pdf_page_with_cancel(scratch, bytes, *page_number, *dpi, token)
+                        .map(|output| ProcessingOutput::Pdf(Box::new(output))),
                     ProcessingInput::ImageOcr { .. } => runtime
                         .ocr_image_with_cancel(scratch, bytes, token)
                         .map(|output| ProcessingOutput::Image(Box::new(output))),
@@ -541,3 +546,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "coordinator_pdf_tests.rs"]
+mod pdf_tests;

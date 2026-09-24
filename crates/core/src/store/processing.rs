@@ -17,11 +17,20 @@ const PAGE_LIMIT: u32 = 200;
 
 fn supported_job(job: &ProcessingJob) -> Result<()> {
     require(
-        job.schema_version == 2
+        job.schema_version == 3
+            || (job.schema_version == 2
+                && !matches!(job.input, ProcessingInput::PdfPageOcr { .. }))
             || (job.schema_version == 1
                 && matches!(job.input, ProcessingInput::ParseDocument { .. })),
         "Unsupported processing job version or operation",
-    )
+    )?;
+    if let ProcessingInput::PdfPageOcr {
+        page_number, dpi, ..
+    } = job.input
+    {
+        crate::engines::pdf_render::validate_settings(page_number, dpi)?;
+    }
+    Ok(())
 }
 
 fn attempt(job: &ProcessingJob, expected: u32) -> Result<()> {
@@ -67,13 +76,20 @@ fn suspend_queued_jobs(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
+#[derive(Clone, Copy)]
+enum RequestedOperation {
+    Parse,
+    Image,
+    Pdf { page_number: u32, dpi: u32 },
+}
+
 impl Workspace {
     pub fn queue_document_parse(
         &mut self,
         evidence_id: &str,
         request_key: &str,
     ) -> Result<ProcessingJob> {
-        self.queue_processing(evidence_id, request_key, false)
+        self.queue_processing(evidence_id, request_key, RequestedOperation::Parse)
     }
 
     pub fn queue_image_ocr(
@@ -81,14 +97,29 @@ impl Workspace {
         evidence_id: &str,
         request_key: &str,
     ) -> Result<ProcessingJob> {
-        self.queue_processing(evidence_id, request_key, true)
+        self.queue_processing(evidence_id, request_key, RequestedOperation::Image)
+    }
+
+    pub fn queue_pdf_page_ocr(
+        &mut self,
+        evidence_id: &str,
+        request_key: &str,
+        page_number: u32,
+        dpi: u32,
+    ) -> Result<ProcessingJob> {
+        crate::engines::pdf_render::validate_settings(page_number, dpi)?;
+        self.queue_processing(
+            evidence_id,
+            request_key,
+            RequestedOperation::Pdf { page_number, dpi },
+        )
     }
 
     fn queue_processing(
         &mut self,
         evidence_id: &str,
         request_key: &str,
-        image: bool,
+        operation: RequestedOperation,
     ) -> Result<ProcessingJob> {
         require(
             Uuid::parse_str(request_key).is_ok_and(|key| key.to_string() == request_key),
@@ -96,18 +127,24 @@ impl Workspace {
         )?;
         let expected = self.revision()?;
         let evidence: Evidence = get(&self.conn, "evidence", evidence_id)?;
-        let input = if image {
-            ProcessingInput::ImageOcr {
+        let input = match operation {
+            RequestedOperation::Parse => ProcessingInput::ParseDocument {
                 evidence_id: evidence.id.clone(),
                 sha256: evidence.sha256.clone(),
                 bytes: evidence.bytes,
-            }
-        } else {
-            ProcessingInput::ParseDocument {
+            },
+            RequestedOperation::Image => ProcessingInput::ImageOcr {
                 evidence_id: evidence.id.clone(),
                 sha256: evidence.sha256.clone(),
                 bytes: evidence.bytes,
-            }
+            },
+            RequestedOperation::Pdf { page_number, dpi } => ProcessingInput::PdfPageOcr {
+                evidence_id: evidence.id.clone(),
+                sha256: evidence.sha256.clone(),
+                bytes: evidence.bytes,
+                page_number,
+                dpi,
+            },
         };
         let existing: Option<String> = self
             .conn
@@ -135,7 +172,7 @@ impl Workspace {
         )?;
         let at = now();
         let job = ProcessingJob {
-            schema_version: 2,
+            schema_version: 3,
             id: id(),
             request_key: request_key.into(),
             input,
@@ -151,10 +188,12 @@ impl Workspace {
             started_at: None,
             finished_at: None,
             failure: None,
-            detail: if image {
-                "Queued for local image decoding and OCR"
-            } else {
-                "Queued for local document parsing"
+            detail: match operation {
+                RequestedOperation::Parse => "Queued for local document parsing",
+                RequestedOperation::Image => "Queued for local image decoding and OCR",
+                RequestedOperation::Pdf { .. } => {
+                    "Queued for local rendering and OCR of the selected PDF page"
+                }
             }
             .into(),
             result_ids: Vec::new(),
@@ -335,6 +374,9 @@ impl Workspace {
         job.updated_at = now();
         job.detail = match job.input {
             ProcessingInput::ParseDocument { .. } => "Local document worker is running",
+            ProcessingInput::PdfPageOcr { .. } => {
+                "Local PDF page rendering and OCR workers are running in sequence"
+            }
             ProcessingInput::ImageOcr { .. } => {
                 "Local image decoding and OCR workers are running in sequence"
             }
@@ -1000,3 +1042,13 @@ mod image_demo;
 #[cfg(test)]
 #[path = "processing_image_tests.rs"]
 mod image_tests;
+
+#[cfg(debug_assertions)]
+#[path = "processing_pdf_demo.rs"]
+mod pdf_demo;
+#[cfg(any(test, debug_assertions))]
+#[path = "processing_pdf_fixtures.rs"]
+mod pdf_fixtures;
+#[cfg(test)]
+#[path = "processing_pdf_tests.rs"]
+mod pdf_tests;

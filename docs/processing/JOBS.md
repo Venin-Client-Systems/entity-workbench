@@ -1,10 +1,10 @@
-# Durable local document and image jobs
+# Durable local document, image and PDF page jobs
 
-The Rust coordinator owns the queue and publishes immutable, unreviewed extraction records. Parsing does not overwrite original bytes, promote extracted text into accepted evidence, or create observations automatically. Document parsing and PNG/JPEG image OCR share the bounded offline queue. Collection and analytical jobs still need integration.
+The Rust coordinator owns the queue and publishes immutable, unreviewed extraction records. Parsing does not overwrite original bytes, promote extracted text into accepted evidence, or create observations automatically. Document parsing, PNG/JPEG image OCR and selected-page PDF OCR share the bounded offline queue. Collection and analytical jobs still need integration.
 
 ## Contract
 
-Command v5 adds `queue_document_parse`, `list_processing_jobs`, `inspect_processing_job`, `inspect_extraction`, `cancel_processing_job` and `retry_processing_job`. Command v7 adds `queue_image_ocr` and `inspect_image_extraction`. Requests are strict JSON. Newly queued jobs use processing-job v2; legacy parse-only jobs v1 remain readable. The parse-only extraction v1 schema remains unchanged. Image results use image-extraction v1. Historical command/job schemas are not overwritten by the generator. Canonical records remain in the existing version 3 SQLite store, so this additive change needs no database migration.
+Command v5 adds `queue_document_parse`, `list_processing_jobs`, `inspect_processing_job`, `inspect_extraction`, `cancel_processing_job` and `retry_processing_job`. Command v7 adds `queue_image_ocr` and `inspect_image_extraction`. Requests are strict JSON. Command v9 adds selected-page PDF OCR and its inspection command; see [PDF-JOBS.md](PDF-JOBS.md). Newly queued jobs use processing-job v3; legacy parse-only v1 and parse/image v2 jobs remain readable. The parse-only extraction v1 schema remains unchanged. Image results use image-extraction v1; PDF results use pdf-extraction v1. Historical command/job schemas are not overwritten by the generator. Canonical records remain in the existing version 3 SQLite store, so this additive change needs no database migration.
 
 | Action | Behaviour |
 |---|---|

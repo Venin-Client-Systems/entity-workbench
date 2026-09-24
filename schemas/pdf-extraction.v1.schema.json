@@ -1,0 +1,410 @@
+{
+  "$defs": {
+    "OcrLimitation": {
+      "enum": [
+        "unreviewed_recognition",
+        "no_word_regions",
+        "no_original_document_mapping"
+      ],
+      "type": "string"
+    },
+    "OcrResult": {
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "type": "string"
+        },
+        "height": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "$ref": "#/$defs/OcrLimitation"
+          },
+          "type": "array"
+        },
+        "model_sha256": {
+          "type": "string"
+        },
+        "protocol_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "raster_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "raster_sha256": {
+          "description": "The exact canonical PGM raster, never the original PDF or compressed image.",
+          "type": "string"
+        },
+        "runtime_manifest_sha256": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/OcrStatus"
+        },
+        "text": {
+          "type": "string"
+        },
+        "width": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "protocol_version",
+        "job_id",
+        "raster_sha256",
+        "raster_bytes",
+        "width",
+        "height",
+        "engine",
+        "language",
+        "model_sha256",
+        "runtime_manifest_sha256",
+        "status",
+        "text",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "OcrStatus": {
+      "enum": [
+        "recognized",
+        "no_text_recognized"
+      ],
+      "type": "string"
+    },
+    "PageGeometry": {
+      "additionalProperties": false,
+      "properties": {
+        "crop_box": {
+          "description": "Effective PDF CropBox, clipped to MediaBox: x0,y0,x1,y1, in points (UserUnit=1).",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array"
+        },
+        "pdf_to_raster": {
+          "description": "[a,b,c,d,e,f]: raster x=a*x+c*y+e, raster y=b*x+d*y+f.\nRaster origin is top-left; bounds are floored as in PDFBox, without resampling.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 6,
+          "minItems": 6,
+          "type": "array"
+        },
+        "rotation_degrees": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "crop_box",
+        "rotation_degrees",
+        "pdf_to_raster"
+      ],
+      "type": "object"
+    },
+    "PdfExtractionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "raster_retained": {
+          "description": "Always false: the raster was checked during publication, then discarded.",
+          "type": "boolean"
+        },
+        "recognition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OcrResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "render": {
+          "$ref": "#/$defs/PdfRenderResult"
+        }
+      },
+      "required": [
+        "render",
+        "raster_retained"
+      ],
+      "type": "object"
+    },
+    "PdfPageOcrInput": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dpi": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "pdf_page_ocr",
+              "type": "string"
+            },
+            "page_number": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes",
+            "page_number",
+            "dpi"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "PdfRenderResult": {
+      "additionalProperties": false,
+      "properties": {
+        "dpi": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "failure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RenderFailure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "geometry": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PageGeometry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "java_runtime": {
+          "type": "string"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "$ref": "#/$defs/RenderLimitation"
+          },
+          "type": "array"
+        },
+        "original_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "original_sha256": {
+          "type": "string"
+        },
+        "page_count": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "page_number": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "protocol_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "raster": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RasterBinding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "renderer": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/RenderStatus"
+        }
+      },
+      "required": [
+        "protocol_version",
+        "job_id",
+        "original_sha256",
+        "original_bytes",
+        "renderer",
+        "java_runtime",
+        "page_number",
+        "dpi",
+        "status",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "RasterBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "height": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "width": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "width",
+        "height"
+      ],
+      "type": "object"
+    },
+    "RenderFailure": {
+      "enum": [
+        "encrypted_document",
+        "unsupported_format",
+        "unsupported_feature",
+        "active_content",
+        "external_resource",
+        "malformed_document",
+        "page_out_of_range",
+        "page_limit",
+        "pixel_limit",
+        "structure_limit",
+        "stream_limit",
+        "operator_limit"
+      ],
+      "type": "string"
+    },
+    "RenderLimitation": {
+      "enum": [
+        "scan_focused_subset",
+        "annotations_excluded",
+        "color_converted_to_gray",
+        "unreviewed_raster",
+        "no_word_regions"
+      ],
+      "type": "string"
+    },
+    "RenderStatus": {
+      "enum": [
+        "rendered",
+        "encrypted",
+        "unsupported",
+        "failed",
+        "quota_exhausted"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Immutable unreviewed page recognition and renderer provenance; no accepted word regions.",
+  "properties": {
+    "attempt": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "input": {
+      "$ref": "#/$defs/PdfPageOcrInput"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "result": {
+      "$ref": "#/$defs/PdfExtractionResult"
+    },
+    "result_sha256": {
+      "type": "string"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "job_id",
+    "attempt",
+    "input",
+    "created_at",
+    "result_sha256",
+    "result"
+  ],
+  "title": "PdfExtractionRecord",
+  "type": "object"
+}

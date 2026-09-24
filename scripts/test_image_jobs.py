@@ -68,7 +68,7 @@ def observe(runtime, parser_runtime):
             "fixtures/images/unsupported.gif", "fixtures/parser/notice.pdf"]}
         report["phase"] = "native_tests"
         environment = dict(os.environ, WORKBENCH_TEST_IMAGE_RUNTIME=str(runtime), WORKBENCH_TEST_RUNTIME=str(parser_runtime))
-        command = ["cargo", "test", "--locked", "-p", "workbench-core", "--lib", "--", "coordinator::",
+        command = ["cargo", "test", "--locked", "-p", "workbench-core", "--lib", "--", "coordinator::tests::", "coordinator::image_tests::",
                    "store::processing::image_tests::", "--include-ignored", "--test-threads=1"]
         result = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, text=True, timeout=240)
         diagnostics = result.stdout + result.stderr

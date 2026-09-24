@@ -387,6 +387,15 @@ pub enum Command {
         request: crate::transaction_analysis::TransactionAnalysisRequest,
         expected_revision: u64,
     },
+    QueuePdfPageOcr {
+        evidence_id: String,
+        request_key: String,
+        page_number: u32,
+        dpi: u32,
+    },
+    InspectPdfExtraction {
+        extraction_id: String,
+    },
     QueueImageOcr {
         evidence_id: String,
         request_key: String,

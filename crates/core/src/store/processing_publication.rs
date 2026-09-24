@@ -1,10 +1,13 @@
 //! Validate and publish bounded immutable results without retaining raster bytes.
 use super::*;
 use crate::engines::{image, ocr};
+#[path = "processing_pdf_publication.rs"]
+mod pdf;
 
 pub(super) enum Derivative {
     Document(Box<ExtractionRecord>),
     Image(Box<ImageExtractionRecord>),
+    Pdf(Box<PdfExtractionRecord>),
 }
 
 impl Derivative {
@@ -12,12 +15,14 @@ impl Derivative {
         match self {
             Self::Document(record) => &record.id,
             Self::Image(record) => &record.id,
+            Self::Pdf(record) => &record.id,
         }
     }
     pub(super) fn publish(&self, conn: &Connection) -> Result<()> {
         match self {
             Self::Document(record) => put(conn, "extraction", &record.id, record),
             Self::Image(record) => put(conn, "image_extraction", &record.id, record),
+            Self::Pdf(record) => put(conn, "pdf_extraction", &record.id, record),
         }
     }
 }
@@ -54,6 +59,11 @@ impl Workspace {
                 let previous = self.image_extraction(key)?;
                 Ok(previous.attempt == ticket.attempt
                     && previous.result_sha256 == hash(&serde_json::to_vec(&image_summary(result))?))
+            }
+            (ProcessingInput::PdfPageOcr { .. }, ProcessingOutput::Pdf(result)) => {
+                let previous = self.pdf_extraction(key)?;
+                Ok(previous.attempt == ticket.attempt
+                    && previous.result_sha256 == hash(&serde_json::to_vec(&pdf::summary(result))?))
             }
             _ => Ok(false),
         }
@@ -185,6 +195,9 @@ pub(super) fn validated_derivative(
                 image::DecodeStatus::QuotaExhausted => terminal(job, ProcessingState::QuotaExhausted, Some(ProcessingFailure::WorkerFailed), "Image decoding exceeded its limit; its typed outcome was retained and no OCR was run"),
             }
             Ok(Derivative::Image(Box::new(record)))
+        }
+        (ProcessingInput::PdfPageOcr { .. }, ProcessingOutput::Pdf(output)) => {
+            pdf::validate(job, original, output, key)
         }
         _ => Err(Error::Validation(
             "Worker result does not match the queued operation".into(),

@@ -1,6 +1,7 @@
 //! Disposable, scan-focused PDF page renderer. No canonical writes or word-region claims.
 use super::{ocr, CancellationToken, Runtime};
 use crate::{require, Error, Result};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::path::Path;
@@ -8,7 +9,7 @@ use std::path::Path;
 mod runtime;
 
 pub const MAX_PAGES: u32 = 1000;
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum RenderStatus {
     Rendered,
@@ -17,7 +18,7 @@ pub enum RenderStatus {
     Failed,
     QuotaExhausted,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum RenderFailure {
     EncryptedDocument,
@@ -33,7 +34,7 @@ pub enum RenderFailure {
     StreamLimit,
     OperatorLimit,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum RenderLimitation {
     ScanFocusedSubset,
@@ -42,7 +43,7 @@ pub enum RenderLimitation {
     UnreviewedRaster,
     NoWordRegions,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PageGeometry {
     /// Effective PDF CropBox, clipped to MediaBox: x0,y0,x1,y1, in points (UserUnit=1).
@@ -52,7 +53,7 @@ pub struct PageGeometry {
     /// Raster origin is top-left; bounds are floored as in PDFBox, without resampling.
     pub pdf_to_raster: [f64; 6],
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RasterBinding {
     pub path: String,
@@ -61,7 +62,7 @@ pub struct RasterBinding {
     pub width: u32,
     pub height: u32,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct PdfRenderResult {
     pub protocol_version: u32,
@@ -97,6 +98,10 @@ fn request_limits(original: &[u8], page: u32, dpi: u32) -> Result<()> {
         !original.is_empty() && original.len() <= crate::policy::MAX_IMPORT_BYTES,
         "PDF input byte limit",
     )?;
+    validate_settings(page, dpi)
+}
+/// Shared bounded analyst selection, also used before canonical queue admission.
+pub fn validate_settings(page: u32, dpi: u32) -> Result<()> {
     require(
         (1..=MAX_PAGES).contains(&page) && (72..=300).contains(&dpi),
         "PDF page or DPI outside supported bounds",
