@@ -277,9 +277,144 @@ pub fn create(
     Ok(directory)
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CreationAttempt {
+    created: bool,
+    create_code: u32,
+    roundtrip_code: Option<u32>,
+}
+impl CreationAttempt {
+    fn passed(&self) -> bool {
+        self.created && self.create_code == 0 && self.roundtrip_code == Some(0)
+    }
+}
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct DirectoryControls {
+    parent_add_opened: bool,
+    parent_add_code: u32,
+    ordinary_relative: CreationAttempt,
+    ordinary_absolute: CreationAttempt,
+    explicit_relative: CreationAttempt,
+    explicit_absolute: CreationAttempt,
+}
+impl DirectoryControls {
+    pub fn passed(&self) -> bool {
+        self.parent_add_opened
+            && self.parent_add_code == 0
+            && [
+                &self.ordinary_relative,
+                &self.ordinary_absolute,
+                &self.explicit_relative,
+                &self.explicit_absolute,
+            ]
+            .iter()
+            .all(|attempt| attempt.passed())
+    }
+}
+fn io_code(error: &std::io::Error) -> u32 {
+    error
+        .raw_os_error()
+        .map_or(ERROR_GEN_FAILURE, |code| code as u32)
+}
+fn create_attempt(path: &Path, descriptor: Option<&Descriptor>) -> CreationAttempt {
+    let name = wide(path.as_os_str());
+    let attributes = descriptor.map(|value| SECURITY_ATTRIBUTES {
+        nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
+        lpSecurityDescriptor: value.0,
+        bInheritHandle: 0,
+    });
+    let result = unsafe {
+        CreateDirectoryW(
+            name.as_ptr(),
+            attributes.as_ref().map_or(null(), |value| value),
+        )
+    };
+    if result == 0 {
+        // Capture the native result before any further API or diagnostic call.
+        return CreationAttempt {
+            created: false,
+            create_code: unsafe { GetLastError() },
+            roundtrip_code: None,
+        };
+    }
+    let payload = path.join("sentinel.txt");
+    let roundtrip = std::fs::write(&payload, b"synthetic child directory")
+        .and_then(|()| std::fs::read(&payload));
+    let code = match roundtrip {
+        Ok(value) if value == b"synthetic child directory" => 0,
+        Ok(_) => ERROR_INVALID_DATA,
+        Err(error) => io_code(&error),
+    };
+    CreationAttempt {
+        created: true,
+        create_code: 0,
+        roundtrip_code: Some(code),
+    }
+}
+fn directory_controls_at(relative_root: &Path, absolute_root: &Path) -> Result<DirectoryControls> {
+    let descriptor = creation_descriptor()?;
+    let parent = OpenOptions::new()
+        .access_mode(FILE_ADD_SUBDIRECTORY)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(
+            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+        )
+        .open(absolute_root);
+    let (parent_add_opened, parent_add_code) = match parent {
+        Ok(handle) => {
+            drop(handle);
+            (true, 0)
+        }
+        Err(error) => (false, io_code(&error)),
+    };
+    Ok(DirectoryControls {
+        parent_add_opened,
+        parent_add_code,
+        ordinary_relative: create_attempt(&relative_root.join("ordinary-relative"), None),
+        ordinary_absolute: create_attempt(&absolute_root.join("ordinary-absolute"), None),
+        explicit_relative: create_attempt(
+            &relative_root.join("explicit-relative"),
+            Some(&descriptor),
+        ),
+        explicit_absolute: create_attempt(
+            &absolute_root.join("explicit-absolute"),
+            Some(&descriptor),
+        ),
+    })
+}
+/// Diagnostic comparison only: the same paths and calls run both unconfined and
+/// confined. The report contains no path, SID or descriptor. No ACL on the parent
+/// is changed, and there are no retries or alternative production launch modes.
+pub fn directory_controls() -> Result<DirectoryControls> {
+    directory_controls_at(Path::new("."), &std::env::current_dir()?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn directory_creation_controls_require_creation_and_roundtrip_success() {
+        let tree = tempfile::tempdir().unwrap();
+        let controls = directory_controls_at(tree.path(), tree.path()).unwrap();
+        assert!(
+            controls.passed(),
+            "unconfined directory creation controls failed: {controls:?}"
+        );
+        let mut failed = controls.clone();
+        failed.parent_add_opened = false;
+        assert!(!failed.passed());
+        let mut failed = controls.clone();
+        failed.explicit_relative.created = false;
+        assert!(!failed.passed());
+        let mut failed = controls.clone();
+        failed.ordinary_absolute.roundtrip_code = None;
+        assert!(!failed.passed());
+        let mut failed = controls;
+        failed.explicit_absolute.create_code = ERROR_ACCESS_DENIED;
+        assert!(!failed.passed());
+    }
     #[test]
     fn created_child_locks_out_new_inspection_but_retains_security_handle() {
         let tree = tempfile::tempdir().unwrap();

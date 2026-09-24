@@ -60,7 +60,7 @@ jobs:
       - run: cargo fmt -p workbench-windows-worker -- --check
       - run: cargo clippy -p workbench-windows-worker --all-targets --locked -- -D warnings
       - name: Native filesystem and output unit tests
-        run: cargo test -p workbench-windows-worker --locked -- --test-threads=1
+        run: cargo test -p workbench-windows-worker --locked -- --test-threads=1 --show-output
       - run: cargo build -p workbench-windows-worker --bin ew-windows-probe --locked
       - name: Run hostile controls and copied Java 21 runtime in AppContainer
         shell: pwsh

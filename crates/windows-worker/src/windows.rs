@@ -1506,7 +1506,22 @@ mod tests {
         fs::create_dir(&directory).unwrap();
         let pinned = pin_directory(&directory).unwrap();
         assert!(fs::rename(&directory, tree.path().join("moved")).is_err());
+        // Measure rather than assume whether parent pinning interferes with
+        // child creation. This diagnostic does not qualify AppContainer access.
+        let child = directory.join("child-while-pinned");
+        let attempt = fs::create_dir(&child);
+        println!(
+            "{}",
+            serde_json::json!({"synthetic_parent_pin": {
+                "child_created": attempt.is_ok(),
+                "error_code": attempt.as_ref().err().and_then(std::io::Error::raw_os_error),
+            }})
+        );
+        if attempt.is_ok() {
+            fs::remove_dir(&child).unwrap();
+        }
         drop(pinned);
+        fs::create_dir(directory.join("child-after-unpin")).unwrap();
         fs::rename(&directory, tree.path().join("moved")).unwrap();
     }
 }

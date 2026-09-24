@@ -202,6 +202,12 @@ mod native {
                 fs::write("result.json", b"{}")?;
                 return Ok(());
             }
+            "directory-controls" => {
+                let controls = super::restricted_probe::directory_controls()?;
+                fs::write("result.json", serde_json::to_vec(&controls)?)?;
+                checkpoint(ProbeCheckpoint::Completed)?;
+                return Ok(());
+            }
             "restricted-directory" => {
                 drop(super::restricted_probe::create(
                     Path::new("restricted"),
@@ -638,6 +644,39 @@ mod native {
             require(
                 fs::read(&original)? == b"retained original",
                 "original sentinel changed",
+            )?;
+            report.insert(
+                "phase".into(),
+                serde_json::json!("directory_creation_controls"),
+            );
+            input.mode = "directory-controls".into();
+            fs::write(&input_path, serde_json::to_vec(&input)?)?;
+            baseline(&executable, &input_path, &controls)?;
+            let baseline_creation: super::restricted_probe::DirectoryControls =
+                serde_json::from_slice(&fs::read(controls.join("result.json"))?)?;
+            report.insert(
+                "directory_control_baseline".into(),
+                serde_json::to_value(&baseline_creation)?,
+            );
+            require(
+                baseline_creation.passed(),
+                "unconfined directory creation controls failed",
+            )?;
+            request.input = serde_json::to_vec(&input)?;
+            let output = run(&request, || false)?;
+            let confined_creation: super::restricted_probe::DirectoryControls =
+                serde_json::from_slice(&output.bytes)?;
+            report.insert(
+                "directory_control_confined".into(),
+                serde_json::to_value(&confined_creation)?,
+            );
+            require(
+                fs::read_dir(&jobs)?.next().is_none(),
+                "scratch survived directory creation controls",
+            )?;
+            require(
+                confined_creation.passed(),
+                "confined directory creation controls failed",
             )?;
             for mode in [
                 "timeout",
