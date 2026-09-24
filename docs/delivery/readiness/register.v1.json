@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "assessed_on": "2026-09-24",
+  "baseline_revision": "67e84c638444f3e1d1a6397ff28d568eea4759e9",
+  "programme_start": "2026-09-23",
+  "programme_end": "2026-12-23",
+  "evidence": {
+    "initial-audit": {
+      "kind": "inspection",
+      "record": "docs/delivery/readiness/audit-2026-09-24.md",
+      "sha256": "865741fa47d242ba69a0afb4d682351b60e2ad4ea1057b2e54c7b0d953447a7f",
+      "recorded_on": "2026-09-24",
+      "valid_until": null
+    }
+  },
+  "requirements": [
+    {
+      "id": "macos_signing_access",
+      "requirement": "Developer ID and notarization access",
+      "responsible_role": "Release signing custodian",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-06",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "Owner confirms an authorized custodian can use the required Developer ID and notarization access through an approved private signing route, including renewal/revocation responsibility.",
+      "next_action": "Confirm the custodian role and usable access privately; publish a sanitized dated attestation only.",
+      "later_checkpoint": {
+        "due_on": "2026-10-20",
+        "purpose": "Complete the Mac signing rehearsal."
+      }
+    },
+    {
+      "id": "windows_signing_access",
+      "requirement": "Windows signing access",
+      "responsible_role": "Release signing custodian",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-06",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "Owner confirms an authorized custodian has an approved Windows signing route, including timestamping and renewal/revocation responsibility.",
+      "next_action": "Confirm the signing route and custodian privately; do not create or purchase an account automatically.",
+      "later_checkpoint": {
+        "due_on": "2026-10-20",
+        "purpose": "Complete the Windows signing rehearsal."
+      }
+    },
+    {
+      "id": "macos_signing_rehearsal",
+      "requirement": "Signed and notarized Mac rehearsal",
+      "responsible_role": "Release engineer",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-20",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "Retain hashes and sanitized signing/notarization verification for representative app, bundled helpers and installer on both Mac architectures; record signing-route availability separately from worker confinement.",
+      "next_action": "After access is confirmed, rehearse the actual packaging path without exposing account or certificate details.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Repeat signing and verification on exact release candidates."
+      }
+    },
+    {
+      "id": "windows_signing_rehearsal",
+      "requirement": "Signed Windows installer rehearsal",
+      "responsible_role": "Release engineer",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-20",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "Retain the installer hash and sanitized signature/timestamp verification on Windows 11 x64, plus a downloaded-installer launch result.",
+      "next_action": "After access is confirmed, rehearse the selected signing and installer path.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Repeat signing and verification on the exact release candidate."
+      }
+    },
+    {
+      "id": "windows11_clean_environment",
+      "requirement": "Clean Windows 11 x64 test access",
+      "responsible_role": "Platform test operator",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-09-30",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "A responsible operator confirms a reserved Windows 11 x64 environment, documented OS build, reset method and ability to run offline tests without developer tools; retain a sanitized benign/hostile probe result.",
+      "next_action": "Reserve and verify a real Windows 11 target; hosted Windows Server source CI does not establish this access.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Test the actual downloaded signed installer after reset, offline and without developer tools."
+      }
+    },
+    {
+      "id": "macos_arm64_clean_environment",
+      "requirement": "Clean Apple Silicon Mac test access",
+      "responsible_role": "Platform test operator",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unverified",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-09-30",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "A responsible operator confirms a reserved Apple Silicon environment, documented OS version, reset method and ability to run offline tests without developer tools; retain a sanitized probe result.",
+      "next_action": "Assess and reserve a clean test environment. The inspected development Mac alone does not meet clean-test acceptance.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Test the actual downloaded signed/notarized package after reset on every advertised OS boundary."
+      }
+    },
+    {
+      "id": "macos_intel_clean_environment",
+      "requirement": "Clean Intel Mac test access",
+      "responsible_role": "Platform test operator",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-09-30",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "A responsible operator confirms a reserved Intel Mac environment, documented OS version, reset method and ability to run offline tests without developer tools; retain a sanitized probe result.",
+      "next_action": "Reserve and verify an Intel Mac environment independently of the hosted source-build job.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Test the actual downloaded signed/notarized package after reset on every advertised OS boundary."
+      }
+    },
+    {
+      "id": "benchmark_16gb_environment",
+      "requirement": "16 GB benchmark environment",
+      "responsible_role": "Performance test operator",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unverified",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-06",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "An operator confirms the reserved 16 GB-class host and sanitized OS/architecture/CPU class/storage class/memory/thermal-power configuration, synthetic workload capacity and repeatable measurement/reset procedure.",
+      "next_action": "Assess the observed 16 GiB development host for benchmark suitability and reservation; specify the hardware profile without identifiers.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Run 100,000 transactions and 10,000 pages including 1,000 scans with concurrent map/graph use, measured p95 and peak memory."
+      }
+    },
+    {
+      "id": "supported_os_matrix",
+      "requirement": "Minimum supported operating systems",
+      "responsible_role": "Product owner and platform maintainer",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unverified",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-06",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "Retain an explicit owner-approved version/build range for Windows 11 x64, macOS Apple Silicon and macOS Intel, with compatible runtimes/confinement, boundary test coverage and matching packaging metadata.",
+      "next_action": "Decide minimum Mac versions and supported Windows 11 builds after platform probes; a framework default or current developer OS is not an acceptance decision.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Confirm every advertised OS boundary with installed-artifact evidence."
+      }
+    },
+    {
+      "id": "maintainer_review",
+      "requirement": "Maintainer release acceptance capacity",
+      "responsible_role": "Release maintainer",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-06",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "A qualified maintainer accepts the role and review dates, records the required independent review path and commits to evaluating the evidence for exact candidate hashes; preserve required PR reviews.",
+      "next_action": "Identify and obtain a maintainer commitment; an agent must not self-approve or bypass branch review.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Review candidate completeness and record remaining conditions before final sign-off."
+      }
+    },
+    {
+      "id": "security_review",
+      "requirement": "Security release acceptance capacity",
+      "responsible_role": "Security reviewer",
+      "assignment_status": "unassigned",
+      "assignment_evidence": [],
+      "status": "unknown",
+      "assessed_on": "2026-09-24",
+      "needed_by": "2026-10-06",
+      "evidence": [
+        "initial-audit"
+      ],
+      "confirmation_evidence": [],
+      "required_evidence": "A qualified security reviewer accepts the role, review scope and dates covering threat model, native confinement, network policy, hostile inputs, licences/SBOM and recovery; retain sanitized acceptance or conditions.",
+      "next_action": "Identify and obtain a security reviewer commitment with time to repair findings.",
+      "later_checkpoint": {
+        "due_on": "2026-12-15",
+        "purpose": "Complete evidence review and candidate-specific security acceptance before final sign-off."
+      }
+    }
+  ]
+}
