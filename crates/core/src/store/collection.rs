@@ -355,3 +355,8 @@ impl Workspace {
 #[cfg(test)]
 #[path = "collection_tests.rs"]
 mod tests;
+
+// Fixed offline UI fixtures are unavailable to release builds.
+#[cfg(debug_assertions)]
+#[path = "collection_demo.rs"]
+mod demo;
