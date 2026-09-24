@@ -1,12 +1,24 @@
-"""Fail closed: a build success cannot stand in for release acceptance evidence."""
+"""Check release policy or verify a complete local candidate, without running evidence."""
+import argparse
+import json
 from pathlib import Path
-import json,sys
-root=Path(__file__).resolve().parents[1]
-gates=json.loads((root/'docs/release-gates.json').read_text())
-required={'integrated_workflows','windows_appcontainer','macos_signed_helpers','all_runtime_dependencies_bundled','offline_clean_install_three_targets','hostile_input_and_resource_exhaustion','broad_local_web_coverage','recovery_and_migration_failures','benchmark_16gb_target','dependency_license_and_security_review','signed_and_notarized_artifacts','downloaded_artifact_verification'}
-assert gates['schema_version']==1 and set(gates['gates'])==required
-assert all(type(value) is bool for value in gates['gates'].values())
-missing=sorted(name for name,passed in gates['gates'].items() if not passed)
-assert gates['complete_release']==(not missing),'Release claim conflicts with evidence gates'
-print(json.dumps({'complete_release':not missing,'unpassed':missing},indent=2))
-if '--check-policy' not in sys.argv and missing:raise SystemExit(1)
+
+from release_evidence import ROOT, evaluate
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check-policy', action='store_true', help='Validate declarations/receipts only; never report a verified complete release')
+    parser.add_argument('--ledger', type=Path, default=ROOT / 'docs/release-gates.json')
+    parser.add_argument('--evidence-root', type=Path, default=ROOT / 'docs/release-evidence')
+    parser.add_argument('--artifact-root', type=Path)
+    args = parser.parse_args()
+    report = evaluate(args.ledger, args.evidence_root, args.artifact_root, args.check_policy)
+    print(json.dumps(report, indent=2, sort_keys=True))
+    if args.check_policy:
+        return 0 if report['policy_valid'] and not report['errors'] else 1
+    return 0 if report['complete_release'] and not report['errors'] else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

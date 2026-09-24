@@ -1,0 +1,20 @@
+{
+  "synthetic": true,
+  "events": [
+    "import-evidence",
+    "start-job",
+    "interrupt-before-publish",
+    "restart",
+    "publish-once",
+    "snapshot-report",
+    "correct-observation",
+    "attempt-migration",
+    "injected-failure",
+    "restore-evidence-inclusive-backup"
+  ],
+  "expectations": {
+    "canonical_observation_count_after_resume": 1,
+    "previous_report_bytes_unchanged": true,
+    "referenced_originals_restored": true
+  }
+}

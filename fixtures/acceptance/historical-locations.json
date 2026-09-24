@@ -1,0 +1,49 @@
+{
+  "synthetic": true,
+  "reference_addresses": [
+    {
+      "id": "address-old",
+      "valid_from": "2024-01-01",
+      "valid_to": "2025-03-31",
+      "coordinates": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": "address-new",
+      "valid_from": "2025-04-01",
+      "valid_to": null,
+      "coordinates": [
+        0.04,
+        0.04
+      ]
+    }
+  ],
+  "merchant_candidates": [
+    {
+      "id": "branch-old",
+      "coordinates": [
+        0.01,
+        0.01
+      ],
+      "valid_to": "2025-03-15",
+      "precision": "branch"
+    },
+    {
+      "id": "branch-new",
+      "coordinates": [
+        0.05,
+        0.05
+      ],
+      "valid_from": "2025-03-16",
+      "precision": "branch"
+    },
+    {
+      "id": "online",
+      "coordinates": null,
+      "channel": "online"
+    }
+  ],
+  "ambiguous_purchase_date": "2025-03-20"
+}

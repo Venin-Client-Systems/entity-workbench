@@ -26,6 +26,10 @@ The implementation request was clarified to prohibit external search providers. 
 
 The release checker fails while any required gate is unpassed. A successful source build, local engine test or development sandbox probe must not be relabelled as a complete approved release. Development `.app` builds are not signed/notarized product releases.
 
+The [versioned acceptance ledger](release-evidence/README.md) now binds observations to exact source, installer, acceptance-policy and fixture-catalogue hashes. Required OS versions, retained negative outcomes, review receipts and freshness are checked before qualification. The repository still contains no release candidate or acceptance observations; all twelve gates remain unpassed. Ten small synthetic inputs establish initial regression expectations, not completed end-to-end scenarios.
+
 ## Delivery programme
 
 The [23 September–23 December programme](delivery/THREE-MONTH-PLAN.md) tracks 41 required work items through six fortnightly sprints and a release buffer. [GitHub programme #4](https://github.com/Venin-Client-Systems/entity-workbench/issues/4) owns the milestones and dependency graph. The target assumes concurrent engineering capacity and early platform/access validation; it is not a promise to waive remaining release gates. EW-01 implements the inventory contract; packaging remains incomplete.
+
+The owner authorized parallel agents on independent issues on 24 September. EW-02 supplies evidence-backed release checks. Separate branches supply EW-05's frozen discovery benchmark/offline scorer and EW-08's release-access readiness register. Their live collection, independent relevance review, confirmed access and support decisions remain outstanding. Changes are integrated through reviewable PRs and exact-revision CI; parallel implementation does not bypass issue dependencies or release review.

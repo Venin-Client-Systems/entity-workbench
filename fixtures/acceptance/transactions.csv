@@ -1,0 +1,9 @@
+account,date,description,amount,currency,balance,source_batch
+DEMO-A,2025-03-01,Opening position,100.00,AUD,100.00,one
+DEMO-A,2025-03-02,Fictional cafe,-18.00,AUD,82.00,one
+DEMO-A,2025-03-02,Fictional cafe,-18.00,AUD,64.00,one
+DEMO-A,2025-03-03,Refund,18.00,AUD,82.00,one
+DEMO-A,2025-03-04,Transfer to DEMO-B,-50.00,AUD,32.00,one
+DEMO-B,2025-03-04,Transfer from DEMO-A,50.00,AUD,50.00,one
+DEMO-A,2025-03-05,Fictional foreign purchase,-7.50,USD,,one
+DEMO-A,2025-03-02,Fictional cafe,-18.00,AUD,82.00,overlap

@@ -1,0 +1,24 @@
+{
+  "synthetic": true,
+  "archive_members": [
+    "../outside.txt",
+    "/absolute.txt",
+    "safe/../../outside.txt"
+  ],
+  "collected_html": "<script>throw new Error(\"synthetic-script-must-not-execute\")</script><p>Retain escaped evidence.</p>",
+  "invalid_worker_messages": [
+    {
+      "schema_version": 999
+    },
+    {
+      "job_id": "wrong-job",
+      "outputs": [
+        "../outside"
+      ]
+    }
+  ],
+  "requests": [
+    "https://127.0.0.1/",
+    "https://169.254.169.254/"
+  ]
+}

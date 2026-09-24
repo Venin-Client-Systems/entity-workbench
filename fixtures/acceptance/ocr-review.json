@@ -1,0 +1,15 @@
+{
+  "synthetic": true,
+  "source": "statement-scan.png",
+  "page": 1,
+  "region_pixels": [
+    24,
+    100,
+    400,
+    42
+  ],
+  "observed_candidate": "180.00",
+  "reviewed_value": "18.00",
+  "currency": "AUD",
+  "reason": "Compare OCR candidate with the retained printed debit."
+}
