@@ -61,16 +61,30 @@ fn query_hash(request: &TransactionPageRequest, revision: u64) -> Result<String>
         request.page_size,
     ))?))
 }
-fn search_params<'a>(
+pub(super) enum PageContext<'a> {
+    Ledger,
+    Transfer {
+        target_id: &'a str,
+        expected_version: u32,
+    },
+}
+fn page_params<'a>(
     base: &[&'a dyn rusqlite::ToSql],
     text: Option<&'a String>,
+    target: Option<&'a crate::domain::Transaction>,
 ) -> Vec<&'a dyn rusqlite::ToSql> {
     let mut values = base.to_vec();
-    if let Some(text) = text {
-        // The fixed search parameter follows all eight existing page parameters.
-        // Count and cursor queries leave the unused positions bound to NULL.
-        values.resize(8, &rusqlite::types::Null);
-        values.push(text);
+    if text.is_some() || target.is_some() {
+        // Fixed text and transfer context follow all eight original parameters.
+        // Unused positions remain NULL, never caller-controlled SQL fragments.
+        values.resize(9, &rusqlite::types::Null);
+        if let Some(text) = text {
+            values[8] = text;
+        }
+    }
+    if let Some(target) = target {
+        values.push(&target.id);
+        values.push(&target.account);
     }
     values
 }
@@ -89,14 +103,67 @@ impl Workspace {
         expected_revision: u64,
         search: Option<(&String, &crate::literal_search::LiteralMatching)>,
     ) -> Result<TransactionPage> {
+        self.transaction_page_with_context(request, expected_revision, search, PageContext::Ledger)
+    }
+
+    pub(super) fn transaction_page_with_context(
+        &self,
+        request: &TransactionPageRequest,
+        expected_revision: u64,
+        search: Option<(&String, &crate::literal_search::LiteralMatching)>,
+        context: PageContext<'_>,
+    ) -> Result<TransactionPage> {
         request.validate()?;
+        let snapshot = self.conn.unchecked_transaction()?;
+        let revision = self.revision()?;
+        if revision != expected_revision {
+            return Err(Error::Conflict(
+                "Transaction page revision changed; refresh and restart pagination".into(),
+            ));
+        }
+        let target = match context {
+            PageContext::Ledger => None,
+            PageContext::Transfer {
+                target_id,
+                expected_version,
+            } => {
+                require(
+                    request.filter.review == Some(ReviewState::Accepted),
+                    "Transfer candidates require accepted selection",
+                )?;
+                Some(super::transfer_candidates::resolve_target(
+                    &snapshot,
+                    target_id,
+                    expected_version,
+                )?)
+            }
+        };
+        let mut verified_sources = BTreeSet::new();
+        if let Some(target) = &target {
+            let key = target.anchor.evidence_id();
+            let evidence: Evidence = get(&snapshot, "evidence", key)?;
+            require(
+                evidence.id == key && evidence.sha256 == key,
+                "Canonical transfer target source identity is invalid",
+            )?;
+            self.verify_original(&evidence)?;
+            verified_sources.insert(key.to_string());
+        }
+        let base_scope = if target.is_some() {
+            format!(
+                "{SCOPE} AND id<>?10 AND (json_type(body,'$.account') IS NOT 'text'
+                OR json_extract(body,'$.account')<>?11)"
+            )
+        } else {
+            SCOPE.to_owned()
+        };
         let text = search.map(|(text, _)| text).filter(|text| !text.is_empty());
         let scope_sql = if text.is_some() {
             super::transaction_search::register_matcher(&self.conn)?;
             // CASE fixes evaluation scope: malformed/oversized text in the base
             // date/account/currency scope must fail, even if it would not match.
             format!(
-                "CASE WHEN {SCOPE} THEN ew_transaction_text_match_v1(
+                "CASE WHEN {base_scope} THEN ew_transaction_text_match_v1(
                 CASE WHEN json_type(body,'$.description')='text'
                     THEN json_extract(body,'$.description') END,
                 CASE WHEN json_type(body,'$.account')='text'
@@ -105,15 +172,8 @@ impl Workspace {
                     THEN json_extract(body,'$.date') END,?9) ELSE 0 END"
             )
         } else {
-            SCOPE.to_owned()
+            base_scope
         };
-        let snapshot = self.conn.unchecked_transaction()?;
-        let revision = self.revision()?;
-        if revision != expected_revision {
-            return Err(Error::Conflict(
-                "Transaction page revision changed; refresh and restart pagination".into(),
-            ));
-        }
         let query_sha256 = if let Some((text, matching)) = search {
             hash(&serde_json::to_vec(&(
                 "transaction-search-v1",
@@ -124,6 +184,16 @@ impl Workspace {
         } else {
             query_hash(request, revision)?
         };
+        let query_sha256 = if let Some(target) = &target {
+            hash(&serde_json::to_vec(&(
+                "transfer-candidates-v1",
+                query_sha256,
+                &target.id,
+                target.version,
+            ))?)
+        } else {
+            query_sha256
+        };
         let cursor = request
             .cursor
             .as_ref()
@@ -133,17 +203,29 @@ impl Workspace {
         let review = f.review_name();
         let mut counts = TransactionReviewCounts::default();
         let mut scope_count = 0u64;
-        let mut count_query = snapshot.prepare(&format!(
-            "SELECT CASE json_extract(body,'$.review')
+        let review_sql = "CASE json_extract(body,'$.review')
                 WHEN 'accepted' THEN 'accepted' WHEN 'pending' THEN 'pending'
                 WHEN 'rejected' THEN 'rejected' WHEN 'deferred' THEN 'deferred'
-                ELSE 'invalid' END AS review_state, count(*)
+                ELSE 'invalid' END";
+        let review_sql = if target.is_some() {
+            // Missing/nontext account cannot establish that a row shares the
+            // target account. Reject it in this scope instead of silently losing it.
+            format!(
+                "CASE WHEN json_type(body,'$.account') IS NOT 'text'
+                THEN 'invalid_account' ELSE {review_sql} END"
+            )
+        } else {
+            review_sql.to_owned()
+        };
+        let mut count_query = snapshot.prepare(&format!(
+            "SELECT {review_sql} AS review_state, count(*)
              FROM records WHERE {scope_sql} GROUP BY review_state"
         ))?;
         let groups = count_query.query_map(
-            rusqlite::params_from_iter(search_params(
+            rusqlite::params_from_iter(page_params(
                 params![f.date_from, f.date_to, f.account, f.currency],
                 text,
+                target.as_ref(),
             )),
             |row| Ok((row.get::<_, String>(0)?, row.get::<_, u64>(1)?)),
         )?;
@@ -154,6 +236,11 @@ impl Workspace {
                 "pending" => &mut counts.pending,
                 "rejected" => &mut counts.rejected,
                 "deferred" => &mut counts.deferred,
+                "invalid_account" => {
+                    return Err(Error::Validation(
+                        "Canonical transfer candidate account is missing or not text".into(),
+                    ))
+                }
                 _ => {
                     return Err(Error::Validation(
                         "Invalid canonical transaction review state".into(),
@@ -182,7 +269,7 @@ impl Workspace {
                     WHERE {scope_sql} AND {REVIEW} AND sequence=?6
                     AND length(CAST(json_extract(body,'$.date') AS BLOB))=10"
                     ),
-                    rusqlite::params_from_iter(search_params(
+                    rusqlite::params_from_iter(page_params(
                         params![
                             f.date_from,
                             f.date_to,
@@ -192,6 +279,7 @@ impl Workspace {
                             cursor.sequence
                         ],
                         text,
+                        target.as_ref(),
                     )),
                     |row| row.get(0),
                 )
@@ -229,7 +317,7 @@ impl Workspace {
             AND (?6 IS NULL OR json_extract(body,'$.date') {comparison} ?6 OR (json_extract(body,'$.date')=?6 AND sequence>?7))
             ORDER BY json_extract(body,'$.date') {direction}, sequence ASC LIMIT ?8");
         let mut statement = snapshot.prepare(&sql)?;
-        let mut matches = statement.query(rusqlite::params_from_iter(search_params(
+        let mut matches = statement.query(rusqlite::params_from_iter(page_params(
             params![
                 f.date_from,
                 f.date_to,
@@ -241,6 +329,7 @@ impl Workspace {
                 request.page_size + 1
             ],
             text,
+            target.as_ref(),
         )))?;
         let mut rows = Vec::new();
         let mut body_bytes = 0usize;
@@ -295,6 +384,9 @@ impl Workspace {
                     && value.version > 0
                     && scope.includes(&value)
                     && text_matches
+                    && target.as_ref().is_none_or(|target| {
+                        value.id != target.id && value.account != target.account
+                    })
                     && f.review.as_ref().is_none_or(|state| *state == value.review),
                 "Canonical transaction identity or scope mismatch",
             )?;
@@ -312,6 +404,9 @@ impl Workspace {
         drop(statement);
         let sources: BTreeSet<_> = rows.iter().map(|row| row.anchor.evidence_id()).collect();
         for source in sources {
+            if !verified_sources.insert(source.to_string()) {
+                continue;
+            }
             let evidence: Evidence = get(&snapshot, "evidence", source)?;
             require(
                 evidence.id == source && evidence.sha256 == source,

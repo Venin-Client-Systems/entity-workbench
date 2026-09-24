@@ -22,6 +22,7 @@ pub mod transaction_facets;
 pub mod transaction_page;
 pub mod transaction_search;
 pub mod transaction_sources;
+pub mod transfer_candidates;
 
 use thiserror::Error;
 #[derive(Debug, Error)]

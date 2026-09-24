@@ -390,6 +390,10 @@ pub struct WorkspaceView<R = ReportSnapshot> {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    PageTransferCandidates {
+        request: crate::transfer_candidates::TransferCandidatesRequest,
+        expected_revision: u64,
+    },
     ReadTransactionBalances {
         request: crate::transaction_balance::TransactionBalancesRequest,
         expected_revision: u64,

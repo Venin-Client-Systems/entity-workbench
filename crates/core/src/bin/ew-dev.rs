@@ -106,6 +106,20 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
         let schemas = [
             (
+                "transfer-candidates-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transfer_candidates::TransferCandidatesRequest
+                ))?,
+            ),
+            (
+                "transfer-candidates-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transfer_candidates::TransferCandidatesPage
+                ))?,
+            ),
+            (
                 "transaction-balances-request",
                 1,
                 serde_json::to_value(schemars::schema_for!(
@@ -243,7 +257,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                18,
+                19,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (

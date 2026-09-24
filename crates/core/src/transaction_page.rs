@@ -79,17 +79,18 @@ impl TransactionPageRequest {
                 .is_none_or(|value| !value.chars().any(char::is_control)),
             "Page account cannot contain control characters",
         )?;
-        require(
-            (1..=MAX_PAGE_ROWS).contains(&self.page_size),
-            "Transaction page size must be between 1 and 200",
-        )?;
-        require(
-            self.cursor
-                .as_ref()
-                .is_none_or(|cursor| !cursor.is_empty() && cursor.len() <= MAX_CURSOR_BYTES),
-            "Transaction cursor is empty or exceeds its bound",
-        )
+        validate_window(self.page_size, self.cursor.as_deref())
     }
+}
+pub(crate) fn validate_window(page_size: u32, cursor: Option<&str>) -> Result<()> {
+    require(
+        (1..=MAX_PAGE_ROWS).contains(&page_size),
+        "Transaction page size must be between 1 and 200",
+    )?;
+    require(
+        cursor.is_none_or(|cursor| !cursor.is_empty() && cursor.len() <= MAX_CURSOR_BYTES),
+        "Transaction cursor is empty or exceeds its bound",
+    )
 }
 #[derive(Debug, Clone, Default, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]

@@ -30,6 +30,7 @@ mod transaction_facets;
 mod transaction_page;
 mod transaction_search;
 mod transaction_sources;
+mod transfer_candidates;
 #[cfg(test)]
 mod view_tests;
 
@@ -310,6 +311,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, mode: ResponseMode) -> Result<Value> {
         match command {
+            Command::PageTransferCandidates {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_transfer_candidates(&request, expected_revision)?,
+                )?);
+            }
             Command::ReadTransactionBalances {
                 request,
                 expected_revision,

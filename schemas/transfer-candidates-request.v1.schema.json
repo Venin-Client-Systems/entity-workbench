@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "TransactionPageOrder": {
+      "enum": [
+        "date_ascending",
+        "date_descending"
+      ],
+      "type": "string"
+    },
+    "TransferCandidateFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "expected_target_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "filter": {
+      "$ref": "#/$defs/TransferCandidateFilter"
+    },
+    "order": {
+      "$ref": "#/$defs/TransactionPageOrder"
+    },
+    "page_size": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "query": {
+      "type": "string"
+    },
+    "target_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "target_id",
+    "expected_target_version",
+    "query",
+    "filter",
+    "order",
+    "page_size"
+  ],
+  "title": "TransferCandidatesRequest",
+  "type": "object"
+}
