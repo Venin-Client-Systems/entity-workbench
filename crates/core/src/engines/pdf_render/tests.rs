@@ -233,6 +233,41 @@ fn native_pdf_rejections_are_explicit_and_never_enter_ocr() {
             RenderFailure::PixelLimit,
         ),
         (
+            "postscript",
+            RenderStatus::Unsupported,
+            RenderFailure::UnsupportedFeature,
+        ),
+        (
+            "malformed-do",
+            RenderStatus::Failed,
+            RenderFailure::MalformedDocument,
+        ),
+        (
+            "malformed-color",
+            RenderStatus::Failed,
+            RenderFailure::MalformedDocument,
+        ),
+        (
+            "trailing-operand",
+            RenderStatus::Failed,
+            RenderFailure::MalformedDocument,
+        ),
+        (
+            "extra-operand",
+            RenderStatus::Failed,
+            RenderFailure::MalformedDocument,
+        ),
+        (
+            "predictor-5",
+            RenderStatus::Failed,
+            RenderFailure::MalformedDocument,
+        ),
+        (
+            "predictor-255",
+            RenderStatus::Failed,
+            RenderFailure::MalformedDocument,
+        ),
+        (
             "long-image",
             RenderStatus::Failed,
             RenderFailure::MalformedDocument,
@@ -338,6 +373,19 @@ fn native_pdf_rejections_are_explicit_and_never_enter_ocr() {
         assert!(output.render.raster.is_none() && output.ocr.is_none());
         assert_eq!(std::fs::read_dir(scratch.path()).unwrap().count(), 0);
     }
+    let control = runtime
+        .render_pdf_page(
+            scratch.path(),
+            include_bytes!("../../../../../fixtures/pdf-render/predictor-0.pdf"),
+            1,
+            72,
+        )
+        .unwrap();
+    assert_eq!(control.result.status, RenderStatus::Rendered);
+    let raster = control.raster.unwrap();
+    assert!(raster[b"P5\n600 115\n255\n".len()..]
+        .iter()
+        .all(|pixel| *pixel == 0));
     let out = runtime
         .render_pdf_page(scratch.path(), SCAN, 3, 72)
         .unwrap();

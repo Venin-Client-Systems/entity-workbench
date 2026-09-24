@@ -106,6 +106,24 @@ public final class GeneratePdfRenderFixtures {
                 case "invalid-rotation" -> page.setRotation(45);
                 case "missing-image" -> content(document, page, "/Missing Do");
                 case "unknown-operator" -> content(document, page, "syntheticUnknown");
+                case "malformed-do" -> content(document, page, "123 Do");
+                case "malformed-color" -> content(document, page, "(invalid) g");
+                case "extra-operand" -> content(document, page, "0 1 g");
+                case "trailing-operand" -> content(document, page, "0 g 123");
+                case "postscript" -> {
+                    COSStream stream = document.getDocument().createCOSStream();
+                    stream.setName(COSName.TYPE, "XObject");
+                    stream.setName(COSName.SUBTYPE, "PS");
+                    try (OutputStream output = stream.createOutputStream()) {
+                        output.write("synthetic PostScript content".getBytes(StandardCharsets.US_ASCII));
+                    }
+                    COSDictionary xobjects = new COSDictionary();
+                    xobjects.setItem(COSName.getPDFName("PS1"), stream);
+                    PDResources resources = new PDResources();
+                    resources.getCOSObject().setItem(COSName.XOBJECT, xobjects);
+                    page.setResources(resources);
+                    content(document, page, "/PS1 Do");
+                }
                 case "operator-limit" -> content(document, page, "n\n".repeat(100001));
                 case "structure-limit" -> {
                     COSArray nested = new COSArray();
@@ -144,6 +162,29 @@ public final class GeneratePdfRenderFixtures {
         target = Path.of(args[0]);
         Files.createDirectories(target);
         imageFixtures(Path.of(args[1]));
+        for (int prefix : new int[] {0, 5, 255}) {
+            try (PDDocument document = new PDDocument()) {
+                PDPage page = page(document);
+                PDImageXObject image = new PDImageXObject(document);
+                image.setWidth(1);
+                image.setHeight(1);
+                image.setBitsPerComponent(8);
+                image.setColorSpace(org.apache.pdfbox.pdmodel.graphics.color.PDDeviceGray.INSTANCE);
+                try (OutputStream output = image.getCOSObject().createOutputStream(COSName.FLATE_DECODE)) {
+                    output.write(new byte[] {(byte) prefix, 0});
+                }
+                COSDictionary parameters = new COSDictionary();
+                parameters.setInt(COSName.PREDICTOR, 15);
+                parameters.setInt(COSName.COLUMNS, 1);
+                parameters.setInt(COSName.COLORS, 1);
+                parameters.setInt(COSName.BITS_PER_COMPONENT, 8);
+                image.getCOSObject().setItem(COSName.DECODE_PARMS, parameters);
+                try (PDPageContentStream output = new PDPageContentStream(document, page)) {
+                    output.drawImage(image, 0, 0, 600, 115);
+                }
+                save(document, "predictor-" + prefix);
+            }
+        }
         for (int rotation : new int[] {0, 90, 180, 270}) {
             try (PDDocument document = new PDDocument()) {
                 PDPage page = new PDPage(new PDRectangle(100, 80));
@@ -163,7 +204,7 @@ public final class GeneratePdfRenderFixtures {
             save(document, "crop-cross-zero");
         }
         for (String mode : new String[] {"large-page", "active", "external", "font", "user-unit",
-                "invalid-rotation", "missing-image", "unknown-operator", "operator-limit", "stream-limit", "structure-limit", "unsupported-filter"}) {
+                "invalid-rotation", "missing-image", "unknown-operator", "malformed-do", "malformed-color", "extra-operand", "trailing-operand", "postscript", "operator-limit", "stream-limit", "structure-limit", "unsupported-filter"}) {
             hostileFixture(mode);
         }
         try (PDDocument document = new PDDocument()) {

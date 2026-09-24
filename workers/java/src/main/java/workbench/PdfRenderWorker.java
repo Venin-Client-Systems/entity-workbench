@@ -15,6 +15,7 @@ import org.apache.pdfbox.contentstream.operator.Operator;
 import org.apache.pdfbox.cos.*;
 import org.apache.pdfbox.io.RandomAccessReadBuffer;
 import org.apache.pdfbox.pdfparser.PDFParser;
+import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.encryption.InvalidPasswordException;
@@ -88,7 +89,73 @@ public final class PdfRenderWorker {
             if (!ALLOWED.contains(operator.getName())) {
                 throw unsupported();
             }
+            validateOperands(operator.getName(), operands);
             super.processOperator(operator, operands);
+        }
+
+        private static void validateOperands(String operator, List<COSBase> operands) throws IOException {
+            if (operator.equals("Do")) {
+                if (operands.size() != 1 || !(operands.get(0) instanceof COSName)) {
+                    throw new Refused("failed", "malformed_document");
+                }
+                return;
+            }
+            if (operator.equals("d")) {
+                validateDash(operands);
+                return;
+            }
+            int count = switch (operator) {
+                case "cm", "c" -> 6;
+                case "re", "v", "y" -> 4;
+                case "RG", "rg" -> 3;
+                case "m", "l" -> 2;
+                case "w", "J", "j", "M", "G", "g" -> 1;
+                default -> 0;
+            };
+            if (operands.size() != count) {
+                throw new Refused("failed", "malformed_document");
+            }
+            for (COSBase operand : operands) {
+                number(operand);
+            }
+            if (operator.equals("J") || operator.equals("j")) {
+                float value = number(operands.get(0));
+                if (value < 0 || value > 2 || value != Math.floor(value)) {
+                    throw new Refused("failed", "malformed_document");
+                }
+            }
+            if ((operator.equals("w") && number(operands.get(0)) < 0)
+                    || (operator.equals("M") && number(operands.get(0)) < 1)) {
+                throw new Refused("failed", "malformed_document");
+            }
+        }
+
+        private static float number(COSBase operand) throws IOException {
+            if (!(operand instanceof COSNumber value) || !Float.isFinite(value.floatValue())) {
+                throw new Refused("failed", "malformed_document");
+            }
+            return value.floatValue();
+        }
+
+        private static void validateDash(List<COSBase> operands) throws IOException {
+            if (operands.size() != 2 || !(operands.get(0) instanceof COSArray pattern)
+                    || number(operands.get(1)) < 0) {
+                throw new Refused("failed", "malformed_document");
+            }
+            if (pattern.size() > 64) {
+                throw new Refused("quota_exhausted", "structure_limit");
+            }
+            boolean positive = false;
+            for (COSBase operand : pattern) {
+                float value = number(operand);
+                if (value < 0) {
+                    throw new Refused("failed", "malformed_document");
+                }
+                positive |= value > 0;
+            }
+            if (pattern.size() > 0 && !positive) {
+                throw new Refused("failed", "malformed_document");
+            }
         }
 
         @Override
@@ -146,6 +213,36 @@ public final class PdfRenderWorker {
         }
     }
 
+    private static void validateContent(PDPage page) throws IOException {
+        PDFStreamParser parser = new PDFStreamParser(page);
+        List<COSBase> operands = new ArrayList<>();
+        int operators = 0;
+        try {
+            Object token;
+            while ((token = parser.parseNextToken()) != null) {
+                if (token instanceof Operator operator) {
+                    if (++operators > 100000) {
+                        throw new Refused("quota_exhausted", "operator_limit");
+                    }
+                    if (!StrictDrawer.ALLOWED.contains(operator.getName())) {
+                        throw unsupported();
+                    }
+                    StrictDrawer.validateOperands(operator.getName(), operands);
+                    operands.clear();
+                } else if (token instanceof COSBase operand && operands.size() < 6) {
+                    operands.add(operand);
+                } else {
+                    throw new Refused("failed", "malformed_document");
+                }
+            }
+            if (!operands.isEmpty()) {
+                throw new Refused("failed", "malformed_document");
+            }
+        } finally {
+            parser.close();
+        }
+    }
+
     private static void validatePage(PDPage page) throws IOException {
         COSBase unit = page.getCOSObject().getDictionaryObject(COSName.USER_UNIT);
         if (unit != null && (!(unit instanceof COSNumber n) || n.floatValue() != 1)) {
@@ -199,6 +296,7 @@ public final class PdfRenderWorker {
             new PdfRenderPolicy().inspect(document.getDocument().getTrailer(), 0);
             PDPage page = document.getPage(pageNumber - 1);
             validatePage(page);
+            validateContent(page);
             PDRectangle box = page.getCropBox();
             float[] crop = {box.getLowerLeftX(), box.getLowerLeftY(), box.getUpperRightX(), box.getUpperRightY()};
             for (float coordinate : crop) {

@@ -65,8 +65,21 @@ final class PdfRenderPolicy {
             throw new Refused("unsupported", "external_resource");
         }
         // No font lookup/fallback, form recursion, optional content, masks or advanced graphics.
-        if (type.equals("Font") || subtype.equals("Form")) {
+        if (type.equals("Font") || subtype.equals("Form") || subtype.equals("PS")
+                || (type.equals("XObject") && !subtype.equals("Image"))) {
             throw unsupported();
+        }
+        COSBase xobjects = dictionary.getDictionaryObject(COSName.XOBJECT);
+        if (xobjects != null) {
+            if (!(xobjects instanceof COSDictionary resources) || resources instanceof COSStream) {
+                throw new Refused("failed", "malformed_document");
+            }
+            for (COSName name : resources.keySet()) {
+                COSBase object = resources.getDictionaryObject(name);
+                if (!(object instanceof COSStream stream) || !"Image".equals(stream.getNameAsString(COSName.SUBTYPE))) {
+                    throw unsupported();
+                }
+            }
         }
         for (String key : UNSUPPORTED_KEYS) {
             if (dictionary.containsKey(key)) {
@@ -111,6 +124,14 @@ final class PdfRenderPolicy {
             byte[] buffer = new byte[8192];
             int count;
             while ((count = decoded.read(buffer)) != -1) {
+                if (image && rowPrefix == 1) {
+                    int rowBytes = width * components + 1;
+                    for (int offset = 0; offset < count; offset++) {
+                        if ((streamBytes + offset) % rowBytes == 0 && (buffer[offset] & 255) > 4) {
+                            throw new Refused("failed", "malformed_document");
+                        }
+                    }
+                }
                 expanded += count;
                 streamBytes += count;
                 if (expanded > MAX_EXPANDED) {
@@ -139,6 +160,9 @@ final class PdfRenderPolicy {
         int predictor = p.getInt(COSName.PREDICTOR, 1);
         if (columns < 1 || columns > MAX_DIMENSION || colors < 1 || colors > 3 || bits != 8
                 || !(predictor == 1 || predictor == 2 || (predictor >= 10 && predictor <= 15))) {
+            throw unsupported();
+        }
+        if (!image && predictor != 1) {
             throw unsupported();
         }
         if (image && (columns != width || colors != components)) {
