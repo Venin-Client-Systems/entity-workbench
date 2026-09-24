@@ -64,6 +64,14 @@ function fixture(count = 251, repeats = false): Workspace {
 }
 const ledger = (page: Page) =>
   page.getByRole("region", { name: "Paged transaction ledger", exact: true });
+test("an existing statement-only workspace shows factual priorities without demo onboarding", async ({ page }) => {
+  fixture(6);
+  await page.goto("/");
+  await expect(page.getByText("0 entities · 0 source observations", { exact: true })).toBeVisible();
+  await expect(page.getByText("0 candidates · 0 pending review", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Load synthetic investigation" })).toHaveCount(0);
+  await expect(page.getByText("Conflicting birth years remain separate observations")).toHaveCount(0);
+});
 const review = (page: Page) =>
   page.getByRole("complementary", { name: "Transaction review" });
 async function open(page: Page) {

@@ -904,9 +904,12 @@ impl Workspace {
         verify_original(&self.root, e)
     }
     pub fn seed_demo(&mut self) -> Result<()> {
-        if !all::<Entity>(&self.conn, "entity")?.is_empty() {
+        let has_records: bool =
+            self.conn
+                .query_row("SELECT EXISTS(SELECT 1 FROM records)", [], |row| row.get(0))?;
+        if self.revision()? != 0 || has_records {
             return Err(Error::Conflict(
-                "Load the demonstration only into an empty entity workspace".into(),
+                "Load the demonstration only into a new, empty workspace".into(),
             ));
         }
         let evidence_id =

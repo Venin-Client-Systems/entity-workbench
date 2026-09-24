@@ -336,7 +336,7 @@ function App() {
           )}
           {w && a && (
             <>
-              {w.entities.length === 0 && (
+              {w.revision === 0 && (
                 <div className="welcome">
                   <div>
                     <h2>Start with a reviewable example</h2>
@@ -434,9 +434,9 @@ function App() {
                       >
                         <span className="priority-mark">≋</span>
                         <div>
-                          <h3>Namesake comparison</h3>
+                          <h3>Identity review</h3>
                           <p>
-                            Conflicting birth years remain separate observations
+                            {w.entities.length} entities · {w.observations.length} source observations
                           </p>
                         </div>
                         <span>↗</span>
@@ -447,8 +447,8 @@ function App() {
                       >
                         <span className="priority-mark">⌖</span>
                         <div>
-                          <h3>Branch ambiguity</h3>
-                          <p>No location selected by proximity</p>
+                          <h3>Merchant locations</h3>
+                          <p>{w.locations.length} candidates · {w.locations.filter((location) => location.review === "pending").length} pending review</p>
                         </div>
                         <span>↗</span>
                       </button>

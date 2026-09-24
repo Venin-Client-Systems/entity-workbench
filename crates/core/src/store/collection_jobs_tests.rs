@@ -733,7 +733,35 @@ fn recovered_cancel_and_pre_reservation_crash_have_no_phantom_request() {
 fn actual_legacy_receipts_and_existing_observations_are_not_rewritten() {
     let (_temp, mut w) = workspace();
     w.seed_collection_review().unwrap();
-    w.seed_demo().unwrap();
+    let source = w
+        .import("existing.txt", b"Existing synthetic observation")
+        .unwrap();
+    let entity = w
+        .add_entity(
+            EntityInput {
+                name: "Synthetic prior entity".into(),
+                kind: EntityKind::Person,
+                identifiers: vec![],
+            },
+            "Prior observation fixture",
+            w.revision().unwrap(),
+        )
+        .unwrap();
+    w.add_observation(
+        ObservationInput {
+            entity_id: entity,
+            field: "prior note".into(),
+            value: "Existing synthetic observation".into(),
+            anchor: SourceAnchor::Text {
+                evidence_id: source,
+                line_start: 1,
+                line_end: 1,
+            },
+        },
+        "Prior observation fixture",
+        w.revision().unwrap(),
+    )
+    .unwrap();
     let receipts: Vec<(String, String)> = w
         .conn
         .prepare("SELECT id,body FROM records WHERE kind='collection_receipt' ORDER BY sequence")
