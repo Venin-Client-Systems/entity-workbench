@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "purpose": "Synthetic editable design exports and real-core transaction UI comparison evidence; no release acceptance claim",
+  "files": [
+    {
+      "file": "accessibility-cadence-compact.json",
+      "bytes": 141,
+      "sha256": "8bef1a871a37d3499401c284fe6c884040b1cb967b681df78b33c2cec290688d"
+    },
+    {
+      "file": "accessibility-cadence-desktop.json",
+      "bytes": 141,
+      "sha256": "8bef1a871a37d3499401c284fe6c884040b1cb967b681df78b33c2cec290688d"
+    },
+    {
+      "file": "accessibility-patterns-compact.json",
+      "bytes": 108,
+      "sha256": "5276352e3e85a593c415f687b1e5eacdff92a3ea6ed9a7d08a8e3b0ed499e790"
+    },
+    {
+      "file": "accessibility-patterns-desktop.json",
+      "bytes": 108,
+      "sha256": "5276352e3e85a593c415f687b1e5eacdff92a3ea6ed9a7d08a8e3b0ed499e790"
+    },
+    {
+      "file": "cadence-compact.png",
+      "bytes": 77559,
+      "sha256": "89bb30326abc93d977085507fc75670dbbe27b9cc681769d258bf91c4a555456"
+    },
+    {
+      "file": "cadence-desktop.png",
+      "bytes": 87078,
+      "sha256": "98805f362a22eb23f90d439e1c7981ab40abf0803da3ccd9c54033f4aaa4eeb0"
+    },
+    {
+      "file": "patterns-compact.png",
+      "bytes": 83093,
+      "sha256": "01f424fca1addba751aeff517c8321a652124d322a5d7995c15c6f1aca6503fc"
+    },
+    {
+      "file": "patterns-desktop.png",
+      "bytes": 164868,
+      "sha256": "f5151990c8d981f5243aab4791d1f1dde4d5166a53c728a7e2344ac54cb2ce11"
+    },
+    {
+      "file": "patterns-full-surface.png",
+      "bytes": 261594,
+      "sha256": "a13bbd8c39c5066486edc5ef78f4f888cb62b1918cdfb2b46ef447feac679e34"
+    },
+    {
+      "file": "recurring-source-review-figma.png",
+      "bytes": 64795,
+      "sha256": "0597bff7e4dc9fde70e86adb070bc94ac79481da191b87d50fd78d696eef35d5"
+    },
+    {
+      "file": "transaction-patterns-figma.png",
+      "bytes": 86099,
+      "sha256": "787a9dbb7131577cd5d4374dfe95fca0d85fcf35d349443ff9d813cc397cd01d"
+    }
+  ]
+}

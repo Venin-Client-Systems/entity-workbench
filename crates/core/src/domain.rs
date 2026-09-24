@@ -379,6 +379,10 @@ pub struct WorkspaceView {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    AnalyzeTransactions {
+        request: crate::transaction_analysis::TransactionAnalysisRequest,
+        expected_revision: u64,
+    },
     QueueDocumentParse {
         evidence_id: String,
         request_key: String,

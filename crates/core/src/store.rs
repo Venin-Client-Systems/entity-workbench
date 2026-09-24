@@ -15,6 +15,7 @@ mod identity;
 mod processing;
 mod report_snapshots;
 mod statements;
+mod transaction_analysis;
 
 const SCHEMA: u32 = 3;
 pub struct Workspace {
@@ -287,6 +288,14 @@ impl Workspace {
                     expected_attempt,
                     &reason,
                 )?)?)
+            }
+            Command::AnalyzeTransactions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.analyze_transactions(&request, expected_revision)?,
+                )?);
             }
             Command::View {} => {}
             Command::InspectSource { anchor } => {

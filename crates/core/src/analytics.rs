@@ -1,7 +1,7 @@
 use crate::{domain::*, require, Error, Result};
 use rust_decimal::Decimal;
 use serde::Serialize;
-use std::{collections::BTreeMap, str::FromStr};
+use std::collections::BTreeMap;
 
 pub fn amount(value: &str) -> Result<Decimal> {
     require(
@@ -15,13 +15,54 @@ pub fn amount(value: &str) -> Result<Decimal> {
             .all(|(i, c)| c.is_ascii_digit() || c == '.' || (i == 0 && c == '-')),
         "Amount contains an unsupported character",
     )?;
-    let parsed =
-        Decimal::from_str(value).map_err(|_| Error::Validation("Invalid decimal amount".into()))?;
+    let parsed = Decimal::from_str_exact(value)
+        .map_err(|_| Error::Validation("Invalid decimal amount".into()))?;
     require(parsed.scale() <= 8, "Amount exceeds eight decimal places")?;
     Ok(parsed)
 }
+/// Add decimal money without the decimal engine's implicit rescaling/rounding.
+/// Inputs and outputs have at most eight decimal places. Aligning a 96-bit
+/// mantissa by at most 10^8, then adding two aligned values, fits signed i128.
+/// Only exact trailing zeros may be removed to fit Decimal's 96-bit mantissa.
+pub fn exact_add(left: Decimal, right: Decimal) -> Result<Decimal> {
+    require(
+        left.scale() <= 8 && right.scale() <= 8,
+        "Exact money exceeds eight decimal places",
+    )?;
+    let mut scale = left.scale().max(right.scale());
+    let align = |value: Decimal| -> Result<i128> {
+        value
+            .mantissa()
+            .checked_mul(10i128.pow(scale - value.scale()))
+            .ok_or_else(|| Error::Validation("Exact money alignment overflow".into()))
+    };
+    let mut mantissa = align(left)?
+        .checked_add(align(right)?)
+        .ok_or_else(|| Error::Validation("Exact money addition overflow".into()))?;
+    let maximum = Decimal::MAX.mantissa();
+    while (mantissa > maximum || mantissa < -maximum) && scale > 0 && mantissa % 10 == 0 {
+        mantissa /= 10;
+        scale -= 1;
+    }
+    Decimal::try_from_i128_with_scale(mantissa, scale).map_err(|_| {
+        Error::Validation("Exact money result cannot be represented without rounding".into())
+    })
+}
+pub fn exact_sub(left: Decimal, right: Decimal) -> Result<Decimal> {
+    exact_add(left, -right)
+}
 pub fn date(value: &str) -> Result<()> {
-    require(value.len() == 10, "Date must use YYYY-MM-DD")?;
+    require(
+        value.len() == 10
+            && value.bytes().enumerate().all(|(i, byte)| {
+                if i == 4 || i == 7 {
+                    byte == b'-'
+                } else {
+                    byte.is_ascii_digit()
+                }
+            }),
+        "Date must use canonical YYYY-MM-DD",
+    )?;
     chrono::NaiveDate::parse_from_str(value, "%Y-%m-%d")
         .map_err(|_| Error::Validation("Invalid calendar date".into()))?;
     Ok(())
@@ -91,19 +132,13 @@ pub fn analyse(transactions: &[Transaction]) -> Result<Analysis> {
             t.anchor.evidence_id(),
         );
         if let Some(window) = previous.get_mut(&key) {
-            window.movement = window
-                .movement
-                .checked_add(a)
-                .ok_or_else(|| Error::Validation("Balance movement overflow".into()))?;
+            window.movement = exact_add(window.movement, a)?;
             window.transaction_ids.push(t.id.clone());
         }
         if let Some(balance) = &t.balance {
             let b = amount(balance)?;
             if let Some(window) = previous.get(&key) {
-                let diff = b
-                    .checked_sub(window.balance)
-                    .and_then(|d| d.checked_sub(window.movement))
-                    .ok_or_else(|| Error::Validation("Balance overflow".into()))?;
+                let diff = exact_sub(exact_sub(b, window.balance)?, window.movement)?;
                 checks.push(BalanceCheck {
                     transaction_id: t.id.clone(),
                     previous_id: window.previous_id.to_string(),
@@ -131,21 +166,15 @@ pub fn analyse(transactions: &[Transaction]) -> Result<Analysis> {
             continue;
         }
         if a.is_sign_negative() {
-            g.1 =
-                g.1.checked_add(-a)
-                    .ok_or_else(|| Error::Validation("Debit overflow".into()))?;
+            g.1 = exact_add(g.1, -a)?;
         } else {
-            g.0 =
-                g.0.checked_add(a)
-                    .ok_or_else(|| Error::Validation("Credit overflow".into()))?;
+            g.0 = exact_add(g.0, a)?;
         }
         g.2.push(t.id.clone());
     }
     let mut totals = vec![];
     for (currency, (credits, debits, ids, excluded)) in groups {
-        let net = credits
-            .checked_sub(debits)
-            .ok_or_else(|| Error::Validation("Net overflow".into()))?;
+        let net = exact_sub(credits, debits)?;
         totals.push(Total {
             currency,
             credits: credits.to_string(),

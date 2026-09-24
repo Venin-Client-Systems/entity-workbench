@@ -1,0 +1,427 @@
+{
+  "$defs": {
+    "AnalysisRow": {
+      "additionalProperties": false,
+      "properties": {
+        "cash_rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CashRule"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Rules are hints even when an unreviewed row is excluded from the totals."
+        },
+        "disposition": {
+          "$ref": "#/$defs/RowDisposition"
+        },
+        "has_duplicate_candidates": {
+          "type": "boolean"
+        },
+        "refund_rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefundRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "unverified_transfer_match": {
+          "type": "boolean"
+        },
+        "verified_transfer_peer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "version",
+        "disposition",
+        "unverified_transfer_match",
+        "has_duplicate_candidates"
+      ],
+      "type": "object"
+    },
+    "Cadence": {
+      "enum": [
+        "weekly",
+        "fortnightly",
+        "monthly"
+      ],
+      "type": "string"
+    },
+    "CashRule": {
+      "enum": [
+        "debit_with_atm_token",
+        "debit_with_cash_withdrawal_phrase"
+      ],
+      "type": "string"
+    },
+    "CurrencyAnalysis": {
+      "additionalProperties": false,
+      "properties": {
+        "cash_candidates": {
+          "$ref": "#/$defs/MoneyTotal"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "deferred_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_transfer_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pending_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "refund_candidates": {
+          "$ref": "#/$defs/MoneyTotal"
+        },
+        "rejected_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "scope_count": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "total": {
+          "$ref": "#/$defs/MoneyTotal"
+        },
+        "unclassified_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "currency",
+        "scope_count",
+        "total",
+        "pending_ids",
+        "rejected_ids",
+        "deferred_ids",
+        "excluded_transfer_ids",
+        "cash_candidates",
+        "refund_candidates",
+        "unclassified_ids"
+      ],
+      "type": "object"
+    },
+    "MerchantGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "accounts": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "description_group": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "total": {
+          "$ref": "#/$defs/MoneyTotal"
+        }
+      },
+      "required": [
+        "id",
+        "currency",
+        "description_group",
+        "accounts",
+        "total"
+      ],
+      "type": "object"
+    },
+    "MoneyTotal": {
+      "additionalProperties": false,
+      "properties": {
+        "credits": {
+          "type": "string"
+        },
+        "debits": {
+          "type": "string"
+        },
+        "net": {
+          "type": "string"
+        },
+        "transaction_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "credits",
+        "debits",
+        "net",
+        "transaction_ids"
+      ],
+      "type": "object"
+    },
+    "RecurringCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "actual_dates": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "cadence": {
+          "$ref": "#/$defs/Cadence"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "description_group": {
+          "type": "string"
+        },
+        "deviations_days": {
+          "items": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "expected_dates": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "maximum_debit": {
+          "type": "string"
+        },
+        "minimum_debit": {
+          "type": "string"
+        },
+        "total": {
+          "$ref": "#/$defs/MoneyTotal"
+        }
+      },
+      "required": [
+        "id",
+        "account",
+        "currency",
+        "description_group",
+        "cadence",
+        "total",
+        "minimum_debit",
+        "maximum_debit",
+        "expected_dates",
+        "actual_dates",
+        "deviations_days"
+      ],
+      "type": "object"
+    },
+    "RefundRule": {
+      "enum": [
+        "credit_with_refund_token",
+        "credit_with_reversal_token"
+      ],
+      "type": "string"
+    },
+    "RowDisposition": {
+      "enum": [
+        "included",
+        "pending",
+        "rejected",
+        "deferred",
+        "reviewed_transfer_excluded"
+      ],
+      "type": "string"
+    },
+    "TransactionAnalysisRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "amount_tolerance": {
+          "description": "Maximum absolute amount spread, applied separately in each currency's units.",
+          "type": "string"
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_tolerance_days": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "minimum_occurrences": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "transfers": {
+          "$ref": "#/$defs/TransferTreatment"
+        }
+      },
+      "required": [
+        "transfers",
+        "minimum_occurrences",
+        "date_tolerance_days",
+        "amount_tolerance"
+      ],
+      "type": "object"
+    },
+    "TransferTreatment": {
+      "enum": [
+        "include",
+        "exclude_reviewed_pairs"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "currencies": {
+      "items": {
+        "$ref": "#/$defs/CurrencyAnalysis"
+      },
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "merchant_groups": {
+      "items": {
+        "$ref": "#/$defs/MerchantGroup"
+      },
+      "type": "array"
+    },
+    "recurrence_eligible_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "recurrence_unclassified_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "recurring_candidates": {
+      "items": {
+        "$ref": "#/$defs/RecurringCandidate"
+      },
+      "type": "array"
+    },
+    "request": {
+      "$ref": "#/$defs/TransactionAnalysisRequest"
+    },
+    "rows": {
+      "items": {
+        "$ref": "#/$defs/AnalysisRow"
+      },
+      "type": "array"
+    },
+    "rules_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "scope_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "rules_version",
+    "workspace_revision",
+    "request",
+    "workspace_transaction_count",
+    "scope_transaction_count",
+    "rows",
+    "currencies",
+    "merchant_groups",
+    "recurring_candidates",
+    "recurrence_eligible_ids",
+    "recurrence_unclassified_ids",
+    "limitations"
+  ],
+  "title": "TransactionAnalysis",
+  "type": "object"
+}

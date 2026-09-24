@@ -15,6 +15,7 @@ import { DocumentJobs } from "./DocumentJobs";
 import { Dialog } from "./Dialog";
 import { ReviewSurface } from "./ReviewSurface";
 import { EntityWorkbench } from "./EntityWorkbench";
+import { TransactionPatterns } from "./TransactionPatterns";
 import { StatementImport, type StatementFile } from "./StatementImport";
 import { SourceContent } from "./SourceContent";
 import "./tokens.css";
@@ -681,6 +682,11 @@ function App() {
                       or propose a correction.
                     </p>
                   </section>
+                  <TransactionPatterns
+                    workspace={w}
+                    onInspect={inspectTransaction}
+                    onRefresh={() => run({ action: "view" })}
+                  />
                   {a.totals.length > 0 && (
                     <section className="panel">
                       <h2>Reviewed flow by currency</h2>

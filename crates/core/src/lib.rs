@@ -10,6 +10,7 @@ pub mod processing;
 pub mod report;
 pub mod statements;
 pub mod store;
+pub mod transaction_analysis;
 
 use thiserror::Error;
 #[derive(Debug, Error)]

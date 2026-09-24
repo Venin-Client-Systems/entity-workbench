@@ -1,0 +1,64 @@
+{
+  "$defs": {
+    "TransferTreatment": {
+      "enum": [
+        "include",
+        "exclude_reviewed_pairs"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "account": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "amount_tolerance": {
+      "description": "Maximum absolute amount spread, applied separately in each currency's units.",
+      "type": "string"
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_from": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_tolerance_days": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "minimum_occurrences": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "transfers": {
+      "$ref": "#/$defs/TransferTreatment"
+    }
+  },
+  "required": [
+    "transfers",
+    "minimum_occurrences",
+    "date_tolerance_days",
+    "amount_tolerance"
+  ],
+  "title": "TransactionAnalysisRequest",
+  "type": "object"
+}

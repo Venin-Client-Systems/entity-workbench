@@ -55,8 +55,22 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                5,
+                6,
                 serde_json::to_value(schemars::schema_for!(Command))?,
+            ),
+            (
+                "transaction-analysis-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_analysis::TransactionAnalysisRequest
+                ))?,
+            ),
+            (
+                "transaction-analysis",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_analysis::TransactionAnalysis
+                ))?,
             ),
             (
                 "processing-job",
