@@ -10,6 +10,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import uuid
 from stage_ocr_runtime import dependencies, system
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -114,7 +115,10 @@ def save(report, diagnostics):
     timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
     encoded = json.dumps(report, indent=2) + "\n"
     # Failed observations replace the latest projection and retain their own history.
-    (artifacts / f"{timestamp}.json").write_text(encoded)
+    # Clock precision differs by host; two observations can have the same time.
+    # A unique, exclusively created history name must never overwrite a prior run.
+    with (artifacts / f"{timestamp}-{uuid.uuid4()}.json").open("x", encoding="utf-8") as stream:
+        stream.write(encoded)
     (ROOT / "artifacts/ocr-result.json").write_text(encoded)
     (ROOT / "artifacts/ocr-test-output.txt").write_text(diagnostics)
 

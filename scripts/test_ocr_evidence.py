@@ -1,5 +1,6 @@
 """Failure observations must replace stale success while preserving history."""
 import json
+import datetime
 from pathlib import Path
 import subprocess
 import tempfile
@@ -9,6 +10,21 @@ import test_ocr_workers as runner
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_same_clock_observations_preserve_both_history_records(self):
+        class FixedClock(datetime.datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return cls(2026, 9, 24, tzinfo=tz)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch.object(runner, "ROOT", root), patch.object(runner.datetime, "datetime", FixedClock):
+                runner.save({"passed": True, "outcome": "passed"}, "first")
+                runner.save({"passed": False, "outcome": "failed"}, "second")
+            records = [json.loads(path.read_text()) for path in (root / "artifacts/ocr").glob("*.json")]
+            self.assertEqual(len(records), 2)
+            self.assertEqual({record["outcome"] for record in records}, {"passed", "failed"})
+            self.assertFalse(json.loads((root / "artifacts/ocr-result.json").read_text())["passed"])
+
     def check_failure(self, phase, failure, action):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
