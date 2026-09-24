@@ -64,8 +64,15 @@ fn invalidate_assertions(conn: &Connection, observation_id: &str) -> Result<()> 
 impl Workspace {
     pub fn inspect_source(&self, anchor: &SourceAnchor) -> Result<SourceExcerpt> {
         let tx = self.conn.unchecked_transaction()?;
-        validate_anchor(&tx, anchor)?;
         let e: Evidence = get(&tx, "evidence", anchor.evidence_id())?;
+        require(
+            e.id == anchor.evidence_id(),
+            "Canonical source identity is invalid",
+        )?;
+        // A retained derivative is not proof that its original is still intact.
+        // Verify before returning a quote advertised as preserved source evidence.
+        self.verify_original(&e)?;
+        validate_anchor(&tx, anchor)?;
         let text = e.text.as_deref().unwrap_or_default();
         let (location, quote) = match anchor {
             SourceAnchor::Text {
@@ -332,6 +339,10 @@ impl Workspace {
         })
     }
 }
+
+#[cfg(test)]
+#[path = "source_inspection_tests.rs"]
+mod source_inspection_tests;
 
 #[cfg(test)]
 mod tests {
