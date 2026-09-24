@@ -328,6 +328,8 @@ impl Workspace {
                 .open(&path)?;
             file.write_all(&bytes)?;
             file.sync_all()?;
+            // Windows can deny renaming a directory while a child file is open.
+            drop(file);
             private_file(&path, 0o400)?;
             require(!target.exists(), "Export destination already exists")?;
             fs::rename(&staging, &target)?;
