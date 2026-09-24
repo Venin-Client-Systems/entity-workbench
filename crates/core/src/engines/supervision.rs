@@ -74,6 +74,11 @@ pub(super) fn cleanup_tree(path: &Path) -> Result<()> {
 pub(super) fn finish_job<T>(job: tempfile::TempDir, result: Result<T>) -> Result<T> {
     // Take ownership explicitly so TempDir::drop cannot silently discard a failure.
     let path = job.keep();
+    // A possibly live worker can still hold or alter these files. Retain its private
+    // assignment for recovery; never delete it or publish a result on this outcome.
+    if matches!(result, Err(Error::TerminationUnverified(_))) {
+        return result;
+    }
     match cleanup_tree(&path) {
         Ok(()) => result,
         Err(cleanup) => {
@@ -240,24 +245,57 @@ fn configure_process(command: &mut Command) -> Result<()> {
 
 struct ProcessGroup {
     child: Child,
-    reaped: bool,
+    disarmed: bool,
 }
-impl Drop for ProcessGroup {
-    fn drop(&mut self) {
-        if self.reaped {
-            return;
+impl ProcessGroup {
+    fn stop_and_reap(&mut self) -> Result<ExitStatus> {
+        // Establish that this is still our child before signalling its numeric ID.
+        // If another reaper consumed it, the ID might already belong to another process.
+        let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+        let owned = unsafe {
+            libc::waitid(
+                libc::P_PID,
+                self.child.id(),
+                &mut info,
+                libc::WEXITED | libc::WNOHANG | libc::WNOWAIT,
+            )
+        };
+        if owned != 0 {
+            self.disarmed = true;
+            return Err(Error::TerminationUnverified(format!(
+                "Child ownership is unverified: {}",
+                std::io::Error::last_os_error()
+            )));
         }
-        // SAFETY: this PID is also the dedicated group ID established before exec.
-        // The guard remains alive until child exit. Fork is denied by the profile;
-        // group cleanup also covers abnormal launcher failures and test descendants.
+        // WNOWAIT keeps this identity reserved until the confirming wait below.
+        // Group signalling is best effort: this Mac returns EPERM for an exited
+        // sandboxed leader. Fork is denied in production assignments; the contract
+        // below confirms the tracked leader, not escaped descendants.
         unsafe {
             libc::kill(-(self.child.id() as libc::pid_t), libc::SIGKILL);
         }
-        // Also signal the tracked leader directly if it changed process groups.
-        // Fork is denied for the Java worker; general escaped descendants remain
-        // outside this development mechanism's demonstrated containment claims.
-        let _ = self.child.kill();
-        let _ = self.child.wait();
+        if let Err(error) = self.child.kill() {
+            if error.raw_os_error() != Some(libc::ESRCH) {
+                return Err(Error::TerminationUnverified(format!(
+                    "Leader termination failed: {error}"
+                )));
+            }
+        }
+        let status = self.child.wait().map_err(|error| {
+            Error::TerminationUnverified(format!("Leader exit was not confirmed: {error}"))
+        })?;
+        self.disarmed = true;
+        Ok(status)
+    }
+}
+impl Drop for ProcessGroup {
+    fn drop(&mut self) {
+        if self.disarmed {
+            return;
+        }
+        // Best effort only for unwinding/unexpected exits. Normal outcomes use
+        // stop_and_reap explicitly and propagate its confirmation failure.
+        let _ = self.stop_and_reap();
     }
 }
 #[cfg(test)]
@@ -274,49 +312,50 @@ fn wait_assigned(
 ) -> Result<ExitStatus> {
     let mut group = ProcessGroup {
         child,
-        reaped: false,
+        disarmed: false,
     };
     let started = Instant::now();
-    loop {
-        if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
-            return Err(Error::Blocked("Local Java worker cancelled".into()));
-        }
-        // WNOWAIT preserves the leader PID until group termination, avoiding a
-        // signal to a recycled PID after std::Child::try_wait has reaped it.
-        let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
-        let observed = unsafe {
-            libc::waitid(
-                libc::P_PID,
-                group.child.id(),
-                &mut info,
-                libc::WEXITED | libc::WNOHANG | libc::WNOWAIT,
-            )
-        };
-        if observed != 0 {
-            return Err(std::io::Error::last_os_error().into());
-        }
-        if info.si_pid != 0 {
-            unsafe {
-                libc::kill(-(group.child.id() as libc::pid_t), libc::SIGKILL);
+    let outcome = (|| {
+        loop {
+            if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
+                return Err(Error::Blocked("Local Java worker cancelled".into()));
             }
-            // The guard must not signal after reap. Mark it disarmed after wait.
-            let status = group.child.wait()?;
-            group.reaped = true;
-            return Ok(status);
+            // WNOWAIT preserves the leader PID until group termination, avoiding a
+            // signal to a recycled PID after std::Child::try_wait has reaped it.
+            let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
+            let observed = unsafe {
+                libc::waitid(
+                    libc::P_PID,
+                    group.child.id(),
+                    &mut info,
+                    libc::WEXITED | libc::WNOHANG | libc::WNOWAIT,
+                )
+            };
+            if observed != 0 {
+                return Err(std::io::Error::last_os_error().into());
+            }
+            if info.si_pid != 0 {
+                return Ok(());
+            }
+            if started.elapsed() >= timeout {
+                return Err(Error::QuotaExhausted(
+                    "Local Java worker wall-time limit exhausted".into(),
+                ));
+            }
+            let mut count = 0;
+            let mut bytes = 0;
+            check_tree(job, 0, &mut count, &mut bytes)?;
+            if let Some(index) = index {
+                check_tree(index, 0, &mut count, &mut bytes)?;
+            }
+            std::thread::sleep(Duration::from_millis(20));
         }
-        if started.elapsed() >= timeout {
-            return Err(Error::QuotaExhausted(
-                "Local Java worker wall-time limit exhausted".into(),
-            ));
-        }
-        let mut count = 0;
-        let mut bytes = 0;
-        check_tree(job, 0, &mut count, &mut bytes)?;
-        if let Some(index) = index {
-            check_tree(index, 0, &mut count, &mut bytes)?;
-        }
-        std::thread::sleep(Duration::from_millis(20));
-    }
+    })();
+    // Early policy/cancellation errors also require explicit termination evidence.
+    // A failed confirmation takes precedence over the original execution error.
+    let status = group.stop_and_reap()?;
+    outcome?;
+    Ok(status)
 }
 
 pub(super) fn run_java(

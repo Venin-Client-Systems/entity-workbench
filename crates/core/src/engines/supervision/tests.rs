@@ -449,3 +449,28 @@ fn native_parser_has_no_search_access_and_cancels_running_worker() {
     assert!(started.elapsed() < Duration::from_secs(5));
     cleanup_tree(&job).unwrap();
 }
+
+#[test]
+fn unverified_termination_overrides_cancellation_and_retains_private_scratch() {
+    let root = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+    let job = tempfile::tempdir_in(root.path()).unwrap();
+    let path = job.path().to_path_buf();
+    fs::write(path.join("retained.txt"), "synthetic assignment").unwrap();
+    let mut command = Command::new("/usr/bin/true");
+    configure_process(&mut command).unwrap();
+    let child = command.spawn().unwrap();
+    // Deliberately take away the supervisor's wait capability to exercise ECHILD.
+    let mut status = 0;
+    assert_eq!(
+        unsafe { libc::waitpid(child.id() as libc::pid_t, &mut status, 0) },
+        child.id() as libc::pid_t
+    );
+    let token = super::super::CancellationToken::default();
+    token.cancel();
+    let result = wait_assigned(child, &path, None, Duration::from_secs(1), Some(&token));
+    assert!(matches!(result, Err(Error::TerminationUnverified(_))));
+    let result = finish_job(job, result);
+    assert!(matches!(result, Err(Error::TerminationUnverified(_))));
+    assert!(path.join("retained.txt").exists());
+    cleanup_tree(&path).unwrap();
+}

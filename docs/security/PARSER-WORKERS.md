@@ -68,3 +68,7 @@ The native runner executes twelve engine/supervisor tests, including the runtime
 Timestamped reports are retained under `artifacts/parser/`, with the latest copy at `artifacts/parser-result.json`. They record source and runtime hashes, fixture manifest hash, actual OS/architecture and named test results. Raw local diagnostics at `artifacts/parser-test-output.txt` may include development paths. The reports always retain `complete_release: false`.
 
 The observed development run on 24 September 2026 passed on **macOS 26.6.2 arm64** with the existing staged Java 21.0.12.1 runtime and current locally compiled adapters. No runtime downloads were required. Signed helpers, Intel Mac execution, Windows execution, clean installed artifacts, OCR/rendering, the broader document-format matrix, hard aggregate disk/RSS enforcement and independent release review remain open.
+
+## Unverified worker termination
+
+Every normal return, cancellation, timeout and output-policy failure explicitly stops and reaps the assigned child. A failed ownership, termination or wait confirmation returns typed `TerminationUnverified`, overriding cancellation and other execution outcomes. Rust retains the private job assignment instead of attempting scratch cleanup; callers must not publish derivatives or report confirmed cancellation. Drop remains best-effort fallback only. An ECHILD regression exercises lost wait ownership and retained scratch. This does not establish parent-death cleanup after a coordinator crash or a signed-helper release boundary.
