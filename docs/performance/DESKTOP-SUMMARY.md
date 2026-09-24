@@ -111,3 +111,47 @@ independent even under an identical clock value. Metadata failures are recorded
 before compilation or corpus access. The shared runner's raw child logs may
 contain resource counters, but this is a payload diagnostic, not an IPC/UI
 latency or memory measurement. Internal allocation remains unchanged.
+
+## Observed payload on the retained 100,000-row corpus
+
+The isolated comparison at clean signed source
+`d831ed703deefb7c8a48e71b1f0bf98355a0ff11` passed exact projection equality
+at workspace revision 95,102. The opt-in response was **5,111,287 bytes**, compared
+with **83,986,629 bytes** for presentation: a **93.91% serialized-byte reduction**
+for this corpus. The desktop still uses presentation mode. These figures do not
+measure the default application response after a UI cutover, IPC rendering,
+latency or peak memory.
+
+| Serialized value | Presentation bytes | Summary bytes |
+| --- | ---: | ---: |
+| Complete response | 83,986,629 | 5,111,287 |
+| Workspace object | 77,790,468 | 5,110,765 |
+| Analysis object | 6,196,135 | 477 |
+
+Object key names, punctuation and the summary version account for the remaining
+bytes. Retained evidence text dominates the smaller response. The fixture has
+no statement-import records or reports, so this observation does not establish
+bounds for workspaces with large retained statement ID lists or other metadata.
+It has no balance checks; source-order reconciliation is exercised by the separate
+difficult-calculation tests, not inferred from this corpus.
+
+The result preserves 100,000 transactions in its denominator: 85,000 accepted and
+5,000 each pending, rejected and deferred. It retains the count of 95,100 generic
+review decisions, 200 rows with candidate duplicates and 200 excluded accepted
+transfer rows. AUD totals are credits `205796.00`, debits `666762.00`, net
+`-460966.00`; USD totals are credits `102087.00`, debits `337378.00`, net
+`-235291.00`. The harness compared these and every retained field to the actual
+presentation result using only the documented projection.
+
+[The complete sanitized observation](observations/2026-09-25-desktop-summary-payload.json)
+has SHA-256 `a67fec13910c7fbf88eb9066bb0fe20900b1de9494745330b120d8c804d4c841`.
+It includes all core/example source hashes, both reused runner hashes, host and
+configuration identity, the exact release executable and serialized response
+hashes. Executable SHA-256 is
+`59eacd64416abf40ac0487b839a51db8c83450dc476b68e9b3cbe847b0002405`.
+The prepared and compared closed database had SHA-256
+`d920f4d0256a6b92e59ea1de85abeb3855b6ec2962e754b69a30166d9f5cf3dd`
+before and after comparison. The 5,010,041-byte original retained SHA-256
+`c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7`.
+The source database, original and prior campaign artifacts were rehashed unchanged.
+Migration occurred only in the disposable preparation copy.
