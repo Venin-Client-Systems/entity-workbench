@@ -17,35 +17,6 @@ fn ordinary(metadata: &fs::Metadata, evidence: &Evidence) -> Result<()> {
     }
     Ok(())
 }
-fn same_file(before: &fs::Metadata, after: &fs::Metadata) -> Result<()> {
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::MetadataExt;
-        require(
-            before.dev() == after.dev()
-                && before.ino() == after.ino()
-                && before.ctime() == after.ctime()
-                && before.ctime_nsec() == after.ctime_nsec(),
-            "Original file identity or metadata changed during read",
-        )?;
-    }
-    #[cfg(windows)]
-    {
-        use std::os::windows::fs::MetadataExt;
-        // The open handle denies write/delete sharing throughout the read. These
-        // checks additionally refuse a metadata mismatch at the named path.
-        require(
-            before.creation_time() == after.creation_time()
-                && before.last_write_time() == after.last_write_time()
-                && before.file_attributes() == after.file_attributes(),
-            "Original file metadata changed during read",
-        )?;
-    }
-    require(
-        before.len() == after.len() && before.modified()? == after.modified()?,
-        "Original file changed during read",
-    )
-}
 pub(super) fn read_original(root: &Path, evidence: &Evidence) -> Result<Vec<u8>> {
     read_checked(root, evidence, |_| Ok(()))
 }
@@ -103,7 +74,9 @@ fn read_path_checked(
     let mut file = options.open(path)?;
     let opened = file.metadata()?;
     ordinary(&opened, evidence)?;
-    same_file(&before, &opened)?;
+    file_identity::unchanged(&before, &opened)?;
+    #[cfg(windows)]
+    let identity = file_identity::windows_handle(&file, 1)?;
     after_open(path)?;
     let mut bytes = Vec::new();
     (&mut file)
@@ -115,11 +88,23 @@ fn read_path_checked(
     )?;
     let finished = file.metadata()?;
     ordinary(&finished, evidence)?;
-    same_file(&opened, &finished)?;
+    file_identity::unchanged(&opened, &finished)?;
     reject_link_ancestors(path)?;
     let named = fs::symlink_metadata(path)?;
     ordinary(&named, evidence)?;
-    same_file(&opened, &named)?;
+    file_identity::unchanged(&opened, &named)?;
+    #[cfg(windows)]
+    {
+        require(
+            identity == file_identity::windows_handle(&file, 1)?,
+            "Original handle identity changed during read",
+        )?;
+        let named_handle = options.open(path)?;
+        require(
+            identity == file_identity::windows_handle(&named_handle, 1)?,
+            "Original named identity changed during read",
+        )?;
+    }
     Ok(bytes)
 }
 
@@ -228,6 +213,17 @@ mod tests {
             Ok(())
         })
         .is_err());
+    }
+    #[cfg(windows)]
+    #[test]
+    fn windows_original_reader_refuses_an_additional_hard_link() {
+        let (temp, w, evidence) = specimen();
+        let source = w.root.join("originals").join(&evidence.sha256);
+        let outside = temp.path().join("same-original-link");
+        fs::hard_link(&source, &outside).unwrap();
+        assert!(read_original(&w.root, &evidence).is_err());
+        fs::remove_file(&outside).unwrap();
+        assert_eq!(read_original(&w.root, &evidence).unwrap(), b"original");
     }
     #[cfg(windows)]
     #[test]

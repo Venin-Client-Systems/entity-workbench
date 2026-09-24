@@ -21,6 +21,8 @@ mod file_identity;
 mod identity;
 mod originals;
 use originals::read_original;
+#[cfg(test)]
+mod evidence_identity_tests;
 pub(crate) mod local_exports;
 mod presentation;
 mod processing;
@@ -40,8 +42,6 @@ mod transaction_sources;
 mod transfer_candidates;
 #[cfg(test)]
 mod view_tests;
-#[cfg(test)]
-mod evidence_identity_tests;
 
 const SCHEMA: u32 = 4;
 // Only workspace refresh responses vary. Direct reader/job responses are unchanged.
