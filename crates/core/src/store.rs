@@ -10,6 +10,7 @@ use std::{
 };
 use uuid::Uuid;
 mod assessment;
+mod citation_catalogue;
 mod collection;
 mod derivative_files;
 mod identity;
