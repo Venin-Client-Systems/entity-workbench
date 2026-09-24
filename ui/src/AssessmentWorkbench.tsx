@@ -3,6 +3,8 @@ import { command } from "./api";
 import { nativeExportsAvailable, prepareNativeReport, commitNativeExport, discardNativeExport, type PreparedNativeExport } from "./native-export";
 import { Dialog } from "./Dialog";
 import { FindingReviewHistory } from "./FindingReviewHistory";
+import { DocxSnapshots } from "./DocxSnapshots";
+import type { DocxCapture } from "./docx-capture";
 import { CitationRow } from "./CitationRow";
 import {
   CitationPicker,
@@ -19,6 +21,7 @@ type Props = {
   run: (action: Record<string, unknown>) => Promise<boolean>;
   onSource: (evidence: Evidence, anchor?: Anchor) => void;
   download: (content: string, name: string, type: string) => Promise<void>;
+  docxCapture: DocxCapture;
 };
 function ErrorMessage({ error }: { error: string }) {
   return error ? (
@@ -776,10 +779,11 @@ export function AssessmentWorkbench(props: Props) {
         <p className="context-note">
           Snapshots include current review status, citations and limitations,
           including drafts. Corrections flag current findings for review.
-          Previous snapshots remain unchanged. Editable DOCX export is a
-          remaining release gate.
+          Previous HTML snapshots remain unchanged. Editable DOCX captures are
+          recorded separately below.
         </p>
       </section>
+      <DocxSnapshots revision={w.revision} busy={busy} capture={props.docxCapture} refresh={() => run({ action: "view" })} />
       {question && (
         <QuestionEditor
           {...props}

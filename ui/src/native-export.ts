@@ -5,6 +5,7 @@ import {
   type Matching,
 } from "./transaction-ledger-types";
 import type { Workspace } from "./types";
+import { docxUuid, type DocxSnapshot } from "./docx-snapshot-types";
 export { isTauri as nativeExportsAvailable };
 
 type TransactionArtifact = {
@@ -24,7 +25,15 @@ type ReportArtifact = {
   bytes: number;
   sha256: string;
 };
-type Artifact = TransactionArtifact | ReportArtifact;
+type DocxArtifact = {
+  kind: "docx_report";
+  report_id: string;
+  workspace_revision: number;
+  document_sha256: string;
+  bytes: number;
+  sha256: string;
+};
+type Artifact = TransactionArtifact | ReportArtifact | DocxArtifact;
 export type PreparedNativeExport = {
   schema_version: 1;
   ticket: string;
@@ -62,6 +71,21 @@ function artifactValid(a: Artifact): boolean {
     !integer(a.workspace_revision)
   )
     return false;
+  if (a.kind === "docx_report")
+    return (
+      keys(a, [
+        "kind",
+        "report_id",
+        "workspace_revision",
+        "document_sha256",
+        "bytes",
+        "sha256",
+      ]) &&
+      docxUuid(a.report_id) &&
+      digest(a.document_sha256) &&
+      a.bytes > 0 &&
+      a.bytes <= 32 * 1024 * 1024
+    );
   return a.kind === "html_report"
     ? keys(a, ["kind", "report_id", "workspace_revision", "bytes", "sha256"]) &&
         uuid(a.report_id)
@@ -164,6 +188,23 @@ export function prepareNativeReport(report: Workspace["reports"][number]) {
       a.workspace_revision === report.workspace_revision,
   );
 }
+export function prepareNativeDocx(report: DocxSnapshot) {
+  return prepare(
+    {
+      kind: "docx_report",
+      report_id: report.id,
+      expected_document_sha256: report.document.sha256,
+      expected_docx_sha256: report.docx.sha256,
+    },
+    (a) =>
+      a.kind === "docx_report" &&
+      a.report_id === report.id &&
+      a.workspace_revision === report.workspace_revision &&
+      a.document_sha256 === report.document.sha256 &&
+      a.sha256 === report.docx.sha256 &&
+      a.bytes === report.docx.bytes,
+  );
+}
 export async function commitNativeExport(
   prepared: PreparedNativeExport,
 ): Promise<SavedNativeExport> {
@@ -181,7 +222,7 @@ export async function commitNativeExport(
   const expectedName =
     prepared.artifact.kind === "transactions"
       ? `transactions-r${prepared.artifact.workspace_revision}-${prepared.artifact.sha256}.json`
-      : `assessment-${prepared.artifact.report_id}-${prepared.artifact.sha256}.html`;
+      : `assessment-${prepared.artifact.report_id}-${prepared.artifact.sha256}.${prepared.artifact.kind === "docx_report" ? "docx" : "html"}`;
   if (
     !keys(result, [
       "schema_version",

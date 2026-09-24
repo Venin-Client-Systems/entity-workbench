@@ -11,6 +11,7 @@ import type {
 } from "./types";
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { AssessmentWorkbench } from "./AssessmentWorkbench";
+import { DocxCapture } from "./docx-capture";
 import { CollectionHistory } from "./CollectionReview";
 import { DocumentJobs } from "./DocumentJobs";
 import { Dialog } from "./Dialog";
@@ -74,6 +75,7 @@ function App() {
     { id: string; name: string; score: number }[] | null
   >(null);
   const pendingDocumentRequests = useRef(new Map<string, string>());
+  const [docxCapture] = useState(() => new DocxCapture());
   const workspaceAction = useRef(false);
   const publishSummary = useCallback((value: unknown) => {
     const next = readDesktopSummary(value);
@@ -767,6 +769,7 @@ function App() {
                   run={run}
                   onSource={setEvidence}
                   download={download}
+                  docxCapture={docxCapture}
                 />
               )}
             </>
