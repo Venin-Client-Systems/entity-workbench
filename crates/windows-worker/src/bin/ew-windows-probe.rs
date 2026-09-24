@@ -2,6 +2,9 @@
 #[cfg(any(windows, test))]
 #[path = "ew-windows-probe/handle_probe.rs"]
 mod handle_probe;
+#[cfg(windows)]
+#[path = "ew-windows-probe/restricted_probe.rs"]
+mod restricted_probe;
 #[cfg(any(windows, test))]
 #[path = "ew-windows-probe/udp_probe.rs"]
 mod udp_probe;
@@ -136,58 +139,6 @@ mod native {
         }
         result == 0
     }
-    fn restricted_directory() -> AnyResult<()> {
-        let sddl = utf16(std::ffi::OsStr::new("D:P"));
-        let mut descriptor = null_mut();
-        if unsafe {
-            ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                sddl.as_ptr(),
-                1,
-                &mut descriptor,
-                null_mut(),
-            )
-        } == 0
-        {
-            let code = unsafe { GetLastError() };
-            checkpoint(ProbeCheckpoint::RestrictedDescriptorFailed { code })?;
-            return Err(Error::Api {
-                operation: "RestrictedDescriptor",
-                code,
-            }
-            .into());
-        }
-        let attributes = SECURITY_ATTRIBUTES {
-            nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
-            lpSecurityDescriptor: descriptor,
-            bInheritHandle: 0,
-        };
-        let name = utf16(std::ffi::OsStr::new("restricted"));
-        let attempt = (|| -> AnyResult<(i32, u32)> {
-            checkpoint(ProbeCheckpoint::RestrictedDescriptorReady)?;
-            checkpoint(ProbeCheckpoint::RestrictedDirectoryCreate)?;
-            let result = unsafe { CreateDirectoryW(name.as_ptr(), &attributes) };
-            // Capture before LocalFree or any file diagnostic overwrites it.
-            let code = if result == 0 {
-                unsafe { GetLastError() }
-            } else {
-                0
-            };
-            Ok((result, code))
-        })();
-        unsafe {
-            LocalFree(descriptor);
-        }
-        let (result, code) = attempt?;
-        if result == 0 {
-            checkpoint(ProbeCheckpoint::RestrictedDirectoryCreateFailed { code })?;
-            return Err(Error::Api {
-                operation: "CreateRestrictedDirectory",
-                code,
-            }
-            .into());
-        }
-        checkpoint(ProbeCheckpoint::RestrictedDirectoryCreated)
-    }
     fn child(path: &Path) -> AnyResult<()> {
         checkpoint(ProbeCheckpoint::ChildEntered)?;
         checkpoint(ProbeCheckpoint::InputRead)?;
@@ -252,7 +203,10 @@ mod native {
                 return Ok(());
             }
             "restricted-directory" => {
-                restricted_directory()?;
+                drop(super::restricted_probe::create(
+                    Path::new("restricted"),
+                    checkpoint,
+                )?);
                 checkpoint(ProbeCheckpoint::RestrictedResultWrite)?;
                 fs::write("result.json", b"{}")?;
                 checkpoint(ProbeCheckpoint::Completed)?;

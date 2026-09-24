@@ -45,11 +45,17 @@ pub enum ProbeCheckpoint {
     InheritedHandleRead,
     ConfinedHandleRead,
     HandleReadReturned,
+    RestrictedIdentityFailed { code: u32 },
     RestrictedDescriptorFailed { code: u32 },
     RestrictedDescriptorReady,
     RestrictedDirectoryCreate,
     RestrictedDirectoryCreateFailed { code: u32 },
     RestrictedDirectoryCreated,
+    RestrictedOpenFailed { code: u32 },
+    RestrictedDaclSet,
+    RestrictedDaclSetFailed { code: u32 },
+    RestrictedDaclVerifyFailed { code: u32 },
+    RestrictedDaclVerified,
     RestrictedResultWrite,
     CallerEnvironment,
     TcpConnect,
@@ -192,6 +198,10 @@ mod tests {
             ProbeCheckpoint::TokenQuery
         );
         for checkpoint in [
+            ProbeCheckpoint::RestrictedIdentityFailed { code: u32::MAX },
+            ProbeCheckpoint::RestrictedOpenFailed { code: u32::MAX },
+            ProbeCheckpoint::RestrictedDaclSetFailed { code: u32::MAX },
+            ProbeCheckpoint::RestrictedDaclVerifyFailed { code: u32::MAX },
             ProbeCheckpoint::RestrictedDescriptorFailed { code: u32::MAX },
             ProbeCheckpoint::RestrictedDirectoryCreateFailed { code: u32::MAX },
         ] {
