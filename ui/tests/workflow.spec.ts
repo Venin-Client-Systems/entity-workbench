@@ -93,14 +93,16 @@ test("synthetic investigation flows through the real Rust workspace", async ({
     "Unsaved review draft",
   );
   await page.getByLabel("Transaction decision reason").fill("");
-  await page.getByLabel("Currency filter").selectOption("USD");
+  await page.getByLabel("Currency filter", { exact: true }).selectOption("USD");
+  await page.getByRole("button", { name: "Apply ledger filters" }).click();
   await expect(
     review
       .getByRole("status")
       .filter({ hasText: "outside the current filters" }),
   ).toContainText("outside the current filters");
   await expect(review).toContainText("Harbour Cafe OCR review");
-  await page.getByLabel("Currency filter").selectOption("all");
+  await page.getByLabel("Currency filter", { exact: true }).selectOption("");
+  await page.getByRole("button", { name: "Apply ledger filters" }).click();
   await expect(
     review.getByText("Selected transaction is outside the current filters."),
   ).not.toBeVisible();
@@ -227,6 +229,9 @@ test("synthetic investigation flows through the real Rust workspace", async ({
     .getByRole("navigation")
     .getByRole("button", { name: /Transactions/ })
     .click();
+  await page
+    .getByRole("button", { name: "Export JSON" })
+    .scrollIntoViewIfNeeded();
   await expect(
     page.getByRole("button", { name: "Export JSON" }),
   ).toBeInViewport();
@@ -238,6 +243,7 @@ test("synthetic investigation flows through the real Rust workspace", async ({
   await expect(
     page.getByRole("button", { name: "Close review" }),
   ).toBeFocused();
+  await expect(page.getByLabel("Transfer counterpart")).toBeEnabled();
   await page.keyboard.press("Shift+Tab");
   await expect(page.getByLabel("Transfer counterpart")).toBeFocused();
   await page.keyboard.press("Tab");

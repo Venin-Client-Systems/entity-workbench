@@ -12,7 +12,7 @@ async fn workbench(
     let workspace = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
         workspace
-            .dispatch_presentation(command)
+            .dispatch_summary(command)
             .map_err(|e| e.to_string())
     })
     .await

@@ -41,7 +41,7 @@ export function CollectionHistory({
   busy,
   onRefresh,
 }: {
-  workspace: Workspace;
+  workspace: Pick<Workspace, "jobs" | "evidence">;
   busy: boolean;
   onRefresh: () => Promise<unknown>;
 }) {

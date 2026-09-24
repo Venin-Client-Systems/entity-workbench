@@ -12,7 +12,7 @@ import type { CitationRole } from "./citation-types";
 import type { Anchor, Evidence, Finding, Hypothesis, Workspace } from "./types";
 
 type Props = {
-  workspace: Workspace;
+  workspace: Pick<Workspace, "revision" | "findings" | "hypotheses" | "evidence" | "reports">;
   busy: boolean;
   error: string;
   run: (action: Record<string, unknown>) => Promise<boolean>;

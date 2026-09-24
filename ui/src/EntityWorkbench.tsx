@@ -39,7 +39,7 @@ export function EntityWorkbench({
   onSource,
   error,
 }: {
-  workspace: Workspace;
+  workspace: Pick<Workspace, "revision" | "entities" | "observations" | "evidence" | "merges" | "identity_decisions">;
   busy: boolean;
   run: Apply;
   selectedId: string;

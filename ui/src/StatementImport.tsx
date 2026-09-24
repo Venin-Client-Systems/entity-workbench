@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
-import type { Response } from "./types";
+import { readDesktopSummary } from "./desktop-summary";
+import type { DesktopSummaryResponse } from "./types";
 import type {
   Delimiter,
   StatementMapping,
@@ -21,7 +22,7 @@ export function StatementImport({
   file: StatementFile;
   profiles: StatementProfile[];
   onClose: () => void;
-  onImported: (response: Response, count: number) => void;
+  onImported: (response: DesktopSummaryResponse, count: number) => void;
 }) {
   const [delimiter, setDelimiter] = useState<Delimiter>(
     file.name.toLowerCase().endsWith(".tsv") ? "tab" : "comma",
@@ -99,7 +100,7 @@ export function StatementImport({
     setPhase("importing");
     setError("");
     try {
-      const result = await command<Response>({
+      const result = await command<unknown>({
         action: "import_statement",
         ...file,
         mapping,
@@ -107,7 +108,7 @@ export function StatementImport({
         expected_revision: preview.workspace_revision,
         save_profile_name: saveProfile ? profileName : null,
       });
-      onImported(result, preview.valid_rows);
+      onImported(readDesktopSummary(result), preview.valid_rows);
     } catch (e) {
       setError(String(e));
       setPreview(null);

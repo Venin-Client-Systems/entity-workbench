@@ -32,7 +32,11 @@ export function ReviewSurface({
       {children}
     </DesktopReview>
   ) : (
-    <Dialog label="Transaction review" onClose={onClose}>
+    <Dialog
+      label="Transaction review"
+      onClose={onClose}
+      restoreFocus={restoreFocus}
+    >
       {children}
     </Dialog>
   );

@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T18:16:12.546478+00:00",
+  "scope": "Desktop summary transport and bounded ledger/review/export UI; synthetic real-core browser verification",
+  "base_commit": "ad74c03",
+  "facet_dependency": "903ac02d6883b768d787cf8d8973446ab7d468b6",
+  "core_binary_sha256": "2e2d59a493869726a45b50ff68440a287f0d7c4eaf6f8cf91e265ebf9104be59",
+  "host": {
+    "os": "Darwin",
+    "os_version": "26.6.2",
+    "architecture": "arm64",
+    "node": "v26.7.0"
+  },
+  "results": {
+    "ui_type_and_production_build": "passed; existing JavaScript chunk warning retained",
+    "core_development_build": "passed",
+    "desktop_rust_tests": {
+      "passed": 3,
+      "failed": 0,
+      "resource_override": {
+        "bundle": {
+          "active": false,
+          "resources": []
+        }
+      }
+    },
+    "desktop_strict_clippy": "passed with the same CI resource override",
+    "full_browser_suite": {
+      "passed": 104,
+      "failed": 0,
+      "new_cutover_cases": 15
+    },
+    "post_full_focus_visual": {
+      "passed": 4,
+      "failed": 0,
+      "production_code_unchanged": true
+    },
+    "final_citation_test_readiness": {
+      "passed": 3,
+      "failed": 0,
+      "change": "Await resolved selected metadata and compare stable citation IDs/roles; no production change."
+    },
+    "axe": {
+      "viewports": [
+        1440,
+        960
+      ],
+      "violations": 0,
+      "manual_incomplete_checks_retained": true
+    },
+    "visual_inspection": "Inspected ledger desktop/compact and compact review/counterpart captures. Long inert description wraps; compact table has its own horizontal region."
+  },
+  "retained_attempts": [
+    {
+      "attempt": "initial UI build",
+      "result": "Failed TypeScript BalanceState discriminant; split closed variants before subsequent successful builds."
+    },
+    {
+      "attempt": "initial real-core browser",
+      "passed": 0,
+      "failed": 5,
+      "interrupted": 1,
+      "not_run": 3,
+      "cause": "Guard confused envelope version1 with retained workspace storage schema4; corrected version domains."
+    },
+    {
+      "attempt": "second focused browser",
+      "passed": 6,
+      "failed": 3,
+      "cause": "Fixture did not exceed page byte bound; excerpt is amount cell not description; compact focus checked before async select enabled. Corrected fixtures/readiness."
+    },
+    {
+      "attempt": "third focused browser",
+      "passed": 12,
+      "failed": 0
+    },
+    {
+      "attempt": "first full browser",
+      "passed": 96,
+      "failed": 3,
+      "cause": "Wait for verified page before corrupting source; update facet lane counts for new ledger selectors without weakening coalescing assertions."
+    },
+    {
+      "attempt": "subsequent focused browser",
+      "passed": 22,
+      "failed": 0
+    },
+    {
+      "attempt": "interrupted full browser",
+      "passed": 39,
+      "failed": 1,
+      "interrupted": 1,
+      "not_run": 62,
+      "cause": "Stopped for reviewed balance DTO guard. Recorded citation-test readiness failure separately; later fixed after final full pass."
+    }
+  ],
+  "limitations": [
+    "No packaged native application, Windows/macOS distribution or clean offline install proof in this record.",
+    "No native 100000-row performance or required16GB/document/map/graph benchmark claim.",
+    "No new editable Figma frames, remote sync or visual sign-off; original unsynced tab untouched.",
+    "Summary still retains evidence text/acquisitions and import ID lists; core still constructs full internal view.",
+    "Complete export is in memory under its explicit256MiB JSON cap; no total-memory bound claimed.",
+    "Per-reader pending work is coalesced; active core work is not cancelled.",
+    "Full104 run precedes the final test-only citation readiness strengthening and screenshot framing; focused4/3 runs cover those test-only changes."
+  ],
+  "retained_log_hashes": {
+    "build-first.log": "cd2a88cd50f083498edb793dd420b5fb0df74d5386a9f6b26e51d097dea86886",
+    "build-second.log": "c54408882abbf47fb2e2b6e5be340a55c3eb21370708d1ab287275a4d69ae29d",
+    "build-third.log": "2af37dfce6818801fca7553a0836873b0b066a926b9274b1b1d18d38d384ae52",
+    "build-final.log": "d900a7c3a309d0efa09238e5cc46a8e586d97af9cae95d17757ce99e38d93d03",
+    "core-build.log": "bbe65395e36376746a5d3d8f464961064813184a8f9ddb9e1e87540d846cca3b",
+    "browser-first.log": "0485297a50d38728fcb46fefc25d4cdf5aacb5ac165825e3716f34fcf835df80",
+    "browser-second.log": "f6b82d522c926b672850841520a15293bf4c0b65690cb0399c14b920cd75568a",
+    "browser-third.log": "cdf798ea529c86bd3e63356a927e7872394a44ac379534f626534aafb1ec35d8",
+    "full-suite-first.log": "5d25f563e10604089f9ab2be6f99752f9c86e8079f4ae6c2d6d4bd7707142ce1",
+    "targeted-final.log": "cdbab250860701ff84e3dac501ddcc6da7c92d338e7d772b4af561b21e7c3101",
+    "full-suite-interrupted-for-balance-guard.log": "6a5d618f8f8441c9cbef71a4aae77e5ca51eb55fc86e8b980d34089d2d674f2e",
+    "full-suite-final.log": "479359d272cf4e90021f409e37e013aaa0d9a75cec4bfd8e2a558a1a1c5523a4",
+    "desktop-tests.log": "5d34b713db5fd3f2d4f4f028c62670bfdedcb5f42e0ba597ede374dbd23fb1ac",
+    "desktop-clippy.log": "031efad7bd0431f5d12bf3124b3229c3ef761525b519a925f28fd19bfca17540",
+    "readiness-and-visual-final.log": "3d853011704ca8f3be1a1bcaea00b32226a38c9e3d123ea2532cc6b56f62dbef",
+    "citation-readiness-final.log": "bea283d9194eb369b4195871cc3c53375ef565391a11b0c272eb35fc7656c218"
+  }
+}

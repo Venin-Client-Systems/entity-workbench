@@ -1,0 +1,33 @@
+.ledger-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.ledger-controls label {
+  margin: 0;
+  min-width: 0;
+}
+.transaction-ledger-panel {
+  min-width: 0;
+}
+.transaction-ledger-panel .context-note,
+.transaction-review code {
+  overflow-wrap: anywhere;
+}
+.transaction-ledger-panel td .pill {
+  margin: 2px 0;
+}
+.transaction-ledger-panel .cell-button {
+  overflow-wrap: anywhere;
+}
+.transfer-candidates {
+  border-top: 1px solid var(--line, #bfc8c4);
+  padding-top: 16px;
+}
+.transfer-candidates .actions {
+  flex-wrap: wrap;
+}
+.transfer-candidates label {
+  min-width: 0;
+}

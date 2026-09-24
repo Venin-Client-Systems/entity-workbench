@@ -4,6 +4,13 @@ import type {
   StatementImportRecord,
 } from "./statement-types";
 export type ReviewState = "pending" | "accepted" | "rejected" | "deferred";
+export type ReviewDecision = {
+  id: string;
+  target_id: string;
+  state: ReviewState;
+  reason: string;
+  at: string;
+};
 export type Anchor = {
   kind: string;
   evidence_id: string;
@@ -170,13 +177,7 @@ export type Workspace = {
     sha256: string;
     html_bytes: number;
   }[];
-  decisions: {
-    id: string;
-    target_id: string;
-    state: ReviewState;
-    reason: string;
-    at: string;
-  }[];
+  decisions: ReviewDecision[];
 };
 export type Analysis = {
   pending: number;
@@ -198,3 +199,29 @@ export type Analysis = {
   }[];
 };
 export type Response = { workspace: Workspace; analysis: Analysis };
+
+export type ReviewCounts = Record<ReviewState, number>;
+export type DesktopWorkspace = Omit<Workspace, "transactions" | "decisions"> & {
+  schema_version: number;
+  review_decision_count: number;
+};
+export type LedgerSummary = {
+  transaction_count: number;
+  review_counts: ReviewCounts;
+  duplicate_candidate_row_count: number;
+  balance_check_count: number;
+  balance_discrepancy_count: number;
+  totals: {
+    currency: string;
+    credits: string;
+    debits: string;
+    net: string;
+    included_count: number;
+    excluded_transfer_count: number;
+  }[];
+};
+export type DesktopSummaryResponse = {
+  schema_version: 1;
+  workspace: DesktopWorkspace;
+  analysis: LedgerSummary;
+};

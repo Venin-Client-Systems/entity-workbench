@@ -373,6 +373,9 @@ for (const focusCase of ["restore", "moved", "moved_then_blurred"]) {
       .getByRole("button", { name: "Edit finding", exact: true })
       .click();
     await expect(selected(page).getByRole("combobox")).toHaveCount(4);
+    await expect(selected(page).getByRole("status")).toContainText(
+      "Selected citation metadata resolved",
+    );
     await page
       .getByLabel("Assessment", { exact: true })
       .fill("Unsaved refresh assessment");
@@ -380,14 +383,16 @@ for (const focusCase of ["restore", "moved", "moved_then_blurred"]) {
       .getByLabel("Finding change reason")
       .fill("Unsaved refresh reason");
     await selected(page)
+      .locator(`[data-citation-id="${w.findings[0].supporting_ids[0]}"]`)
       .getByRole("combobox")
-      .first()
       .selectOption("contradicting");
     const roles = await selected(page)
       .getByRole("combobox")
       .evaluateAll((nodes) =>
         nodes.map((node) => ({
-          label: node.getAttribute("aria-label"),
+          id: node
+            .closest("[data-citation-id]")
+            ?.getAttribute("data-citation-id"),
           role: (node as HTMLSelectElement).value,
         })),
       );
@@ -458,7 +463,9 @@ for (const focusCase of ["restore", "moved", "moved_then_blurred"]) {
         .getByRole("combobox")
         .evaluateAll((nodes) =>
           nodes.map((node) => ({
-            label: node.getAttribute("aria-label"),
+            id: node
+              .closest("[data-citation-id]")
+              ?.getAttribute("data-citation-id"),
             role: (node as HTMLSelectElement).value,
           })),
         ),

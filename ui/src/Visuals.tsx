@@ -7,14 +7,14 @@ import * as echarts from "echarts/core";
 import { BarChart } from "echarts/charts";
 import { GridComponent, TooltipComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
-import type { Workspace, Analysis } from "./types";
+import type { Workspace, LedgerSummary } from "./types";
 import "maplibre-gl/dist/maplibre-gl.css";
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 export function Graph({
   workspace,
   onSelect,
 }: {
-  workspace: Workspace;
+  workspace: Pick<Workspace, "entities" | "assertions">;
   onSelect: (id: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -101,7 +101,11 @@ export function Graph({
     </>
   );
 }
-export function LocalMap({ workspace }: { workspace: Workspace }) {
+export function LocalMap({
+  workspace,
+}: {
+  workspace: Pick<Workspace, "addresses" | "locations">;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!ref.current) return;
@@ -169,7 +173,7 @@ export function TotalsChart({
   analysis,
   onCurrency,
 }: {
-  analysis: Analysis;
+  analysis: Pick<LedgerSummary, "totals">;
   onCurrency: (currency: string) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);

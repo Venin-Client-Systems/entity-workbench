@@ -1,6 +1,5 @@
-import type { Workspace } from "./types";
-
-export type ReviewDecision = Workspace["decisions"][number];
+import type { ReviewDecision } from "./types";
+export type { ReviewDecision } from "./types";
 export type ReviewDecisionTargetKind =
   | "entity"
   | "observation"

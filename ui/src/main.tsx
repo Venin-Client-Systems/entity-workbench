@@ -3,18 +3,28 @@ import { createRoot } from "react-dom/client";
 import { command } from "./api";
 import { downloadExport } from "./download";
 import type {
-  Response,
+  DesktopSummaryResponse,
+  ReviewState,
   Transaction,
   Evidence,
   Anchor,
-  SourceExcerpt,
 } from "./types";
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { AssessmentWorkbench } from "./AssessmentWorkbench";
 import { CollectionHistory } from "./CollectionReview";
 import { DocumentJobs } from "./DocumentJobs";
 import { Dialog } from "./Dialog";
-import { ReviewSurface } from "./ReviewSurface";
+import { TransactionLedger } from "./TransactionLedger";
+import { TransactionReview } from "./TransactionReview";
+import type {
+  LedgerScope,
+  TransactionSelection,
+} from "./transaction-ledger-types";
+import {
+  readDesktopSummary,
+  isBackupResult,
+  retainNewestSummary,
+} from "./desktop-summary";
 import { EntityWorkbench } from "./EntityWorkbench";
 import { TransactionComparison } from "./TransactionComparison";
 import { TransactionPatterns } from "./TransactionPatterns";
@@ -35,15 +45,15 @@ const sections = [
 ] as const;
 type Section = (typeof sections)[number];
 function App() {
-  const [data, setData] = useState<Response | null>(null),
+  const [data, setData] = useState<DesktopSummaryResponse | null>(null),
     [section, setSection] = useState<Section>("Overview"),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false);
   const [query, setQuery] = useState(""),
-    [reviewFilter, setReviewFilter] = useState("all"),
-    [currency, setCurrency] = useState("all"),
-    [selected, setSelected] = useState<Transaction | null>(null),
+    [reviewFilter, setReviewFilter] = useState<ReviewState | null>(null),
+    [currency, setCurrency] = useState<string | null>(null),
+    [selected, setSelected] = useState<TransactionSelection | null>(null),
     [evidence, updateEvidence] = useState<Evidence | null>(null);
   const [sourceAnchor, setSourceAnchor] = useState<Anchor | undefined>(
     undefined,
@@ -52,16 +62,23 @@ function App() {
     updateEvidence(item);
     setSourceAnchor(anchor);
   };
-  const [why, setWhy] = useState(""),
-    [corrected, setCorrected] = useState(""),
-    [transfer, setTransfer] = useState(""),
-    [entityId, setEntityId] = useState(""),
+  const [ledgerPivot, setLedgerPivot] = useState(0);
+  const [ledgerScope, setLedgerScope] = useState<LedgerScope | null>(null);
+  const [visibleTransactionIds, setVisibleTransactionIds] = useState<string[]>(
+    [],
+  );
+  const [entityId, setEntityId] = useState(""),
     [seeds, setSeeds] = useState("https://example.com/"),
     [previewed, setPreviewed] = useState(false);
   const [searchHits, setSearchHits] = useState<
     { id: string; name: string; score: number }[] | null
   >(null);
   const pendingDocumentRequests = useRef(new Map<string, string>());
+  const workspaceAction = useRef(false);
+  const publishSummary = useCallback((value: unknown) => {
+    const next = readDesktopSummary(value);
+    setData((current) => retainNewestSummary(current, next));
+  }, []);
   const upload = useRef<HTMLInputElement>(null);
   const [statementFile, setStatementFile] = useState<StatementFile | null>(
     null,
@@ -80,25 +97,35 @@ function App() {
       setBusy(false);
     }
   };
-  const run = useCallback(async (action: Record<string, unknown>) => {
-    setBusy(true);
-    setError("");
-    setNotice("");
-    try {
-      const response = await command<Response>(action);
-      if (response.workspace) setData(response);
-      else
-        setNotice(
-          "Recoverable backup saved in the workspace backups directory.",
-        );
-      return true;
-    } catch (e) {
-      setError(String(e));
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  }, []);
+  const run = useCallback(
+    async (action: Record<string, unknown>) => {
+      if (workspaceAction.current) return false;
+      workspaceAction.current = true;
+      setBusy(true);
+      setError("");
+      setNotice("");
+      try {
+        const response = await command<unknown>(action);
+        if (action.action === "backup") {
+          if (!isBackupResult(response))
+            throw new Error(
+              "Invalid backup response; success was not confirmed.",
+            );
+          setNotice(
+            "Recoverable backup saved in the workspace backups directory.",
+          );
+        } else publishSummary(response);
+        return true;
+      } catch (e) {
+        setError(String(e));
+        return false;
+      } finally {
+        workspaceAction.current = false;
+        setBusy(false);
+      }
+    },
+    [publishSummary],
+  );
   useEffect(() => {
     void run({ action: "view" });
   }, [run]);
@@ -108,18 +135,25 @@ function App() {
     setQuery("");
     setSearchHits(null);
   };
-  const inspectTransaction = (t: Transaction) => {
-    setSelected(t);
-    setWhy("");
-    setCorrected(t.amount);
-    setTransfer("");
+  const inspectTransaction = (row: Transaction, revision: number) => {
+    setSelected({ row, revision });
   };
+  const applyLedgerScope = useCallback(
+    (scope: LedgerScope, visibleIds: string[]) => {
+      setLedgerScope(scope);
+      setVisibleTransactionIds(visibleIds);
+      setCurrency(scope.filter.currency);
+      setReviewFilter(scope.filter.review);
+    },
+    [],
+  );
   const selectEntity = useCallback((id: string) => {
     setEntityId(id);
     setSection("Entities");
   }, []);
   const selectCurrency = useCallback((c: string) => {
     setCurrency(c);
+    setLedgerPivot((value) => value + 1);
     setSection("Transactions");
   }, []);
   const download = async (content: string, name: string, type: string) => {
@@ -129,13 +163,6 @@ function App() {
   };
   const w = data?.workspace,
     a = data?.analysis;
-  const act = async (action: Record<string, unknown>) => {
-    const ok = await run({ ...action, expected_revision: w?.revision });
-    if (ok) {
-      setSelected(null);
-      setWhy("");
-    }
-  };
   const uploadFile = async (file: File) => {
     if (file.size > 16 * 1024 * 1024) {
       setError("Import limit is 16 MiB per file.");
@@ -150,15 +177,6 @@ function App() {
     await run({ action: "import", name: file.name, bytes });
     setSection("Evidence");
   };
-  const transactions =
-    w?.transactions.filter(
-      (t) =>
-        (reviewFilter === "all" || t.review === reviewFilter) &&
-        (currency === "all" || t.currency === currency) &&
-        `${t.description} ${t.account} ${t.date}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
-    ) ?? [];
   const evidenceList =
     w?.evidence.filter((e) =>
       searchHits
@@ -202,7 +220,9 @@ function App() {
                 {String(i + 1).padStart(2, "0")}
               </span>
               {s}
-              {s === "Transactions" && a && <small>{a.pending}</small>}
+              {s === "Transactions" && a && (
+                <small>{a.review_counts.pending}</small>
+              )}
             </button>
           ))}
         </nav>
@@ -349,7 +369,7 @@ function App() {
                     />
                     <Stat
                       label="Transactions to review"
-                      value={a.pending}
+                      value={a.review_counts.pending}
                       detail="Exact decimals, by currency"
                     />
                     <Stat
@@ -389,8 +409,8 @@ function App() {
                       <div className="panel-heading">
                         <h2>Review priorities</h2>
                         <span className="count">
-                          {a.balance_checks.filter((c) => !c.reconciled)
-                            .length + a.duplicate_candidates}
+                          {a.balance_discrepancy_count +
+                            a.duplicate_candidate_row_count}
                         </span>
                       </div>
                       <button
@@ -401,12 +421,9 @@ function App() {
                         <div>
                           <h3>Statement reconciliation</h3>
                           <p>
-                            {
-                              a.balance_checks.filter((c) => !c.reconciled)
-                                .length
-                            }{" "}
-                            balance discrepancies · {a.duplicate_candidates}{" "}
-                            possible duplicate rows
+                            {a.balance_discrepancy_count} balance discrepancies
+                            · {a.duplicate_candidate_row_count} possible
+                            duplicate rows
                           </p>
                         </div>
                         <span>↗</span>
@@ -522,7 +539,7 @@ function App() {
                           key={t.currency}
                           label={`${t.currency} reviewed net`}
                           value={t.net}
-                          detail={`${t.transaction_ids.length} included · ${t.excluded_transfer_ids.length} matched transfer rows excluded`}
+                          detail={`${t.included_count} included · ${t.excluded_transfer_count} matched transfer rows excluded`}
                         />
                       ))
                     ) : (
@@ -534,153 +551,26 @@ function App() {
                     )}
                     <Stat
                       label="Pending review"
-                      value={a.pending}
+                      value={a.review_counts.pending}
                       detail="Excluded from reviewed totals"
                     />
                     <Stat
                       label="Balance discrepancies"
-                      value={
-                        a.balance_checks.filter((c) => !c.reconciled).length
-                      }
+                      value={a.balance_discrepancy_count}
                       detail="Compared in source row order"
                     />
                   </div>
-                  <section className="panel">
-                    <div className="toolbar">
-                      <input
-                        aria-label="Filter transactions"
-                        placeholder="Description, account or date…"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                      />
-                      <select
-                        aria-label="Review filter"
-                        value={reviewFilter}
-                        onChange={(e) => setReviewFilter(e.target.value)}
-                      >
-                        {[
-                          "all",
-                          "pending",
-                          "accepted",
-                          "rejected",
-                          "deferred",
-                        ].map((v) => (
-                          <option key={v}>{v}</option>
-                        ))}
-                      </select>
-                      <select
-                        aria-label="Currency filter"
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
-                      >
-                        {[
-                          "all",
-                          ...new Set(w.transactions.map((t) => t.currency)),
-                        ].map((v) => (
-                          <option key={v}>{v}</option>
-                        ))}
-                      </select>
-                      <button
-                        className="button subtle"
-                        onClick={() =>
-                          download(
-                            JSON.stringify(transactions, null, 2),
-                            "transactions.json",
-                            "application/json",
-                          ).catch((cause) => setError(String(cause)))
-                        }
-                      >
-                        Export JSON
-                      </button>
-                    </div>
-                    <div
-                      className="table-scroll"
-                      role="region"
-                      aria-label="Transaction ledger"
-                      tabIndex={0}
-                    >
-                      <table>
-                        <caption>
-                          {transactions.length} transactions in the current view
-                          · amounts retain their original currency
-                        </caption>
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Original description</th>
-                            <th>Account</th>
-                            <th className="numeric">Amount</th>
-                            <th>Checks</th>
-                            <th>Review</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {transactions.map((t) => (
-                            <tr
-                              key={t.id}
-                              className={
-                                selected?.id === t.id
-                                  ? "selected-row"
-                                  : undefined
-                              }
-                              onClick={() => inspectTransaction(t)}
-                            >
-                              <td>{t.date}</td>
-                              <td>
-                                <button
-                                  className="cell-button"
-                                  id={`transaction-${t.id}`}
-                                  onClick={() => inspectTransaction(t)}
-                                >
-                                  {t.description}
-                                </button>
-                                <small>
-                                  {t.posting_date
-                                    ? `Posted ${t.posting_date}`
-                                    : ""}
-                                </small>
-                              </td>
-                              <td>
-                                <code>{t.account}</code>
-                              </td>
-                              <td className="numeric">
-                                <strong>{t.amount}</strong>
-                                <small>{t.currency}</small>
-                              </td>
-                              <td>
-                                {t.duplicate_candidates.length > 0 && (
-                                  <span className="pill warning">
-                                    Possible duplicate
-                                  </span>
-                                )}
-                                {a.balance_checks.some(
-                                  (c) =>
-                                    c.transaction_id === t.id && !c.reconciled,
-                                ) && (
-                                  <span className="pill warning">
-                                    Balance mismatch
-                                  </span>
-                                )}
-                                {t.transfer_peer && (
-                                  <span className="pill">Matched transfer</span>
-                                )}
-                              </td>
-                              <td>
-                                <span className={`pill ${t.review}`}>
-                                  {t.review}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <p className="context-note">
-                      Repeated purchases are retained. No currency conversion is
-                      performed. Select a row to inspect its source, review it
-                      or propose a correction.
-                    </p>
-                  </section>
+                  <TransactionLedger
+                    revision={w.revision}
+                    currency={currency}
+                    review={reviewFilter}
+                    pivot={ledgerPivot}
+                    selectedId={selected?.row.id}
+                    onInspect={inspectTransaction}
+                    onScope={applyLedgerScope}
+                    onRefresh={() => run({ action: "view" })}
+                    download={download}
+                  />
                   <TransactionComparison
                     workspace={w}
                     onInspect={inspectTransaction}
@@ -889,154 +779,24 @@ function App() {
         </main>
       </div>
       {selected && w && (
-        <ReviewSurface
-          onClose={() => setSelected(null)}
-          restoreFocus={() =>
-            document.getElementById(`transaction-${selected.id}`)?.focus()
+        <TransactionReview
+          key={
+            selected.row.id +
+            ":" +
+            selected.row.version +
+            ":" +
+            selected.revision
           }
-        >
-          <button
-            className="close"
-            aria-label="Close review"
-            onClick={() => setSelected(null)}
-          >
-            ×
-          </button>
-          <p className="eyebrow">
-            TRANSACTION REVIEW · VERSION {selected.version}
-          </p>
-          <h2>{selected.description}</h2>
-          <div className="amount-large">
-            {selected.amount} <span>{selected.currency}</span>
-          </div>
-          <p>
-            {selected.date} · {selected.account} · {selected.review}
-          </p>
-          {!transactions.some((t) => t.id === selected.id) && (
-            <p className="alert" role="status">
-              Selected transaction is outside the current filters.
-            </p>
-          )}
-          <div className="disclosure">
-            <strong>Source anchor</strong>
-            <p>
-              {selected.anchor.sheet}, row {selected.anchor.row}, column{" "}
-              {selected.anchor.column}
-            </p>
-            <button
-              className="text-button"
-              onClick={() =>
-                setEvidence(
-                  w.evidence.find(
-                    (e) => e.id === selected.anchor.evidence_id,
-                  ) ?? null,
-                  selected.anchor,
-                )
-              }
-            >
-              Inspect preserved source ↗
-            </button>
-          </div>
-          <TransactionExcerpt
-            key={selected.id + ":" + selected.version}
-            transaction={selected}
-          />
-          <label>
-            Decision reason
-            <input
-              aria-label="Transaction decision reason"
-              value={why}
-              onChange={(e) => setWhy(e.target.value)}
-            />
-          </label>
-          <div className="actions">
-            {(["accepted", "rejected", "deferred"] as const).map((state) => (
-              <button
-                className={`button ${state === "accepted" ? "primary" : ""}`}
-                key={state}
-                disabled={busy || !why || !!selected.transfer_peer}
-                onClick={() =>
-                  void act({
-                    action: "review_transaction",
-                    id: selected.id,
-                    state,
-                    reason: why,
-                  })
-                }
-              >
-                {state === "accepted"
-                  ? "Accept"
-                  : state === "rejected"
-                    ? "Reject"
-                    : "Defer"}
-              </button>
-            ))}
-          </div>
-          <hr />
-          <label>
-            Corrected amount
-            <input
-              aria-label="Corrected amount"
-              value={corrected}
-              onChange={(e) => setCorrected(e.target.value)}
-            />
-          </label>
-          <button
-            className="button"
-            disabled={busy || !why || corrected === selected.amount}
-            onClick={() =>
-              void act({
-                action: "correct_transaction",
-                id: selected.id,
-                amount: corrected,
-                reason: why,
-              })
-            }
-          >
-            Save correction for review
-          </button>
-          <p className="muted">
-            Original evidence stays intact. A correction returns the transaction
-            to pending review and invalidates dependent findings.
-          </p>
-          <hr />
-          <label>
-            Internal transfer counterpart
-            <select
-              aria-label="Transfer counterpart"
-              value={transfer}
-              onChange={(e) => setTransfer(e.target.value)}
-            >
-              <option value="">Select a reviewed transaction</option>
-              {w.transactions
-                .filter(
-                  (t) =>
-                    t.id !== selected.id &&
-                    t.account !== selected.account &&
-                    t.review === "accepted",
-                )
-                .map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.account} · {t.description} · {t.amount} {t.currency}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <button
-            className="button"
-            disabled={busy || !why || !transfer}
-            onClick={() =>
-              void act({
-                action: "match_transfer",
-                first: selected.id,
-                second: transfer,
-                reason: why,
-              })
-            }
-          >
-            Match internal transfer
-          </button>
-        </ReviewSurface>
+          selection={selected}
+          currentRevision={w.revision}
+          scope={ledgerScope}
+          visibleIds={visibleTransactionIds}
+          evidence={w.evidence}
+          busy={busy}
+          run={run}
+          onSource={setEvidence}
+          close={() => setSelected(null)}
+        />
       )}
       {statementFile && w && (
         <StatementImport
@@ -1044,7 +804,7 @@ function App() {
           profiles={w.statement_profiles}
           onClose={() => setStatementFile(null)}
           onImported={(response, count) => {
-            setData(response);
+            publishSummary(response);
             setStatementFile(null);
             setSection("Transactions");
             setNotice(`Imported ${count} transactions as pending review.`);
@@ -1134,42 +894,3 @@ function EvidenceRows({
   );
 }
 createRoot(document.getElementById("root")!).render(<App />);
-
-function TransactionExcerpt({ transaction }: { transaction: Transaction }) {
-  const [excerpt, setExcerpt] = useState<SourceExcerpt | null>(null);
-  const [error, setError] = useState("");
-  useEffect(() => {
-    let active = true;
-    void command<SourceExcerpt>({
-      action: "inspect_source",
-      anchor: transaction.anchor,
-    })
-      .then((value) => {
-        if (active) setExcerpt(value);
-      })
-      .catch((value) => {
-        if (active) setError(String(value));
-      });
-    return () => {
-      active = false;
-    };
-  }, [transaction.anchor]);
-  return (
-    <section
-      className="original-excerpt"
-      aria-label="Original transaction excerpt"
-    >
-      <h3>Preserved source value</h3>
-      {error ? (
-        <p role="alert">{error}</p>
-      ) : excerpt ? (
-        <>
-          <pre className="source-quote">{excerpt.quote}</pre>
-          <p className="muted">{excerpt.location} · original evidence</p>
-        </>
-      ) : (
-        <p role="status">Resolving source anchor…</p>
-      )}
-    </section>
-  );
-}

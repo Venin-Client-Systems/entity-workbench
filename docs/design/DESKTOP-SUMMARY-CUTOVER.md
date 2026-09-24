@@ -2,6 +2,8 @@
 
 This implementation plan follows the consumer inventory at `4efa177`. It supplements the historical [pagination proposal](TRANSACTION-PAGINATION-PROPOSAL.md); it does not activate summary responses or claim completed pagination design. The coordinating implementation task accepted this phased approach, date-ascending ledger order with an explicit direction control, and the existing broad transfer-candidate eligibility as routine implementation choices.
 
+The subsequent [desktop summary implementation](DESKTOP-SUMMARY.md) now carries out this plan. Its verification record distinguishes actual browser/core checks from native integration and the still-unverified editable design extensions. The plan below remains the original consumer inventory and rationale.
+
 ## Current consumers and required replacements
 
 | Consumer | Present full-array dependency | Required replacement |
