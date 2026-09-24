@@ -42,6 +42,16 @@ fn require_verified_worker_exit(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
+fn suspend_queued_jobs(conn: &Connection) -> Result<()> {
+    for mut queued in all::<ProcessingJob>(conn, "processing_job")? {
+        if queued.state == ProcessingState::Queued {
+            terminal(&mut queued, ProcessingState::Blocked, Some(ProcessingFailure::RecoveryRequired), "An earlier worker's exit is unverified. Document execution is suspended until verified process recovery");
+            put(conn, "processing_job", &queued.id, &queued)?;
+        }
+    }
+    Ok(())
+}
+
 impl Workspace {
     pub fn queue_document_parse(
         &mut self,
@@ -320,7 +330,13 @@ impl Workspace {
         let jobs: Vec<ProcessingJob> = all(&self.conn, "processing_job")?;
         let jobs: Vec<_> = jobs
             .into_iter()
-            .filter(|job| job.state == ProcessingState::Running)
+            .filter(|job| {
+                job.state == ProcessingState::Running
+                    // Earlier development builds labelled orphan recovery Interrupted,
+                    // clearing its lease. A joined, explicitly stopped attempt retains
+                    // its lease and can still be retried safely under that category.
+                    || (job.failure == Some(ProcessingFailure::Interrupted) && job.lease.is_none())
+            })
             .collect();
         if jobs.is_empty() {
             return Ok(0);
@@ -328,14 +344,11 @@ impl Workspace {
         let count = jobs.len();
         self.change(Some(expected), "processing.recover", false, |conn| {
             for mut job in jobs {
-                if job.cancellation_requested {
-                    terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::Interrupted), "Previous coordinator stopped after cancellation was requested. Worker exit is unverified; no result was published. An explicit manual retry is required");
-                } else {
-                    terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::Interrupted), "Previous coordinator stopped before publishing a result; an explicit manual retry is required");
-                }
+                terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::WorkerExitUnverified), "Previous coordinator did not record a verified worker exit. Worker exit is unverified; document execution is suspended until verified process recovery. No new result was published");
                 job.lease = None;
                 put(conn, "processing_job", &job.id, &job)?;
             }
+            suspend_queued_jobs(conn)?;
             Ok(())
         })?;
         Ok(count)
@@ -457,12 +470,7 @@ impl Workspace {
         }
         self.change(Some(expected), "processing.finish", false, |conn| {
             if job.failure == Some(ProcessingFailure::WorkerExitUnverified) {
-                for mut queued in all::<ProcessingJob>(conn, "processing_job")? {
-                    if queued.state == ProcessingState::Queued {
-                        terminal(&mut queued, ProcessingState::Blocked, Some(ProcessingFailure::RecoveryRequired), "An earlier worker's exit is unverified. Document execution is suspended until verified process recovery");
-                        put(conn, "processing_job", &queued.id, &queued)?;
-                    }
-                }
+                suspend_queued_jobs(conn)?;
             }
             if let Some(record) = &extraction {
                 put(conn, "extraction", &record.id, record)?;
@@ -639,6 +647,7 @@ mod tests {
         let job = queue(&mut workspace, &evidence);
         let ownership = workspace.lock_processing().unwrap();
         let prepared = workspace.claim_document_job().unwrap().unwrap();
+        let pending = queue(&mut workspace, &evidence);
         let mut another = Workspace::open(dir.path()).unwrap();
         assert!(another.lock_processing().is_err());
         assert_eq!(
@@ -650,30 +659,34 @@ mod tests {
         assert_eq!(another.recover_processing_jobs().unwrap(), 1);
         assert_eq!(
             another.processing_job(&job.id).unwrap().failure,
-            Some(ProcessingFailure::Interrupted)
+            Some(ProcessingFailure::WorkerExitUnverified)
         );
         assert!(another
             .finish_document_job(&prepared.ticket, Ok(result(&prepared.bytes)))
             .is_err());
-        another
-            .retry_processing_job(&job.id, 1, "Recover interrupted synthetic job")
-            .unwrap();
-        let retry = another.claim_document_job().unwrap().unwrap();
-        let done = another
-            .finish_document_job(&retry.ticket, Ok(result(&retry.bytes)))
-            .unwrap();
+        assert!(another
+            .retry_processing_job(&job.id, 1, "Unverified recovery retry")
+            .is_err());
+        assert!(another.claim_document_job().is_err());
+        assert!(another.queue_document_parse(&evidence, &id()).is_err());
+        assert_eq!(
+            another.processing_job(&pending.id).unwrap().failure,
+            Some(ProcessingFailure::RecoveryRequired)
+        );
         drop(another);
         let mut reopened = Workspace::open(dir.path()).unwrap();
         assert_eq!(reopened.recover_processing_jobs().unwrap(), 0);
-        assert_eq!(
-            reopened.processing_job(&job.id).unwrap().result_ids,
-            done.result_ids
-        );
+        assert!(reopened
+            .processing_job(&job.id)
+            .unwrap()
+            .result_ids
+            .is_empty());
+        assert!(reopened.claim_document_job().is_err());
         assert_eq!(
             all::<ExtractionRecord>(&reopened.conn, "extraction")
                 .unwrap()
                 .len(),
-            1
+            0
         );
     }
     #[test]
@@ -765,9 +778,79 @@ mod tests {
         workspace.recover_processing_jobs().unwrap();
         let recovered = workspace.processing_job(&job.id).unwrap();
         assert_eq!(recovered.state, ProcessingState::Failed);
-        assert_eq!(recovered.failure, Some(ProcessingFailure::Interrupted));
+        assert_eq!(
+            recovered.failure,
+            Some(ProcessingFailure::WorkerExitUnverified)
+        );
         assert!(recovered.cancellation_requested);
         assert!(recovered.detail.contains("Worker exit is unverified"));
+    }
+
+    #[test]
+    fn recovery_distinguishes_joined_shutdown_from_legacy_orphan_classification() {
+        for legacy_orphan in [false, true] {
+            let (_dir, mut workspace, evidence) = fixture();
+            let job = queue(&mut workspace, &evidence);
+            let prepared = workspace.claim_document_job().unwrap().unwrap();
+            let mut finished = workspace
+                .finish_document_job(
+                    &prepared.ticket,
+                    Err(Error::Interrupted("Synthetic joined shutdown".into())),
+                )
+                .unwrap();
+            if legacy_orphan {
+                // Reproduce the previous development recovery representation,
+                // whose cleared lease recorded no confirmed process termination.
+                finished.lease = None;
+                workspace
+                    .change(None, "test.legacy_orphan", false, |conn| {
+                        put(conn, "processing_job", &job.id, &finished)
+                    })
+                    .unwrap();
+            }
+            let _ownership = workspace.lock_processing().unwrap();
+            assert_eq!(
+                workspace.recover_processing_jobs().unwrap(),
+                usize::from(legacy_orphan)
+            );
+            let retry = workspace.retry_processing_job(&job.id, 1, "Synthetic recovery review");
+            assert_eq!(retry.is_ok(), !legacy_orphan);
+            assert_eq!(workspace.claim_document_job().is_ok(), !legacy_orphan);
+        }
+    }
+
+    #[test]
+    fn orphan_recovery_and_queue_suspension_commit_together() {
+        let (_dir, mut workspace, evidence) = fixture();
+        let running = queue(&mut workspace, &evidence);
+        workspace.claim_document_job().unwrap().unwrap();
+        let queued = queue(&mut workspace, &evidence);
+        let _ownership = workspace.lock_processing().unwrap();
+        let revision = workspace.revision().unwrap();
+        workspace.conn.execute_batch("CREATE TRIGGER reject_suspension BEFORE UPDATE ON records WHEN NEW.kind='processing_job' AND json_extract(NEW.body,'$.failure')='recovery_required' BEGIN SELECT RAISE(ABORT,'synthetic recovery failure'); END;").unwrap();
+        assert!(workspace.recover_processing_jobs().is_err());
+        assert_eq!(workspace.revision().unwrap(), revision);
+        assert_eq!(
+            workspace.processing_job(&running.id).unwrap().state,
+            ProcessingState::Running
+        );
+        assert_eq!(
+            workspace.processing_job(&queued.id).unwrap().state,
+            ProcessingState::Queued
+        );
+        workspace
+            .conn
+            .execute_batch("DROP TRIGGER reject_suspension;")
+            .unwrap();
+        workspace.recover_processing_jobs().unwrap();
+        assert_eq!(
+            workspace.processing_job(&running.id).unwrap().failure,
+            Some(ProcessingFailure::WorkerExitUnverified)
+        );
+        assert_eq!(
+            workspace.processing_job(&queued.id).unwrap().failure,
+            Some(ProcessingFailure::RecoveryRequired)
+        );
     }
 
     #[test]

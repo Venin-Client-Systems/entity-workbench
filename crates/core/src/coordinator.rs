@@ -237,7 +237,7 @@ fn work(shared: Arc<Shared>) {
                 break;
             }
             // Keep the claim visible as running if storage is temporarily unavailable. A shutdown
-            // leaves it recoverable as interrupted; it never invents a successful completion.
+            // leaves worker exit unverified at recovery; it never invents a successful completion.
             let _guard = shared
                 .wake
                 .wait_timeout(workspace, Duration::from_millis(100));
