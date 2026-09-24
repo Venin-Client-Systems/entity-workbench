@@ -11,6 +11,8 @@ pub mod literal_search;
 pub mod policy;
 pub mod processing;
 pub mod report;
+pub mod report_document;
+pub mod report_docx;
 pub mod review_decision_page;
 pub mod statements;
 pub mod store;

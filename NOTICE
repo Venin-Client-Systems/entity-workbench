@@ -18,3 +18,7 @@ Unmodified font bundled from https://github.com/rsms/inter/releases/tag/v4.1.
 JetBrains Mono 2.304 font, Copyright 2020 The JetBrains Mono Project Authors.
 Licensed under SIL Open Font License 1.1; see ui/public/fonts/JetBrainsMono-LICENSE.txt.
 Unmodified fonts bundled from https://github.com/JetBrains/JetBrainsMono/releases/tag/v2.304.
+
+The editable DOCX foundation uses quick-xml 0.42.0, zip 8.6.0 and
+typed-path 0.12.3. Their licence texts and locked identities are in
+third_party/docx/; these components retain their upstream copyrights.
