@@ -7,6 +7,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+pub mod ocr;
 pub mod parser;
 #[cfg(target_os = "macos")]
 mod supervision;

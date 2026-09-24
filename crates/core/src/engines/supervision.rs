@@ -12,6 +12,8 @@ use std::{
     time::{Duration, Instant},
 };
 
+pub(super) mod ocr;
+
 const FILE_BYTES: u64 = 64 * 1024 * 1024;
 const TREE_BYTES: u64 = 128 * 1024 * 1024;
 const TREE_FILES: usize = 512;
@@ -318,7 +320,7 @@ fn wait_assigned(
     let outcome = (|| {
         loop {
             if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
-                return Err(Error::Blocked("Local Java worker cancelled".into()));
+                return Err(Error::Blocked("Local worker cancelled".into()));
             }
             // WNOWAIT preserves the leader PID until group termination, avoiding a
             // signal to a recycled PID after std::Child::try_wait has reaped it.
@@ -339,7 +341,7 @@ fn wait_assigned(
             }
             if started.elapsed() >= timeout {
                 return Err(Error::QuotaExhausted(
-                    "Local Java worker wall-time limit exhausted".into(),
+                    "Local worker wall-time limit exhausted".into(),
                 ));
             }
             let mut count = 0;
@@ -475,7 +477,7 @@ fn run_assigned_java(
         .stderr(Stdio::null());
     configure_process(&mut command)?;
     if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
-        return Err(Error::Blocked("Local Java worker cancelled".into()));
+        return Err(Error::Blocked("Local worker cancelled".into()));
     }
     let status = wait_assigned(
         command.spawn()?,
