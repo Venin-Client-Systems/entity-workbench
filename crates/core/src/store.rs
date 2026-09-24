@@ -22,6 +22,7 @@ mod statements;
 mod transaction_analysis;
 mod transaction_comparison;
 mod transaction_page;
+mod transaction_sources;
 #[cfg(test)]
 mod view_tests;
 
@@ -291,6 +292,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, presentation: bool) -> Result<Value> {
         match command {
+            Command::ReadTransactionSources {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.read_transaction_sources(&request, expected_revision)?,
+                )?)
+            }
             Command::PageTransactions {
                 request,
                 expected_revision,
