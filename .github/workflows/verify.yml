@@ -36,6 +36,8 @@ jobs:
         run: python -m unittest discover -s scripts/tests -p 'test_*.py' -v
       - name: Verify OCR failure evidence replaces stale success
         run: python scripts/test_ocr_evidence.py
+      - name: Verify OCR region failure and history evidence
+        run: python scripts/test_ocr_regions_evidence.py
       - name: Verify image decoder failure and history evidence
         run: python scripts/test_image_evidence.py
       - name: Verify PDF renderer failure and history evidence
