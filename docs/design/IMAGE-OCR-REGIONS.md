@@ -20,9 +20,9 @@ synthetic specimens, not measured OCR results.
 |---|---|---|
 | [17 / Instrument — Image word regions, 45:1199](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=45-1199) | 1120 × 1270 | [Native Figma 2× PNG](review/image-ocr-regions/figma-desktop.png), [editable vector source](review/image-ocr-regions/source-desktop.svg) |
 | [18 / Instrument — Image regions compact, 45:1310](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=45-1310) | 640 × 1480 | [Native Figma 2× PNG](review/image-ocr-regions/figma-compact.png), [editable vector source](review/image-ocr-regions/source-compact.svg) |
-| [19 / Instrument — Image region workflow states, 45:1399](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=45-1399) | 1120 × 1200 | [Editable vector source](review/image-ocr-regions/source-states.svg); visually inspected on the Figma canvas |
+| [19 / Instrument — Image region workflow states, 45:1399](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=45-1399) | 1120 × 1200 | [Editable vector source](review/image-ocr-regions/source-states.svg), [recovered native Figma 1× PNG](review/image-ocr-regions/figma-states.png) |
 
-The first two PNGs were obtained through Figma's Copy as PNG action and
+In the initial campaign, the first two PNGs were obtained through Figma's Copy as PNG action and
 visually inspected. Their dimensions are 2240 × 2540 and 1280 × 2960 pixels.
 The third frame's complete canvas, editable text children, name and position
 (31420, −500) were observed through native Chrome controls. During final
@@ -30,14 +30,25 @@ export Figma reported a connection issue affecting saving; browser controls
 also timed out. Its native PNG export and remote sync are therefore
 unconfirmed. The original Figma tab was not intentionally reloaded or closed.
 The committed SVG sources preserve all three designs independently of that
-connection. The [checksum manifest](review/image-ocr-regions/checksums.json)
-records exactly which native exports exist and leaves the third unverified.
+connection. That failed export/sync observation is retained as history.
+
+On 25 September, a separate fresh view in the original signed-in browser
+profile loaded the saved document and frame 45:1399 with its original name,
+1120 × 1200 dimensions and (31420, −500) position. Its complete canvas was
+inspected, then Figma's native Export action produced the PNG linked above.
+The extracted 105,881-byte image was inspected at its actual dimensions with
+no clipped text or overlapping controls observed. This verifies the third
+frame's saved remote content and native export without reloading, closing or
+overwriting either preserved original tab. The desktop and compact frames
+were listed in the fresh editor; their earlier PNGs were not re-exported in
+this recovery check. The [checksum manifest](review/image-ocr-regions/checksums.json)
+keeps the initial failure and this narrower later observation distinct.
 
 These Figma frames are design review specimens. Application comparison
 artifacts and scoped accessibility results are recorded separately below;
-neither establishes owner acceptance or complete release approval. The final states PNG
-and remote save should be verified when the design connection is restored,
-without creating duplicate frames.
+neither establishes owner acceptance or complete release approval. The third
+frame's export and remote-save uncertainty is resolved; wider design and
+accessibility acceptance remains separate.
 
 ## Queue and retained data
 

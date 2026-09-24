@@ -3,8 +3,8 @@
   "scope": "editable design and real-core synthetic browser comparison; no native execution or accuracy claim",
   "observed_date": "2026-09-25",
   "figma_file": "O50ISV0LGG8nKDcFORNMbO",
-  "native_export_method": "Figma Copy as PNG; 2x",
-  "states_export_status": "not obtained; connection/control failure after native canvas review",
+  "native_export_method": "Desktop/compact: Figma Copy as PNG, 2x; states recovery: native Export PNG, 1x",
+  "states_export_status": "verified in a separate fresh signed-in editor view; initial connection/export failure retained below",
   "frames": [
     {
       "frame_id": "45:1199",
@@ -71,13 +71,22 @@
         1200
       ],
       "native_editable_layers_observed": true,
-      "native_export_verified": false,
-      "remote_sync": "unconfirmed_after_connection_issue",
+      "native_export_verified": true,
+      "remote_sync": "verified_by_fresh_remote_document_readback_2026-09-25",
       "files": [
         {
           "path": "source-states.svg",
           "bytes": 6609,
           "sha256": "1c34aed29712b2100192ce42e293486de27fa5a06da145967cbf4d67563d69ea"
+        },
+        {
+          "path": "figma-states.png",
+          "bytes": 105881,
+          "sha256": "50173900850a1cfb1d98f48aa1f5d8433a4e80451e1589dcaa64b5d9073c7bf6",
+          "pixel_dimensions": [
+            1120,
+            1200
+          ]
         }
       ]
     }
@@ -143,5 +152,22 @@
       "bytes": 951,
       "sha256": "47f044ecea7ff01732c206cf739912bce76bb5700744b1fe6613a6e6b7d9bdeb"
     }
-  ]
+  ],
+  "initial_states_export_status": "not obtained; connection/control failure after native canvas review",
+  "recovery_observation": {
+    "date": "2026-09-25",
+    "frame_id": "45:1399",
+    "position": [
+      31420,
+      -500
+    ],
+    "dimensions": [
+      1120,
+      1200
+    ],
+    "original_tabs_preserved": true,
+    "fresh_view_export_zip_sha256": "2deb4d6c035fe434229364c43c4e1830f14db08796680f44f075ba9391ddd10e",
+    "other_frames": "desktop and compact listed; not re-exported or separately content-verified in this recovery check",
+    "owner_acceptance": false
+  }
 }
