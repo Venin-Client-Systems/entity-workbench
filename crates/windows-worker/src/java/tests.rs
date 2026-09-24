@@ -51,6 +51,9 @@ fn recipes_have_fixed_paths_classes_and_jvm_options() {
             .request
             .arguments
             .contains(&"-XX:-CreateCoredumpOnCrash".into()));
+        for flag in ["-XX:-UsePerfData", "-XX:+DisableAttachMechanism"] {
+            assert!(prepared.request.arguments.iter().any(|arg| arg == flag));
+        }
         assert!(prepared
             .request
             .arguments

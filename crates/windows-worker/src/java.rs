@@ -247,6 +247,8 @@ fn prepare<'a>(root: &Path, scratch_parent: &Path, job: &'a Job) -> Result<Prepa
     // already be backslashes; Win32 does not normalize '/' after a \\?\ prefix.
     let mut arguments = vec![
         "-Xmx256m".into(),
+        "-XX:-UsePerfData".into(),
+        "-XX:+DisableAttachMechanism".into(),
         "-XX:ActiveProcessorCount=2".into(),
         "-XX:+UseSerialGC".into(),
         "-XX:-CreateCoredumpOnCrash".into(),

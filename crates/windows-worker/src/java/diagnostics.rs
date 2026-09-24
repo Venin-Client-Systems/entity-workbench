@@ -21,6 +21,10 @@ pub(crate) struct TreeCounts {
 pub(crate) struct FatalHeader {
     pub exception_code: Option<u32>,
     pub frame_module: Option<&'static str>,
+    pub internal_error: bool,
+    pub out_of_memory: bool,
+    pub source_component: Option<&'static str>,
+    pub source_line: Option<u32>,
 }
 pub(crate) fn fallback_name(name: &str) -> bool {
     name.strip_prefix("hs_err_pid")
@@ -34,12 +38,50 @@ pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
     // neither the source text, addresses, PID, thread IDs, paths nor environment.
     let text = std::str::from_utf8(bytes).ok()?;
     let lines: Vec<_> = text.lines().take(32).collect();
-    if !lines.contains(&"# A fatal error has been detected by the Java Runtime Environment:") {
+    if !lines.contains(&"# A fatal error has been detected by the Java Runtime Environment:")
+        && !lines.contains(
+            &"# There is insufficient memory for the Java Runtime Environment to continue.",
+        )
+    {
         return None;
     }
     let mut header = FatalHeader::default();
     for (i, line) in lines.iter().enumerate() {
-        if line.starts_with("#  EXCEPTION_") {
+        let content = line.strip_prefix('#').unwrap_or("").trim_start();
+        header.internal_error |= content.starts_with("Internal Error (");
+        header.out_of_memory |= content.starts_with("Out of Memory Error (")
+            || content.starts_with("Native memory allocation (")
+            || content
+                == "There is insufficient memory for the Java Runtime Environment to continue.";
+        if content.starts_with("Internal Error (") || content.starts_with("Out of Memory Error (") {
+            for component in [
+                "os_windows.cpp",
+                "os_windows_x86.cpp",
+                "perfMemory_windows.cpp",
+                "os.cpp",
+                "thread.cpp",
+                "javaThread.cpp",
+                "allocation.cpp",
+                "arena.cpp",
+                "virtualspace.cpp",
+                "vm_version_x86.cpp",
+                "universe.cpp",
+                "javaClasses.cpp",
+                "classFileParser.cpp",
+                "exceptions.cpp",
+                "debug.cpp",
+            ] {
+                if let Some((_, suffix)) = content.split_once(&format!("{component}:")) {
+                    header.source_component = Some(component);
+                    if let Some((line, _)) = suffix.split_once(')') {
+                        if line.len() <= 6 && line.bytes().all(|b| b.is_ascii_digit()) {
+                            header.source_line = line.parse().ok();
+                        }
+                    }
+                }
+            }
+        }
+        if content.starts_with("EXCEPTION_") {
             if let Some((_, code)) = line.split_once("(0x") {
                 if let Some((code, _)) = code.split_once(')') {
                     if code.len() == 8 && code.bytes().all(|b| b.is_ascii_hexdigit()) {
@@ -112,5 +154,20 @@ mod tests {
         assert!(fatal_header(text.as_bytes()).is_none());
         let text = b"# A fatal error has been detected by the Java Runtime Environment:\n#  EXCEPTION_INVALID_HANDLE (0xprivate)\n";
         assert_eq!(fatal_header(text).unwrap().exception_code, None);
+    }
+    #[test]
+    fn internal_and_memory_hints_keep_only_fixed_categories_and_source_line() {
+        let text = b"# A fatal error has been detected by the Java Runtime Environment:\n# Internal Error (PRIVATE/os_windows.cpp:123), pid=PRIVATE\n# arbitrary private reason\n";
+        let header = fatal_header(text).unwrap();
+        assert!(header.internal_error);
+        assert!(!header.out_of_memory);
+        assert_eq!(header.source_component, Some("os_windows.cpp"));
+        assert_eq!(header.source_line, Some(123));
+        assert!(!serde_json::to_string(&header).unwrap().contains("PRIVATE"));
+        let text = b"# There is insufficient memory for the Java Runtime Environment to continue.\n# Native memory allocation (malloc) failed\n# Out of Memory Error (PRIVATE/private.cpp:123)\n";
+        let header = fatal_header(text).unwrap();
+        assert!(header.out_of_memory);
+        assert_eq!(header.source_component, None);
+        assert_eq!(header.source_line, None);
     }
 }
