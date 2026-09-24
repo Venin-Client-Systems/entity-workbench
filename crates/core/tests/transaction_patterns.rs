@@ -419,7 +419,10 @@ fn corrupt_original(path: &std::path::Path) {
         fs::set_permissions(path, fs::Permissions::from_mode(0o600)).unwrap();
     }
     #[cfg(windows)]
+    #[allow(clippy::permissions_set_readonly_false)]
     {
+        // Windows-only mutation of an owned synthetic corruption fixture. Unix
+        // uses explicit owner-only mode above; this never broadens Unix access.
         let mut permissions = fs::metadata(path).unwrap().permissions();
         permissions.set_readonly(false);
         fs::set_permissions(path, permissions).unwrap();
