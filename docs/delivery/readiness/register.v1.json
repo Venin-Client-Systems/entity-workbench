@@ -11,6 +11,13 @@
       "sha256": "865741fa47d242ba69a0afb4d682351b60e2ad4ea1057b2e54c7b0d953447a7f",
       "recorded_on": "2026-09-24",
       "valid_until": null
+    },
+    "owner-availability-2026-09-24": {
+      "kind": "unavailability",
+      "record": "docs/delivery/readiness/owner-availability-2026-09-24.md",
+      "sha256": "05eda706767ae20060b16241ed232373b0afa9decc6d4beca53f8a5fa12082f9",
+      "recorded_on": "2026-09-24",
+      "valid_until": null
     }
   },
   "requirements": [
@@ -100,15 +107,18 @@
       "responsible_role": "Platform test operator",
       "assignment_status": "unassigned",
       "assignment_evidence": [],
-      "status": "unknown",
+      "status": "missing",
       "assessed_on": "2026-09-24",
       "needed_by": "2026-09-30",
       "evidence": [
-        "initial-audit"
+        "initial-audit",
+        "owner-availability-2026-09-24"
       ],
-      "confirmation_evidence": [],
+      "confirmation_evidence": [
+        "owner-availability-2026-09-24"
+      ],
       "required_evidence": "A responsible operator confirms a reserved Windows 11 x64 environment, documented OS build, reset method and ability to run offline tests without developer tools; retain a sanitized benign/hostile probe result.",
-      "next_action": "Reserve and verify a real Windows 11 target; hosted Windows Server source CI does not establish this access.",
+      "next_action": "The owner has only the development Mac; no Windows 11 x64 environment is available. Establish permitted Windows 11 test access and a responsible operator, or record an explicit scope/date decision while keeping this gate unpassed.",
       "later_checkpoint": {
         "due_on": "2026-12-15",
         "purpose": "Test the actual downloaded signed installer after reset, offline and without developer tools."
@@ -124,11 +134,12 @@
       "assessed_on": "2026-09-24",
       "needed_by": "2026-09-30",
       "evidence": [
-        "initial-audit"
+        "initial-audit",
+        "owner-availability-2026-09-24"
       ],
       "confirmation_evidence": [],
       "required_evidence": "A responsible operator confirms a reserved Apple Silicon environment, documented OS version, reset method and ability to run offline tests without developer tools; retain a sanitized probe result.",
-      "next_action": "Assess and reserve a clean test environment. The inspected development Mac alone does not meet clean-test acceptance.",
+      "next_action": "The sole available machine is the existing Apple Silicon development Mac. Assess a reversible clean-test arrangement and responsible operator; current development access does not establish a clean environment.",
       "later_checkpoint": {
         "due_on": "2026-12-15",
         "purpose": "Test the actual downloaded signed/notarized package after reset on every advertised OS boundary."
@@ -140,15 +151,18 @@
       "responsible_role": "Platform test operator",
       "assignment_status": "unassigned",
       "assignment_evidence": [],
-      "status": "unknown",
+      "status": "missing",
       "assessed_on": "2026-09-24",
       "needed_by": "2026-09-30",
       "evidence": [
-        "initial-audit"
+        "initial-audit",
+        "owner-availability-2026-09-24"
       ],
-      "confirmation_evidence": [],
+      "confirmation_evidence": [
+        "owner-availability-2026-09-24"
+      ],
       "required_evidence": "A responsible operator confirms a reserved Intel Mac environment, documented OS version, reset method and ability to run offline tests without developer tools; retain a sanitized probe result.",
-      "next_action": "Reserve and verify an Intel Mac environment independently of the hosted source-build job.",
+      "next_action": "The owner has only the Apple Silicon development Mac; no Intel Mac environment is available. Establish Intel Mac test access and a responsible operator before claiming Intel support.",
       "later_checkpoint": {
         "due_on": "2026-12-15",
         "purpose": "Test the actual downloaded signed/notarized package after reset on every advertised OS boundary."
@@ -164,11 +178,12 @@
       "assessed_on": "2026-09-24",
       "needed_by": "2026-10-06",
       "evidence": [
-        "initial-audit"
+        "initial-audit",
+        "owner-availability-2026-09-24"
       ],
       "confirmation_evidence": [],
       "required_evidence": "An operator confirms the reserved 16 GB-class host and sanitized OS/architecture/CPU class/storage class/memory/thermal-power configuration, synthetic workload capacity and repeatable measurement/reset procedure.",
-      "next_action": "Assess the observed 16 GiB development host for benchmark suitability and reservation; specify the hardware profile without identifiers.",
+      "next_action": "Assess reservation and repeatable benchmark conditions on the sole available 16 GiB development Mac. Its availability for development does not establish an exclusive reservation or completed benchmark.",
       "later_checkpoint": {
         "due_on": "2026-12-15",
         "purpose": "Run 100,000 transactions and 10,000 pages including 1,000 scans with concurrent map/graph use, measured p95 and peak memory."
@@ -200,15 +215,18 @@
       "responsible_role": "Release maintainer",
       "assignment_status": "unassigned",
       "assignment_evidence": [],
-      "status": "unknown",
+      "status": "missing",
       "assessed_on": "2026-09-24",
       "needed_by": "2026-10-06",
       "evidence": [
-        "initial-audit"
+        "initial-audit",
+        "owner-availability-2026-09-24"
       ],
-      "confirmation_evidence": [],
+      "confirmation_evidence": [
+        "owner-availability-2026-09-24"
+      ],
       "required_evidence": "A qualified maintainer accepts the role and review dates, records the required independent review path and commits to evaluating the evidence for exact candidate hashes; preserve required PR reviews.",
-      "next_action": "Identify and obtain a maintainer commitment; an agent must not self-approve or bypass branch review.",
+      "next_action": "The owner is the only human contributor and no independent maintainer is available. Obtain a qualified independent review commitment; sole ownership does not authorize self-approval or bypass required PR review.",
       "later_checkpoint": {
         "due_on": "2026-12-15",
         "purpose": "Review candidate completeness and record remaining conditions before final sign-off."
@@ -220,15 +238,18 @@
       "responsible_role": "Security reviewer",
       "assignment_status": "unassigned",
       "assignment_evidence": [],
-      "status": "unknown",
+      "status": "missing",
       "assessed_on": "2026-09-24",
       "needed_by": "2026-10-06",
       "evidence": [
-        "initial-audit"
+        "initial-audit",
+        "owner-availability-2026-09-24"
       ],
-      "confirmation_evidence": [],
+      "confirmation_evidence": [
+        "owner-availability-2026-09-24"
+      ],
       "required_evidence": "A qualified security reviewer accepts the role, review scope and dates covering threat model, native confinement, network policy, hostile inputs, licences/SBOM and recovery; retain sanitized acceptance or conditions.",
-      "next_action": "Identify and obtain a security reviewer commitment with time to repair findings.",
+      "next_action": "No independent human security reviewer is available. Obtain a qualified reviewer and commitment before security acceptance; do not infer that the owner accepted this role or remove independence requirements.",
       "later_checkpoint": {
         "due_on": "2026-12-15",
         "purpose": "Complete evidence review and candidate-specific security acceptance before final sign-off."
