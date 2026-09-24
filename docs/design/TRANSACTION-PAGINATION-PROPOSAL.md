@@ -243,3 +243,8 @@ Command v16 now supplies [whole-ledger literal search](../transactions/LITERAL-S
 with a recorded matching profile and shared page rules. The interface has not
 switched to it yet. Its fixed regression set checks the established JavaScript
 behavior while making runtime Unicode version differences explicit.
+
+
+## Implementation update — citation and summary readers
+
+Command v17 now supplies the [citation readers](../assessment/CITATION-CATALOGUE.md). The [desktop-summary response v1](../performance/DESKTOP-SUMMARY.md) is implemented as an opt-in projection, preserving legacy/presentation modes and direct reader responses. The original numbered proposal above remains historical design intent, including its proposed v2 name; the published new response starts at v1. UI citation adoption is in progress. Ledger reconciliation decoration, transfer selection, full filtered export and remaining array consumers still prevent the desktop transport switch. No new native Figma pagination frame is claimed.

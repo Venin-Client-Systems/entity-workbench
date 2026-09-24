@@ -579,7 +579,7 @@ fn maximum_selected_set_is_complete_and_excluded_order_is_only_a_set() {
 }
 
 #[test]
-fn public_commands_return_only_the_pinned_projection_in_both_response_modes() {
+fn public_commands_return_only_the_pinned_projection_in_all_response_modes() {
     let (_temp, mut w) = mixed(1);
     let revision = w.revision().unwrap();
     let before = serde_json::to_value(w.view().unwrap()).unwrap();
@@ -588,7 +588,8 @@ fn public_commands_return_only_the_pinned_projection_in_both_response_modes() {
         expected_revision: revision,
     };
     let value = w.dispatch(catalogue.clone()).unwrap();
-    assert_eq!(value, w.dispatch_presentation(catalogue).unwrap());
+    assert_eq!(value, w.dispatch_presentation(catalogue.clone()).unwrap());
+    assert_eq!(value, w.dispatch_summary(catalogue).unwrap());
     let page: CitationCataloguePage = serde_json::from_value(value.clone()).unwrap();
     assert_eq!(page.workspace_revision, revision);
     assert_eq!(page.scope_count, 5);
@@ -601,7 +602,8 @@ fn public_commands_return_only_the_pinned_projection_in_both_response_modes() {
         expected_revision: revision,
     };
     let value = w.dispatch(selection.clone()).unwrap();
-    assert_eq!(value, w.dispatch_presentation(selection).unwrap());
+    assert_eq!(value, w.dispatch_presentation(selection.clone()).unwrap());
+    assert_eq!(value, w.dispatch_summary(selection).unwrap());
     let selected: CitationSelections = serde_json::from_value(value.clone()).unwrap();
     assert_eq!(selected.workspace_revision, revision);
     assert_eq!(
