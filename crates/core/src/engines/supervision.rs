@@ -184,7 +184,7 @@ fn worker_profile(
             ));
         }
     }
-    if component == "image" {
+    if matches!(component, "image" | "pdf-render") {
         result.push_str(&format!(
             "(allow file-write* (literal {}))\n",
             quote(&job.join("raster.pgm"))?
@@ -431,6 +431,27 @@ pub(super) fn run_image_java(
         Some(cancellation),
     )
 }
+pub(super) fn run_pdf_java(
+    runtime: &Path,
+    job: &Path,
+    class: &str,
+    args: &[String],
+    timeout: Duration,
+    cancellation: &super::CancellationToken,
+) -> Result<()> {
+    run_assigned_java(
+        runtime,
+        job,
+        JavaAssignment {
+            component: "pdf-render",
+            index: None,
+            class,
+        },
+        args,
+        timeout,
+        Some(cancellation),
+    )
+}
 struct JavaAssignment<'a> {
     component: &'static str,
     index: Option<(&'a Path, bool)>,
@@ -504,7 +525,7 @@ fn run_assigned_java(
         .stdout(Stdio::null())
         .stderr(Stdio::null());
     configure_process(&mut command)?;
-    if assignment.component == "image" {
+    if matches!(assignment.component, "image" | "pdf-render") {
         // SAFETY: this hook only supplies a fixed stack value to setrlimit.
         unsafe {
             command.pre_exec(|| {
@@ -571,3 +592,6 @@ mod tests;
 
 #[cfg(test)]
 mod image_tests;
+
+#[cfg(test)]
+mod pdf_tests;
