@@ -16,7 +16,10 @@ use windows_sys::Win32::{
     Security::{Authorization::*, *},
     Storage::FileSystem::*,
     System::{
-        SystemServices::{SYSTEM_MANDATORY_LABEL_ACE_TYPE, SYSTEM_MANDATORY_LABEL_NO_WRITE_UP},
+        SystemServices::{
+            ACCESS_ALLOWED_ACE_TYPE, SYSTEM_MANDATORY_LABEL_ACE_TYPE,
+            SYSTEM_MANDATORY_LABEL_NO_WRITE_UP,
+        },
         Threading::{GetCurrentProcess, OpenProcessToken},
     },
 };
@@ -288,27 +291,17 @@ pub fn create(
     path: &Path,
     checkpoint: impl Fn(ProbeCheckpoint) -> AnyResult<()>,
 ) -> AnyResult<File> {
-    let creation = checked(
-        creation_descriptor(true),
-        |code| ProbeCheckpoint::RestrictedIdentityFailed { code },
-        &checkpoint,
-    )?;
     let empty = checked(
         descriptor("D:P"),
         |code| ProbeCheckpoint::RestrictedDescriptorFailed { code },
         &checkpoint,
     )?;
     checkpoint(ProbeCheckpoint::RestrictedDescriptorReady)?;
-    let attributes = SECURITY_ATTRIBUTES {
-        nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
-        lpSecurityDescriptor: creation.0,
-        bInheritHandle: 0,
-    };
     let name = wide(path.as_os_str());
     checkpoint(ProbeCheckpoint::RestrictedDirectoryCreate)?;
     checked(
         native(
-            unsafe { CreateDirectoryW(name.as_ptr(), &attributes) },
+            unsafe { CreateDirectoryW(name.as_ptr(), null()) },
             "CreateRestrictedDirectory",
         ),
         |code| ProbeCheckpoint::RestrictedDirectoryCreateFailed { code },
@@ -316,19 +309,7 @@ pub fn create(
     )?;
     checkpoint(ProbeCheckpoint::RestrictedDirectoryCreated)?;
     let directory = checked(
-        OpenOptions::new()
-            .access_mode(READ_CONTROL | WRITE_DAC | FILE_READ_ATTRIBUTES)
-            .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
-            .custom_flags(
-                FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-            )
-            .open(path)
-            .map_err(|error| Error::Api {
-                operation: "RestrictedOpenDirectory",
-                code: error
-                    .raw_os_error()
-                    .map_or(ERROR_GEN_FAILURE, |code| code as u32),
-            }),
+        open_dacl_handle(path),
         |code| ProbeCheckpoint::RestrictedOpenFailed { code },
         &checkpoint,
     )?;
@@ -361,6 +342,130 @@ pub fn create(
     Ok(directory)
 }
 
+fn open_dacl_handle(path: &Path) -> Result<File> {
+    OpenOptions::new()
+        .access_mode(READ_CONTROL | WRITE_DAC | FILE_READ_ATTRIBUTES)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(
+            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+        )
+        .open(path)
+        .map_err(|error| Error::Api {
+            operation: "RestrictedOpenDirectory",
+            code: io_code(&error),
+        })
+}
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ChildAcl {
+    all_simple_allow_aces: bool,
+    owner_is_user: bool,
+    owner_is_default: bool,
+    owner_is_package: bool,
+    owner_rights_present: bool,
+    owner_rights_inherited: bool,
+    owner_rights_write_dac: bool,
+    package_present: bool,
+    package_inherited: bool,
+    package_write_dac: bool,
+    user_write_dac: bool,
+}
+fn child_acl(file: &File) -> Result<ChildAcl> {
+    let mut token = null_mut();
+    native(
+        unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) },
+        "ChildAclToken",
+    )?;
+    let token = unsafe { OwnedHandle::from_raw_handle(token) };
+    let user = token_info(token.as_raw_handle(), TokenUser, size_of::<TOKEN_USER>())?;
+    let default = token_info(token.as_raw_handle(), TokenOwner, size_of::<TOKEN_OWNER>())?;
+    let package = token_info(
+        token.as_raw_handle(),
+        TokenAppContainerSid,
+        size_of::<TOKEN_APPCONTAINER_INFORMATION>(),
+    )?;
+    let user_sid = unsafe { (*user.as_ptr().cast::<TOKEN_USER>()).User.Sid };
+    let default_sid = unsafe { (*default.as_ptr().cast::<TOKEN_OWNER>()).Owner };
+    let package_sid =
+        unsafe { (*package.as_ptr().cast::<TOKEN_APPCONTAINER_INFORMATION>()).TokenAppContainer };
+    let (mut owner, mut raw, mut dacl) = (null_mut(), null_mut(), null_mut());
+    let code = unsafe {
+        GetSecurityInfo(
+            file.as_raw_handle(),
+            SE_FILE_OBJECT,
+            OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+            &mut owner,
+            null_mut(),
+            &mut dacl,
+            null_mut(),
+            &mut raw,
+        )
+    };
+    if code != 0 {
+        return Err(Error::Api {
+            operation: "ChildAclQuery",
+            code,
+        });
+    }
+    let _descriptor = Descriptor(raw);
+    if owner.is_null()
+        || dacl.is_null()
+        || unsafe { IsValidAcl(dacl) } == 0
+        || unsafe { (*dacl).AceCount } > 32
+    {
+        return Err(Error::Blocked("invalid synthetic child ACL"));
+    }
+    let mut summary = ChildAcl {
+        all_simple_allow_aces: true,
+        owner_is_user: unsafe { EqualSid(owner, user_sid) } != 0,
+        owner_is_default: unsafe { EqualSid(owner, default_sid) } != 0,
+        owner_is_package: !package_sid.is_null() && unsafe { EqualSid(owner, package_sid) } != 0,
+        ..Default::default()
+    };
+    for index in 0..unsafe { (*dacl).AceCount } as u32 {
+        let mut raw = null_mut();
+        native(unsafe { GetAce(dacl, index, &mut raw) }, "ChildAclAce")?;
+        let ace = raw.cast::<ACCESS_ALLOWED_ACE>();
+        if unsafe { (*ace).Header.AceType } as u32 != ACCESS_ALLOWED_ACE_TYPE {
+            summary.all_simple_allow_aces = false;
+            continue;
+        }
+        let prefix = std::mem::offset_of!(ACCESS_ALLOWED_ACE, SidStart);
+        let size = unsafe { (*ace).Header.AceSize } as usize;
+        if size < prefix + 8 {
+            return Err(Error::Blocked("short synthetic child ACE"));
+        }
+        let sid: PSID = unsafe { std::ptr::addr_of_mut!((*ace).SidStart) }.cast();
+        let subauthorities = unsafe { *sid.cast::<u8>().add(1) } as usize;
+        if subauthorities > 15
+            || prefix + 8 + 4 * subauthorities > size
+            || unsafe { IsValidSid(sid) } == 0
+        {
+            return Err(Error::Blocked("invalid synthetic child ACE SID"));
+        }
+        let flags = unsafe { (*ace).Header.AceFlags } as u32;
+        if flags & INHERIT_ONLY_ACE != 0 {
+            continue;
+        }
+        let inherited = flags & INHERITED_ACE != 0;
+        let write_dac = unsafe { (*ace).Mask } & (WRITE_DAC | GENERIC_ALL) != 0;
+        if unsafe { IsWellKnownSid(sid, WinCreatorOwnerRightsSid) } != 0 {
+            summary.owner_rights_present = true;
+            summary.owner_rights_inherited |= inherited;
+            summary.owner_rights_write_dac |= write_dac;
+        }
+        if !package_sid.is_null() && unsafe { EqualSid(sid, package_sid) } != 0 {
+            summary.package_present = true;
+            summary.package_inherited |= inherited;
+            summary.package_write_dac |= write_dac;
+        }
+        if unsafe { EqualSid(sid, user_sid) } != 0 {
+            summary.user_write_dac |= write_dac;
+        }
+    }
+    Ok(summary)
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CreationAttempt {
@@ -369,6 +474,10 @@ pub struct CreationAttempt {
     roundtrip_code: Option<u32>,
     low_label: Option<bool>,
     label_code: Option<u32>,
+    write_dac_opened: Option<bool>,
+    write_dac_code: Option<u32>,
+    acl: Option<ChildAcl>,
+    acl_code: Option<u32>,
 }
 impl CreationAttempt {
     fn passed(&self) -> bool {
@@ -377,13 +486,17 @@ impl CreationAttempt {
     fn passed_labelled(&self) -> bool {
         self.passed() && self.low_label == Some(true) && self.label_code == Some(0)
     }
-    fn observed_unlabelled(&self) -> bool {
+    fn observed_explicit(&self) -> bool {
         self.passed()
             || (!self.created
                 && self.create_code == ERROR_ACCESS_DENIED
                 && self.roundtrip_code.is_none()
                 && self.low_label.is_none()
-                && self.label_code.is_none())
+                && self.label_code.is_none()
+                && self.write_dac_opened.is_none()
+                && self.write_dac_code.is_none()
+                && self.acl.is_none()
+                && self.acl_code.is_none())
     }
 }
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -400,17 +513,28 @@ pub struct DirectoryControls {
 }
 impl DirectoryControls {
     pub fn baseline_passed(&self) -> bool {
-        self.passed() && self.explicit_relative.passed() && self.explicit_absolute.passed()
-    }
-    pub fn passed(&self) -> bool {
         self.parent_add_opened
             && self.parent_add_code == 0
             && self.ordinary_relative.passed()
             && self.ordinary_absolute.passed()
+            && self.ordinary_relative.write_dac_opened == Some(true)
+            && self.ordinary_relative.write_dac_code == Some(0)
+            && self.ordinary_absolute.write_dac_opened == Some(true)
+            && self.ordinary_absolute.write_dac_code == Some(0)
+            && self.explicit_relative.passed()
+            && self.explicit_absolute.passed()
             && self.labelled_relative.passed_labelled()
             && self.labelled_absolute.passed_labelled()
-            && self.explicit_relative.observed_unlabelled()
-            && self.explicit_absolute.observed_unlabelled()
+    }
+    pub fn passed(&self) -> bool {
+        self.parent_add_opened
+            && self.parent_add_code == 0
+            && self.ordinary_relative.passed_labelled()
+            && self.ordinary_absolute.passed_labelled()
+            && self.explicit_relative.observed_explicit()
+            && self.explicit_absolute.observed_explicit()
+            && self.labelled_relative.observed_explicit()
+            && self.labelled_absolute.observed_explicit()
     }
 }
 fn io_code(error: &std::io::Error) -> u32 {
@@ -439,6 +563,10 @@ fn create_attempt(path: &Path, descriptor: Option<&Descriptor>) -> CreationAttem
             roundtrip_code: None,
             low_label: None,
             label_code: None,
+            write_dac_opened: None,
+            write_dac_code: None,
+            acl: None,
+            acl_code: None,
         };
     }
     let payload = path.join("sentinel.txt");
@@ -466,12 +594,42 @@ fn create_attempt(path: &Path, descriptor: Option<&Descriptor>) -> CreationAttem
         Err(Error::Api { code, .. }) => (None, Some(code)),
         Err(_) => (None, Some(ERROR_INVALID_DATA)),
     };
+    let security = open_dacl_handle(path);
+    let (write_dac_opened, write_dac_code) = match security {
+        Ok(file) => {
+            drop(file);
+            (Some(true), Some(0))
+        }
+        Err(Error::Api { code, .. }) => (Some(false), Some(code)),
+        Err(_) => (Some(false), Some(ERROR_INVALID_DATA)),
+    };
+    let acl = OpenOptions::new()
+        .access_mode(READ_CONTROL)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(
+            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+        )
+        .open(path)
+        .map_err(|error| Error::Api {
+            operation: "ChildAclOpen",
+            code: io_code(&error),
+        })
+        .and_then(|file| child_acl(&file));
+    let (acl, acl_code) = match acl {
+        Ok(value) => (Some(value), Some(0)),
+        Err(Error::Api { code, .. }) => (None, Some(code)),
+        Err(_) => (None, Some(ERROR_INVALID_DATA)),
+    };
     CreationAttempt {
         created: true,
         create_code: 0,
         roundtrip_code: Some(code),
         low_label,
         label_code,
+        write_dac_opened,
+        write_dac_code,
+        acl,
+        acl_code,
     }
 }
 fn directory_controls_at(relative_root: &Path, absolute_root: &Path) -> Result<DirectoryControls> {
@@ -532,20 +690,28 @@ mod tests {
             controls.baseline_passed(),
             "unconfined directory creation controls failed: {controls:?}"
         );
+        assert!(controls.ordinary_relative.acl.is_some());
+        assert_eq!(controls.ordinary_relative.acl_code, Some(0));
+        assert!(controls.ordinary_absolute.acl.is_some());
+        assert_eq!(controls.ordinary_absolute.acl_code, Some(0));
+        let mut controls = controls;
+        controls.ordinary_relative.low_label = Some(true);
+        controls.ordinary_absolute.low_label = Some(true);
+        assert!(controls.passed());
         let mut failed = controls.clone();
         failed.parent_add_opened = false;
         assert!(!failed.passed());
         let mut failed = controls.clone();
-        failed.labelled_relative.created = false;
+        failed.ordinary_relative.created = false;
         assert!(!failed.passed());
         let mut failed = controls.clone();
         failed.ordinary_absolute.roundtrip_code = None;
         assert!(!failed.passed());
         let mut failed = controls.clone();
-        failed.labelled_absolute.low_label = Some(false);
+        failed.ordinary_absolute.low_label = Some(false);
         assert!(!failed.passed());
         let mut failed = controls.clone();
-        failed.labelled_absolute.label_code = Some(ERROR_ACCESS_DENIED);
+        failed.ordinary_absolute.label_code = Some(ERROR_ACCESS_DENIED);
         assert!(!failed.passed());
         let mut denied = controls;
         denied.explicit_relative = CreationAttempt {
@@ -554,7 +720,12 @@ mod tests {
             roundtrip_code: None,
             low_label: None,
             label_code: None,
+            write_dac_opened: None,
+            write_dac_code: None,
+            acl: None,
+            acl_code: None,
         };
+        denied.labelled_relative = denied.explicit_relative.clone();
         assert!(denied.passed());
         assert!(!denied.baseline_passed());
         denied.explicit_relative.create_code = ERROR_ALREADY_EXISTS;
@@ -563,7 +734,59 @@ mod tests {
     #[test]
     fn created_child_locks_out_new_inspection_but_retains_security_handle() {
         let tree = tempfile::tempdir().unwrap();
-        let path = tree.path().join("restricted");
+        let parent = tree.path().join("low-parent");
+        let descriptor = creation_descriptor(true).unwrap();
+        let (mut present, mut defaulted) = (0, 0);
+        let mut sacl = null_mut();
+        native(
+            unsafe {
+                GetSecurityDescriptorSacl(descriptor.0, &mut present, &mut sacl, &mut defaulted)
+            },
+            "UnitParentLabel",
+        )
+        .unwrap();
+        assert!(present != 0 && !sacl.is_null());
+        let mut raw = null_mut();
+        native(unsafe { GetAce(sacl, 0, &mut raw) }, "UnitParentLabelAce").unwrap();
+        unsafe {
+            (*raw.cast::<ACE_HEADER>()).AceFlags =
+                (OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE) as u8
+        };
+        // The unconfined positive control deliberately permits DACL changes on
+        // its own child. It is not the production AppContainer scratch ACL.
+        let mut dacl = null_mut();
+        native(
+            unsafe {
+                GetSecurityDescriptorDacl(descriptor.0, &mut present, &mut dacl, &mut defaulted)
+            },
+            "UnitParentDacl",
+        )
+        .unwrap();
+        assert!(present != 0 && !dacl.is_null());
+        for index in 0..unsafe { (*dacl).AceCount } as u32 {
+            let mut ace = null_mut();
+            native(
+                unsafe { GetAce(dacl, index, &mut ace) },
+                "UnitParentDaclAce",
+            )
+            .unwrap();
+            unsafe {
+                (*ace.cast::<ACE_HEADER>()).AceFlags =
+                    (OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE) as u8
+            };
+        }
+        let name = wide(parent.as_os_str());
+        let attributes = SECURITY_ATTRIBUTES {
+            nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
+            lpSecurityDescriptor: descriptor.0,
+            bInheritHandle: 0,
+        };
+        native(
+            unsafe { CreateDirectoryW(name.as_ptr(), &attributes) },
+            "UnitLowParentCreate",
+        )
+        .unwrap();
+        let path = parent.join("restricted");
         let file = create(&path, |_| Ok(())).unwrap();
         verify_empty(&file).unwrap();
         verify_low_label(&file).unwrap();
