@@ -67,6 +67,9 @@ public final class WindowsJavaProbe {
         result.put("search_class",available("workbench.SearchWorker"));
         result.put("tika_class",available("org.apache.tika.parser.microsoft.ooxml.OOXMLParser"));
         result.put("lucene_class",available("org.apache.lucene.index.IndexWriter"));
+        result.put("memory_directory_class",available("workbench.CappedDirectory"));
+        result.put("directory_policy_present",System.getProperty("workbench.directoryPolicy")!=null);
+        result.put("directory_policy_exact","lucene-10.5.1-bytebuffers-v1".equals(System.getProperty("workbench.directoryPolicy")));
         String index=System.getProperty("workbench.probeIndex");
         result.put("assigned_index_read",index!=null && opened(Path.of(index),StandardOpenOption.READ));
         result.put("assigned_index_write",index!=null && opened(Path.of(index),StandardOpenOption.WRITE));

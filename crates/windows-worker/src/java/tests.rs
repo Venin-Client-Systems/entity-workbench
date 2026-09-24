@@ -21,7 +21,7 @@ fn files() -> Vec<IndexFile> {
 fn snapshot() -> IndexSnapshot {
     accept(
         &index(),
-        br#"{"indexed":1,"workspace_revision":7}"#.to_vec(),
+        br#"{"indexed":1,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1"}"#.to_vec(),
         files(),
     )
     .unwrap()
@@ -66,6 +66,14 @@ fn recipes_have_fixed_paths_classes_and_jvm_options() {
                 .iter()
                 .any(|arg| arg == "-Dworkbench.fontPolicy=liberation-sans-2.1.5-extraction-v1"),
             job.role() == Role::Parser
+        );
+        assert_eq!(
+            prepared
+                .request
+                .arguments
+                .iter()
+                .any(|arg| arg == &format!("-Dworkbench.directoryPolicy={DIRECTORY_POLICY}")),
+            job.role() == Role::Search
         );
         assert_eq!(prepared.build_index(), job.operation_name() == "index");
         assert_eq!(
@@ -137,17 +145,17 @@ fn recipe_suffixes_resolve_real_files_with_verbatim_windows_roots() {
 #[test]
 fn result_acknowledgements_cannot_publish_wrong_or_ambiguous_index() {
     for bytes in [
-        br#"{"indexed":0,"workspace_revision":7}"#.as_slice(),
-        br#"{"indexed":1,"workspace_revision":8}"#,
-        br#"{"indexed":1,"workspace_revision":7,"extra":true}"#,
-        br#"{"indexed":1,"indexed":1,"workspace_revision":7}"#,
-        br#"{"indexed":1,"workspace_revision":7} {}"#,
+        br#"{"indexed":0,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1"}"#.as_slice(),
+        br#"{"indexed":1,"workspace_revision":8,"directory_policy":"lucene-10.5.1-bytebuffers-v1"}"#,
+        br#"{"indexed":1,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1","extra":true}"#,
+        br#"{"indexed":1,"indexed":1,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1"}"#,
+        br#"{"indexed":1,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1"} {}"#,
     ] {
         assert!(accept(&index(), bytes.to_vec(), files()).is_err());
     }
     assert!(accept(
         &index(),
-        br#"{"indexed":1,"workspace_revision":7}"#.to_vec(),
+        br#"{"indexed":1,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1"}"#.to_vec(),
         Vec::new()
     )
     .is_err());
@@ -186,7 +194,7 @@ fn snapshots_reject_path_stream_device_collision_and_hash_poison() {
 #[test]
 fn search_results_require_matching_revision_and_known_unique_sources() {
     let job = Job::search(&snapshot(), "Aster").unwrap();
-    let valid = serde_json::json!({"workspace_revision":"7","hits":[{"id":"synthetic-document","name":"Synthetic source","score":1.0}],"total":1});
+    let valid = serde_json::json!({"directory_policy":DIRECTORY_POLICY,"workspace_revision":"7","hits":[{"id":"synthetic-document","name":"Synthetic source","score":1.0}],"total":1});
     assert!(accept(&job, serde_json::to_vec(&valid).unwrap(), Vec::new()).is_ok());
     for mode in 0..5 {
         let mut value = valid.clone();
@@ -331,4 +339,31 @@ fn pdf_results_cannot_silently_use_old_policy_or_claim_complete_coverage() {
     }
     result["limitations"] = serde_json::json!([]);
     assert!(accept(&job, serde_json::to_vec(&result).unwrap(), vec![]).is_ok());
+}
+
+#[test]
+fn directory_policy_is_required_in_acknowledgements_snapshots_and_queries() {
+    for policy in [None, Some("unknown"), Some("")] {
+        let mut reply = serde_json::json!({"indexed":1,"workspace_revision":7});
+        if let Some(policy) = policy {
+            reply["directory_policy"] = serde_json::json!(policy);
+        }
+        assert!(accept(&index(), serde_json::to_vec(&reply).unwrap(), files()).is_err());
+        let mut snap = snapshot();
+        snap.policy = policy.unwrap_or_default().to_string();
+        assert!(Job::search(&snap, "Aster").is_err());
+    }
+    let snap = snapshot();
+    let job = Job::search(&snap, "Aster").unwrap();
+    assert_eq!(
+        serde_json::from_slice::<serde_json::Value>(&job.input).unwrap(),
+        serde_json::json!({"query":"Aster","workspace_revision":"7","directory_policy":DIRECTORY_POLICY})
+    );
+    for policy in [None, Some("unknown")] {
+        let mut reply = serde_json::json!({"workspace_revision":"7","hits":[],"total":0});
+        if let Some(policy) = policy {
+            reply["directory_policy"] = serde_json::json!(policy);
+        }
+        assert!(accept(&job, serde_json::to_vec(&reply).unwrap(), Vec::new()).is_err());
+    }
 }

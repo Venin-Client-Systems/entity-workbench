@@ -229,7 +229,8 @@ pub(crate) fn file_worker_control(
                 .map_err(|_| Error::Blocked("control parser schema rejected"))?;
             match document {
                 ControlDocument::Index => blocked(
-                    reply == serde_json::json!({"indexed":1,"workspace_revision":7})
+                    reply
+                        == serde_json::json!({"indexed":1,"workspace_revision":7,"directory_policy":java::DIRECTORY_POLICY})
                         && output
                             .index
                             .as_ref()

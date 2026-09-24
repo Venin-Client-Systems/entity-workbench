@@ -27,7 +27,7 @@ class StagingTests(unittest.TestCase):
         self.workers = self.root / "workers"
         (self.workers / "lib").mkdir(parents=True)
         with zipfile.ZipFile(self.workers / "workers-0.1.0.jar", "w") as jar:
-            for name in ["Protocol", "FileWorker", "ParseWorker", "ParseWorker$BoundedWriter", "SearchWorker", "PdfRenderWorker", "AppLocalFonts", "AppLocalFonts$AssetException"]:
+            for name in ["Protocol", "FileWorker", "ParseWorker", "ParseWorker$BoundedWriter", "SearchWorker", "PdfRenderWorker", "AppLocalFonts", "AppLocalFonts$AssetException", "FlatIndex", "CappedDirectory", "CappedDirectory$Entry", "CappedDirectory$CappedOutput"]:
                 jar.writestr(f"workbench/{name}.class", b"synthetic class")
         for name in stage.REQUIRED["parser"] | stage.REQUIRED["search"]:
             (self.workers / "lib" / name).write_bytes(b"synthetic dependency")
@@ -50,6 +50,8 @@ class StagingTests(unittest.TestCase):
                 self.assertNotIn(f"workbench/{forbidden}.class", jar.namelist())
                 self.assertNotIn("workbench/PdfRenderWorker.class", jar.namelist())
                 self.assertEqual("workbench/AppLocalFonts.class" in jar.namelist(), role == "parser")
+                for name in stage.SEARCH_CLASSES:
+                    self.assertEqual(name in jar.namelist(), role == "search")
             manifest = json.loads((root / "manifest.json").read_text())
             self.assertEqual(manifest["role"], role)
             self.assertTrue(manifest["development_only"])
@@ -81,12 +83,24 @@ class StagingTests(unittest.TestCase):
 
     def test_oversized_selected_class_is_rejected_before_ready_manifest(self):
         with zipfile.ZipFile(self.workers / "workers-0.1.0.jar", "w", compression=zipfile.ZIP_DEFLATED) as jar:
-            for name in ["Protocol", "FileWorker", "ParseWorker", "SearchWorker", "AppLocalFonts", "AppLocalFonts$AssetException"]:
+            for name in ["Protocol", "FileWorker", "ParseWorker", "SearchWorker", "AppLocalFonts", "AppLocalFonts$AssetException", "FlatIndex", "CappedDirectory", "CappedDirectory$Entry", "CappedDirectory$CappedOutput"]:
                 jar.writestr(f"workbench/{name}.class", b"x" * (1024 * 1024 + 1) if name == "Protocol" else b"synthetic")
         destination = self.root / "oversized"
         with self.assertRaises(ValueError):
             stage.stage(self.java, self.workers, destination)
         self.assertFalse((destination / "parser/manifest.json").exists())
+        self.assertFalse((destination / "development-only.json").exists())
+
+    def test_missing_directory_adapter_rejects_search_ready_marker(self):
+        source = self.workers / "workers-0.1.0.jar"
+        with zipfile.ZipFile(source) as jar:
+            members = {name: jar.read(name) for name in jar.namelist() if name != "workbench/CappedDirectory$CappedOutput.class"}
+        with zipfile.ZipFile(source, "w") as jar:
+            for name, data in members.items(): jar.writestr(name, data)
+        destination = self.root / "missing-directory-adapter"
+        with self.assertRaisesRegex(ValueError, "bounded Lucene"):
+            stage.stage(self.java, self.workers, destination)
+        self.assertFalse((destination / "search/manifest.json").exists())
         self.assertFalse((destination / "development-only.json").exists())
 
     def test_duplicate_class_entries_are_rejected(self):

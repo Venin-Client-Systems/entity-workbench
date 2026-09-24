@@ -20,6 +20,8 @@ FONT_SHA256 = "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
 STANDARD_AFM = {"Courier", "Courier-Bold", "Courier-Oblique", "Courier-BoldOblique",
                 "Helvetica", "Helvetica-Bold", "Helvetica-Oblique", "Helvetica-BoldOblique",
                 "Times-Roman", "Times-Bold", "Times-Italic", "Times-BoldItalic", "Symbol", "ZapfDingbats"}
+SEARCH_CLASSES = {"workbench/FlatIndex.class", "workbench/CappedDirectory.class",
+                  "workbench/CappedDirectory$Entry.class", "workbench/CappedDirectory$CappedOutput.class"}
 REQUIRED = {
     "parser": {"tika-core-3.3.2.jar", "tika-parser-microsoft-module-3.3.2.jar", "pdfbox-3.0.8.jar", "jackson-databind-2.22.3.jar"},
     "search": {"lucene-core-10.5.1.jar", "lucene-analysis-common-10.5.1.jar", "lucene-queryparser-10.5.1.jar", "jackson-databind-2.22.3.jar"},
@@ -148,11 +150,14 @@ def stage(java, worker_target, destination):
                 "workbench/Protocol.class", "workbench/FileWorker.class", f"workbench/{worker}.class",
                 "workbench/WindowsJavaProbe.class", "workbench/WindowsJavaProbe$Attempt.class",
             } or (n.startswith(f"workbench/{worker}$") and n.endswith(".class"))
+                or (role == "search" and n in SEARCH_CLASSES)
                 or (role == "parser" and n in {"workbench/AppLocalFonts.class", "workbench/AppLocalFonts$AssetException.class"})]
             if not {"workbench/Protocol.class", "workbench/FileWorker.class", f"workbench/{worker}.class"}.issubset(classes):
                 raise ValueError("Required fixed worker classes absent")
             if role == "parser" and not {"workbench/AppLocalFonts.class", "workbench/AppLocalFonts$AssetException.class"}.issubset(classes):
                 raise ValueError("Fixed app-local font adapter absent")
+            if role == "search" and not SEARCH_CLASSES.issubset(classes):
+                raise ValueError("Fixed bounded Lucene directory adapter absent")
             with zipfile.ZipFile(target / "worker.jar", "w", compression=zipfile.ZIP_DEFLATED) as output:
                 for name in sorted(classes):
                     member = source.getinfo(name)

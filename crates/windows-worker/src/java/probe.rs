@@ -144,7 +144,14 @@ fn expected(role: Role, confined: bool) -> BTreeMap<String, bool> {
     for name in ["parser_class", "tika_class"] {
         result.insert(name.into(), role == Role::Parser);
     }
-    for name in ["search_class", "lucene_class", "assigned_index_read"] {
+    for name in [
+        "search_class",
+        "lucene_class",
+        "memory_directory_class",
+        "directory_policy_present",
+        "directory_policy_exact",
+        "assigned_index_read",
+    ] {
         result.insert(name.into(), role == Role::Search);
     }
     result.insert(
@@ -444,7 +451,7 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
     let snapshot = indexed
         .index
         .ok_or(Error::Blocked("index snapshot missing"))?;
-    report.insert("lucene_index".into(),json!({"revision":snapshot.revision(),"files":snapshot.file_count(),"bytes":snapshot.total_bytes(),"output_sha256":indexed.output_sha256}));
+    report.insert("lucene_index".into(),json!({"directory_policy":snapshot.directory_policy(),"revision":snapshot.revision(),"files":snapshot.file_count(),"bytes":snapshot.total_bytes(),"output_sha256":indexed.output_sha256}));
     empty(&jobs)?;
     for (label, query, total) in [
         ("boolean", "Rowan AND Harbour", 3),

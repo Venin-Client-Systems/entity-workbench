@@ -16,6 +16,7 @@ use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, path::Path, time::Duration};
 use uuid::Uuid;
 
+pub(crate) const DIRECTORY_POLICY: &str = "lucene-10.5.1-bytebuffers-v1";
 pub(crate) const INDEX_BYTES: usize = 24 * 1024 * 1024;
 pub(crate) const INDEX_FILE_BYTES: usize = 8 * 1024 * 1024;
 pub(crate) const INDEX_MEMBERS: usize = 128;
@@ -44,11 +45,15 @@ pub(crate) struct IndexFile {
 /// data, never an existing directory or permission grant supplied by a caller.
 #[derive(Clone)]
 pub struct IndexSnapshot {
+    policy: String,
     pub(crate) revision: u64,
     documents: BTreeMap<String, String>,
     pub(crate) files: Vec<IndexFile>,
 }
 impl IndexSnapshot {
+    pub fn directory_policy(&self) -> &str {
+        &self.policy
+    }
     pub fn revision(&self) -> u64 {
         self.revision
     }
@@ -190,7 +195,7 @@ impl Job {
             operation: Operation::Search {
                 snapshot: snapshot.clone(),
             },
-            input: serde_json::to_vec(&serde_json::json!({"query":query}))
+            input: serde_json::to_vec(&serde_json::json!({"query":query,"workspace_revision":snapshot.revision.to_string(),"directory_policy":DIRECTORY_POLICY}))
                 .map_err(|_| Error::Blocked("search input encoding failed"))?,
         })
     }
@@ -266,6 +271,9 @@ pub(crate) fn prepare<'a>(
         "-Dfile.encoding=UTF-8".into(),
         "-Dworkbench.assignedInput=$EW_INPUT".into(),
     ];
+    if job.role() == Role::Search {
+        arguments.push(format!("-Dworkbench.directoryPolicy={DIRECTORY_POLICY}"));
+    }
     match job.operation {
         Operation::Index { .. } => arguments.push(r"-Dworkbench.index=$EW_SCRATCH\index".into()),
         Operation::Search { .. } => arguments.push("-Dworkbench.index=$EW_INDEX".into()),
@@ -368,6 +376,7 @@ struct ParseReply {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct IndexReply {
+    directory_policy: String,
     indexed: u64,
     workspace_revision: u64,
 }
@@ -381,6 +390,7 @@ struct Hit {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 struct SearchReply {
+    directory_policy: String,
     workspace_revision: String,
     hits: Vec<Hit>,
     total: u64,
@@ -389,6 +399,10 @@ fn decode<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
     serde_json::from_slice(bytes).map_err(|_| Error::Blocked("worker result schema rejected"))
 }
 pub(crate) fn validate_snapshot(snapshot: &IndexSnapshot) -> Result<()> {
+    bounded(
+        snapshot.policy == DIRECTORY_POLICY,
+        "index directory policy rejected",
+    )?;
     bounded(
         !snapshot.files.is_empty() && snapshot.files.len() <= INDEX_MEMBERS,
         "index member bound exceeded",
@@ -479,10 +493,13 @@ pub(crate) fn accept(job: &Job, bytes: Vec<u8>, files: Vec<IndexFile>) -> Result
         } => {
             let result: IndexReply = decode(&bytes)?;
             bounded(
-                result.workspace_revision == *revision && result.indexed == documents.len() as u64,
+                result.workspace_revision == *revision
+                    && result.indexed == documents.len() as u64
+                    && result.directory_policy == DIRECTORY_POLICY,
                 "index acknowledgement mismatch",
             )?;
             let snapshot = IndexSnapshot {
+                policy: result.directory_policy,
                 revision: *revision,
                 documents: documents.clone(),
                 files,
@@ -496,6 +513,7 @@ pub(crate) fn accept(job: &Job, bytes: Vec<u8>, files: Vec<IndexFile>) -> Result
             let mut ids = std::collections::BTreeSet::new();
             bounded(
                 result.workspace_revision == snapshot.revision.to_string()
+                    && result.directory_policy == DIRECTORY_POLICY
                     && result.hits.len() <= 100
                     && result.total >= result.hits.len() as u64
                     && result.total <= snapshot.documents.len() as u64
