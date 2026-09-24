@@ -10,6 +10,18 @@ const limitations: Record<ParseLimitation, string> = {
   text_limit: "Text limit reached. Extracted text is incomplete.",
   metadata_limit: "Metadata limit reached. Metadata is incomplete.",
   page_limit: "Page limit reached. Later pages were not processed.",
+  font_substituted:
+    "An app-local font was substituted. Spacing and text layout may differ from the original.",
+  font_coverage_unverified:
+    "Font coverage has not been verified. Missing or misidentified characters may remain.",
+};
+const failures: Record<NonNullable<Extraction["result"]["error"]>, string> = {
+  malformed_document: "The document could not be parsed.",
+  encrypted_document: "The document is encrypted.",
+  archive_limits: "Archive processing limits were exceeded.",
+  text_extraction_restricted: "The document restricts text extraction.",
+  font_asset_unavailable:
+    "Required bundled font asset is unavailable. No extracted text or metadata was retained.",
 };
 export function ExtractionReview({
   extractionId,
@@ -97,7 +109,7 @@ export function ExtractionReview({
                 or verified source anchors.
               </p>
               {record.result.error && (
-                <p>Parser error: {record.result.error.replaceAll("_", " ")}</p>
+                <p>Parser error: {failures[record.result.error]}</p>
               )}
             </div>
             <dl className="processing-metrics">

@@ -103,7 +103,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         let root = PathBuf::from("schemas");
         std::fs::create_dir_all(&root)?;
         // Prior command/job schema files are immutable history. Emit only current versions;
-        // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
+        // Extraction v1 is immutable history. New parse publications use extraction v2.
         let schemas = [
             (
                 "docx-snapshot",
@@ -367,7 +367,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "extraction",
-                1,
+                2,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ExtractionRecord
                 ))?,

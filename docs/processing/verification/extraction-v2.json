@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-24T20:24:13.934310+00:00",
+  "scope": "Development extraction v2 validation, canonical inspection/recovery, and existing browser review surface; synthetic fixtures only",
+  "base_revision": "8c4f8ab87e32ca72429054a110f1d1a453fc2941",
+  "platform": {
+    "os": "Darwin",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "source_sha256": {
+    "crates/core/src/bin/ew-dev.rs": "4c928f4b84dc9a3a555d3b6cce7bd265923fad6bf49477c8ceac4d5d70fd1c29",
+    "crates/core/src/engines/parser.rs": "ae8f105f5fe18538a40cdba73adc25ae6212131cf43909e97ecdd4a7a0f2bc7e",
+    "crates/core/src/engines/parser/tests.rs": "2b109a3a85dc54ae1e750a0e0b8ee410da8fba83eae7a5fbfd4e57f22aa26a91",
+    "crates/core/src/processing.rs": "c7567d5b7fca89cb2a07a5bd2af7617645aacd0ae81ed15d2aeee37ce4cbf8a9",
+    "crates/core/src/store/processing.rs": "df22e7081723a75cf31230f5379c11c95ffb95f13c88e0bd3448d752440e5af2",
+    "crates/core/src/store/processing_demo.rs": "fcced0883f360fe6bafd4eef8d74658ea74eb8ad407ac21af11ce7e260c1b0ff",
+    "crates/core/src/store/processing_extraction.rs": "1b2560a88b1b09d74262c493e614bedf0b4ca8e1c61ca063d61d60e4170bc129",
+    "crates/core/src/store/processing_extraction_tests.rs": "308f1ba7265063d6efc31af1849b2396f752664cbf721af09a612353b8068efc",
+    "crates/core/src/store/processing_image_tests.rs": "13f3e4995c9b8c0bb6ee9051e57f2821ac0e55f391c99a3193098a1e9e08a35a",
+    "crates/core/src/store/processing_pdf_tests.rs": "094801579b32087fce40f076773cd209deb94f28f196df401b8b77efa4c71d58",
+    "crates/core/src/store/processing_publication.rs": "b3216accdb41bb088686e294afcce12b3f1234bc05dd9455d0bd9c7845b87a0d",
+    "docs/design/review/extraction-v2/accessibility-extraction-compact.json": "36f6f2d1379f04b10c10dbaf7696aad859cebfb7474c361faafb04871d62c7d5",
+    "docs/design/review/extraction-v2/accessibility-extraction-desktop.json": "36f6f2d1379f04b10c10dbaf7696aad859cebfb7474c361faafb04871d62c7d5",
+    "docs/design/review/extraction-v2/extraction-compact.png": "4a8da7da6839f865c36ef82377e2f9ce3c9aee5ddc5df6673bb7123cd8068723",
+    "docs/design/review/extraction-v2/extraction-full-surface.png": "3750f13ebd83441effae6e3355c1f4d0b4e7754720ac228aa2edc2ecc90a9f65",
+    "docs/processing/EXTRACTION-V2.md": "f0b0f8bd7d34de4d6e72486ec7c2958d8af158861e437d08a439bfc9b21a5ff2",
+    "docs/processing/JOBS.md": "5251610bd0aace8f547fcca1a425504714595df6a41f688e391340e0b22781ff",
+    "fixtures/processing/extraction-v1.json": "85eb5f3b62613d5e6dd25bdd598e6e95435a2f4a0269614cacdb7174af6583fb",
+    "schemas/extraction.v2.schema.json": "29af330d9b22671e7c68c312683b52db897655c4e5293a7fc512b0245a2ecc04",
+    "scripts/test_parser_workers.py": "f9b0856863c96e6cb75584510ee5527b2ff5304865658d579d135744fe839487",
+    "ui/src/ExtractionReview.tsx": "2106133dccb3137df0089d73905568dd59c330d8dd3e543b318ffa27f3201cf2",
+    "ui/src/processing-types.ts": "8934a033283f68ee0364239d139f8286e84abf42be0ae8dffda7d0093f6f9017",
+    "ui/tests/document-jobs.spec.ts": "8d36c5c596e55ebd5bbba886705b117f5934bad0e28e52a858779b1da31f6b50"
+  },
+  "ordinary_core": {
+    "command": "cargo test --locked -p workbench-core",
+    "passed": 355,
+    "library_passed": 280,
+    "integration_passed": 75,
+    "failed": 0,
+    "native_ignored": 22
+  },
+  "focused_extraction": {
+    "passed": 8,
+    "failed": 0,
+    "includes": [
+      "atomic publication and idempotent replay",
+      "unchanged historical v1 through retry/reopen/backup/restore",
+      "forged version/digest/input rejection",
+      "whole valid-record and owner/source substitution refusal",
+      "record/owner retained-body preflight",
+      "concurrent writer snapshot isolation",
+      "bounded RFC3339 time and canonical owner UUID",
+      "duplicate metadata rejection in v1 and v2 despite matching final-value digest"
+    ]
+  },
+  "strict_clippy": {
+    "debug": "passed",
+    "release": "passed",
+    "commands": [
+      "cargo clippy --locked -p workbench-core --all-targets -- -D warnings",
+      "cargo clippy --release --locked -p workbench-core --all-targets -- -D warnings"
+    ]
+  },
+  "browser": {
+    "command": "npm run test:ui -- ui/tests/document-jobs.spec.ts",
+    "passed": 10,
+    "failed": 0,
+    "seconds": 16.1,
+    "real_core": true,
+    "mock_success_responses": false,
+    "synthetic_state_fixtures": true,
+    "actual_worker_execution": false,
+    "external_requests": false,
+    "desktop_and_compact_axe_violations": 0,
+    "visual_review": "Final full-surface and compact captures inspected; font limitation lines readable without overlap or horizontal overflow; original industrial extraction layout reused."
+  },
+  "ui_build": {
+    "command": "npm run build",
+    "passed": true,
+    "warning": "Existing approximately 2.4 MB minified main chunk exceeds Vite advisory threshold."
+  },
+  "schemas": {
+    "base": "8c4f8ab87e32ca72429054a110f1d1a453fc2941",
+    "historical_inventory_files": 73,
+    "historical_json_schemas": 71,
+    "changed": [],
+    "new_schema_sha256": "29af330d9b22671e7c68c312683b52db897655c4e5293a7fc512b0245a2ecc04"
+  },
+  "legacy_fixture": {
+    "path": "fixtures/processing/extraction-v1.json",
+    "sha256": "85eb5f3b62613d5e6dd25bdd598e6e95435a2f4a0269614cacdb7174af6583fb",
+    "capture_cli_sha256": "3afc5989e445018806ee15b882c2cc1128c974816c7b721996733c3089959bbb",
+    "capture_source": "Pre-v2 development CLI from cfc1415 with private transport changes later committed as e180b2381b74b4e455c110350b4ffbda7e0d58f9; document parser/publication source unchanged. Explicit fixed synthetic processing seed; no worker ran.",
+    "retained_exact_json": true,
+    "schema_v1_sha256": "802221db4e0b53333be9f1e25e3e96f6ea272acfbf35d495592fc0f4ff30c0e9"
+  },
+  "retained_failures": [
+    {
+      "log": "artifacts/extraction-v2/core-focused-first.log",
+      "passed": 4,
+      "failed": 1,
+      "cause": "Test fixture used non-JSON oversized body and SQLite correctly rejected it before inspection. Repaired fixture uses valid oversized JSON; production bounds unchanged."
+    },
+    {
+      "log": "artifacts/extraction-v2/timestamp-before.log",
+      "passed": 0,
+      "failed": 1,
+      "cause": "Pre-repair extraction inspector accepted malformed publication timestamp. Bounded RFC3339 and canonical owner UUID validation added; regression now passes."
+    }
+  ],
+  "local_log_sha256": {
+    "artifacts/extraction-v2/core-focused-first.log": "a722e05cf2f095904e0bdedda8da1a45639ef4ba5dc5ee0b50dbf3e51219efc4",
+    "artifacts/extraction-v2/core-focused-final.log": "eb6d424a707903db30919fd1c12f820b3b040fd76f92293d6ab99681bd2a351e",
+    "artifacts/extraction-v2/timestamp-before.log": "4b75bb8a62775622bcd7aa7f4fd7d88e0f6cf6401163aceb825950bd4e038c18",
+    "artifacts/extraction-v2/core-all-strict-metadata.log": "2bd61c2aa87149076088e7ede9e5da3122ba35523723dddab483a3a6391ada74",
+    "artifacts/extraction-v2/clippy-debug-final.log": "e9227e4b5225b0de1c9ecf0fd462bfe2281afd97a0f1fdee7bb81aee5e1fe0bf",
+    "artifacts/extraction-v2/clippy-release-final.log": "493c147bc811e2456d16546fb6c7c9de73f153a9ccef79e53e705734298bd368",
+    "artifacts/extraction-v2/ui-build-final.log": "25bafb398961af758258b34d6b9eec6ca8a68491698975af035725b549825370",
+    "artifacts/extraction-v2/ui-focused-first.log": "49400a88de291866012df3e0106b38391f494dd59d9672edf034933b417c3c02",
+    "artifacts/extraction-v2/ui-focused-final.log": "981cd240645d35d6f8258365d3d9e9e8e895c4c2492c15b399a5ce7b5ce9fdec",
+    "artifacts/extraction-v2/schema-history.json": "784acbd5649bc4bd6a747ecbe8978625c46351c31dfc03cf4311c4c6575e9041",
+    "artifacts/extraction-v2/schema-generation-final.log": "bbf6aa1e7c7d4d954db1464ae8ecbbdd7ddeeeb8ed8a06e9d02b4a94669b1dac",
+    "artifacts/extraction-v2/legacy-capture.json": "52e175e5dbee7bd0c99c459f3ce38a101177241bd52e1da253fce4180a510b3c"
+  },
+  "native_parser_search": {
+    "state": "pending_signed_clean_campaign",
+    "intended_scope": "Existing Mac Java parser/search recipes and shared parser validator only. No new Windows local-font recipe activation."
+  },
+  "unverified": [
+    "New editable Figma extension wording frames and remote sync",
+    "Native Windows local-font parser execution and isolation",
+    "Intel Mac and Windows native compatibility",
+    "Signed/notarized installed packages",
+    "OCR completeness, accepted observations, word/page/cell anchors and complete document extraction",
+    "Application-wide browser suite is not rerun in this bounded extraction slice"
+  ],
+  "complete_release": false,
+  "windows_activation": false,
+  "worker_protocol_version": 1,
+  "storage_migration": false,
+  "public_command_changes": false,
+  "dependency_changes": false
+}

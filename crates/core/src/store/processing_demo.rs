@@ -1,6 +1,6 @@
 //! Fixed canonical UI fixtures, never a worker execution or public publication API.
 use super::*;
-use crate::engines::parser::{ParseFailure, ParseLimitation};
+use crate::engines::parser::{ParseFailure, ParseLimitation, LOCAL_FONT_PDF_PARSER};
 use std::collections::BTreeMap;
 
 impl Workspace {
@@ -53,7 +53,7 @@ impl Workspace {
             ("synthetic-complete.txt", "complete"),
             ("synthetic-partial.pdf", "partial"),
             ("synthetic-unsupported.bin", "unsupported"),
-            ("synthetic-malformed.pdf", "malformed"),
+            ("synthetic-font-asset.pdf", "font_asset"),
             ("synthetic-cleanup.txt", "cleanup"),
             ("synthetic-blocked.txt", "blocked"),
             ("synthetic-limits.txt", "limits"),
@@ -97,12 +97,14 @@ impl Workspace {
             };
             let outcome = match mode {
                 "partial" => {
-                    result.parser = "pdfbox-3.0.8".into();
+                    result.parser = LOCAL_FONT_PDF_PARSER.into();
                     result.media_type = "application/pdf".into();
                     result.status = ParseStatus::Partial;
                     result.limitations.extend([
                         ParseLimitation::EmbeddedDocumentsExcluded,
                         ParseLimitation::OcrNotPerformed,
+                        ParseLimitation::FontSubstituted,
+                        ParseLimitation::FontCoverageUnverified,
                     ]);
                     result
                         .metadata
@@ -120,12 +122,12 @@ impl Workspace {
                     result.text.clear();
                     Ok(result)
                 }
-                "malformed" => {
-                    result.parser = "pdfbox-3.0.8".into();
+                "font_asset" => {
+                    result.parser = LOCAL_FONT_PDF_PARSER.into();
                     result.media_type = "application/pdf".into();
                     result.status = ParseStatus::Failed;
                     result.text.clear();
-                    result.error = Some(ParseFailure::MalformedDocument);
+                    result.error = Some(ParseFailure::FontAssetUnavailable);
                     Ok(result)
                 }
                 "cleanup" => Err(Error::Cleanup("Fixed synthetic cleanup failure".into())),

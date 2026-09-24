@@ -33,15 +33,7 @@ fn image_request_keys_bind_operation_and_preserve_parse_v1_schema() {
         serde_json::json!({"action":"finish_image_job","job_id":image.id})
     )
     .is_err());
-    let current = serde_json::to_value(schemars::schema_for!(ExtractionRecord)).unwrap();
-    let saved: serde_json::Value = serde_json::from_str(include_str!(
-        "../../../../schemas/extraction.v1.schema.json"
-    ))
-    .unwrap();
-    assert_eq!(
-        current, saved,
-        "Parse extraction v1 remains byte-for-byte schema-compatible"
-    );
+    assert_legacy_extraction_schema();
     let mut parse = workspace.queue_document_parse(&evidence, &id()).unwrap();
     parse.schema_version = 1;
     put(&workspace.conn, "processing_job", &parse.id, &parse).unwrap();

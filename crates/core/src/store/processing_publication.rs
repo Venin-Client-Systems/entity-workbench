@@ -129,9 +129,8 @@ pub(super) fn validated_derivative(
             },
             ProcessingOutput::Document(result),
         ) => {
-            validate_result(result, sha256, *bytes)?;
             let record = ExtractionRecord {
-                schema_version: 1,
+                schema_version: 2,
                 id: key,
                 job_id: job.id.clone(),
                 attempt: job.attempt,
@@ -144,6 +143,7 @@ pub(super) fn validated_derivative(
                 result_sha256: hash(&serde_json::to_vec(result)?),
                 result: result.clone(),
             };
+            extraction::validate_record(&record, &record.id)?;
             match result.status {
                 ParseStatus::Complete => terminal(
                     job,

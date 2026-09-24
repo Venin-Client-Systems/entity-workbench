@@ -10,6 +10,8 @@ use std::fs::File;
 #[path = "processing_publication.rs"]
 mod publication;
 use publication::validated_derivative;
+#[path = "processing_extraction.rs"]
+mod extraction;
 
 const MAX_PENDING: usize = 64;
 const MAX_ATTEMPTS: u32 = 3;
@@ -296,10 +298,6 @@ impl Workspace {
             total,
             limit: PAGE_LIMIT,
         })
-    }
-
-    pub fn extraction(&self, extraction_id: &str) -> Result<ExtractionRecord> {
-        get(&self.conn, "extraction", extraction_id)
     }
 
     pub fn cancel_processing_job(

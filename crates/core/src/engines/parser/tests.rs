@@ -17,6 +17,28 @@ fn valid() -> ParseResult {
 #[test]
 fn parser_results_require_source_binding_and_honest_status() {
     let source = valid();
+    let wire = serde_json::to_string(&source).unwrap();
+    for metadata in [
+        r#"{"title":["first"],"title":["second"]}"#,
+        r#"{"title":["first"],"ti\u0074le":["second"]}"#,
+    ] {
+        let duplicate = wire.replace("\"metadata\":{}", &format!("\"metadata\":{metadata}"));
+        assert!(serde_json::from_str::<ParseResult>(&duplicate)
+            .unwrap_err()
+            .to_string()
+            .contains("Duplicate extraction metadata key"));
+    }
+    let distinct = wire.replace(
+        "\"metadata\":{}",
+        r#""metadata":{"Title":["first"],"title":["second"]}"#,
+    );
+    assert_eq!(
+        serde_json::from_str::<ParseResult>(&distinct)
+            .unwrap()
+            .metadata
+            .len(),
+        2
+    );
     validate_result(&source, &"0".repeat(64), 8).unwrap();
     for change in 0..9 {
         let mut result = source.clone();
@@ -43,6 +65,86 @@ fn parser_results_require_source_binding_and_honest_status() {
     let mut wire = serde_json::to_value(source).unwrap();
     wire["page_anchor"] = serde_json::json!(1);
     assert!(serde_json::from_value::<ParseResult>(wire).is_err());
+}
+
+#[test]
+fn local_font_contract_requires_exact_identity_paired_limits_and_honest_failure() {
+    let mut result = valid();
+    result.parser = LOCAL_FONT_PDF_PARSER.into();
+    result.media_type = "application/pdf".into();
+    result.status = ParseStatus::Partial;
+    result.limitations.extend([
+        ParseLimitation::EmbeddedDocumentsExcluded,
+        ParseLimitation::OcrNotPerformed,
+    ]);
+    // Embedded-font-only output does not invent a substitution claim.
+    validate_result(&result, &"0".repeat(64), 8).unwrap();
+    result.limitations.extend([
+        ParseLimitation::FontSubstituted,
+        ParseLimitation::FontCoverageUnverified,
+        ParseLimitation::TextLimit,
+        ParseLimitation::MetadataLimit,
+        ParseLimitation::PageLimit,
+    ]);
+    validate_result(&result, &"0".repeat(64), 8).unwrap();
+    for change in 0..9 {
+        let mut invalid = result.clone();
+        match change {
+            0 => invalid.parser = "pdfbox-3.0.8".into(),
+            1 => invalid.media_type = "text/plain".into(),
+            2 => invalid.status = ParseStatus::Complete,
+            3 => invalid
+                .limitations
+                .retain(|item| *item != ParseLimitation::FontSubstituted),
+            4 => invalid
+                .limitations
+                .retain(|item| *item != ParseLimitation::FontCoverageUnverified),
+            5 => invalid.limitations.push(ParseLimitation::FontSubstituted),
+            6 => invalid.error = Some(ParseFailure::FontAssetUnavailable),
+            7 => invalid
+                .limitations
+                .retain(|item| *item != ParseLimitation::OcrNotPerformed),
+            _ => invalid.parser = "pdfbox-3.0.8-local-fonts-v2".into(),
+        }
+        assert!(
+            validate_result(&invalid, &"0".repeat(64), 8).is_err(),
+            "case {change}"
+        );
+    }
+    result.status = ParseStatus::Failed;
+    result.error = Some(ParseFailure::FontAssetUnavailable);
+    result.text.clear();
+    validate_result(&result, &"0".repeat(64), 8).unwrap();
+    result.limitations = vec![ParseLimitation::NoSourceAnchors];
+    validate_result(&result, &"0".repeat(64), 8).unwrap();
+    for change in 0..4 {
+        let mut invalid = result.clone();
+        match change {
+            0 => invalid.parser = "pdfbox-3.0.8".into(),
+            1 => invalid.text = "unverified failed text".into(),
+            2 => {
+                invalid
+                    .metadata
+                    .insert("title".into(), vec!["claim".into()]);
+            }
+            _ => invalid.status = ParseStatus::Partial,
+        }
+        assert!(
+            validate_result(&invalid, &"0".repeat(64), 8).is_err(),
+            "failed case {change}"
+        );
+    }
+    result.parser = "pdfbox-3.0.8".into();
+    result.error = Some(ParseFailure::MalformedDocument);
+    validate_result(&result, &"0".repeat(64), 8).unwrap();
+    for limitation in [
+        ParseLimitation::FontSubstituted,
+        ParseLimitation::FontCoverageUnverified,
+    ] {
+        let mut invalid = result.clone();
+        invalid.limitations.push(limitation);
+        assert!(validate_result(&invalid, &"0".repeat(64), 8).is_err());
+    }
 }
 #[test]
 fn cancelled_parser_never_launches_or_stages_input() {

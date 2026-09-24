@@ -78,18 +78,14 @@ fn pdf_request_identity_binds_page_dpi_operation_and_preserves_legacy_versions()
         workspace.processing_job(&image.id).unwrap().schema_version,
         2
     );
-    for (current, saved) in [
-        (
-            serde_json::to_value(schemars::schema_for!(ExtractionRecord)).unwrap(),
-            include_str!("../../../../schemas/extraction.v1.schema.json"),
-        ),
-        (
-            serde_json::to_value(schemars::schema_for!(ImageExtractionRecord)).unwrap(),
-            include_str!("../../../../schemas/image-extraction.v1.schema.json"),
-        ),
-    ] {
-        assert_eq!(current, serde_json::from_str::<Value>(saved).unwrap());
-    }
+    assert_legacy_extraction_schema();
+    assert_eq!(
+        serde_json::to_value(schemars::schema_for!(ImageExtractionRecord)).unwrap(),
+        serde_json::from_str::<Value>(include_str!(
+            "../../../../schemas/image-extraction.v1.schema.json"
+        ))
+        .unwrap()
+    );
 }
 #[test]
 fn pdf_publication_is_atomic_replayable_and_keeps_original_text_and_raster_policy() {

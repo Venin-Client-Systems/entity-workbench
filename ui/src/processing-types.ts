@@ -60,9 +60,11 @@ export type ParseLimitation =
   | "ocr_not_performed"
   | "text_limit"
   | "metadata_limit"
-  | "page_limit";
+  | "page_limit"
+  | "font_substituted"
+  | "font_coverage_unverified";
 export type Extraction = {
-  schema_version: number;
+  schema_version: 1 | 2;
   id: string;
   job_id: string;
   attempt: number;
@@ -70,7 +72,7 @@ export type Extraction = {
   created_at: string;
   result_sha256: string;
   result: {
-    protocol_version: number;
+    protocol_version: 1;
     job_id: string;
     content_sha256: string;
     source_bytes: number;
@@ -85,6 +87,7 @@ export type Extraction = {
       | "encrypted_document"
       | "archive_limits"
       | "text_extraction_restricted"
+      | "font_asset_unavailable"
       | null;
   };
 };

@@ -179,6 +179,8 @@ pub(crate) enum ProcessingOutput {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ExtractionRecord {
+    /// New publications use v2. Inspection also accepts unchanged historical v1 records.
+    #[schemars(range(min = 2, max = 2))]
     pub schema_version: u32,
     pub id: String,
     pub job_id: String,
@@ -245,4 +247,17 @@ pub struct PdfExtractionRecord {
     pub created_at: String,
     pub result_sha256: String,
     pub result: PdfExtractionResult,
+}
+
+/// The historical schema is a fixed artifact, not regenerated from the evolving result enum.
+#[cfg(test)]
+pub(crate) fn assert_legacy_extraction_schema() {
+    use sha2::{Digest, Sha256};
+    assert_eq!(
+        format!(
+            "{:x}",
+            Sha256::digest(include_bytes!("../../../schemas/extraction.v1.schema.json"))
+        ),
+        "802221db4e0b53333be9f1e25e3e96f6ea272acfbf35d495592fc0f4ff30c0e9"
+    );
 }

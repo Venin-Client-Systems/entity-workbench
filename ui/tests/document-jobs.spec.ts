@@ -143,7 +143,16 @@ test("immutable partial extraction escapes text and metadata, exposes exact prov
       exact: true,
     }),
   ).toBeVisible();
+  expect(record.schema_version).toBe(2);
+  expect(record.result.protocol_version).toBe(1);
+  expect(record.result.parser).toBe("pdfbox-3.0.8-local-fonts-v1");
   await expect(dialog.getByText(/OCR was not performed/)).toBeVisible();
+  await expect(
+    dialog.getByText(/An app-local font was substituted/),
+  ).toBeVisible();
+  await expect(
+    dialog.getByText(/Font coverage has not been verified/),
+  ).toBeVisible();
   await expect(dialog.locator("script,img,svg,iframe")).toHaveCount(0);
   expect(
     await page.evaluate(() => ({
@@ -373,7 +382,7 @@ test("unsupported and failed parses, blocked runtime, limits, interruption and c
 }) => {
   const cases = [
     ["unsupported.bin", "Blocked", "unsupported format"],
-    ["malformed.pdf", "Failed", "document failed"],
+    ["font-asset.pdf", "Failed", "document failed"],
     ["blocked.txt", "Blocked", "runtime unavailable"],
     ["limits.txt", "Quota exhausted", "worker failed"],
     ["interrupted.txt", "Failed", "interrupted"],
@@ -385,12 +394,24 @@ test("unsupported and failed parses, blocked runtime, limits, interruption and c
       status,
     );
     await expect(dialog.getByText(failure, { exact: true })).toBeVisible();
-    if (name === "unsupported.bin" || name === "malformed.pdf") {
+    if (name === "unsupported.bin" || name === "font-asset.pdf") {
       const { dialog: extraction } = await openExtraction(page, dialog);
       await expect(
         extraction.getByRole("button", { name: "Copy text", exact: true }),
       ).toBeDisabled();
       await expect(extraction.getByText(/No text was returned/)).toBeVisible();
+      if (name === "font-asset.pdf") {
+        const failed: Extraction = core({
+          action: "inspect_extraction",
+          extraction_id: fixture(name).result_ids[0],
+        });
+        expect(failed.schema_version).toBe(2);
+        expect(failed.result.error).toBe("font_asset_unavailable");
+        expect(failed.result.metadata).toEqual({});
+        await expect(
+          extraction.getByText(/Required bundled font asset is unavailable/),
+        ).toBeVisible();
+      }
       await expect(
         extraction.getByRole("textbox", { name: "Unreviewed extracted text" }),
       ).toHaveCount(0);
