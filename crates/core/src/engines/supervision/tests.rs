@@ -364,3 +364,86 @@ fn native_lucene_uses_separate_jobs_and_read_only_search_index() {
         name == "index" || name == "coordinator.lock"
     }));
 }
+
+#[test]
+#[ignore = "requires separate staged parser runtime; run scripts/test_parser_workers.py"]
+fn native_parser_has_no_search_access_and_cancels_running_worker() {
+    let runtime = runtime();
+    let root = tempfile::tempdir().unwrap();
+    let root = root.path().canonicalize().unwrap();
+    let (job, index) = prepare(&root);
+    let other = root.join("other.txt");
+    fs::write(&other, "sentinel").unwrap();
+    let original = root.join("original.txt");
+    fs::write(&original, "retained").unwrap();
+    fs::write(index.join("secret.txt"), "search sentinel").unwrap();
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    // The assigned read attempt points at an index file: parser cannot read it.
+    let args = vec![
+        "probe".into(),
+        other.display().to_string(),
+        original.display().to_string(),
+        listener.local_addr().unwrap().port().to_string(),
+        index.join("secret.txt").display().to_string(),
+        index.display().to_string(),
+    ];
+    let cancellation = super::super::CancellationToken::default();
+    run_parser_java(
+        &runtime,
+        &job,
+        "workbench.HostileProbe",
+        &args,
+        Duration::from_secs(15),
+        &cancellation,
+    )
+    .unwrap();
+    let result: serde_json::Value =
+        serde_json::from_slice(&read_result(&job.join("result.json"), 4096).unwrap()).unwrap();
+    for name in [
+        "other_workspace_read",
+        "original_write",
+        "direct_network",
+        "input_write",
+        "index_write",
+        "sibling_job_read",
+        "child_process",
+        "caller_environment",
+        "profile_read",
+        "data_volume_alias_read",
+    ] {
+        assert_eq!(result[name], false, "{name}");
+    }
+    assert_eq!(result["input_read"], true);
+    assert_eq!(result["scratch_write"], true);
+    assert_eq!(fs::read_to_string(original).unwrap(), "retained");
+    cleanup_tree(&job).unwrap();
+    cleanup_tree(&index).unwrap();
+    let (job, _) = prepare(&root);
+    let thread_token = cancellation.clone();
+    let worker_runtime = runtime.clone();
+    let worker_job = job.clone();
+    let started = Instant::now();
+    let parser = std::thread::spawn(move || {
+        run_parser_java(
+            &worker_runtime,
+            &worker_job,
+            "workbench.HostileProbe",
+            &["timeout".into()],
+            Duration::from_secs(30),
+            &thread_token,
+        )
+    });
+    std::thread::sleep(Duration::from_millis(350));
+    // Search remains independently usable while the disposable parser is running.
+    let search = super::super::Runtime { root: runtime };
+    let evidence: crate::domain::Evidence = serde_json::from_value(serde_json::json!({
+        "id":"synthetic-search", "origin_group":"synthetic-origin", "extraction_status":"complete", "sha256":"0".repeat(64), "name":"Independent index", "media_type":"text/plain", "bytes":18, "imported_at":"2026-09-24T00:00:00Z", "text":"independent search"
+    })).unwrap();
+    let result = search.search(&root.join("search-cache"), 1, &[evidence], "independent");
+    cancellation.cancel();
+    let cancelled = parser.join().unwrap();
+    assert_eq!(result.unwrap().hits.len(), 1);
+    assert!(cancelled.unwrap_err().to_string().contains("cancelled"));
+    assert!(started.elapsed() < Duration::from_secs(5));
+    cleanup_tree(&job).unwrap();
+}

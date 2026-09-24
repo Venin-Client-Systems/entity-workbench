@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "files": [
+    {
+      "path": "no-text.pdf",
+      "sha256": "5da6326982def9b1b50107818dff93e1d59776d0c3afa80117931beab3ba7f4d",
+      "size": 579
+    },
+    {
+      "path": "notice.docx",
+      "sha256": "0d2653c31bd47be86c971df5b8195de720d4b296fe030cdb6b09e1f3edfd06de",
+      "size": 840
+    },
+    {
+      "path": "notice.pdf",
+      "sha256": "c8f68df54244017916d97bb59b600322270829cb9657c96f184e2f51cc4c2e9f",
+      "size": 650
+    },
+    {
+      "path": "notice.txt",
+      "sha256": "ca07d359b73dcd0eb93837611c0a4b0843b93ca90e47c86abdf16ebbb12fcb60",
+      "size": 90
+    },
+    {
+      "path": "traversal.zip",
+      "sha256": "8d56e8d9b3300182fc63d0d33fd0cd7be80edb3853b006445c870ef2333dce68",
+      "size": 135
+    }
+  ]
+}

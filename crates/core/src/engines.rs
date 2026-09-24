@@ -7,9 +7,22 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+pub mod parser;
 #[cfg(target_os = "macos")]
 mod supervision;
 use uuid::Uuid;
+
+#[derive(Clone, Default)]
+pub struct CancellationToken(std::sync::Arc<std::sync::atomic::AtomicBool>);
+impl CancellationToken {
+    pub fn cancel(&self) {
+        self.0.store(true, std::sync::atomic::Ordering::Release);
+    }
+    pub fn is_cancelled(&self) -> bool {
+        self.0.load(std::sync::atomic::Ordering::Acquire)
+    }
+}
+
 #[derive(Clone)]
 pub struct Runtime {
     pub root: PathBuf,
