@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
+import { FindingReviewHistory } from "./FindingReviewHistory";
 import type { Anchor, Evidence, Finding, Hypothesis, Workspace } from "./types";
 
 type Props = {
@@ -465,6 +466,7 @@ function FindingReview({
   const [revision] = useState(workspace.revision);
   const [reason, setReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const stale = revision !== workspace.revision;
   const all = citations(workspace);
   const find = (id: string) =>
     all.find((c) => c.id === id) ?? {
@@ -524,6 +526,13 @@ function FindingReview({
           {groups.size} source-origin groups among these citations. Shared
           origin is visible; independence requires review.
         </p>
+        {stale && (
+          <p className="alert" role="status">
+            The workspace changed while this review was open. The draft reason
+            is preserved. Close and reopen the finding before recording a
+            decision.
+          </p>
+        )}
         {item.needs_review && (
           <form
             onSubmit={async (e) => {
@@ -540,7 +549,7 @@ function FindingReview({
                 close();
             }}
           >
-            <fieldset disabled={busy} className="plain-fieldset">
+            <fieldset disabled={busy || stale} className="plain-fieldset">
               <label>
                 Finding review reason
                 <textarea
@@ -575,28 +584,13 @@ function FindingReview({
           accepted in their review screens first. Edits and workspace evidence
           changes reopen review; earlier report snapshots remain unchanged.
         </p>
-        <section aria-label="Finding review history">
-          <h4>Review history</h4>
-          {workspace.decisions
-            .filter((d) => d.target_id === item.id)
-            .map((d) => (
-              <div className="list-card" key={d.id}>
-                <span className={`pill ${d.state}`}>
-                  {d.state === "accepted"
-                    ? "Reviewed"
-                    : "Edited · review required"}
-                </span>
-                <p>
-                  {d.reason}
-                  <br />
-                  {new Date(d.at).toLocaleString()}
-                </p>
-              </div>
-            ))}
-          {!workspace.decisions.some((d) => d.target_id === item.id) && (
-            <p className="muted">No decision recorded.</p>
-          )}
-        </section>
+        <FindingReviewHistory
+          key={item.id}
+          findingId={item.id}
+          revision={workspace.revision}
+          busy={busy}
+          onRefresh={() => run({ action: "view" })}
+        />
       </div>
     </Dialog>
   );
@@ -743,6 +737,7 @@ export function AssessmentWorkbench(props: Props) {
       )}
       {reviewed && (
         <FindingReview
+          key={reviewed.id}
           {...props}
           item={reviewed}
           close={() => setReview(null)}
