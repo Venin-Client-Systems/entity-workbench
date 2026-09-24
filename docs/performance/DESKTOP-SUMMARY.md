@@ -87,3 +87,27 @@ release, a real concurrent canonical writer after revision capture, single-write
 mutation behavior, unchanged direct/legacy results, queue replay and actual
 coordinator cancellation signaling. Schema regeneration must leave every prior
 schema byte unchanged; only the two summary schemas are added.
+
+## Reproducible synthetic payload diagnostic
+
+The development-only example `desktop_summary_payload` checks the real full
+presentation response against the real summary response using the exact defined
+projection. It removes only the two specified workspace arrays and replaces only
+the legacy analysis vectors/counters; all other fields and values must compare
+equal. A capped streaming serializer measures actual UTF-8 JSON bytes and SHA-256
+without allocating another entire serialized response buffer.
+
+```sh
+python3 scripts/desktop_summary_payload.py --source /path/to/retained/synthetic/case
+```
+
+The runner requires the frozen 100,000-row corpus and complete single-original
+set. It reads the retained corpus, copies it, prepares schema migration only in
+that copy, then compares responses in a second copy. It records exact source,
+configuration, executable, original and database hashes, verifies closed database
+and original bytes unchanged around comparison, and rechecks the retained source
+and prior campaign evidence. Reports use UUID directories so failed runs remain
+independent even under an identical clock value. Metadata failures are recorded
+before compilation or corpus access. The shared runner's raw child logs may
+contain resource counters, but this is a payload diagnostic, not an IPC/UI
+latency or memory measurement. Internal allocation remains unchanged.
