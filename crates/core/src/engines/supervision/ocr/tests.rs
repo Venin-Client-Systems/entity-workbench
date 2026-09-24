@@ -5,6 +5,7 @@ fn ocr_profile_excludes_other_workers_and_original_writes() {
         Path::new("/bundle/ocr/bin/tesseract"),
         Path::new("/bundle/ocr"),
         Path::new("/job"),
+        Recipe::Text,
     )
     .unwrap();
     assert!(text.contains("(deny process-fork)"));
@@ -18,6 +19,14 @@ fn ocr_profile_excludes_other_workers_and_original_writes() {
 #[test]
 #[ignore = "requires compiled synthetic native OCR probe"]
 fn native_ocr_profile_denies_outside_io_network_fork_and_inheritance() {
+    native_recipe_boundaries(Recipe::Text);
+}
+
+pub(super) fn native_recipe_boundaries(recipe: Recipe) {
+    let filename = match recipe {
+        Recipe::Text => "result.txt",
+        Recipe::WordRegions => "result.tsv",
+    };
     use std::{net::TcpListener, os::fd::AsRawFd};
     let root = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
     let runtime = root.path().join("runtime");
@@ -48,17 +57,27 @@ fn native_ocr_profile_denies_outside_io_network_fork_and_inheritance() {
         descriptor
     );
     fs::write(job.path().join("input.pgm"), &input).unwrap();
-    let result = run(
+    let result = run_recipe(
         &runtime,
         job.path(),
         Duration::from_secs(5),
         &CancellationToken::default(),
+        recipe,
     );
     unsafe {
         libc::close(descriptor);
     }
     result.unwrap();
-    assert_eq!(fs::read_to_string(job.path().join("result.txt")).unwrap().trim(), "outside_read=0 outside_write=0 index_read=0 index_write=0 input_write=0 network=0 fork=0 inherited=0 environment=0");
+    let mut expected = "outside_read=0 outside_write=0 index_read=0 index_write=0 input_write=0 network=0 fork=0 inherited=0 environment=0".to_owned();
+    if matches!(recipe, Recipe::WordRegions) {
+        expected.push_str("\nunexpected=0");
+    }
+    assert_eq!(
+        fs::read_to_string(job.path().join(filename))
+            .unwrap()
+            .trim(),
+        expected
+    );
     assert_eq!(
         fs::read_to_string(job.path().join("input.pgm")).unwrap(),
         input
@@ -79,15 +98,16 @@ fn native_ocr_profile_denies_outside_io_network_fork_and_inheritance() {
         let path = job.path().to_path_buf();
         let started = Instant::now();
         let worker = std::thread::spawn(move || {
-            run(
+            run_recipe(
                 &worker_runtime,
                 &path,
                 Duration::from_secs(5),
                 &worker_token,
+                recipe,
             )
         });
         if mode.starts_with("sleep") {
-            let result = job.path().join("result.txt");
+            let result = job.path().join(filename);
             while !result.exists() || fs::metadata(&result).unwrap().len() == 0 {
                 assert!(started.elapsed() < Duration::from_secs(5));
                 std::thread::sleep(Duration::from_millis(5));
@@ -102,7 +122,7 @@ fn native_ocr_profile_denies_outside_io_network_fork_and_inheritance() {
             );
         } else {
             assert!(worker.join().unwrap().is_err());
-            assert!(fs::metadata(job.path().join("result.txt")).unwrap().len() <= MAX_TEXT_BYTES);
+            assert!(fs::metadata(job.path().join(filename)).unwrap().len() <= recipe.limit());
         }
         assert!(started.elapsed() < Duration::from_secs(5));
         finish_job(job, Ok(())).unwrap();

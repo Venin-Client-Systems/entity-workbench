@@ -9,6 +9,7 @@ use std::{
 };
 pub mod image;
 pub mod ocr;
+pub mod ocr_regions;
 pub mod parser;
 pub mod pdf_render;
 #[cfg(target_os = "macos")]

@@ -9,7 +9,8 @@ use std::path::Path;
 pub const MAX_PIXELS: usize = 12_000_000;
 pub const MAX_DIMENSION: u32 = 8192;
 pub const MAX_TEXT_BYTES: u64 = 512_000;
-const MODEL_SHA256: &str = "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2";
+pub(super) const MODEL_SHA256: &str =
+    "7d4322bd2a7749724879683fc3912cb542f19906c83bcc1a52132556427170b2";
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -43,7 +44,7 @@ pub struct OcrResult {
     pub limitations: Vec<OcrLimitation>,
 }
 
-fn digest(bytes: &[u8]) -> String {
+pub(super) fn digest(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 fn is_digest(value: &str) -> bool {
@@ -105,32 +106,20 @@ pub fn validate_result(result: &OcrResult, raster: &[u8]) -> Result<()> {
     let (width, height) = raster_dimensions(raster)?;
     require(result.protocol_version == 1, "Unsupported OCR protocol")?;
     require(
-        uuid::Uuid::parse_str(&result.job_id).is_ok_and(|id| id.to_string() == result.job_id),
-        "Invalid OCR job ID",
-    )?;
-    require(
         result.raster_sha256 == digest(raster)
             && result.raster_bytes == raster.len() as u64
             && result.width == width
             && result.height == height,
         "OCR result does not match the assigned raster",
     )?;
-    require(
-        result.engine == "tesseract-5.5.2"
-            && result.language == "eng"
-            && result.model_sha256 == MODEL_SHA256
-            && is_digest(&result.runtime_manifest_sha256),
-        "Unsupported OCR runtime identity",
+    validate_identity(
+        &result.job_id,
+        &result.engine,
+        &result.language,
+        &result.model_sha256,
+        &result.runtime_manifest_sha256,
     )?;
-    require(
-        result.text.len() as u64 <= MAX_TEXT_BYTES
-            && result.text.chars().count() <= 128_000
-            && !result
-                .text
-                .chars()
-                .any(|c| c.is_control() && !matches!(c, '\n' | '\r' | '\t' | '\x0c')),
-        "Invalid or oversized OCR text",
-    )?;
+    validate_text(&result.text)?;
     require(
         result.limitations
             == [
@@ -143,6 +132,37 @@ pub fn validate_result(result: &OcrResult, raster: &[u8]) -> Result<()> {
     require(
         (result.status == OcrStatus::NoTextRecognized) == result.text.trim().is_empty(),
         "OCR status conflicts with recognized text",
+    )
+}
+
+pub(super) fn validate_identity(
+    job_id: &str,
+    engine: &str,
+    language: &str,
+    model_sha256: &str,
+    runtime_manifest_sha256: &str,
+) -> Result<()> {
+    require(
+        uuid::Uuid::parse_str(job_id).is_ok_and(|id| id.to_string() == job_id),
+        "Invalid OCR job ID",
+    )?;
+    require(
+        engine == "tesseract-5.5.2"
+            && language == "eng"
+            && model_sha256 == MODEL_SHA256
+            && is_digest(runtime_manifest_sha256),
+        "Unsupported OCR runtime identity",
+    )
+}
+
+pub(super) fn validate_text(text: &str) -> Result<()> {
+    require(
+        text.len() as u64 <= MAX_TEXT_BYTES
+            && text.chars().count() <= 128_000
+            && !text
+                .chars()
+                .any(|c| c.is_control() && !matches!(c, '\n' | '\r' | '\t' | '\x0c')),
+        "Invalid or oversized OCR text",
     )
 }
 
@@ -236,7 +256,7 @@ impl Runtime {
 }
 
 #[cfg(target_os = "macos")]
-fn validate_runtime(runtime: &Path) -> Result<String> {
+pub(super) fn validate_runtime(runtime: &Path) -> Result<String> {
     use std::{
         collections::{BTreeMap, BTreeSet},
         fs,
