@@ -1,4 +1,4 @@
-/** Rust processing-job.v1 / extraction.v1 contracts. Mutations remain canonical commands. */
+/** Rust processing-job.v1/v2 and extraction.v1 contracts. Mutations remain canonical commands. */
 export type ProcessingState =
   | "queued"
   | "running"
@@ -9,7 +9,7 @@ export type ProcessingState =
   | "cancelled"
   | "completed";
 export type ProcessingInput = {
-  operation: "parse_document";
+  operation: "parse_document" | "image_ocr";
   evidence_id: string;
   sha256: string;
   bytes: number;
@@ -22,6 +22,7 @@ export type ProcessingFailure =
   | "invalid_result"
   | "unsupported_format"
   | "document_failed"
+  | "image_decode_failed"
   | "cancelled_by_analyst"
   | "cleanup_failed"
   | "worker_exit_unverified"
@@ -60,7 +61,7 @@ export type Extraction = {
   id: string;
   job_id: string;
   attempt: number;
-  input: ProcessingInput;
+  input: ProcessingInput & { operation: "parse_document" };
   created_at: string;
   result_sha256: string;
   result: {

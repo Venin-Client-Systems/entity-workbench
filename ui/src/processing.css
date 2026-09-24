@@ -187,6 +187,16 @@
   font: 12px/1.8 var(--mono);
   background: var(--subtle);
 }
+.processing-details {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 16px;
+}
+.processing-details summary {
+  cursor: pointer;
+  font: 12px var(--mono);
+  padding: 8px 0;
+}
 .processing-completed {
   background: var(--subtle);
   color: var(--ink);

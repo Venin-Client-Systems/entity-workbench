@@ -8,6 +8,7 @@ import {
   processingStates,
   type ProcessingJob,
   type ProcessingJobPage,
+  type ProcessingInput,
 } from "./processing-types";
 import { useProcessingRead } from "./useProcessingRead";
 import { ProcessingJobReview } from "./ProcessingJobReview";
@@ -26,6 +27,8 @@ export function DocumentJobs({
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [input, setInput] = useState("");
+  const [method, setMethod] =
+    useState<ProcessingInput["operation"]>("parse_document");
   const [filter, setFilter] = useState("all");
   const [queueing, setQueueing] = useState(false);
   const [error, setError] = useState("");
@@ -52,26 +55,34 @@ export function DocumentJobs({
   const name = (job: ProcessingJob) =>
     evidence.find((item) => item.id === job.input.evidence_id)?.name ??
     job.input.evidence_id;
+  const pendingKey = `${method}:${input}`;
+  const sameActiveJob = jobs.some(
+    (job) =>
+      job.input.evidence_id === input &&
+      job.input.operation === method &&
+      activeJob(job),
+  );
   const queue = async () => {
     if (!input || queueing) return;
     setQueueing(true);
     setError("");
     setNotice("");
-    const requestKey = requestKeys.get(input) ?? crypto.randomUUID();
-    requestKeys.set(input, requestKey);
+    const requestKey = requestKeys.get(pendingKey) ?? crypto.randomUUID();
+    requestKeys.set(pendingKey, requestKey);
     try {
       const job = await command<ProcessingJob>({
-        action: "queue_document_parse",
+        action:
+          method === "image_ocr" ? "queue_image_ocr" : "queue_document_parse",
         evidence_id: input,
         request_key: requestKey,
       });
-      requestKeys.delete(input);
+      requestKeys.delete(pendingKey);
       if (mounted.current) {
         await onRefresh();
         if (mounted.current) {
           setSelected(job.id);
           setNotice(
-            `Document job acknowledged: ${jobLabel(job).toLowerCase()}.`,
+            `${method === "image_ocr" ? "Image OCR" : "Document"} job acknowledged: ${jobLabel(job).toLowerCase()}.`,
           );
         }
       }
@@ -92,11 +103,24 @@ export function DocumentJobs({
           <span className="processing-local">LOCAL INPUTS</span>
         </div>
         <p className="muted">
-          Queue a retained original for bounded parsing. Derivatives remain
-          unreviewed; source anchors and accepted observations are separate
-          work.
+          Queue a retained original for bounded parsing or image OCR.
+          Derivatives remain unreviewed; source anchors and accepted
+          observations are separate work.
         </p>
         <div className="processing-queue">
+          <label>
+            Processing method
+            <select
+              value={method}
+              disabled={queueing}
+              onChange={(event) =>
+                setMethod(event.target.value as ProcessingInput["operation"])
+              }
+            >
+              <option value="parse_document">Document parsing</option>
+              <option value="image_ocr">Image OCR · English (PNG/JPEG)</option>
+            </select>
+          </label>
           <label>
             Original to process
             <select
@@ -121,32 +145,35 @@ export function DocumentJobs({
               read.loading ||
               !!read.error ||
               !input ||
-              (!requestKeys.has(input) &&
-                jobs.some(
-                  (job) => job.input.evidence_id === input && activeJob(job),
-                ))
+              (!requestKeys.has(pendingKey) && sameActiveJob)
             }
             onClick={() => void queue()}
           >
             {queueing
               ? "Queueing…"
-              : requestKeys.has(input)
+              : requestKeys.has(pendingKey)
                 ? "Recover queue acknowledgement"
-                : "Queue document"}
+                : method === "image_ocr"
+                  ? "Queue image OCR"
+                  : "Queue document"}
           </button>
         </div>
-        {jobs.some(
-          (job) => job.input.evidence_id === input && activeJob(job),
-        ) && (
+        {method === "image_ocr" && (
+          <p className="context-note">
+            English OCR supports one PNG or JPEG image. PDF pages, other image
+            formats and other languages are not supported by this operation.
+          </p>
+        )}
+        {sameActiveJob && (
           <p className="muted">
-            This original already has a queued or running job in the displayed
-            history.
+            This original already has a queued or running job for this method in
+            the displayed history.
           </p>
         )}
         {import.meta.env.DEV && !isTauri() && (
           <p className="context-note">
             Development bridge: jobs can be queued and inspected here. Only the
-            native desktop runs the available confined parsing runtime.
+            native desktop runs the available confined processing runtimes.
           </p>
         )}
         {notice && <p role="status">{notice}</p>}
@@ -198,6 +225,11 @@ export function DocumentJobs({
             <li key={job.id}>
               <div className="processing-job-name">
                 <strong>{name(job)}</strong>
+                <small>
+                  {job.input.operation === "image_ocr"
+                    ? "Image OCR · English"
+                    : "Document parsing"}
+                </small>
                 <small className="processing-id">{job.id}</small>
               </div>
               <div>

@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
 import { ExtractionReview } from "./ExtractionReview";
+import { ImageExtractionReview } from "./ImageExtractionReview";
 import {
   activeJob,
   cancellationNotice,
@@ -129,8 +130,9 @@ export function ProcessingJobReview({
                 )}
                 {job.failure === "worker_exit_unverified" && (
                   <p>
-                    Worker exit is unconfirmed. Scratch is retained; no result
-                    has been published for this failed attempt.
+                    Worker exit is unconfirmed. Any remaining assignment files
+                    require verified recovery; no result has been published for
+                    this failed attempt.
                   </p>
                 )}
                 {job.failure === "recovery_required" && (
@@ -163,6 +165,12 @@ export function ProcessingJobReview({
                 </div>
               </dl>
               <dl className="processing-facts">
+                <dt>Processing method</dt>
+                <dd>
+                  {job.input.operation === "image_ocr"
+                    ? "Image OCR · English"
+                    : "Document parsing"}
+                </dd>
                 <dt>Original SHA-256</dt>
                 <dd>
                   <code>{job.input.sha256}</code>
@@ -251,7 +259,7 @@ export function ProcessingJobReview({
                 )}
                 <p className="context-note">
                   Derivatives from earlier attempts remain available. Their
-                  recorded attempt and parser status appear in extraction
+                  recorded attempt and processing status appear in extraction
                   review. Extracted text is unreviewed and has no source
                   anchors.
                 </p>
@@ -326,13 +334,24 @@ export function ProcessingJobReview({
           </div>
         </Dialog>
       )}
-      {extraction && (
-        <ExtractionReview
-          key={extraction}
-          extractionId={extraction}
-          onClose={() => setExtraction(null)}
-        />
-      )}
+      {extraction &&
+        (job?.input.operation === "image_ocr" ? (
+          <ImageExtractionReview
+            key={extraction}
+            extractionId={extraction}
+            sourceName={
+              evidence.find((item) => item.id === job.input.evidence_id)
+                ?.name ?? "Retained original"
+            }
+            onClose={() => setExtraction(null)}
+          />
+        ) : (
+          <ExtractionReview
+            key={extraction}
+            extractionId={extraction}
+            onClose={() => setExtraction(null)}
+          />
+        ))}
     </>
   );
 }

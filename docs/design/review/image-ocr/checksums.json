@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "synthetic browser review and editable Figma export; not native release acceptance",
+  "files": {
+    "accessibility-compact-provenance.json": "a17e1aefc2aa8901e315fc1a5775613cfa7758d6cc726b9923017b7be3f338a1",
+    "accessibility-compact.json": "a17e1aefc2aa8901e315fc1a5775613cfa7758d6cc726b9923017b7be3f338a1",
+    "accessibility-desktop.json": "a17e1aefc2aa8901e315fc1a5775613cfa7758d6cc726b9923017b7be3f338a1",
+    "failed.png": "d24f26ebda0fd8a753bff714eced5163067e6fc620a6cdb91f674625f2e637ae",
+    "figma-image-ocr-review.png": "74941d5c99ca6421e134be4a9695d407b0a9a7b0b464e7cb31a041d911c35523",
+    "no_text_recognized.png": "6056130787be0fdc70c6054c4bc71d2e84c5a30ae51f53b33fd1546eb30561f2",
+    "quota_exhausted.png": "549947f9f1bbeb2565f511cd9e8b7e19b5032e3b901f9ec621377d33806f2449",
+    "recognized-compact.png": "5c702c0c42f589fe1d83281d9aea8971057e640fc48fbe36db727604cf337195",
+    "recognized-desktop.png": "e5af31d6b44599bcb4f0b45e3e05eafc7f8f723c7fd16d39f5022259b90c45cd",
+    "recognized-full.png": "8c5054d2f76e0efb6a3c06a12613ae91eef42dfc48c0efe6cb08d0d93df03b42",
+    "recognized-provenance.png": "3dba224662c6c3bbdf0ebfdbd19c411d5b29e615c1a0e511cb67f3a86214a334",
+    "unsupported.png": "2806f8409d9caafdee2370e141089417985e57f7f1e5d158a57cf32a507d78dc"
+  }
+}

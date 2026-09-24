@@ -20,8 +20,12 @@ export function useProcessingRead<T>(
       try {
         const args: Record<string, unknown> = { action };
         if (key !== null)
-          args[action === "inspect_extraction" ? "extraction_id" : "job_id"] =
-            key;
+          args[
+            action === "inspect_extraction" ||
+            action === "inspect_image_extraction"
+              ? "extraction_id"
+              : "job_id"
+          ] = key;
         const next = await command<T>(args);
         if (current) {
           setValue(next);
