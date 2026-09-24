@@ -63,6 +63,7 @@ fn control_recorded(
         crate::windows::ControlDocument::Pdf => "pdf_file_worker_positive_control",
         crate::windows::ControlDocument::FontCorpus => "font_corpus_positive_control",
         crate::windows::ControlDocument::EmbeddedFont => "embedded_font_positive_control",
+        crate::windows::ControlDocument::Index => "index_positive_control",
     };
     let control = crate::windows::file_worker_control(parser, controls, document, &mut diagnostics);
     report.insert(
@@ -418,8 +419,28 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
             "source_bytes":bytes.len(),"status":result["status"],"parser":result["parser"],"limitations":result["limitations"],"text_bytes":result["text"].as_str().unwrap_or("").len()}));
         empty(&jobs)?;
     }
+    phase(report, "index_positive_control");
+    let control = control_recorded(
+        &search,
+        &controls,
+        crate::windows::ControlDocument::Index,
+        report,
+    );
+    if matches!(&control, Err(Error::Cleanup { .. })) {
+        return control.map(|_| ());
+    }
+    empty(&controls)?;
     phase(report, "lucene_index");
-    let indexed = execute_recorded(&search, &jobs, &Job::index(7, documents)?, report)?;
+    let indexed = execute_recorded(&search, &jobs, &Job::index(7, documents)?, report);
+    report.insert(
+        "confined_index".into(),
+        json!({
+            "passed":indexed.is_ok(),"failure":indexed.as_ref().err().map(ToString::to_string),
+            "output_sha256":indexed.as_ref().ok().map(|output| &output.output_sha256)
+        }),
+    );
+    let indexed = indexed?;
+    control?;
     let snapshot = indexed
         .index
         .ok_or(Error::Blocked("index snapshot missing"))?;

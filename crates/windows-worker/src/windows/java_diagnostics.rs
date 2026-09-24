@@ -1,7 +1,8 @@
 //! Probe-only observations, collected after acknowledged process-tree termination.
 use super::*;
 use crate::java::diagnostics::{
-    fallback_name, fatal_header, thread_sample, FailureDiagnostics, FatalHeader, TreeCounts,
+    fallback_name, fatal_header, thread_sample, worker_failure, FailureDiagnostics, FatalHeader,
+    TreeCounts,
 };
 
 fn tree_counts(root: &Path) -> Option<TreeCounts> {
@@ -78,6 +79,9 @@ pub(super) fn capture_control(scratch: &Path) -> FailureDiagnostics {
         thread_sample: read_output_bounded(&scratch.join("java-sample.json"), 512)
             .ok()
             .and_then(|bytes| thread_sample(&bytes)),
+        worker_failure: read_output_bounded(&scratch.join("java-failure.json"), 128)
+            .ok()
+            .and_then(|bytes| worker_failure(&bytes)),
         worker_checkpoint: read_output_bounded(&scratch.join("java-checkpoint.json"), 64)
             .ok()
             .and_then(|bytes| serde_json::from_slice(&bytes).ok()),
@@ -87,6 +91,24 @@ pub(super) fn capture_control(scratch: &Path) -> FailureDiagnostics {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn failure_category_file_refuses_hardlinks_oversize_and_unsafe_fields() {
+        let root = tempfile::tempdir().unwrap();
+        let scratch = root.path().join("scratch");
+        fs::create_dir(&scratch).unwrap();
+        let source = root.path().join("source");
+        fs::write(&source, br#"{"category":"access_denied"}"#).unwrap();
+        let target = scratch.join("java-failure.json");
+        fs::hard_link(&source, &target).unwrap();
+        assert!(capture_control(&scratch).worker_failure.is_none());
+        fs::remove_file(&target).unwrap();
+        fs::write(&target, br#"{"category":"access_denied"}"#).unwrap();
+        assert!(capture_control(&scratch).worker_failure.is_some());
+        fs::write(&target, vec![b' '; 129]).unwrap();
+        assert!(capture_control(&scratch).worker_failure.is_none());
+        fs::write(&target, br#"{"category":"other","path":"PRIVATE"}"#).unwrap();
+        assert!(capture_control(&scratch).worker_failure.is_none());
+    }
     #[test]
     fn diagnostic_counts_do_not_read_dump_bytes_or_publish_names() {
         let temp = tempfile::tempdir().unwrap();

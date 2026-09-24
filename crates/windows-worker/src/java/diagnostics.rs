@@ -10,6 +10,7 @@ pub(crate) struct FailureDiagnostics {
     pub fatal_header: Option<FatalHeader>,
     pub worker_checkpoint: Option<JavaCheckpoint>,
     pub thread_sample: Option<ThreadSample>,
+    pub worker_failure: Option<WorkerFailure>,
 }
 #[derive(Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -26,6 +27,36 @@ pub(crate) enum JavaCheckpoint {
     PdfStripperReady,
     PdfTextStarted,
     PdfTextFinished,
+    SearchRequestValidated,
+    SearchIndexValidated,
+    SearchDirectoryStarted,
+    SearchDirectoryReady,
+    SearchManifestRead,
+    SearchWriterStarted,
+    SearchWriterReady,
+    SearchIndexCommitted,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct WorkerFailure {
+    category: FailureCategory,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+enum FailureCategory {
+    AccessDenied,
+    MissingFile,
+    FileExists,
+    Filesystem,
+    Io,
+    Security,
+    Other,
+}
+pub(crate) fn worker_failure(bytes: &[u8]) -> Option<WorkerFailure> {
+    if bytes.len() > 128 {
+        return None;
+    }
+    serde_json::from_slice(bytes).ok()
 }
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -193,6 +224,32 @@ pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
 mod tests {
     use super::*;
     #[test]
+    fn failure_categories_reject_arbitrary_fields_names_and_oversize() {
+        for category in [
+            "access_denied",
+            "missing_file",
+            "file_exists",
+            "filesystem",
+            "io",
+            "security",
+            "other",
+        ] {
+            let bytes = format!(r#"{{"category":"{category}"}}"#);
+            let result = worker_failure(bytes.as_bytes()).unwrap();
+            assert_eq!(serde_json::to_string(&result).unwrap(), bytes);
+        }
+        for bytes in [
+            br#"{"category":"PRIVATE/path"}"#.as_slice(),
+            br#"{"category":"other","message":"PRIVATE"}"#.as_slice(),
+            br#"{"category":"other","category":"io"}"#.as_slice(),
+            br#"{"category":"other"} {}"#.as_slice(),
+            br#"{"category":null}"#.as_slice(),
+        ] {
+            assert!(worker_failure(bytes).is_none());
+        }
+        assert!(worker_failure(&[b' '; 129]).is_none());
+    }
+    #[test]
     fn fallback_names_are_only_bounded_numeric_jvm_log_names() {
         assert!(fallback_name("hs_err_pid1234.log"));
         for name in [
@@ -303,7 +360,7 @@ mod tests {
         assert!(fatal_header(oversized.as_bytes()).is_none());
     }
     #[test]
-    fn pdf_checkpoint_hints_are_fixed_and_fit_the_existing_read_bound() {
+    fn adapter_checkpoint_hints_are_fixed_and_fit_the_existing_read_bound() {
         for value in [
             JavaCheckpoint::PdfLoadStarted,
             JavaCheckpoint::PdfLoaded,
@@ -311,6 +368,14 @@ mod tests {
             JavaCheckpoint::PdfStripperReady,
             JavaCheckpoint::PdfTextStarted,
             JavaCheckpoint::PdfTextFinished,
+            JavaCheckpoint::SearchRequestValidated,
+            JavaCheckpoint::SearchIndexValidated,
+            JavaCheckpoint::SearchDirectoryStarted,
+            JavaCheckpoint::SearchDirectoryReady,
+            JavaCheckpoint::SearchManifestRead,
+            JavaCheckpoint::SearchWriterStarted,
+            JavaCheckpoint::SearchWriterReady,
+            JavaCheckpoint::SearchIndexCommitted,
         ] {
             let bytes = serde_json::to_vec(&value).unwrap();
             assert!(bytes.len() <= 64);

@@ -16,17 +16,24 @@ public final class SearchWorker {
     public static void main(String[] args){
         try{
             JsonNode request=Protocol.read();String operation=request.path("operation").asText();
+            Protocol.checkpoint("search_request_validated");
             // The Rust coordinator assigns the only index allowed by the OS profile.
             String assignedIndex=System.getProperty("workbench.index");
             Path index=assignedIndex==null ? Protocol.relative("index") : Path.of(assignedIndex);
             if(Files.isSymbolicLink(index)||!Files.isDirectory(index,LinkOption.NOFOLLOW_LINKS)) {
                 if(assignedIndex!=null)throw new IOException("Invalid assigned index");
             }
+            Protocol.checkpoint("search_index_validated");
+            Protocol.checkpoint("search_directory_started");
             try(var directory=FSDirectory.open(index);var analyzer=new StandardAnalyzer()){
+                Protocol.checkpoint("search_directory_ready");
                 if(operation.equals("index")){
                     JsonNode manifest=Protocol.JSON.readTree(Files.readAllBytes(Protocol.input(request.path("inputs").get(0).asText())));
+                    Protocol.checkpoint("search_manifest_read");
                     if(!manifest.path("documents").isArray()||manifest.path("documents").size()>10000)throw new IOException("Document count limit");
+                    Protocol.checkpoint("search_writer_started");
                     try(var writer=new IndexWriter(directory,new IndexWriterConfig(analyzer).setOpenMode(IndexWriterConfig.OpenMode.CREATE))){
+                        Protocol.checkpoint("search_writer_ready");
                         for(JsonNode source:manifest.path("documents")){
                             Document doc=new Document();
                             doc.add(new StringField("id",source.path("id").asText(),Field.Store.YES));
@@ -36,6 +43,7 @@ public final class SearchWorker {
                         }
                         writer.setLiveCommitData(Map.of("workspace_revision",manifest.path("workspace_revision").asText()).entrySet());
                     }
+                    Protocol.checkpoint("search_index_committed");
                     Protocol.write(request,Map.of("indexed",manifest.path("documents").size(),"workspace_revision",manifest.path("workspace_revision").asLong()));
                 }else if(operation.equals("search")){
                     JsonNode search=Protocol.JSON.readTree(Files.readAllBytes(Protocol.input(request.path("inputs").get(0).asText())));

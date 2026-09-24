@@ -1,5 +1,5 @@
 //! Synthetic FileWorker startup control only. Never a production retry/fallback.
-//! Only the compiled notice text/PDF and font-corpus/embedded fixtures are permitted. This deliberately has no
+//! Only compiled parser fixtures and a fixed synthetic index manifest are permitted. This deliberately has no
 //! AppContainer token/ACL grant, but preserves the reviewed recipe, environment,
 //! detached/no-inherited-handle launch and Job Object/time/handle/disk limits.
 use super::*;
@@ -11,6 +11,7 @@ pub(crate) enum ControlDocument {
     Pdf,
     FontCorpus,
     EmbeddedFont,
+    Index,
 }
 
 pub(crate) fn file_worker_control(
@@ -20,6 +21,7 @@ pub(crate) fn file_worker_control(
     diagnostics: &mut FailureDiagnostics,
 ) -> Result<JavaOutput> {
     let (fixture, status): (&[u8], &str) = match document {
+        ControlDocument::Index => (&[], ""),
         ControlDocument::Text => (
             include_bytes!(concat!(
                 env!("CARGO_MANIFEST_DIR"),
@@ -42,7 +44,22 @@ pub(crate) fn file_worker_control(
             "partial",
         ),
     };
-    let job = Job::parse(fixture.to_vec())?;
+    let job = if matches!(document, ControlDocument::Index) {
+        Job::index(
+            7,
+            vec![java::Document {
+                id: "control-notice".into(),
+                name: "notice.txt".into(),
+                text: include_str!(concat!(
+                    env!("CARGO_MANIFEST_DIR"),
+                    "/../../fixtures/parser/notice.txt"
+                ))
+                .into(),
+            }],
+        )?
+    } else {
+        Job::parse(fixture.to_vec())?
+    };
     let mut prepared = java::prepare(runtime, parent, &job)?;
     prepared
         .request
@@ -69,6 +86,9 @@ pub(crate) fn file_worker_control(
         fs::write(&input, &prepared.request.input)?;
         fs::write(&metadata, &prepared.metadata)?;
         fs::create_dir(&scratch)?;
+        if prepared.build_index() {
+            fs::create_dir(scratch.join("index"))?;
+        }
         let executable = runtime.join(&prepared.request.executable);
         let path_text = java_paths::launch_text;
         let replacements = [
@@ -198,12 +218,24 @@ pub(crate) fn file_worker_control(
             )?;
             let output = java::accept(
                 &job,
-                read_output_bounded(&scratch.join("result.json"), java::PARSE_BYTES)?,
-                vec![],
+                read_output_bounded(&scratch.join("result.json"), prepared.output_limit())?,
+                if prepared.build_index() {
+                    collect_index(&scratch.join("index"))?
+                } else {
+                    vec![]
+                },
             )?;
             let reply: serde_json::Value = serde_json::from_slice(&output.bytes)
                 .map_err(|_| Error::Blocked("control parser schema rejected"))?;
             match document {
+                ControlDocument::Index => blocked(
+                    reply == serde_json::json!({"indexed":1,"workspace_revision":7})
+                        && output
+                            .index
+                            .as_ref()
+                            .is_some_and(|snapshot| snapshot.revision() == 7),
+                    "control index acknowledgement/snapshot mismatch",
+                )?,
                 ControlDocument::FontCorpus => {
                     java::font_fixtures::FontFixture::Corpus.validate(&reply)?
                 }

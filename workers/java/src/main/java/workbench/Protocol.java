@@ -15,7 +15,10 @@ final class Protocol {
         if (!Set.of("file_worker_entered", "metadata_read", "request_decoded",
                 "parser_selected", "search_selected", "worker_returned",
                 "pdf_load_started", "pdf_loaded", "pdf_stripper_started",
-                "pdf_stripper_ready", "pdf_text_started", "pdf_text_finished").contains(value))
+                "pdf_stripper_ready", "pdf_text_started", "pdf_text_finished",
+                "search_request_validated", "search_index_validated", "search_directory_started",
+                "search_directory_ready", "search_manifest_read", "search_writer_started",
+                "search_writer_ready", "search_index_committed").contains(value))
             throw new IOException("Invalid fixed checkpoint");
         Files.writeString(Path.of("java-checkpoint.json"), "\"" + value + "\"");
     }
@@ -108,7 +111,23 @@ final class Protocol {
         Files.write(output,bytes,StandardOpenOption.CREATE_NEW);
         System.out.println(JSON.writeValueAsString(Map.of("protocol_version",1,"job_id",request.path("job_id").asText(),"output",output.toString(),"bytes",bytes.length)));
     }
+    /** Closed diagnostic vocabulary: never inspect messages, causes or stack traces. */
+    static byte[] failureBytes(Exception exception) {
+        Class<?> type=exception.getClass();
+        String category=type==AccessDeniedException.class ? "access_denied"
+            : type==NoSuchFileException.class ? "missing_file"
+            : type==FileAlreadyExistsException.class ? "file_exists"
+            : type==FileSystemException.class ? "filesystem"
+            : type==IOException.class ? "io"
+            : type==SecurityException.class ? "security" : "other";
+        return ("{\"category\":\""+category+"\"}").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
     static void failure(Exception exception) {
+        try {
+            if(Boolean.getBoolean("workbench.probe"))
+                Files.write(Path.of("java-failure.json"),failureBytes(exception),StandardOpenOption.CREATE_NEW);
+        } catch(Exception unavailable) { /* diagnostic failure never replaces original exit */ }
+
         if (Boolean.getBoolean("workbench.debug")) exception.printStackTrace(System.err);
         // Do not leak local paths, document content or stack traces over IPC.
         System.out.println("{\"protocol_version\":1,\"state\":\"failed\",\"error\":\"Engine operation failed\"}");
