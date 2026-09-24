@@ -23,7 +23,9 @@ mod native {
         Storage::FileSystem::*,
         System::{Console::GetConsoleProcessList, Threading::*},
     };
-    use workbench_windows_worker::{protect_private_tree, run, Error, Request};
+    use workbench_windows_worker::{
+        protect_private_tree, run, run_probe, Error, ProbeCheckpoint, ProbeDiagnostics, Request,
+    };
     type AnyResult<T> = Result<T, Box<dyn std::error::Error>>;
     const SECRET: &[u8] = b"EW_HANDLE_SECRET";
 
@@ -37,12 +39,18 @@ mod native {
         udp_marker: String,
         handle: usize,
     }
-    fn token_is_container() -> bool {
+    fn checkpoint(value: ProbeCheckpoint) -> AnyResult<()> {
+        fs::write("probe-checkpoint.json", serde_json::to_vec(&value)?)?;
+        Ok(())
+    }
+    fn token_is_container() -> AnyResult<bool> {
+        checkpoint(ProbeCheckpoint::TokenOpen)?;
         let mut token = null_mut();
         if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) } == 0 {
-            return false;
+            return Ok(false);
         }
         let (mut value, mut size) = (0u32, 0u32);
+        checkpoint(ProbeCheckpoint::TokenQuery)?;
         let ok = unsafe {
             GetTokenInformation(
                 token,
@@ -52,18 +60,21 @@ mod native {
                 &mut size,
             )
         };
+        checkpoint(ProbeCheckpoint::TokenClose)?;
         unsafe {
             CloseHandle(token);
         }
-        ok != 0 && value == 1
+        Ok(ok != 0 && value == 1)
     }
-    fn handle_read(handle: usize) -> bool {
+    fn handle_read(handle: usize) -> AnyResult<bool> {
         let mut bytes = [0u8; 16];
         let mut count = 0;
+        checkpoint(ProbeCheckpoint::InheritedHandleSeek)?;
         unsafe {
             SetFilePointerEx(handle as HANDLE, 0, null_mut(), FILE_BEGIN);
         }
-        (unsafe {
+        checkpoint(ProbeCheckpoint::InheritedHandleRead)?;
+        Ok((unsafe {
             ReadFile(
                 handle as HANDLE,
                 bytes.as_mut_ptr(),
@@ -72,7 +83,7 @@ mod native {
                 null_mut(),
             ) != 0
         }) && count == 16
-            && bytes.as_slice() == SECRET
+            && bytes.as_slice() == SECRET)
     }
     fn rewrite_dacl(path: &Path) -> bool {
         let path = utf16(path.as_os_str());
@@ -139,6 +150,8 @@ mod native {
         )
     }
     fn child(path: &Path) -> AnyResult<()> {
+        checkpoint(ProbeCheckpoint::ChildEntered)?;
+        checkpoint(ProbeCheckpoint::InputRead)?;
         let input: Input = serde_json::from_slice(&fs::read(path)?)?;
         match input.mode.as_str() {
             "timeout" => {
@@ -203,20 +216,26 @@ mod native {
             _ => return Err("unsupported synthetic mode".into()),
         }
         let mut results = BTreeMap::new();
-        results.insert("app_container", token_is_container());
+        results.insert("app_container", token_is_container()?);
         // Retain only attachment state, never PIDs. Baseline intentionally uses
         // CREATE_NO_WINDOW; the confined launcher must use DETACHED_PROCESS.
         let mut console_process = 0;
+        checkpoint(ProbeCheckpoint::ConsoleQuery)?;
         results.insert("console_attached", unsafe {
             GetConsoleProcessList(&mut console_process, 1) > 0
         });
+        checkpoint(ProbeCheckpoint::OtherWorkspaceRead)?;
         results.insert("other_workspace_read", fs::read(&input.other).is_ok());
+        checkpoint(ProbeCheckpoint::OriginalWrite)?;
         results.insert(
             "original_write",
             fs::write(&input.original, b"modified").is_ok(),
         );
+        checkpoint(ProbeCheckpoint::OriginalDacl)?;
         results.insert("original_dacl", rewrite_dacl(&input.original));
+        checkpoint(ProbeCheckpoint::InputDacl)?;
         results.insert("input_dacl", rewrite_dacl(path));
+        checkpoint(ProbeCheckpoint::RuntimeDacl)?;
         results.insert(
             "runtime_dacl",
             rewrite_dacl(
@@ -226,8 +245,11 @@ mod native {
                     .join("runtime.txt"),
             ),
         );
+        checkpoint(ProbeCheckpoint::AssignedInputRead)?;
         results.insert("input_read", fs::read(path).is_ok());
+        checkpoint(ProbeCheckpoint::AssignedInputWrite)?;
         results.insert("input_write", fs::write(path, b"modified").is_ok());
+        checkpoint(ProbeCheckpoint::RuntimeWrite)?;
         results.insert(
             "runtime_write",
             fs::write(
@@ -239,19 +261,23 @@ mod native {
             )
             .is_ok(),
         );
+        checkpoint(ProbeCheckpoint::ScratchWrite)?;
         results.insert(
             "scratch_write",
             fs::write("allowed.txt", b"allowed").is_ok(),
         );
-        results.insert("inherited_handle", handle_read(input.handle));
+        results.insert("inherited_handle", handle_read(input.handle)?);
+        checkpoint(ProbeCheckpoint::CallerEnvironment)?;
         results.insert(
             "caller_environment",
             std::env::var_os("EW_SYNTHETIC_CALLER_SECRET").is_some(),
         );
+        checkpoint(ProbeCheckpoint::TcpConnect)?;
         results.insert(
             "direct_tcp",
             TcpStream::connect_timeout(&input.tcp.parse()?, Duration::from_secs(1)).is_ok(),
         );
+        checkpoint(ProbeCheckpoint::HttpConnect)?;
         let http_connected = if let Ok(mut stream) =
             TcpStream::connect_timeout(&input.tcp.parse()?, Duration::from_secs(1))
         {
@@ -263,6 +289,7 @@ mod native {
             false
         };
         results.insert("direct_http", http_connected);
+        checkpoint(ProbeCheckpoint::UdpProbe)?;
         let (udp_sent, udp_reply) = if let Ok(socket) = UdpSocket::bind("127.0.0.1:0") {
             socket.set_read_timeout(Some(Duration::from_secs(1)))?;
             let sent = socket
@@ -279,6 +306,7 @@ mod native {
         };
         results.insert("direct_udp_send", udp_sent);
         results.insert("direct_udp_reply", udp_reply);
+        checkpoint(ProbeCheckpoint::ChildSpawn)?;
         let spawned = match std::process::Command::new(std::env::current_exe()?)
             .arg("--grandchild")
             .spawn()
@@ -292,7 +320,9 @@ mod native {
         };
         // Creation is a violation even if the child immediately exits nonzero.
         results.insert("child_process", spawned);
+        checkpoint(ProbeCheckpoint::ResultWrite)?;
         fs::write("result.json", serde_json::to_vec(&results)?)?;
+        checkpoint(ProbeCheckpoint::Completed)?;
         Ok(())
     }
     fn utf16(value: &std::ffi::OsStr) -> Vec<u16> {
@@ -440,6 +470,16 @@ mod native {
             std::env::set_var("EW_SYNTHETIC_CALLER_SECRET", "synthetic");
             report.insert("phase".into(), serde_json::json!("unconfined_control"));
             baseline(&executable, &input_path, &controls)?;
+            let baseline_checkpoint: ProbeCheckpoint =
+                serde_json::from_slice(&fs::read(controls.join("probe-checkpoint.json"))?)?;
+            report.insert(
+                "baseline_checkpoint".into(),
+                serde_json::to_value(baseline_checkpoint)?,
+            );
+            require(
+                baseline_checkpoint == ProbeCheckpoint::Completed,
+                "baseline checkpoints incomplete",
+            )?;
             let baseline: BTreeMap<String, bool> =
                 serde_json::from_slice(&fs::read(controls.join("result.json"))?)?;
             report.insert("baseline".into(), serde_json::to_value(&baseline)?);
@@ -463,7 +503,13 @@ mod native {
                 memory_bytes: 512 * 1024 * 1024,
             };
             report.insert("phase".into(), serde_json::json!("confined_permissions"));
-            let output = run(&request, || false)?;
+            let mut diagnostics = ProbeDiagnostics::default();
+            let output = run_probe(&request, || false, &mut diagnostics);
+            report.insert(
+                "confined_diagnostics".into(),
+                serde_json::to_value(diagnostics)?,
+            );
+            let output = output?;
             let confined: BTreeMap<String, bool> = serde_json::from_slice(&output.bytes)?;
             let expected: BTreeMap<String, bool> = baseline
                 .keys()

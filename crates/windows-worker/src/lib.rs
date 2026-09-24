@@ -21,6 +21,42 @@ impl From<std::io::Error> for Error {
 }
 pub type Result<T> = std::result::Result<T, Error>;
 
+/// Synthetic probe hints only. Worker-written checkpoints never prove isolation
+/// or change acceptance; unknown/arbitrary content is never retained as evidence.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ProbeCheckpoint {
+    ChildEntered,
+    InputRead,
+    TokenOpen,
+    TokenQuery,
+    TokenClose,
+    ConsoleQuery,
+    OtherWorkspaceRead,
+    OriginalWrite,
+    OriginalDacl,
+    InputDacl,
+    RuntimeDacl,
+    AssignedInputRead,
+    AssignedInputWrite,
+    RuntimeWrite,
+    ScratchWrite,
+    InheritedHandleSeek,
+    InheritedHandleRead,
+    CallerEnvironment,
+    TcpConnect,
+    HttpConnect,
+    UdpProbe,
+    ChildSpawn,
+    ResultWrite,
+    Completed,
+}
+#[derive(Debug, Default, serde::Serialize)]
+pub struct ProbeDiagnostics {
+    /// None means no usable checkpoint was observed, not proof of pre-main exit.
+    pub last_worker_checkpoint: Option<ProbeCheckpoint>,
+}
+
 /// Only the Rust coordinator may construct this from reviewed adapter definitions.
 /// Runtime bytes are copied into a disposable tree; caller-owned ACLs are never changed.
 pub struct Request {
@@ -85,13 +121,23 @@ fn quote_argument(value: &str) -> String {
 #[cfg(windows)]
 mod windows;
 #[cfg(windows)]
-pub use windows::{protect_private_tree, run};
+pub use windows::{protect_private_tree, run, run_probe};
 #[cfg(not(windows))]
 pub fn run(request: &Request, _cancelled: impl Fn() -> bool) -> Result<Output> {
     validate(request)?;
     Err(Error::Blocked(
         "AppContainer is unavailable on this platform",
     ))
+}
+/// Development harness only: same launch policy, plus a bounded fixed-code hint.
+#[cfg(not(windows))]
+pub fn run_probe(
+    request: &Request,
+    cancelled: impl Fn() -> bool,
+    diagnostics: &mut ProbeDiagnostics,
+) -> Result<Output> {
+    *diagnostics = ProbeDiagnostics::default();
+    run(request, cancelled)
 }
 
 #[cfg(test)]
@@ -130,6 +176,20 @@ mod tests {
         ));
         assert!(!error.to_string().contains("sensitive-owned-path"));
         assert!(error.to_string().contains("PermissionDenied"));
+    }
+    #[test]
+    fn probe_checkpoints_never_accept_arbitrary_worker_diagnostics() {
+        assert_eq!(
+            serde_json::from_slice::<ProbeCheckpoint>(b"\"token_query\"").unwrap(),
+            ProbeCheckpoint::TokenQuery
+        );
+        for bytes in [
+            b"\"private-path-or-document-content\"".as_slice(),
+            b"{}",
+            b"\"token_query\" {}",
+        ] {
+            assert!(serde_json::from_slice::<ProbeCheckpoint>(bytes).is_err());
+        }
     }
     #[cfg(not(windows))]
     #[test]

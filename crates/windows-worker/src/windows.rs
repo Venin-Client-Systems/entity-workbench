@@ -1,7 +1,7 @@
 //! Win32 boundary: all pointers borrow live allocations; owned handles are RAII.
 //! The created process remains suspended until zero capabilities, identity and Job
 //! Object assignment are verified. No errors retry without the AppContainer.
-use crate::{quote_argument, validate, Error, Output, Request, Result};
+use crate::{quote_argument, validate, Error, Output, ProbeDiagnostics, Request, Result};
 use std::{
     collections::BTreeMap,
     ffi::{c_void, OsStr, OsString},
@@ -704,6 +704,10 @@ fn clean_entry(path: &Path, owner: &str, depth: usize, entries: &mut usize) -> R
     Ok(())
 }
 fn read_output(path: &Path) -> Result<Vec<u8>> {
+    read_output_bounded(path, OUTPUT_LIMIT)
+}
+
+fn read_output_bounded(path: &Path, limit: u64) -> Result<Vec<u8>> {
     let file = OpenOptions::new()
         .read(true)
         .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
@@ -718,22 +722,34 @@ fn read_output(path: &Path) -> Result<Vec<u8>> {
             && info.nNumberOfLinks == 1,
         "invalid output file",
     )?;
-    blocked(
-        file.metadata()?.len() <= OUTPUT_LIMIT,
-        "result exceeds bound",
-    )?;
+    blocked(file.metadata()?.len() <= limit, "result exceeds bound")?;
     let mut bytes = Vec::new();
-    file.take(OUTPUT_LIMIT + 1).read_to_end(&mut bytes)?;
-    blocked(
-        bytes.len() as u64 <= OUTPUT_LIMIT,
-        "result grew beyond bound",
-    )?;
+    file.take(limit + 1).read_to_end(&mut bytes)?;
+    blocked(bytes.len() as u64 <= limit, "result grew beyond bound")?;
     Ok(bytes)
 }
 
 /// Synchronous launcher. The coordinator passes `|| token.is_cancelled()` so no
 /// dependency on workbench-core or duplicate cancellation-token type is needed.
 pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
+    run_assigned(request, cancelled, None)
+}
+
+/// Same confinement policy as `run`. Only the synthetic harness requests hints.
+pub fn run_probe(
+    request: &Request,
+    cancelled: impl Fn() -> bool,
+    diagnostics: &mut ProbeDiagnostics,
+) -> Result<Output> {
+    *diagnostics = ProbeDiagnostics::default();
+    run_assigned(request, cancelled, Some(diagnostics))
+}
+
+fn run_assigned(
+    request: &Request,
+    cancelled: impl Fn() -> bool,
+    diagnostics: Option<&mut ProbeDiagnostics>,
+) -> Result<Output> {
     validate(request)?;
     blocked(!cancelled(), "cancelled before launch")?;
     ordinary(&request.scratch_parent)?;
@@ -905,6 +921,11 @@ pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
                 unsafe { GetExitCodeProcess(running.process.0, &mut code) },
                 "GetExitCode",
             )?;
+            if let Some(diagnostics) = diagnostics {
+                // Wait observed process exit. Reject links and overlarge data
+                // using the ordinary output reader, then accept only fixed codes.
+                diagnostics.last_worker_checkpoint = read_probe_checkpoint(&scratch);
+            }
             if code != 0 {
                 return Err(Error::Exit(code));
             }
@@ -938,9 +959,33 @@ pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
     result
 }
 
+fn read_probe_checkpoint(scratch: &Path) -> Option<crate::ProbeCheckpoint> {
+    let path = scratch.join("probe-checkpoint.json");
+    let bytes = read_output_bounded(&path, 64).ok()?;
+    serde_json::from_slice(&bytes).ok()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn probe_diagnostic_rejects_unbounded_unknown_and_linked_content() {
+        let tree = tempfile::tempdir().unwrap();
+        let path = tree.path().join("probe-checkpoint.json");
+        fs::write(&path, b"\"token_query\"").unwrap();
+        assert_eq!(
+            read_probe_checkpoint(tree.path()),
+            Some(crate::ProbeCheckpoint::TokenQuery)
+        );
+        fs::write(&path, b"\"untrusted-private-value\"").unwrap();
+        assert!(read_probe_checkpoint(tree.path()).is_none());
+        fs::write(&path, vec![b'x'; 65]).unwrap();
+        assert!(read_probe_checkpoint(tree.path()).is_none());
+        fs::write(&path, b"\"token_query\"").unwrap();
+        fs::hard_link(&path, tree.path().join("alias")).unwrap();
+        assert!(read_probe_checkpoint(tree.path()).is_none());
+    }
 
     fn synthetic_environment() -> Vec<OsString> {
         [
