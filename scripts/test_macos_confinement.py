@@ -50,6 +50,7 @@ def main():
         "result_rejects_links_and_oversize_and_special_files",
         "index_rejects_links_and_tree_budget_overruns",
         "profile_has_distinct_read_and_write_access",
+        "cleanup_repairs_directories_without_touching_link_targets_and_reports_failure",
         "process_setup_closes_inheritable_descriptor_and_reaps_timeout_group",
         "native_java_hostile_and_benign_boundaries",
         "native_lucene_uses_separate_jobs_and_read_only_search_index",

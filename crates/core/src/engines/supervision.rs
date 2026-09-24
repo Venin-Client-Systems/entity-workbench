@@ -25,6 +25,69 @@ pub(super) fn validate_index(index: &Path) -> Result<()> {
     check_tree(index, 0, &mut 0, &mut 0)
 }
 
+/// Called only by the coordinator with its index lock held and no live worker.
+/// Repair directory permissions only; never chmod a file, hard link or symlink.
+pub(super) fn cleanup_tree(path: &Path) -> Result<()> {
+    use std::{ffi::CString, os::unix::ffi::OsStrExt};
+    let metadata = match fs::symlink_metadata(path) {
+        Ok(value) => value,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(error.into()),
+    };
+    if metadata.is_dir() {
+        let mut pending = vec![path.to_owned()];
+        while let Some(directory) = pending.pop() {
+            let name = CString::new(directory.as_os_str().as_bytes())
+                .map_err(|_| Error::Validation("Invalid cleanup path".into()))?;
+            // SAFETY: the NUL-terminated path remains alive for this syscall.
+            // AT_SYMLINK_NOFOLLOW prevents chmod from following a replacement link.
+            // Worker execution has ended; concurrent same-user tampering is excluded.
+            let result = unsafe {
+                libc::fchmodat(
+                    libc::AT_FDCWD,
+                    name.as_ptr(),
+                    0o700,
+                    libc::AT_SYMLINK_NOFOLLOW,
+                )
+            };
+            if result != 0 {
+                return Err(std::io::Error::last_os_error().into());
+            }
+            for entry in fs::read_dir(&directory)? {
+                let entry = entry?;
+                if fs::symlink_metadata(entry.path())?.is_dir() {
+                    pending.push(entry.path());
+                }
+            }
+        }
+        // Rust's directory removal does not traverse symlinks.
+        fs::remove_dir_all(path)?;
+    } else {
+        fs::remove_file(path)?;
+    }
+    require(
+        matches!(fs::symlink_metadata(path), Err(error) if error.kind() == std::io::ErrorKind::NotFound),
+        "Worker directory cleanup could not be verified",
+    )
+}
+
+pub(super) fn finish_job<T>(job: tempfile::TempDir, result: Result<T>) -> Result<T> {
+    // Take ownership explicitly so TempDir::drop cannot silently discard a failure.
+    let path = job.keep();
+    match cleanup_tree(&path) {
+        Ok(()) => result,
+        Err(cleanup) => {
+            let preceding = match result {
+                Ok(_) => "worker completed".into(),
+                Err(error) => error.to_string(),
+            };
+            Err(Error::Blocked(format!(
+                "Worker scratch cleanup failed; result rejected ({preceding}; cleanup: {cleanup})"
+            )))
+        }
+    }
+}
+
 fn check_tree(path: &Path, depth: usize, count: &mut usize, bytes: &mut u64) -> Result<()> {
     require(depth <= 2, "Worker output nesting limit exceeded")?;
     for entry in fs::read_dir(path)? {

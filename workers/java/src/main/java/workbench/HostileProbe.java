@@ -13,6 +13,15 @@ public final class HostileProbe {
     public static void main(String[] args) throws Exception {
         String mode=args[0];
         if(mode.equals("timeout")) { Thread.sleep(60_000); return; }
+        if(mode.equals("permissions")) {
+            Path nested=Path.of("scratch/locked/nested");
+            Files.createDirectories(nested);
+            Files.writeString(nested.resolve("data.txt"),"synthetic retained scratch");
+            Files.setPosixFilePermissions(nested,Set.of());
+            Files.setPosixFilePermissions(nested.getParent(),Set.of());
+            Files.writeString(Path.of("result.json"),"{}");
+            return;
+        }
         if(mode.equals("oversize")) {
             try(var output=Files.newOutputStream(Path.of("scratch/oversize.bin"))) {
                 byte[] block=new byte[1_048_576];

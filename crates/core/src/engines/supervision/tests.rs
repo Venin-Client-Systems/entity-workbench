@@ -116,6 +116,69 @@ fn process_setup_closes_inheritable_descriptor_and_reaps_timeout_group() {
         "descendant survived: {state}"
     );
 }
+#[test]
+fn cleanup_repairs_directories_without_touching_link_targets_and_reports_failure() {
+    use std::os::unix::fs::PermissionsExt;
+    let root = tempfile::tempdir().unwrap();
+    let sentinel = root.path().join("outside");
+    fs::write(&sentinel, "retained").unwrap();
+    fs::set_permissions(&sentinel, fs::Permissions::from_mode(0o400)).unwrap();
+    let expected_mode = fs::metadata(&sentinel).unwrap().permissions().mode();
+    for fail_worker in [false, true] {
+        let job = tempfile::Builder::new()
+            .prefix("job-")
+            .tempdir_in(root.path())
+            .unwrap();
+        let job_path = job.path().to_owned();
+        let nested = job.path().join("scratch/locked/nested");
+        fs::create_dir_all(&nested).unwrap();
+        fs::hard_link(&sentinel, nested.join("hardlink")).unwrap();
+        symlink(&sentinel, nested.join("symlink")).unwrap();
+        fs::set_permissions(&nested, fs::Permissions::from_mode(0o0)).unwrap();
+        fs::set_permissions(nested.parent().unwrap(), fs::Permissions::from_mode(0o0)).unwrap();
+        let outcome = if fail_worker {
+            Err(Error::Validation("synthetic worker failure".into()))
+        } else {
+            Ok(7)
+        };
+        let result = finish_job(job, outcome);
+        assert_eq!(result.is_err(), fail_worker);
+        assert!(!job_path.exists());
+        assert_eq!(fs::read_to_string(&sentinel).unwrap(), "retained");
+        assert_eq!(
+            fs::metadata(&sentinel).unwrap().permissions().mode(),
+            expected_mode
+        );
+    }
+    // If the coordinator cannot reach the job parent, it must reject success and
+    // retain the original failure in an honest cleanup error instead of using Drop.
+    let parent = root.path().join("restricted-parent");
+    fs::create_dir(&parent).unwrap();
+    for fail_worker in [false, true] {
+        let job = tempfile::tempdir_in(&parent).unwrap();
+        let path = job.path().to_owned();
+        fs::set_permissions(&parent, fs::Permissions::from_mode(0o0)).unwrap();
+        let outcome = if fail_worker {
+            Err(Error::Validation("original worker failure".into()))
+        } else {
+            Ok(7)
+        };
+        let result = finish_job(job, outcome);
+        fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
+        let message = result.unwrap_err().to_string();
+        assert!(message.contains("scratch cleanup failed"));
+        if fail_worker {
+            assert!(message.contains("original worker failure"));
+        }
+        cleanup_tree(&path).unwrap();
+    }
+    // An index-root symlink is unlinked; its target is never traversed.
+    let linked_root = root.path().join("linked-index");
+    symlink(&parent, &linked_root).unwrap();
+    cleanup_tree(&linked_root).unwrap();
+    assert!(parent.is_dir());
+}
+
 fn runtime() -> PathBuf {
     PathBuf::from(
         std::env::var_os("WORKBENCH_TEST_RUNTIME")
@@ -205,7 +268,7 @@ fn native_java_hostile_and_benign_boundaries() {
         );
         assert_eq!(fs::read_to_string(original).unwrap(), "retained");
     }
-    for mode in ["timeout", "oversize"] {
+    for mode in ["timeout", "oversize", "permissions"] {
         let root = tempfile::tempdir().unwrap();
         let root = root.path().canonicalize().unwrap();
         let (job, index) = prepare(&root);
@@ -229,6 +292,8 @@ fn native_java_hostile_and_benign_boundaries() {
                     <= FILE_BYTES
             );
         }
+        cleanup_tree(&job).unwrap();
+        assert!(!job.exists());
     }
 }
 #[test]
@@ -253,6 +318,36 @@ fn native_lucene_uses_separate_jobs_and_read_only_search_index() {
             .unwrap_or_else(|error| panic!("query {query}: {error}"));
         assert_eq!(results.workspace_revision, "7");
         assert_eq!(results.hits.len(), 1);
+    }
+    // Failed/malformed derivative trees are coordinator-discardable, including
+    // a hostile index-root symlink. Nothing outside the cache is modified.
+    let outside = root.path().join("outside-index");
+    fs::create_dir(&outside).unwrap();
+    fs::write(outside.join("retained"), "retained").unwrap();
+    for poison in ["root-link", "oversize", "hardlink"] {
+        cleanup_tree(&cache.join("index")).unwrap();
+        if poison == "root-link" {
+            symlink(&outside, cache.join("index")).unwrap();
+        } else {
+            fs::create_dir(cache.join("index")).unwrap();
+            if poison == "oversize" {
+                File::create(cache.join("index/oversize"))
+                    .unwrap()
+                    .set_len(FILE_BYTES + 1)
+                    .unwrap();
+            } else {
+                fs::hard_link(outside.join("retained"), cache.join("index/link")).unwrap();
+            }
+        }
+        assert!(validate_index(&cache.join("index")).is_err());
+        let result = runtime
+            .search(&cache, 7, std::slice::from_ref(&evidence), "Rowan")
+            .unwrap();
+        assert_eq!(result.hits.len(), 1);
+        assert_eq!(
+            fs::read_to_string(outside.join("retained")).unwrap(),
+            "retained"
+        );
     }
     // Failed requests remove their private job and staged input too.
     assert!(runtime
