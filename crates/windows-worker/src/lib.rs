@@ -21,8 +21,8 @@ impl From<std::io::Error> for Error {
 }
 pub type Result<T> = std::result::Result<T, Error>;
 
-/// Synthetic probe hints only. Worker-written checkpoints never prove isolation
-/// or change acceptance; unknown/arbitrary content is never retained as evidence.
+/// Synthetic probe hints only. Worker-written checkpoints never independently
+/// prove isolation or change general worker acceptance; arbitrary text is rejected.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProbeCheckpoint {
@@ -43,6 +43,8 @@ pub enum ProbeCheckpoint {
     ScratchWrite,
     InheritedHandleSeek,
     InheritedHandleRead,
+    ConfinedHandleRead,
+    HandleReadReturned,
     CallerEnvironment,
     TcpConnect,
     HttpConnect,

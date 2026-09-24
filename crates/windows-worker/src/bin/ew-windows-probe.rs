@@ -1,11 +1,15 @@
 //! Synthetic native acceptance harness. Never point it at real investigation data.
+#[cfg(any(windows, test))]
+#[path = "ew-windows-probe/handle_probe.rs"]
+mod handle_probe;
 #[cfg(windows)]
 mod native {
+    use super::handle_probe::{accept_handle_outcome, HandleObservation};
     use serde::{Deserialize, Serialize};
     use std::{
         collections::BTreeMap,
         fs::{self, File},
-        io::{Read, Write},
+        io::{Read, Seek, SeekFrom, Write},
         mem::{size_of, zeroed},
         net::{TcpListener, TcpStream, UdpSocket},
         os::windows::{ffi::OsStrExt, io::AsRawHandle},
@@ -66,15 +70,18 @@ mod native {
         }
         Ok(ok != 0 && value == 1)
     }
-    fn handle_read(handle: usize) -> AnyResult<bool> {
+    fn handle_read(handle: usize) -> AnyResult<HandleObservation> {
+        let app_container = token_is_container()?;
         let mut bytes = [0u8; 16];
         let mut count = 0;
-        checkpoint(ProbeCheckpoint::InheritedHandleSeek)?;
-        unsafe {
-            SetFilePointerEx(handle as HANDLE, 0, null_mut(), FILE_BEGIN);
-        }
-        checkpoint(ProbeCheckpoint::InheritedHandleRead)?;
-        Ok((unsafe {
+        // The trusted parent resets the real sentinel's offset before either
+        // launch. The confined worker must not seek an untrusted numeric handle.
+        checkpoint(if app_container {
+            ProbeCheckpoint::ConfinedHandleRead
+        } else {
+            ProbeCheckpoint::InheritedHandleRead
+        })?;
+        let sentinel_read = (unsafe {
             ReadFile(
                 handle as HANDLE,
                 bytes.as_mut_ptr(),
@@ -83,7 +90,12 @@ mod native {
                 null_mut(),
             ) != 0
         }) && count == 16
-            && bytes.as_slice() == SECRET)
+            && bytes.as_slice() == SECRET;
+        checkpoint(ProbeCheckpoint::HandleReadReturned)?;
+        Ok(HandleObservation {
+            app_container,
+            sentinel_read,
+        })
     }
     fn rewrite_dacl(path: &Path) -> bool {
         let path = utf16(path.as_os_str());
@@ -154,6 +166,12 @@ mod native {
         checkpoint(ProbeCheckpoint::InputRead)?;
         let input: Input = serde_json::from_slice(&fs::read(path)?)?;
         match input.mode.as_str() {
+            "inherited-handle" => {
+                let observation = handle_read(input.handle)?;
+                fs::write("result.json", serde_json::to_vec(&observation)?)?;
+                checkpoint(ProbeCheckpoint::Completed)?;
+                return Ok(());
+            }
             "timeout" => {
                 std::thread::sleep(Duration::from_secs(120));
                 return Ok(());
@@ -266,7 +284,6 @@ mod native {
             "scratch_write",
             fs::write("allowed.txt", b"allowed").is_ok(),
         );
-        results.insert("inherited_handle", handle_read(input.handle)?);
         checkpoint(ProbeCheckpoint::CallerEnvironment)?;
         results.insert(
             "caller_environment",
@@ -406,7 +423,7 @@ mod native {
         let secret = root.join("handle-secret.txt");
         fs::write(&secret, SECRET)?;
         protect_private_tree(root)?;
-        let handle = File::open(&secret)?;
+        let mut handle = File::open(&secret)?;
         require(
             unsafe {
                 SetHandleInformation(
@@ -480,18 +497,46 @@ mod native {
                 baseline_checkpoint == ProbeCheckpoint::Completed,
                 "baseline checkpoints incomplete",
             )?;
-            let baseline: BTreeMap<String, bool> =
+            let mut baseline_results: BTreeMap<String, bool> =
                 serde_json::from_slice(&fs::read(controls.join("result.json"))?)?;
-            report.insert("baseline".into(), serde_json::to_value(&baseline)?);
             require(
-                baseline
+                baseline_results.len() == 17 && !baseline_results.contains_key("inherited_handle"),
+                "main baseline permission count mismatch",
+            )?;
+            report.insert(
+                "phase".into(),
+                serde_json::json!("unconfined_handle_control"),
+            );
+            input.mode = "inherited-handle".into();
+            fs::write(&input_path, serde_json::to_vec(&input)?)?;
+            handle.seek(SeekFrom::Start(0))?;
+            baseline(&executable, &input_path, &controls)?;
+            let handle_control: HandleObservation =
+                serde_json::from_slice(&fs::read(controls.join("result.json"))?)?;
+            let handle_checkpoint: ProbeCheckpoint =
+                serde_json::from_slice(&fs::read(controls.join("probe-checkpoint.json"))?)?;
+            require(
+                !handle_control.app_container
+                    && handle_control.sentinel_read
+                    && handle_checkpoint == ProbeCheckpoint::Completed,
+                "inherited-handle positive control failed",
+            )?;
+            report.insert(
+                "baseline_handle".into(),
+                serde_json::to_value(&handle_control)?,
+            );
+            baseline_results.insert("inherited_handle".into(), handle_control.sentinel_read);
+            report.insert("baseline".into(), serde_json::to_value(&baseline_results)?);
+            require(
+                baseline_results
                     .iter()
                     .all(|(key, value)| *value == (key != "app_container"))
-                    && baseline.len() == 18,
+                    && baseline_results.len() == 18,
                 "unconfined control did not establish every attempted permission",
             )?;
             fs::write(&original, b"retained original")?;
             fs::write(runtime.join("runtime.txt"), b"retained runtime")?;
+            input.mode = "probe".into();
             input.udp_marker = "EW_CONFINED_UDP".into();
             let mut request = Request {
                 runtime,
@@ -510,8 +555,8 @@ mod native {
                 serde_json::to_value(diagnostics)?,
             );
             let output = output?;
-            let confined: BTreeMap<String, bool> = serde_json::from_slice(&output.bytes)?;
-            let expected: BTreeMap<String, bool> = baseline
+            let mut confined: BTreeMap<String, bool> = serde_json::from_slice(&output.bytes)?;
+            let expected: BTreeMap<String, bool> = baseline_results
                 .keys()
                 .map(|key| {
                     (
@@ -523,10 +568,56 @@ mod native {
                     )
                 })
                 .collect();
+            report.insert(
+                "confined_permissions".into(),
+                serde_json::to_value(&confined)?,
+            );
+            let main_expected: BTreeMap<_, _> = expected
+                .iter()
+                .filter(|(key, _)| key.as_str() != "inherited_handle")
+                .map(|(key, value)| (key.clone(), *value))
+                .collect();
+            let permissions_completed = confined == main_expected;
+            require(
+                permissions_completed,
+                "AppContainer violated a synthetic permission boundary",
+            )?;
+            report.insert(
+                "phase".into(),
+                serde_json::json!("confined_inherited_handle"),
+            );
+            input.mode = "inherited-handle".into();
+            request.input = serde_json::to_vec(&input)?;
+            handle.seek(SeekFrom::Start(0))?;
+            let mut handle_diagnostics = ProbeDiagnostics::default();
+            let handle_result = run_probe(&request, || false, &mut handle_diagnostics);
+            report.insert(
+                "handle_diagnostics".into(),
+                serde_json::to_value(&handle_diagnostics)?,
+            );
+            report.insert(
+                "handle_exit".into(),
+                serde_json::json!(handle_result.as_ref().err().map(ToString::to_string)),
+            );
+            let handle_outcome = accept_handle_outcome(
+                handle_control.sentinel_read,
+                permissions_completed,
+                handle_result,
+                &handle_diagnostics,
+            )?;
+            require(
+                fs::read_dir(&jobs)?.next().is_none(),
+                "scratch survived isolated handle probe",
+            )?;
+            report.insert(
+                "confined_handle".into(),
+                serde_json::to_value(handle_outcome)?,
+            );
+            confined.insert("inherited_handle".into(), false);
             report.insert("confined".into(), serde_json::to_value(&confined)?);
             require(
                 confined == expected,
-                "AppContainer violated a synthetic permission boundary",
+                "combined permission observations are incomplete",
             )?;
             require(
                 fs::read(&original)? == b"retained original",
