@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T19:56:44.657161+00:00",
+  "base_commit": "cfc1415c48fade4767ea22eaa7012eb7854600c4",
+  "scope": "Private unactivated cancellable transport and native resolver ownership; synthetic localhost TLS/socket tests only",
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "ordinary_core": {
+      "passed": 347,
+      "library_passed": 272,
+      "integration_passed": 75,
+      "failed": 0,
+      "specialized_ignored": 22,
+      "log": "core-verified.log"
+    },
+    "transport_cases_included_in_core": 14,
+    "strict_clippy_debug": "passed",
+    "strict_clippy_release": "passed",
+    "windows_resolver_ffi_typecheck": {
+      "result": "passed",
+      "target": "x86_64-pc-windows-gnu",
+      "scope": "Actual resolver_windows.rs compiled with minimal surrounding type-only stubs and locked windows-sys; no link/native execution/full Windows core build",
+      "log": "windows-typecheck-verified.log"
+    },
+    "historical_schemas_regenerated_byte_unchanged": 73,
+    "resolved_package_identities_unchanged": 512,
+    "new_direct_dependency_edges": [
+      "tokio =1.53.1 (already locked, production)",
+      "rustls =0.23.45 (already locked, test only)"
+    ],
+    "new_resolved_package_versions": 0
+  },
+  "network_test_scope": {
+    "public_dns_requests": 0,
+    "external_http_requests": 0,
+    "synthetic_tls_only": true,
+    "fixture_name": "collection.invalid",
+    "test_socket": "ephemeral loopback",
+    "production_override_available": false,
+    "os_trust_store_modified": false
+  },
+  "retained_failures": [
+    {
+      "log": "check-first.log",
+      "result": "Initial check passed with unused import/mut warnings; removed before strict checks"
+    },
+    {
+      "log": "focused-first.log",
+      "result": "Initial -ldns_sd linker lookup failed; installed SDK identifies libSystem DNSService re-export; binding corrected"
+    },
+    {
+      "log": "focused-second.log",
+      "result": "8 passed, 2 failed: server write notification preceded client body phase, and synthetic bounded TLS writes needed complete timed retry handling; test synchronization/fixture writer corrected, production policy unchanged"
+    },
+    {
+      "log": "clippy-first.log",
+      "result": "Clippy refused a test fixture immutable while condition; expressed intentional cancellation loop explicitly"
+    },
+    {
+      "log": "clock-before.log",
+      "result": "Clock regression failed with recorded999 after checked1000; exact checked raw sample now retained, including backward observation"
+    }
+  ],
+  "peer_review": {
+    "scope": "Root read-only review of ownership/pinning, platform resolver lifecycle and clocks",
+    "repair": "Final completion timestamp now comes from the exact raw sample checked; no second unvalidated wall clock read",
+    "platform_execution_claim": false
+  },
+  "limits": [
+    "No public command, coordinator caller, live records, source writes, UI or existing collector activation",
+    "Existing synchronous collection path remains unchanged; all paths must pass the quarantine guard before future activation",
+    "Native resolver runtime cancellation/quiescence not executed on macOS/Windows; macOS callback model and compiled/linked FFI only",
+    "Windows caller-context release and provider quiescence differ; cancelled DNS quarantines process even after caller completion",
+    "Unconfirmed Windows completion retains one context until process exit; no reset or repeated request permitted in new lane",
+    "Trusted DNSService/Winsock calls are not forcibly preempted by cooperative polling; no hard syscall latency guarantee",
+    "Observed candidate snapshot is not an authoritative complete A/AAAA RRset; shared OS DNS activity not claimed stopped",
+    "No direct-public access approval, broad-discovery relevance measurement, sandbox/packaging or complete-release claim"
+  ],
+  "primary_sources": [
+    "https://github.com/apple-oss-distributions/mDNSResponder/blob/main/mDNSShared/dns_sd.h",
+    "https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfoexw",
+    "https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfoexoverlappedresult",
+    "https://learn.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getaddrinfoexcancel"
+  ],
+  "file_sha256": {
+    "Cargo.lock": "3696193c2587e9c3031ad7c331477707799dc8da323ce12099b911e9615080cc",
+    "crates/core/Cargo.toml": "218732029e8b11762e877da16100a0ee57379698be812a8638d5429a2ae8baa4",
+    "crates/core/src/lib.rs": "ac5312a7b024533d37a72b4b6a115ea4cbff3e1d4cdd950a7ad0d7e5cf798ded",
+    "crates/core/src/collection_transport.rs": "06d67a520b42c7c937df60dab52084ca1a193e39397670b1d86680d1ab172c6c",
+    "crates/core/src/collection_transport/resolver.rs": "edca56303f079f7045a573eff156edfee51341bda455552963c14953404d071f",
+    "crates/core/src/collection_transport/resolver_macos.rs": "5f6c43d7623e7ba705c25be39425d380f76d4225197f8b6c7bd3486b4bd995a2",
+    "crates/core/src/collection_transport/resolver_windows.rs": "bb37e3fb5ff642fa903aa1421951bfbae1bd8efa4d4ca494be63d82f986fc031",
+    "crates/core/src/collection_transport/tests.rs": "596458f24423801b209c1d3fdb62ce1c19a18fc6766278ef97b507469c3c072a",
+    "fixtures/collection-transport/README.md": "0ad02dc11419af242b792058aba01eee8f2a194e70a9b3df968b04247e29ab89",
+    "fixtures/collection-transport/ca.der": "9382f4ecdf07f113d1dd3b47d891b6fae78b47a43f282536d28e0a45df49ee39",
+    "fixtures/collection-transport/server-test-key.der": "116c3abcbec6acc133dd30688f4a37e22944e8f02a03a1c46c66a5e8fbae2148",
+    "fixtures/collection-transport/server.der": "6d677bfc40ad7671cfb6752250e4ec2de64cb9f1670dc7cb0f55ecf964275f29",
+    "docs/discovery/CANCELLABLE-TRANSPORT.md": "afcdf66f33cef9bba66037553c63547a3a6f9f194b522c420a37b179cf5eff77"
+  },
+  "local_ignored_log_sha256": {
+    "check-first.log": "7b1bdd2207a189f8d6f24eac34d59e6a99e6f009c66b6d6655829160780b5b94",
+    "clippy-debug-final.log": "083da49686a03175cdbea3df6e098e4ca0cd823670e057c5e6156254cbea19c4",
+    "clippy-debug-verified.log": "cdcb6e8b9b401277713f1064693d322a17220d925a4c65a29e4c81adae7b2766",
+    "clippy-first.log": "73f9dd3cedb9753ccf3f94e2154254c81b6fa9a03b469514eed2b42daaa5855b",
+    "clippy-release-verified.log": "2d1cac9f35b6a7d456faf878718f3cc141ae9a396de98a41f9f082664d1374db",
+    "clippy-second.log": "15446d786d086474cd225d6fd9f889a25b74de3d2a821a4b67f1c069af200700",
+    "clock-before.log": "8b8db3427172880997fe09c59e7a62d84e398dc4b348fd74b74ee433c02b6471",
+    "core-final.log": "d240b40b079941f06a12a81928e29b528e5b286aa59f35606b53c5969dfa43da",
+    "core-verified.log": "596884c4df6bc869eb9da5c5f662b935c8e9f55a9c042d4331a4389781f74a97",
+    "focused-fifth.log": "b1c907ff17d6c85a3cf26e88cf3a7c22c73209d8c24e12559c805a8a128ad199",
+    "focused-final.log": "1fb521a9003f626814160f9dcd02b32387f6552c34161b2c18389bd03b371557",
+    "focused-first.log": "bc61d533e9864cd338dbb5cd8282b82ea89d10e634b43a2dace4ab7be2cc9540",
+    "focused-fourth.log": "e7e348d6ba8c94c35b5f649bdd5916be53b78325a12822a95d1a0ecbaa1304f2",
+    "focused-second.log": "21f1c47863a2b5c71501a7524092e717f86512085ed027f9bf154f5666bd9fe6",
+    "focused-third.log": "751098c725809f786200e2c563682b764a9ff070537ea6c605f9c55b4b63b40d",
+    "schema-generation.log": "c013e4b7f0a7c1864c8601b4c0a67b608213eaa2068d1fc06118d89e58cd2f82",
+    "windows-typecheck-final.log": "b6c20af1257935a9b882058db688a2b46aacad41f999207fc8416e0e2179ab08",
+    "windows-typecheck-first.log": "93c6af207e6f0e462ae4e5c1a08308e5b6a5f7fe1ca9ab91b97795308bdb3060",
+    "windows-typecheck-verified.log": "ee95680c677f223434fda7c354298d8016aa6afa5d411a452c3501067f055224"
+  },
+  "local_ignored_identity_checks_sha256": "336054a3d47fe0ea1fe364c4faa4b3bf79e4cdcff6ba0d263281bf1e4f10f5bf",
+  "local_ignored_windows_typecheck_scaffold_sha256": {
+    "Cargo.toml": "07d48f2e4d53cb92c5972fe4c5af5c270491d9aaa1cc09639678f84b95557bfc",
+    "Cargo.lock": "7618695015267163b16bf6d5523c752cc65b5f5a103920a98453d22fb4b9331f",
+    "src/lib.rs": "1b3693690773acaec802fa805b3e7744520d1651e3dcab3d1dcee00f57adc379"
+  }
+}
