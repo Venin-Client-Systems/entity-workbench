@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { command } from "./api";
+import { TransactionFacetSelect } from "./TransactionFacetSelect";
 import { Dialog } from "./Dialog";
 import { AnalysisSourceRows, Pager } from "./TransactionAnalysisSource";
 import type {
@@ -9,7 +10,7 @@ import type {
   DatePeriod,
   PeriodAccountTotal,
 } from "./transaction-comparison-types";
-import type { Transaction, Workspace } from "./types";
+import type { Transaction } from "./types";
 import "./transaction-patterns.css";
 import "./transaction-comparison.css";
 
@@ -29,8 +30,8 @@ export function TransactionComparison({
   onInspect,
   onRefresh,
 }: {
-  workspace: Workspace;
-  onInspect: (row: Transaction) => void;
+  workspace: { revision: number };
+  onInspect: (row: Transaction, revision: number) => void;
   onRefresh: () => Promise<unknown>;
 }) {
   const [draft, setDraft] = useState<ComparisonRequest>({
@@ -273,41 +274,23 @@ export function TransactionComparison({
               </fieldset>
             ))}
           </div>
-          <div className="comparison-filters">
-            <label>
-              Comparison account
-              <select
-                aria-label="Comparison account"
-                value={draft.account ?? ""}
-                onChange={(event) =>
-                  setDraft({ ...draft, account: event.target.value || null })
-                }
-              >
-                <option value="">All accounts</option>
-                {[...new Set(workspace.transactions.map((row) => row.account))]
-                  .sort()
-                  .map((account) => (
-                    <option key={account}>{account}</option>
-                  ))}
-              </select>
-            </label>
-            <label>
-              Comparison currency
-              <select
-                aria-label="Comparison currency"
-                value={draft.currency ?? ""}
-                onChange={(event) =>
-                  setDraft({ ...draft, currency: event.target.value || null })
-                }
-              >
-                <option value="">All currencies</option>
-                {[...new Set(workspace.transactions.map((row) => row.currency))]
-                  .sort()
-                  .map((currency) => (
-                    <option key={currency}>{currency}</option>
-                  ))}
-              </select>
-            </label>
+          <div className="comparison-filters facet-fields">
+            <TransactionFacetSelect
+              kind="account"
+              revision={workspace.revision}
+              label="Comparison account"
+              value={draft.account}
+              onChange={(value) => setDraft({ ...draft, account: value })}
+              disabled={busy}
+            />
+            <TransactionFacetSelect
+              kind="currency"
+              revision={workspace.revision}
+              label="Comparison currency"
+              value={draft.currency}
+              onChange={(value) => setDraft({ ...draft, currency: value })}
+              disabled={busy}
+            />
             <label>
               Comparison transfers
               <select
@@ -585,7 +568,7 @@ export function TransactionComparison({
                   onInspect={(row) => {
                     handoff.current = true;
                     setDrill(null);
-                    onInspect(row);
+                    onInspect(row, result.workspace_revision);
                   }}
                 />
                 <Pager

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { command } from "./api";
+import { TransactionFacetSelect } from "./TransactionFacetSelect";
 import { Dialog } from "./Dialog";
 import { AnalysisSourceRows, Pager } from "./TransactionAnalysisSource";
 import {
@@ -8,7 +9,7 @@ import {
   type RecurringCandidate,
   type TransactionAnalysis,
 } from "./transaction-analysis-types";
-import type { Transaction, Workspace } from "./types";
+import type { Transaction } from "./types";
 import "./transaction-patterns.css";
 type Drill = { label: string; ids: string[]; candidate?: RecurringCandidate };
 const pageSize = 25;
@@ -17,8 +18,8 @@ export function TransactionPatterns({
   onInspect,
   onRefresh,
 }: {
-  workspace: Workspace;
-  onInspect: (row: Transaction) => void;
+  workspace: { revision: number };
+  onInspect: (row: Transaction, revision: number) => void;
   onRefresh: () => Promise<unknown>;
 }) {
   const [draft, setDraft] = useState<PatternRequest>({
@@ -149,7 +150,7 @@ export function TransactionPatterns({
       >
         <fieldset disabled={busy}>
           <legend>Analysis scope</legend>
-          <div className="patterns-fields">
+          <div className="patterns-fields facet-fields">
             <label>
               From date
               <input
@@ -166,34 +167,22 @@ export function TransactionPatterns({
                 onChange={(e) => edit("date_to", e.target.value || null)}
               />
             </label>
-            <label>
-              Analysis account
-              <select
-                value={draft.account ?? ""}
-                onChange={(e) => edit("account", e.target.value || null)}
-              >
-                <option value="">All accounts</option>
-                {[...new Set(workspace.transactions.map((t) => t.account))]
-                  .sort()
-                  .map((a) => (
-                    <option key={a}>{a}</option>
-                  ))}
-              </select>
-            </label>
-            <label>
-              Analysis currency
-              <select
-                value={draft.currency ?? ""}
-                onChange={(e) => edit("currency", e.target.value || null)}
-              >
-                <option value="">All currencies</option>
-                {[...new Set(workspace.transactions.map((t) => t.currency))]
-                  .sort()
-                  .map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-              </select>
-            </label>
+            <TransactionFacetSelect
+              kind="account"
+              revision={workspace.revision}
+              label="Analysis account"
+              value={draft.account}
+              onChange={(value) => edit("account", value)}
+              disabled={busy}
+            />
+            <TransactionFacetSelect
+              kind="currency"
+              revision={workspace.revision}
+              label="Analysis currency"
+              value={draft.currency}
+              onChange={(value) => edit("currency", value)}
+              disabled={busy}
+            />
             <label>
               Transfer treatment
               <select
@@ -653,7 +642,7 @@ export function TransactionPatterns({
                   onInspect={(row) => {
                     handoff.current = true;
                     setDrill(null);
-                    onInspect(row);
+                    onInspect(row, result.workspace_revision);
                   }}
                 />
                 <Pager

@@ -210,8 +210,12 @@ test("explicit transfer exclusion and scope drafts never silently change the app
     dialog.getByText(/Verified reviewed transfer peer:/),
   ).toHaveCount(2);
   await page.keyboard.press("Escape");
-  await panel.getByLabel("Analysis account").selectOption("0001");
-  await panel.getByLabel("Analysis currency").selectOption("AUD");
+  await panel
+    .getByLabel("Analysis account", { exact: true })
+    .selectOption("0001");
+  await panel
+    .getByLabel("Analysis currency", { exact: true })
+    .selectOption("AUD");
   await panel
     .getByRole("button", { name: "Calculate reviewed patterns" })
     .click();
@@ -408,7 +412,9 @@ test("source pagination retains all pending rows and hostile descriptions remain
     bytes: [...Buffer.from(text)],
   }).workspace;
   const panel = await open(page);
-  await panel.getByLabel("Analysis account").selectOption("0003");
+  await panel
+    .getByLabel("Analysis account", { exact: true })
+    .selectOption("0003");
   await panel
     .getByRole("button", { name: "Calculate reviewed patterns" })
     .click();
@@ -541,7 +547,9 @@ test("late source-page replies cannot replace a newer bounded canonical selectio
     ],
   }).workspace;
   const panel = await open(page);
-  await panel.getByLabel("Analysis account").selectOption("0003");
+  await panel
+    .getByLabel("Analysis account", { exact: true })
+    .selectOption("0003");
   await panel
     .getByRole("button", { name: "Calculate reviewed patterns" })
     .click();
@@ -617,7 +625,9 @@ test("returning to an earlier source page requires a new verification before ena
     ],
   }).workspace;
   const panel = await open(page);
-  await panel.getByLabel("Analysis account").selectOption("0003");
+  await panel
+    .getByLabel("Analysis account", { exact: true })
+    .selectOption("0003");
   await panel
     .getByRole("button", { name: "Calculate reviewed patterns" })
     .click();
