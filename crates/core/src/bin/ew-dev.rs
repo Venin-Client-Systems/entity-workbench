@@ -67,7 +67,12 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         std::fs::create_dir_all(&root)?;
         // Prior command/job schema files are immutable history. Emit only current versions;
         // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
-        for (name, version, value) in [
+        let schemas = [
+            (
+                "workspace-presentation",
+                1,
+                serde_json::to_value(schemars::schema_for!(WorkspaceView<ReportMetadata>))?,
+            ),
             (
                 "workspace",
                 3,
@@ -75,7 +80,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                10,
+                11,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (
@@ -195,7 +200,8 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 1,
                 serde_json::to_value(schemars::schema_for!(StatementPreview))?,
             ),
-        ] {
+        ];
+        for (name, version, value) in &schemas {
             std::fs::write(
                 root.join(format!("{name}.v{version}.schema.json")),
                 serde_json::to_vec_pretty(&value)?,
@@ -209,10 +215,20 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         .take(40 * 1024 * 1024)
         .read_to_string(&mut input)?;
     let mut workspace = Workspace::open(arg)?;
-    if let Some(runtime) = std::env::args().nth(2) {
+    let mut extra = std::env::args().skip(2);
+    let next = extra.next();
+    let presentation = next.as_deref() == Some("--presentation");
+    let runtime = if presentation { extra.next() } else { next };
+    workbench_core::require(extra.next().is_none(), "Unexpected development argument")?;
+    if let Some(runtime) = runtime {
         workspace.attach_runtime(workbench_core::engines::Runtime {
             root: runtime.into(),
         });
     }
-    workspace.dispatch(serde_json::from_str(&input)?)
+    let command = serde_json::from_str(&input)?;
+    if presentation {
+        workspace.dispatch_presentation(command)
+    } else {
+        workspace.dispatch(command)
+    }
 }

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { execFileSync } from "node:child_process";
-import { rmSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 const root = resolve("artifacts/synthetic-ui-workspace");
@@ -186,7 +186,13 @@ test("assessment authoring, source inspection, review, correction and immutable 
   await page.getByRole("button", { name: "Mark finding reviewed" }).click();
   await expect(review).not.toBeVisible();
   await expect(page.getByText("Reviewed", { exact: true })).toBeVisible();
+  const savedResponse = page.waitForResponse((r) =>
+    r.url().endsWith("/api/workbench") &&
+    r.request().postDataJSON()?.action === "save_report",
+  );
   await page.getByRole("button", { name: "Save report snapshot" }).click();
+  const catalogue = (await (await savedResponse).json()).workspace.reports[0];
+  expect(catalogue).not.toHaveProperty("html");
   await expect(
     page.getByRole("button", { name: "Export self-contained HTML" }),
   ).toBeVisible();
@@ -198,9 +204,10 @@ test("assessment authoring, source inspection, review, correction and immutable 
   await page
     .getByRole("button", { name: "Export self-contained HTML" })
     .click();
-  expect((await download).suggestedFilename()).toBe(
-    `assessment-${snapshot.id}.html`,
-  );
+  const downloaded = await download;
+  expect(downloaded.suggestedFilename()).toBe(`assessment-${snapshot.id}.html`);
+  expect(readFileSync((await downloaded.path())!, "utf8")).toBe(snapshot.html);
+  expect(catalogue.html_bytes).toBe(Buffer.byteLength(snapshot.html));
   const state = core({ action: "view" }).workspace;
   core({
     action: "correct_observation",
@@ -302,4 +309,32 @@ test("stale assessment edits preserve the draft and cannot overwrite concurrent 
     page.getByLabel("Investigation question", { exact: true }),
   ).toHaveValue("Draft question");
   expect(core({ action: "view" }).workspace.hypotheses).toHaveLength(0);
+});
+
+
+test("selected report export shows integrity failure and permits a verified retry", async ({ page }) => {
+  fixture();
+  const snapshot = core({ action: "save_report" }).workspace.reports[0];
+  await page.goto("/");
+  await page.getByRole("navigation").getByRole("button", { name: /Assessment/ }).click();
+  const button = page.getByRole("button", { name: "Export self-contained HTML" });
+  await expect(button).toBeVisible();
+  const replaceHtml = (html: string) => execFileSync("python3", ["-c",
+    "import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute(\"UPDATE records SET body=json_set(body,'$.html',?) WHERE kind='report' AND id=?\",(sys.argv[2],sys.argv[3])); c.commit()",
+    resolve(root, "workspace.db"), html, snapshot.id,
+  ]);
+  // Alter retained bytes after the catalogue loaded. The core must reject this
+  // selection; the browser must expose the error without downloading a file.
+  replaceHtml("Synthetic corrupted report");
+  let downloads = 0;
+  page.on("download", () => downloads++);
+  await button.click();
+  await expect(page.getByRole("alert")).toContainText("integrity check");
+  await expect(button).toBeEnabled();
+  expect(downloads).toBe(0);
+  replaceHtml(snapshot.html);
+  const downloaded = page.waitForEvent("download");
+  await button.click();
+  expect(readFileSync((await (await downloaded).path())!, "utf8")).toBe(snapshot.html);
+  await expect(page.getByRole("alert")).not.toBeVisible();
 });

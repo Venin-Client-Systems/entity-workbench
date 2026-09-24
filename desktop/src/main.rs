@@ -10,7 +10,9 @@ async fn workbench(
 ) -> Result<serde_json::Value, String> {
     let workspace = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
-        workspace.dispatch(command).map_err(|e| e.to_string())
+        workspace
+            .dispatch_presentation(command)
+            .map_err(|e| e.to_string())
     })
     .await
     .map_err(|_| "Workspace task interrupted".to_string())?

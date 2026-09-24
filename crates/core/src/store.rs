@@ -13,6 +13,7 @@ mod assessment;
 mod collection;
 mod derivative_files;
 mod identity;
+mod presentation;
 mod processing;
 mod processing_regions;
 mod recovery;
@@ -247,6 +248,12 @@ impl Workspace {
         Ok(())
     }
     pub fn view(&self) -> Result<WorkspaceView> {
+        self.view_with_reports(|conn| all(conn, "report"))
+    }
+    fn view_with_reports<R>(
+        &self,
+        reports: impl FnOnce(&Connection) -> Result<Vec<R>>,
+    ) -> Result<WorkspaceView<R>> {
         // Pin the revision and every table to one SQLite read snapshot.
         // A coordinator on another connection may commit while this view loads.
         let transaction = self.conn.unchecked_transaction()?;
@@ -267,7 +274,7 @@ impl Workspace {
             decisions: all(&transaction, "decision")?,
             merges: all(&transaction, "merge")?,
             identity_decisions: all(&transaction, "identity_decision")?,
-            reports: all(&transaction, "report")?,
+            reports: reports(&transaction)?,
             statement_profiles: all(&transaction, "statement_profile")?,
             statement_imports: all(&transaction, "statement_import")?,
         };
@@ -275,7 +282,22 @@ impl Workspace {
         Ok(view)
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
+        self.dispatch_with_view(command, false)
+    }
+    /// Desktop response mode: immutable report bodies are fetched on explicit export.
+    pub fn dispatch_presentation(&mut self, command: Command) -> Result<Value> {
+        self.dispatch_with_view(command, true)
+    }
+    fn dispatch_with_view(&mut self, command: Command, presentation: bool) -> Result<Value> {
         match command {
+            Command::InspectReportSnapshot {
+                report_id,
+                expected_sha256,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.inspect_report_snapshot(&report_id, &expected_sha256)?,
+                )?);
+            }
             Command::QueuePdfPageOcr {
                 evidence_id,
                 request_key,
@@ -576,8 +598,11 @@ impl Workspace {
                 return Ok(json!({"backup":path.file_name().and_then(|s|s.to_str())}));
             }
         }
-        let view = self.view()?;
-        Ok(json!({"analysis":analytics::analyse(&view.transactions)?,"workspace":view}))
+        if presentation {
+            workspace_response(self.presentation()?)
+        } else {
+            workspace_response(self.view()?)
+        }
     }
     pub fn import(&mut self, name: &str, bytes: &[u8]) -> Result<String> {
         validate_import_input(name, bytes)?;
@@ -895,4 +920,8 @@ fn retain_original(root: &Path, evidence: &Evidence, bytes: &[u8]) -> Result<()>
     file.write_all(bytes)?;
     file.sync_all()?;
     private_file(&path, 0o400)
+}
+
+fn workspace_response<R: Serialize>(view: WorkspaceView<R>) -> Result<Value> {
+    Ok(json!({"analysis":analytics::analyse(&view.transactions)?,"workspace":view}))
 }

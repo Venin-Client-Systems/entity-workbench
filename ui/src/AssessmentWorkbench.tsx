@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { command } from "./api";
 import { Dialog } from "./Dialog";
 import type { Anchor, Evidence, Finding, Hypothesis, Workspace } from "./types";
 
@@ -88,6 +89,35 @@ const lines = (value: string) =>
     .split("\n")
     .map((v) => v.trim())
     .filter(Boolean);
+
+function ReportExport({ report, download }: {
+  report: Workspace["reports"][number];
+  download: Props["download"];
+}) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  async function exportReport() {
+    setLoading(true);
+    setError("");
+    try {
+      const snapshot = await command<{ id: string; sha256: string; html: string }>({
+        action: "inspect_report_snapshot", report_id: report.id,
+        expected_sha256: report.sha256,
+      });
+      download(snapshot.html, `assessment-${snapshot.id}.html`, "text/html");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setLoading(false);
+    }
+  }
+  return <>
+    <button className="button" disabled={loading} onClick={exportReport}>
+      {loading ? "Loading report…" : "Export self-contained HTML"}
+    </button>
+    <ErrorMessage error={error} />
+  </>;
+}
 
 function QuestionEditor({
   item,
@@ -687,14 +717,7 @@ export function AssessmentWorkbench(props: Props) {
             <p>
               <code>{r.sha256}</code>
             </p>
-            <button
-              className="button"
-              onClick={() =>
-                download(r.html, `assessment-${r.id}.html`, "text/html")
-              }
-            >
-              Export self-contained HTML
-            </button>
+            <ReportExport report={r} download={download} />
           </article>
         ))}
         <p className="context-note">
