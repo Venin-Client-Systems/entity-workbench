@@ -2,6 +2,7 @@
 //! The created process remains suspended until zero capabilities, identity and Job
 //! Object assignment are verified. No errors retry without the AppContainer.
 use crate::{quote_argument, validate, Error, Output, ProbeDiagnostics, Request, Result};
+mod java_diagnostics;
 use std::{
     collections::BTreeMap,
     ffi::{c_void, OsStr, OsString},
@@ -925,7 +926,7 @@ fn read_output_bounded(path: &Path, limit: u64) -> Result<Vec<u8>> {
 /// Synchronous launcher. The coordinator passes `|| token.is_cancelled()` so no
 /// dependency on workbench-core or duplicate cancellation-token type is needed.
 pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
-    run_assigned(request, cancelled, None, None, |scratch| {
+    run_assigned(request, cancelled, None, None, None, |scratch| {
         read_output(&scratch.join("result.json")).map(|bytes| Output { bytes })
     })
 }
@@ -937,20 +938,27 @@ pub fn run_probe(
     diagnostics: &mut ProbeDiagnostics,
 ) -> Result<Output> {
     *diagnostics = ProbeDiagnostics::default();
-    run_assigned(request, cancelled, Some(diagnostics), None, |scratch| {
-        read_output(&scratch.join("result.json")).map(|bytes| Output { bytes })
-    })
+    run_assigned(
+        request,
+        cancelled,
+        Some(diagnostics),
+        None,
+        None,
+        |scratch| read_output(&scratch.join("result.json")).map(|bytes| Output { bytes }),
+    )
 }
 
 pub(crate) fn run_java(
     prepared: &crate::java::Prepared<'_>,
     cancelled: impl Fn() -> bool,
+    diagnostics: Option<&mut crate::java::diagnostics::FailureDiagnostics>,
 ) -> Result<crate::java::JavaOutput> {
     run_assigned(
         &prepared.request,
         cancelled,
         None,
         Some(prepared),
+        diagnostics,
         |scratch| {
             let bytes = read_output_bounded(&scratch.join("result.json"), prepared.output_limit())?;
             let files = if prepared.build_index() {
@@ -965,12 +973,16 @@ pub(crate) fn run_java(
 
 /// Same staged immutable files and process policy, with raw bytes returned only
 /// to this crate's synthetic development harness for its closed predicate check.
-pub(crate) fn run_java_probe(prepared: &crate::java::Prepared<'_>) -> Result<Output> {
+pub(crate) fn run_java_probe(
+    prepared: &crate::java::Prepared<'_>,
+    diagnostics: &mut crate::java::diagnostics::FailureDiagnostics,
+) -> Result<Output> {
     run_assigned(
         &prepared.request,
         || false,
         None,
         Some(prepared),
+        Some(diagnostics),
         |scratch| read_output(&scratch.join("result.json")).map(|bytes| Output { bytes }),
     )
 }
@@ -1012,6 +1024,7 @@ fn run_assigned<T>(
     cancelled: impl Fn() -> bool,
     diagnostics: Option<&mut ProbeDiagnostics>,
     java: Option<&crate::java::Prepared<'_>>,
+    java_failure: Option<&mut crate::java::diagnostics::FailureDiagnostics>,
     accept: impl FnOnce(&Path) -> Result<T>,
 ) -> Result<T> {
     validate(request)?;
@@ -1248,6 +1261,14 @@ fn run_assigned<T>(
             });
         }
         quiescent = true;
+        if operation.is_err() {
+            if let Some(diagnostics) = java_failure {
+                // Only the synthetic Java harness requests this. Do not inspect
+                // while termination is unacknowledged, or replace the failure
+                // with diagnostic success/failure. Cleanup still governs return.
+                *diagnostics = java_diagnostics::capture(&scratch, &profile.folder);
+            }
+        }
         operation
     })();
     let path = temporary.keep();

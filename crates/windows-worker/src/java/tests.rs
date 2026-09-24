@@ -43,6 +43,10 @@ fn recipes_have_fixed_paths_classes_and_jvm_options() {
             .arguments
             .contains(&"workbench.FileWorker".into()));
         assert_eq!(prepared.request.arguments.last().unwrap(), "$EW_REQUEST");
+        assert!(prepared
+            .request
+            .arguments
+            .contains(&"-XX:ErrorFile=$EW_SCRATCH/jvm-error.log".into()));
         assert_eq!(prepared.build_index(), job.operation_name() == "index");
         assert_eq!(
             prepared.snapshot().is_some(),

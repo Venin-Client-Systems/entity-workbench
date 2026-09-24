@@ -1,6 +1,7 @@
 //! Fixed development recipes. No application adapter calls these yet.
 // Native collection/acceptance is intentionally inactive on other platforms.
 #![cfg_attr(not(any(windows, test)), allow(dead_code))]
+pub(crate) mod diagnostics;
 #[cfg(windows)]
 mod probe;
 mod runtime;
@@ -246,6 +247,7 @@ fn prepare<'a>(root: &Path, scratch_parent: &Path, job: &'a Job) -> Result<Prepa
         "-Xmx256m".into(),
         "-XX:ActiveProcessorCount=2".into(),
         "-XX:+UseSerialGC".into(),
+        "-XX:ErrorFile=$EW_SCRATCH/jvm-error.log".into(),
         "-Djava.io.tmpdir=$EW_SCRATCH".into(),
         "-Duser.home=$EW_SCRATCH".into(),
         "-Dfile.encoding=UTF-8".into(),
@@ -295,6 +297,15 @@ pub fn execute(
     job: &Job,
     cancelled: impl Fn() -> bool,
 ) -> Result<JavaOutput> {
+    execute_diagnosed(root, scratch_parent, job, cancelled, None)
+}
+fn execute_diagnosed(
+    root: &Path,
+    scratch_parent: &Path,
+    job: &Job,
+    cancelled: impl Fn() -> bool,
+    diagnostics: Option<&mut diagnostics::FailureDiagnostics>,
+) -> Result<JavaOutput> {
     let prepared = prepare(root, scratch_parent, job)?;
     crate::validate(&prepared.request)?;
     bounded(
@@ -305,13 +316,13 @@ pub fn execute(
     runtime::ordinary_ancestors(scratch_parent)?;
     #[cfg(windows)]
     {
-        let output = crate::windows::run_java(&prepared, &cancelled)?;
+        let output = crate::windows::run_java(&prepared, &cancelled, diagnostics)?;
         bounded(!cancelled(), "Windows Java job cancelled before acceptance")?;
         Ok(output)
     }
     #[cfg(not(windows))]
     {
-        let _ = (prepared, cancelled);
+        let _ = (prepared, cancelled, diagnostics);
         Err(Error::Blocked(
             "Windows Java recipe requires native AppContainer",
         ))

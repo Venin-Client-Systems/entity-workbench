@@ -38,6 +38,19 @@ fn empty(path: &Path) -> Result<()> {
         "Java job scratch survived cleanup",
     )
 }
+fn execute_recorded(
+    root: &Path,
+    jobs: &Path,
+    job: &Job,
+    report: &mut Report,
+) -> Result<JavaOutput> {
+    let mut diagnostics = diagnostics::FailureDiagnostics::default();
+    let outcome = execute_diagnosed(root, jobs, job, || false, Some(&mut diagnostics));
+    if outcome.is_err() {
+        report.insert("failed_worker_diagnostics".into(), json!(diagnostics));
+    }
+    outcome
+}
 fn absolute(root: &Path) -> Result<std::path::PathBuf> {
     bounded(
         !root
@@ -273,7 +286,7 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         phase(report, &format!("parse_{name}"));
         let bytes = fixture(name);
         let job = Job::parse(bytes.to_vec())?;
-        let output = execute(&parser, &jobs, &job, || false)?;
+        let output = execute_recorded(&parser, &jobs, &job, report)?;
         let result: Value = decode(&output.bytes)?;
         match name {
             "notice.txt" | "notice.pdf" | "notice.docx" => {
@@ -314,7 +327,7 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         empty(&jobs)?;
     }
     phase(report, "lucene_index");
-    let indexed = execute(&search, &jobs, &Job::index(7, documents)?, || false)?;
+    let indexed = execute_recorded(&search, &jobs, &Job::index(7, documents)?, report)?;
     let snapshot = indexed
         .index
         .ok_or(Error::Blocked("index snapshot missing"))?;
@@ -329,7 +342,7 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         ("empty", "unrelatedzephyr", 0),
     ] {
         phase(report, &format!("lucene_{label}"));
-        let output = execute(&search, &jobs, &Job::search(&snapshot, query)?, || false)?;
+        let output = execute_recorded(&search, &jobs, &Job::search(&snapshot, query)?, report)?;
         let result: Value = decode(&output.bytes)?;
         bounded(
             result["total"] == total
@@ -402,7 +415,12 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
                 before == expected(role, false),
                 "Java boundary positive control failed",
             )?;
-            let output = crate::windows::run_java_probe(&prepared)?;
+            let mut diagnostics = diagnostics::FailureDiagnostics::default();
+            let output = crate::windows::run_java_probe(&prepared, &mut diagnostics);
+            if output.is_err() {
+                report.insert("failed_worker_diagnostics".into(), json!(diagnostics));
+            }
+            let output = output?;
             let confined: BTreeMap<String, bool> = decode(&output.bytes)?;
             report.insert(format!("{label}_confined"), json!(confined));
             bounded(
