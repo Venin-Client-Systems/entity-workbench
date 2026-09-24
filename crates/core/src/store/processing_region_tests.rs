@@ -109,6 +109,8 @@ fn overwrite(path: &Path, bytes: &[u8]) {
     #[cfg(windows)]
     {
         let mut p = fs::metadata(path).unwrap().permissions();
+        // Windows-only corruption fixture: clear this owned test object's read-only bit.
+        #[allow(clippy::permissions_set_readonly_false)]
         p.set_readonly(false);
         fs::set_permissions(path, p).unwrap();
     }
@@ -329,6 +331,8 @@ fn region_existing_published_corruption_is_not_repaired_and_orphan_conflicts_are
                 #[cfg(windows)]
                 {
                     let mut permissions = fs::metadata(&target).unwrap().permissions();
+                    // Windows-only missing-object fixture in this private temporary workspace.
+                    #[allow(clippy::permissions_set_readonly_false)]
                     permissions.set_readonly(false);
                     fs::set_permissions(&target, permissions).unwrap();
                 }
