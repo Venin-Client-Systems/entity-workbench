@@ -106,6 +106,62 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
         let schemas = [
             (
+                "docx-snapshot",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotRecord
+                ))?,
+            ),
+            (
+                "docx-snapshot-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotInspection
+                ))?,
+            ),
+            (
+                "docx-snapshot-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotPageRequest
+                ))?,
+            ),
+            (
+                "docx-snapshot-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotPage
+                ))?,
+            ),
+            (
+                "native-export-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::NativeExportRequest
+                ))?,
+            ),
+            (
+                "prepared-export",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::PreparedExport
+                ))?,
+            ),
+            (
+                "saved-export-receipt",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::SavedExportReceipt
+                ))?,
+            ),
+            (
+                "discarded-export",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::DiscardedExport
+                ))?,
+            ),
+            (
                 "transaction-export-request",
                 1,
                 serde_json::to_value(schemars::schema_for!(
@@ -271,7 +327,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                20,
+                21,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (

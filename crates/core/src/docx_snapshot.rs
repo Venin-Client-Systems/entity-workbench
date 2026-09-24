@@ -1,13 +1,14 @@
 //! Immutable editable-report metadata. This format is separate from historical HTML reports and OCR refs.
 use crate::{report_document, report_docx, require, Result};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum ReportArtifactKind {
     ReportDocumentJsonV1,
     ReportDocxV1,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ReportArtifactRef {
     pub kind: ReportArtifactKind,
@@ -34,7 +35,7 @@ impl ReportArtifactRef {
         )
     }
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct DocxSnapshotRecord {
     pub schema_version: u32,
@@ -47,10 +48,46 @@ pub struct DocxSnapshotRecord {
     pub document: ReportArtifactRef,
     pub docx: ReportArtifactRef,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct DocxSnapshotInspection {
     pub snapshot: DocxSnapshotRecord,
     /// Explicit bounded read; not part of a default workspace refresh.
     pub document: report_document::ReportDocument,
+}
+
+pub const MAX_DOCX_CATALOGUE_ROWS: u32 = 50;
+pub const MAX_DOCX_CATALOGUE_BYTES: u64 = 256 * 1024;
+pub const MAX_DOCX_CURSOR_BYTES: usize = 2048;
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct DocxSnapshotPageRequest {
+    pub page_size: u32,
+    pub cursor: Option<String>,
+}
+impl DocxSnapshotPageRequest {
+    pub fn validate(&self) -> Result<()> {
+        require(
+            (1..=MAX_DOCX_CATALOGUE_ROWS).contains(&self.page_size),
+            "DOCX catalogue page size must be between 1 and 50",
+        )?;
+        require(
+            self.cursor
+                .as_ref()
+                .is_none_or(|c| !c.is_empty() && c.len() <= MAX_DOCX_CURSOR_BYTES),
+            "DOCX catalogue cursor is empty or exceeds its bound",
+        )
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct DocxSnapshotPage {
+    pub schema_version: u32,
+    pub workspace_revision: u64,
+    pub total_count: u64,
+    pub query_sha256: String,
+    /// Newest publication first. Metadata and catalog lengths are checked; artifact bytes are not read.
+    pub rows: Vec<DocxSnapshotRecord>,
+    pub next_cursor: Option<String>,
 }

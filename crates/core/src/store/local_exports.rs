@@ -1,4 +1,4 @@
-//! One session owns one private stage. Lock order: export registry, then workspace.
+//! One session owns one private stage. Lock order: preparation gate, export registry, workspace.
 //! Files publish before a receipt exists. This is not a canonical DB transaction or backup record.
 use super::*;
 use crate::local_export::*;
@@ -29,6 +29,7 @@ struct Registry {
 struct Session {
     root: PathBuf,
     registry: Mutex<Registry>,
+    preparation: Mutex<()>,
     stopping: AtomicBool,
     wake: Condvar,
 }
@@ -43,8 +44,29 @@ impl Workspace {
     pub(crate) fn native_export_content(
         &self,
         request: NativeExportRequest,
-    ) -> Result<(ExportArtifact, String)> {
+    ) -> Result<(ExportArtifact, Vec<u8>)> {
         match request {
+            NativeExportRequest::DocxReport {
+                report_id,
+                expected_document_sha256,
+                expected_docx_sha256,
+            } => {
+                let (record, bytes) = self.read_docx_snapshot_artifact(
+                    &report_id,
+                    &expected_document_sha256,
+                    &expected_docx_sha256,
+                )?;
+                Ok((
+                    ExportArtifact::DocxReport {
+                        report_id: record.id,
+                        workspace_revision: record.workspace_revision,
+                        document_sha256: record.document.sha256,
+                        bytes: record.docx.bytes,
+                        sha256: record.docx.sha256,
+                    },
+                    bytes,
+                ))
+            }
             NativeExportRequest::Transactions {
                 request,
                 expected_revision,
@@ -66,7 +88,7 @@ impl Workspace {
                         bytes: export.bytes,
                         sha256: export.sha256,
                     },
-                    export.json,
+                    export.json.into_bytes(),
                 ))
             }
             NativeExportRequest::HtmlReport {
@@ -81,7 +103,7 @@ impl Workspace {
                         bytes: report.html.len() as u64,
                         sha256: report.sha256,
                     },
-                    report.html,
+                    report.html.into_bytes(),
                 ))
             }
         }
@@ -92,6 +114,7 @@ impl NativeExports {
         let session = Arc::new(Session {
             root,
             registry: Mutex::new(Registry::default()),
+            preparation: Mutex::new(()),
             stopping: AtomicBool::new(false),
             wake: Condvar::new(),
         });
@@ -147,13 +170,28 @@ impl NativeExports {
     }
     pub(crate) fn prepare(
         &self,
-        generate: impl FnOnce() -> Result<(ExportArtifact, String)>,
+        generate: impl FnOnce() -> Result<(ExportArtifact, Vec<u8>)>,
     ) -> Result<PreparedExport> {
+        self.prepare_claimed(generate, || {})
+    }
+    fn prepare_claimed(
+        &self,
+        generate: impl FnOnce() -> Result<(ExportArtifact, Vec<u8>)>,
+        after_claim: impl FnOnce(),
+    ) -> Result<PreparedExport> {
+        // Reject another generator, but wait for the janitor's short registry
+        // access. Housekeeping alone must not report a competing export.
+        let _preparation = self
+            .session
+            .preparation
+            .try_lock()
+            .map_err(|_| Error::Blocked("A native export is already in progress".into()))?;
+        after_claim();
         let mut state = self
             .session
             .registry
-            .try_lock()
-            .map_err(|_| Error::Blocked("A native export is already in progress".into()))?;
+            .lock()
+            .map_err(|_| Error::Blocked("Native export registry is unavailable".into()))?;
         self.session.available(&state)?;
         require(
             !state.cleanup_error,
@@ -167,9 +205,9 @@ impl NativeExports {
         let (artifact, content) = generate()?;
         self.session.available(&state)?;
         require(
-            content.len() <= MAX_EXPORT_JSON_BYTES
+            content.len() <= artifact.maximum_bytes()
                 && content.len() as u64 == artifact.bytes()
-                && hash(content.as_bytes()) == artifact.sha256(),
+                && hash(&content) == artifact.sha256(),
             "Generated export failed its identity check",
         )?;
         self.session.directories()?;
@@ -191,7 +229,7 @@ impl NativeExports {
             options.write(true).create_new(true);
             private_open(&mut options);
             let mut file = options.open(&path)?;
-            file.write_all(content.as_bytes())?;
+            file.write_all(&content)?;
             file.sync_all()?;
             drop(file);
             verify(&path, &prepared.artifact, 1)?;

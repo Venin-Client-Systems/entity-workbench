@@ -47,7 +47,7 @@ fn transaction_identity_exact_bytes_no_clobber_and_lost_ack_recommit() {
         .commit(&prepared.ticket, &"0".repeat(64), prepared.artifact.bytes())
         .is_err());
     let saved = commit(&exports, &prepared).unwrap();
-    assert_eq!(fs::read(&saved.location).unwrap(), expected.as_bytes());
+    assert_eq!(fs::read(&saved.location).unwrap(), expected.as_slice());
     assert_eq!(
         serde_json::to_value(&saved).unwrap(),
         serde_json::to_value(commit(&exports, &prepared).unwrap()).unwrap()
@@ -307,11 +307,11 @@ fn identical_external_hardlink_target_is_rejected_for_publication_and_reuse() {
     let prepared = prepare(&exports, &workspace);
     let content = workspace.native_export_content(request(0)).unwrap().1;
     let outside = temp.path().join("same-content-outside");
-    fs::write(&outside, content.as_bytes()).unwrap();
+    fs::write(&outside, content.as_slice()).unwrap();
     let target = exports.session.output(&prepared.artifact);
     fs::hard_link(&outside, &target).unwrap();
     assert!(commit(&exports, &prepared).is_err());
-    assert_eq!(fs::read(&outside).unwrap(), content.as_bytes());
+    assert_eq!(fs::read(&outside).unwrap(), content.as_slice());
     exports.discard(&prepared.ticket).unwrap();
     fs::remove_file(&target).unwrap();
     let prepared = prepare(&exports, &workspace);
@@ -372,5 +372,233 @@ fn open_export_denies_write_and_delete_sharing() {
         },
     )
     .unwrap();
+    exports.shutdown().unwrap();
+}
+
+fn docx_request(record: &crate::docx_snapshot::DocxSnapshotRecord) -> NativeExportRequest {
+    NativeExportRequest::DocxReport {
+        report_id: record.id.clone(),
+        expected_document_sha256: record.document.sha256.clone(),
+        expected_docx_sha256: record.docx.sha256.clone(),
+    }
+}
+fn publish_docx(workspace: &mut Workspace) -> crate::docx_snapshot::DocxSnapshotRecord {
+    workspace
+        .save_docx_snapshot(&id(), workspace.revision().unwrap())
+        .unwrap()
+}
+
+#[test]
+fn docx_native_save_preserves_binary_both_digests_and_historical_revision_through_lost_ack() {
+    let (_temp, mut workspace) = fixture();
+    workspace
+        .import("source.txt", b"Synthetic frozen report source")
+        .unwrap();
+    let record = publish_docx(&mut workspace);
+    let bytes = workspace
+        .read_docx_snapshot(&record.id, &record.document.sha256, &record.docx.sha256)
+        .unwrap();
+    assert!(bytes.starts_with(b"PK"));
+    assert!(
+        std::str::from_utf8(&bytes).is_err(),
+        "binary specimen unexpectedly behaves as text"
+    );
+    workspace
+        .import("later.txt", b"Later source must not regenerate this DOCX")
+        .unwrap();
+    let revision = workspace.revision().unwrap();
+    let exports = workspace.start_native_exports().unwrap();
+    let prepared = exports
+        .prepare(|| workspace.native_export_content(docx_request(&record)))
+        .unwrap();
+    assert!(
+        matches!(&prepared.artifact,ExportArtifact::DocxReport{report_id,workspace_revision,document_sha256,sha256,bytes} if report_id==&record.id && workspace_revision==&record.workspace_revision && document_sha256==&record.document.sha256 && sha256==&record.docx.sha256 && bytes==&record.docx.bytes)
+    );
+    assert!(exports
+        .prepare(|| workspace.native_export_content(docx_request(&record)))
+        .is_err());
+    let saved = commit(&exports, &prepared).unwrap();
+    assert_eq!(
+        saved.filename,
+        format!("assessment-{}-{}.docx", record.id, record.docx.sha256)
+    );
+    assert_eq!(fs::read(&saved.location).unwrap(), bytes);
+    assert_eq!(
+        serde_json::to_value(commit(&exports, &prepared).unwrap()).unwrap(),
+        serde_json::to_value(&saved).unwrap()
+    );
+    assert!(matches!(
+        exports.discard(&prepared.ticket).unwrap(),
+        DiscardedExport::Saved { .. }
+    ));
+    let again = exports
+        .prepare(|| workspace.native_export_content(docx_request(&record)))
+        .unwrap();
+    assert_eq!(commit(&exports, &again).unwrap().location, saved.location);
+    assert_eq!(fs::read_dir(exports.session.exports()).unwrap().count(), 1);
+    assert_eq!(workspace.revision().unwrap(), revision);
+    exports.shutdown().unwrap();
+}
+
+#[test]
+fn docx_native_preparation_rejects_wrong_identity_and_frontend_bytes_without_a_stage() {
+    let (_temp, mut workspace) = fixture();
+    let record = publish_docx(&mut workspace);
+    let exports = workspace.start_native_exports().unwrap();
+    for document in [false, true] {
+        let mut request = docx_request(&record);
+        if let NativeExportRequest::DocxReport {
+            expected_document_sha256,
+            expected_docx_sha256,
+            ..
+        } = &mut request
+        {
+            if document {
+                *expected_document_sha256 = "0".repeat(64);
+            } else {
+                *expected_docx_sha256 = "0".repeat(64);
+            }
+        }
+        assert!(exports
+            .prepare(|| workspace.native_export_content(request))
+            .is_err());
+        assert!(exports.session.registry.lock().unwrap().stage.is_none());
+    }
+    let mut forged = serde_json::to_value(docx_request(&record)).unwrap();
+    forged["bytes"] = json!([1, 2, 3]);
+    assert!(serde_json::from_value::<NativeExportRequest>(forged).is_err());
+    let mut forged = serde_json::to_value(docx_request(&record)).unwrap();
+    forged["path"] = json!("../outside.docx");
+    assert!(serde_json::from_value::<NativeExportRequest>(forged).is_err());
+    workspace.save_report().unwrap();
+    let mut request = docx_request(&record);
+    if let NativeExportRequest::DocxReport { report_id, .. } = &mut request {
+        *report_id = workspace.view().unwrap().reports[0].id.clone();
+    }
+    assert!(exports
+        .prepare(|| workspace.native_export_content(request))
+        .is_err());
+    assert_eq!(fs::read_dir(exports.session.staging()).unwrap().count(), 0);
+    exports.shutdown().unwrap();
+}
+
+#[test]
+fn docx_stage_expiry_tamper_and_coordinator_shutdown_retain_exact_lifecycle_boundaries() {
+    let (temp, mut workspace) = fixture();
+    let record = publish_docx(&mut workspace);
+    let exports = workspace.start_native_exports().unwrap();
+    let staged = exports
+        .prepare(|| workspace.native_export_content(docx_request(&record)))
+        .unwrap();
+    exports
+        .session
+        .registry
+        .lock()
+        .unwrap()
+        .stage
+        .as_mut()
+        .unwrap()
+        .expires = Instant::now();
+    assert!(commit(&exports, &staged).is_err());
+    assert!(!exports.session.stage_path(&staged.ticket).exists());
+    let staged = exports
+        .prepare(|| workspace.native_export_content(docx_request(&record)))
+        .unwrap();
+    let path = exports.session.stage_path(&staged.ticket);
+    let mut bytes = fs::read(&path).unwrap();
+    bytes[0] ^= 1;
+    fs::write(path, &bytes).unwrap();
+    assert!(commit(&exports, &staged).is_err());
+    exports.discard(&staged.ticket).unwrap();
+    let staged = exports
+        .prepare(|| workspace.native_export_content(docx_request(&record)))
+        .unwrap();
+    let target = exports.session.output(&staged.artifact);
+    fs::write(&target, b"Preserve this unrelated target").unwrap();
+    assert!(commit(&exports, &staged).is_err());
+    exports.discard(&staged.ticket).unwrap();
+    assert_eq!(
+        fs::read(&target).unwrap(),
+        b"Preserve this unrelated target"
+    );
+    fs::remove_file(target).unwrap();
+    exports.shutdown().unwrap();
+    let coordinator = JobCoordinator::start(workspace, 1).unwrap();
+    let staged = coordinator
+        .prepare_native_export(docx_request(&record))
+        .unwrap();
+    coordinator.shutdown().unwrap();
+    assert!(coordinator
+        .commit_native_export(
+            &staged.ticket,
+            staged.artifact.sha256(),
+            staged.artifact.bytes()
+        )
+        .is_err());
+    let workspace = Workspace::open(temp.path().join("case")).unwrap();
+    assert_eq!(workspace.revision().unwrap(), record.workspace_revision + 1);
+    let restarted = workspace.start_native_exports().unwrap();
+    assert_eq!(
+        fs::read_dir(restarted.session.staging()).unwrap().count(),
+        0
+    );
+    restarted.shutdown().unwrap();
+}
+
+#[test]
+fn docx_has_its_own_binary_limit_before_staging_even_if_other_export_kinds_allow_more() {
+    let (_temp, workspace) = fixture();
+    let exports = workspace.start_native_exports().unwrap();
+    // Only the internal test closure can provide bytes; native IPC accepts typed source identities.
+    let content = vec![0; crate::report_docx::MAX_DOCX_BYTES + 1];
+    let artifact = ExportArtifact::DocxReport {
+        report_id: id(),
+        workspace_revision: 0,
+        document_sha256: "0".repeat(64),
+        bytes: content.len() as u64,
+        sha256: hash(&content),
+    };
+    assert!(exports.prepare(|| Ok((artifact, content))).is_err());
+    assert!(exports.session.registry.lock().unwrap().stage.is_none());
+    assert_eq!(fs::read_dir(exports.session.staging()).unwrap().count(), 0);
+    exports.shutdown().unwrap();
+}
+
+#[test]
+fn housekeeping_cannot_falsely_reject_first_prepare_but_concurrent_generation_is_blocked() {
+    use std::sync::mpsc;
+    let (_temp, mut workspace) = fixture();
+    let record = publish_docx(&mut workspace);
+    let exports = Arc::new(workspace.start_native_exports().unwrap());
+    let content = workspace
+        .native_export_content(docx_request(&record))
+        .unwrap();
+    // Model exactly the registry lock held by the janitor, before any stage exists.
+    let housekeeping = exports.session.registry.lock().unwrap();
+    let preparing = exports.clone();
+    let (generated_tx, generated_rx) = mpsc::channel();
+    let (claimed_tx, claimed_rx) = mpsc::channel();
+    let worker = thread::spawn(move || {
+        preparing.prepare_claimed(
+            || {
+                generated_tx.send(()).unwrap();
+                Ok(content)
+            },
+            || claimed_tx.send(()).unwrap(),
+        )
+    });
+    claimed_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+    assert!(generated_rx.try_recv().is_err());
+    assert!(exports
+        .prepare(|| panic!("second generator must not start"))
+        .is_err());
+    drop(housekeeping);
+    generated_rx.recv_timeout(Duration::from_secs(2)).unwrap();
+    let prepared = worker.join().unwrap().unwrap();
+    let saved = commit(&exports, &prepared).unwrap();
+    assert_eq!(
+        fs::read(saved.location).unwrap().len() as u64,
+        record.docx.bytes
+    );
     exports.shutdown().unwrap();
 }

@@ -321,6 +321,33 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, mode: ResponseMode) -> Result<Value> {
         match command {
+            Command::SaveDocxSnapshot {
+                request_id,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.save_docx_snapshot(&request_id, expected_revision)?,
+                )?);
+            }
+            Command::PageDocxSnapshots {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_docx_snapshots(&request, expected_revision)?,
+                )?);
+            }
+            Command::InspectDocxSnapshot {
+                report_id,
+                expected_document_sha256,
+                expected_docx_sha256,
+            } => {
+                return Ok(serde_json::to_value(self.inspect_docx_snapshot(
+                    &report_id,
+                    &expected_document_sha256,
+                    &expected_docx_sha256,
+                )?)?);
+            }
             Command::ExportTransactions {
                 request,
                 expected_revision,

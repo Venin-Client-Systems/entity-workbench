@@ -1,5 +1,6 @@
 //! Bounded frozen report input. This adapter does not read or verify original files.
 use crate::{analytics, domain::*, policy, require, Error, Result};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -14,7 +15,7 @@ pub const MAX_REFERENCES: usize = 10_000;
 pub const TEMPLATE_VERSION: &str = "assessment-foundation-1";
 pub const GENERATOR_VERSION: &str = "ooxml-foundation-1";
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ReportDocument {
     pub schema_version: u32,
@@ -26,7 +27,7 @@ pub struct ReportDocument {
     pub content: ReportContent,
     pub calculations: Calculations,
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct ReportContent {
     pub hypotheses: Vec<Hypothesis>,
@@ -39,7 +40,7 @@ pub struct ReportContent {
     pub merges: Vec<MergeDecision>,
     pub decisions: Vec<ReviewDecision>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct Calculations {
     pub totals: Vec<CurrencyTotal>,
@@ -49,7 +50,7 @@ pub struct Calculations {
     pub rejected: usize,
     pub deferred: usize,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct CurrencyTotal {
     pub currency: String,
@@ -59,7 +60,7 @@ pub struct CurrencyTotal {
     pub transaction_ids: Vec<String>,
     pub excluded_transfer_ids: Vec<String>,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct BalanceCalculation {
     pub transaction_id: String,

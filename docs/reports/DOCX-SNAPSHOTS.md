@@ -1,8 +1,9 @@
 # Immutable DOCX snapshots
 
 This bounded backend slice adds explicit Rust APIs for canonical editable reports.
-It does not expose a desktop command, change the interface, add native DOCX saving,
-or complete report assembly and exhibits. The existing HTML `SaveReport` path and
+The underlying snapshot publication does not change the interface or complete
+report assembly and exhibits. Additive command/native-save integration is described
+below; desktop controls remain separate. The existing HTML `SaveReport` path and
 all published command, report and OCR schemas remain unchanged.
 
 ## Publication and identity
@@ -18,7 +19,7 @@ The new `DocxSnapshotRecord` format 1 contains the request/report ID, source rev
 creation time, template/generator versions, and two typed `ReportArtifactRef` values:
 `report_document_json_v1` and `report_docx_v1`, each with a SHA-256 and byte length.
 These types are separate from historical HTML reports and OCR derivative references.
-Their JSON formats currently have Rust API consumers only.
+Their JSON formats are exposed through the additive commands described below.
 
 Complete frozen JSON and DOCX objects are retained in the private content-addressed
 file store before a single revision-guarded canonical transaction adds the two
@@ -109,3 +110,48 @@ record JSON and DOCX for developer render QA; it refuses an existing output dire
 Use the documents skill's managed renderer for every-page visual inspection. Its
 actual LibreOfficeDev identity and manifest mismatch remain documented in [DOCX.md](DOCX.md).
 That renderer is a development tool, not a shipped dependency or Microsoft Word pass.
+
+## Explicit command and native save integration
+
+Command format 21 adds three direct-result operations. Earlier command schemas and
+all default workspace arrays remain unchanged. These operations do not return a
+workspace refresh envelope:
+
+- `save_docx_snapshot { request_id, expected_revision }` returns `DocxSnapshotRecord`.
+  Retain both inputs through an uncertain acknowledgement and retry that same
+  operation. Refresh separately after acknowledgement; refreshing is not a second
+  creation request. The record's revision is its frozen source revision.
+- `page_docx_snapshots { request: { page_size, cursor }, expected_revision }` returns
+  format-1 `DocxSnapshotPage`: current catalogue revision, total count, query digest,
+  metadata rows and optional continuation. It accepts 1–50 rows, at most 4 KiB per
+  retained metadata body and 256 KiB per page. Oversized or invalid requested rows
+  fail the whole page. It never silently drops malformed rows from counts.
+- `inspect_docx_snapshot { report_id, expected_document_sha256, expected_docx_sha256 }`
+  returns `DocxSnapshotInspection`, including the verified frozen model. Inspection
+  is an explicit potentially large read, bounded by the existing document limit.
+
+The catalogue uses one SQLite snapshot for revision, total count, cursor and rows.
+Rows are ordered by descending canonical publication sequence, independent of their
+creation timestamps. Its bounded continuation binds the reader family, revision,
+page size and existing preceding sequence. It is a consistency token, not an
+unforgeable authorization token. Restart pagination after a revision conflict.
+The total includes only DOCX snapshot records, never HTML reports. Metadata keys,
+types, source revisions and catalog lengths are validated. Catalogue listing does
+**not** rehash or render every artifact or original, and is not an availability or
+integrity guarantee. Explicit inspection and saving perform those checks.
+
+The existing native prepare API additionally accepts the closed request
+`docx_report { report_id, expected_document_sha256, expected_docx_sha256 }`.
+It obtains the verified binary and its record from one pinned canonical read.
+The typed artifact/receipt binds the report ID, frozen source revision, document
+SHA-256, DOCX SHA-256 (`sha256`) and exact byte length. The internally derived name
+is `assessment-{report_id}-{docx_sha256}.docx`. Caller-supplied paths or bytes are
+rejected. Internal content is a Rust byte buffer; existing transaction JSON and
+HTML are converted to their exact UTF-8 bytes, using the same file writer.
+
+DOCX is capped at 32 MiB independently of the 256 MiB JSON/HTML limits. The existing
+one-stage, 120-second expiry, eight-receipt cache, discard, shutdown cleanup,
+no-clobber commit and lost-acknowledgement recommit behavior remain. Saving a DOCX
+copy does not create a new canonical report or advance its revision. The frontend
+must check its active selection/lifetime between preparation and commit. Desktop
+DOCX controls, native UI proof and Word editing proof remain separate work.

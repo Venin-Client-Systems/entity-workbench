@@ -390,6 +390,19 @@ pub struct WorkspaceView<R = ReportSnapshot> {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    SaveDocxSnapshot {
+        request_id: String,
+        expected_revision: u64,
+    },
+    PageDocxSnapshots {
+        request: crate::docx_snapshot::DocxSnapshotPageRequest,
+        expected_revision: u64,
+    },
+    InspectDocxSnapshot {
+        report_id: String,
+        expected_document_sha256: String,
+        expected_docx_sha256: String,
+    },
     ExportTransactions {
         request: crate::transaction_export::TransactionExportRequest,
         expected_revision: u64,

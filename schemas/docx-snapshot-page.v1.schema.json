@@ -1,0 +1,122 @@
+{
+  "$defs": {
+    "DocxSnapshotRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "document": {
+          "$ref": "#/$defs/ReportArtifactRef"
+        },
+        "docx": {
+          "$ref": "#/$defs/ReportArtifactRef"
+        },
+        "generator_version": {
+          "type": "string"
+        },
+        "id": {
+          "description": "Also the caller's stable request identity. Reuse binds the same source revision.",
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "template_version": {
+          "type": "string"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "workspace_revision",
+        "created_at",
+        "template_version",
+        "generator_version",
+        "document",
+        "docx"
+      ],
+      "type": "object"
+    },
+    "ReportArtifactKind": {
+      "enum": [
+        "report_document_json_v1",
+        "report_docx_v1"
+      ],
+      "type": "string"
+    },
+    "ReportArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "kind": {
+          "$ref": "#/$defs/ReportArtifactKind"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "next_cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "query_sha256": {
+      "type": "string"
+    },
+    "rows": {
+      "description": "Newest publication first. Metadata and catalog lengths are checked; artifact bytes are not read.",
+      "items": {
+        "$ref": "#/$defs/DocxSnapshotRecord"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "total_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "workspace_revision",
+    "total_count",
+    "query_sha256",
+    "rows"
+  ],
+  "title": "DocxSnapshotPage",
+  "type": "object"
+}

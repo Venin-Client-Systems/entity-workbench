@@ -6,6 +6,8 @@ use crate::{
     report_document::{self, ReportDocument},
     report_docx,
 };
+mod catalogue;
+
 const KIND: &str = "docx_snapshot";
 const MAX_RECORD_BYTES: u64 = 4096;
 fn key(value: &str) -> Result<()> {
@@ -207,6 +209,15 @@ impl Workspace {
         expected_document_sha256: &str,
         expected_docx_sha256: &str,
     ) -> Result<Vec<u8>> {
+        self.read_docx_snapshot_artifact(report_id, expected_document_sha256, expected_docx_sha256)
+            .map(|(_, bytes)| bytes)
+    }
+    pub(crate) fn read_docx_snapshot_artifact(
+        &self,
+        report_id: &str,
+        expected_document_sha256: &str,
+        expected_docx_sha256: &str,
+    ) -> Result<(DocxSnapshotRecord, Vec<u8>)> {
         let transaction = self.conn.unchecked_transaction()?;
         let record = lookup(&transaction, report_id)?
             .ok_or_else(|| Error::Blocked("No retained DOCX snapshot".into()))?;
@@ -217,7 +228,7 @@ impl Workspace {
         )?;
         let (_, bytes) = self.verify_docx_snapshot(&record)?;
         transaction.commit()?;
-        Ok(bytes)
+        Ok((record, bytes))
     }
     pub(super) fn docx_records(&self) -> Result<Vec<DocxSnapshotRecord>> {
         let mut statement = self
