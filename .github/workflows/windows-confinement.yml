@@ -1,0 +1,83 @@
+name: Windows AppContainer development probes
+on:
+  pull_request:
+    paths:
+      - 'crates/windows-worker/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/windows-confinement.yml'
+      - 'docs/security/WINDOWS-WORKERS.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  appcontainer:
+    # This is Windows Server 2022, not Windows 11 or a clean installation test.
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      RUSTFLAGS: '-C target-feature=+crt-static'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+        with:
+          toolchain: '1.90.0'
+          components: rustfmt, clippy
+      - name: Record public source, OS and staged runtime identities
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force artifacts/windows-confinement | Out-Null
+          $os = Get-CimInstance Win32_OperatingSystem
+          $jdk = $env:JAVA_HOME_21_X64
+          if (-not $jdk -or -not (Test-Path "$jdk/bin/java.exe")) {
+            throw 'The hosted image has no Java 21 runtime; probe blocked.'
+          }
+          $release = Get-Content "$jdk/release"
+          $javaVersion = ($release | Where-Object { $_ -match '^JAVA_VERSION=' }) -replace '^JAVA_VERSION="|"$', ''
+          if ($javaVersion -notmatch '^21\.') { throw 'Java runtime major version is not 21.' }
+          $runtime = @(Get-ChildItem -LiteralPath $jdk -File -Recurse | Sort-Object FullName | ForEach-Object {
+            @{
+              path = [IO.Path]::GetRelativePath($jdk, $_.FullName).Replace('\', '/')
+              bytes = $_.Length
+              sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            }
+          })
+          $metadata = @{
+            schema_version = 1
+            scope = 'development probe; no Windows 11 or complete-release acceptance'
+            source_commit = (git rev-parse HEAD).Trim()
+            workflow_run_id = $env:GITHUB_RUN_ID
+            workflow_run_attempt = $env:GITHUB_RUN_ATTEMPT
+            recorded_at_utc = [DateTime]::UtcNow.ToString('o')
+            os = @{ caption = $os.Caption; version = $os.Version; architecture = $os.OSArchitecture }
+            runner_image = @{ label = 'windows-2022'; version = $env:ImageVersion }
+            java = @{ version = $javaVersion; source = 'hosted image preinstalled JDK; copied for probe'; files = $runtime }
+          }
+          $metadata | ConvertTo-Json -Depth 8 | Set-Content -Encoding utf8 artifacts/windows-confinement/environment.json
+      - run: cargo fmt -p workbench-windows-worker -- --check
+      - run: cargo clippy -p workbench-windows-worker --all-targets --locked -- -D warnings
+      - name: Native filesystem and output unit tests
+        run: cargo test -p workbench-windows-worker --locked -- --test-threads=1 --show-output
+      - run: cargo build -p workbench-windows-worker --bin ew-windows-probe --locked
+      - name: Run hostile controls and copied Java 21 runtime in AppContainer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $binary = 'target/debug/ew-windows-probe.exe'
+          @{
+            source_commit = (git rev-parse HEAD).Trim()
+            binary_sha256 = (Get-FileHash $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json | Set-Content -Encoding utf8 artifacts/windows-confinement/probe-identity.json
+          & $binary --report artifacts/windows-confinement/report.json "$env:JAVA_HOME_21_X64"
+          if ($LASTEXITCODE -ne 0) { throw 'Native confinement probe failed; retain report and keep Windows gate blocked.' }
+      - name: Retain sanitized evidence on success or failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: windows-appcontainer-development-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/windows-confinement/*.json
+          if-no-files-found: error
+          retention-days: 30
