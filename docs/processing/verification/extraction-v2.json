@@ -122,11 +122,26 @@
     "artifacts/extraction-v2/ui-focused-final.log": "981cd240645d35d6f8258365d3d9e9e8e895c4c2492c15b399a5ce7b5ce9fdec",
     "artifacts/extraction-v2/schema-history.json": "784acbd5649bc4bd6a747ecbe8978625c46351c31dfc03cf4311c4c6575e9041",
     "artifacts/extraction-v2/schema-generation-final.log": "bbf6aa1e7c7d4d954db1464ae8ecbbdd7ddeeeb8ed8a06e9d02b4a94669b1dac",
-    "artifacts/extraction-v2/legacy-capture.json": "52e175e5dbee7bd0c99c459f3ce38a101177241bd52e1da253fce4180a510b3c"
+    "artifacts/extraction-v2/legacy-capture.json": "52e175e5dbee7bd0c99c459f3ce38a101177241bd52e1da253fce4180a510b3c",
+    "artifacts/extraction-v2/native-parser-campaign.log": "3b801b72b734e3cbfd22699351c1939e7f4b361f481e5e90cfc081bc9bf6ede0",
+    "artifacts/parser-test-output.txt": "b40ba846f89dccfb6d4042ba1980db09c3aac9253ff648b3420a414409b3add4"
   },
   "native_parser_search": {
-    "state": "pending_signed_clean_campaign",
-    "intended_scope": "Existing Mac Java parser/search recipes and shared parser validator only. No new Windows local-font recipe activation."
+    "state": "passed",
+    "source_revision": "6a64286642fc270ef6a9e15dba9114a3e3544ed7",
+    "source_dirty": false,
+    "passed": 14,
+    "failed": 0,
+    "platform": {
+      "os": "macos",
+      "version": "26.6.2",
+      "architecture": "arm64"
+    },
+    "report": "docs/processing/verification/extraction-v2-native-mac.json",
+    "report_sha256": "f542df725b269b04c73a221fbbfaa9eb005b25471f920cf3a5a5427097c70fb9",
+    "scope": "Existing Mac Java parser/search recipes plus shared parser validator, using unchanged staged Java21/parser/search assets. The new local-font result contract test is synthetic; this campaign does not exercise or activate the Windows local-font recipe.",
+    "runtime_modified": false,
+    "signature_verified": true
   },
   "unverified": [
     "New editable Figma extension wording frames and remote sync",
@@ -141,5 +156,12 @@
   "worker_protocol_version": 1,
   "storage_migration": false,
   "public_command_changes": false,
-  "dependency_changes": false
+  "dependency_changes": false,
+  "implementation_revision": "6a64286642fc270ef6a9e15dba9114a3e3544ed7",
+  "public_audit": {
+    "source_staged_files": 24,
+    "passed": true,
+    "private_exclusion_list_retained_outside_repository": true
+  },
+  "source_hash_scope": "Files as committed in implementation_revision, before this evidence-only follow-up. Later verification prose/report additions are not part of the measured source revision."
 }
