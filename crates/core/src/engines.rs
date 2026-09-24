@@ -8,6 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 pub mod image;
+pub mod image_regions;
 pub mod ocr;
 pub mod ocr_regions;
 pub mod parser;

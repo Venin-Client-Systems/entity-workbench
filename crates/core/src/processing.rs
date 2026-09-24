@@ -1,6 +1,9 @@
 //! Durable, offline document and image jobs. Records are canonical; engine processes never write them.
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+#[path = "processing_regions.rs"]
+mod regions;
+pub use regions::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -28,6 +31,11 @@ pub enum ProcessingInput {
         sha256: String,
         bytes: u64,
     },
+    ImageOcrRegions {
+        evidence_id: String,
+        sha256: String,
+        bytes: u64,
+    },
     PdfPageOcr {
         evidence_id: String,
         sha256: String,
@@ -46,6 +54,11 @@ impl ProcessingInput {
                 bytes,
             }
             | Self::ImageOcr {
+                evidence_id,
+                sha256,
+                bytes,
+            }
+            | Self::ImageOcrRegions {
                 evidence_id,
                 sha256,
                 bytes,
@@ -99,6 +112,7 @@ pub enum ProcessingFailure {
     CleanupFailed,
     WorkerExitUnverified,
     RecoveryRequired,
+    DerivativeUnavailable,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -158,6 +172,7 @@ pub(crate) enum ProcessingOutput {
     Document(crate::engines::parser::ParseResult),
     Image(Box<crate::engines::image::ImageOcr>),
     Pdf(Box<crate::engines::pdf_render::PdfOcr>),
+    ImageRegions(Box<crate::engines::image_regions::ImageOcrRegions>),
 }
 
 /// An immutable, unreviewed derivative. Parsing does not replace source text or accept facts.

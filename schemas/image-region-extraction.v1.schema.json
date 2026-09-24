@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "DerivativeKind": {
+      "enum": [
+        "canonical_pgm_v1",
+        "ocr_tsv_v1",
+        "image_region_result_json_v1"
+      ],
+      "type": "string"
+    },
+    "DerivativeRef": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "kind": {
+          "$ref": "#/$defs/DerivativeKind"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sha256",
+        "bytes",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "ImageOcrRegionsInput": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "image_ocr_regions",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "attempt": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "input": {
+      "$ref": "#/$defs/ImageOcrRegionsInput"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "raster": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DerivativeRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "result": {
+      "$ref": "#/$defs/DerivativeRef"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "tsv": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DerivativeRef"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "job_id",
+    "attempt",
+    "input",
+    "created_at",
+    "result"
+  ],
+  "title": "ImageRegionExtractionRecord",
+  "type": "object"
+}

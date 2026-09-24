@@ -587,27 +587,6 @@
       "additionalProperties": false,
       "properties": {
         "action": {
-          "const": "inspect_report_snapshot",
-          "type": "string"
-        },
-        "expected_sha256": {
-          "type": "string"
-        },
-        "report_id": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "action",
-        "report_id",
-        "expected_sha256"
-      ],
-      "type": "object"
-    },
-    {
-      "additionalProperties": false,
-      "properties": {
-        "action": {
           "const": "compare_transaction_periods",
           "type": "string"
         },

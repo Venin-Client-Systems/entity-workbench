@@ -280,7 +280,7 @@ fn exports_are_distinct_hash_bound_snapshots_that_do_not_change_on_later_import(
 }
 
 #[test]
-fn malformed_receipts_fail_closed_and_old_workspace_contract_stays_at_three() {
+fn malformed_receipts_fail_closed_under_current_workspace_storage_schema() {
     let (_temp, mut w) = workspace();
     let key = finish(
         &mut w,
@@ -306,7 +306,7 @@ fn malformed_receipts_fail_closed_and_old_workspace_contract_stays_at_three() {
         w.conn
             .pragma_query_value::<u32, _>(None, "user_version", |r| r.get(0))
             .unwrap(),
-        3
+        SCHEMA
     );
     let mut value = serde_json::to_value(&receipt).unwrap();
     value["unexpected"] = json!(true);

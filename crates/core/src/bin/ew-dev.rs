@@ -67,7 +67,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         std::fs::create_dir_all(&root)?;
         // Prior command/job schema files are immutable history. Emit only current versions;
         // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
-        for (name, version, value) in [
+        let schemas = [
             (
                 "workspace-presentation",
                 1,
@@ -113,7 +113,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "processing-job",
-                3,
+                4,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ProcessingJob
                 ))?,
@@ -130,6 +130,27 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 1,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::PdfExtractionRecord
+                ))?,
+            ),
+            (
+                "image-region-extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionExtractionRecord
+                ))?,
+            ),
+            (
+                "image-region-result",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionResult
+                ))?,
+            ),
+            (
+                "image-region-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionInspection
                 ))?,
             ),
             (
@@ -179,13 +200,14 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 1,
                 serde_json::to_value(schemars::schema_for!(StatementPreview))?,
             ),
-        ] {
+        ];
+        for (name, version, value) in &schemas {
             std::fs::write(
                 root.join(format!("{name}.v{version}.schema.json")),
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":16}));
+        return Ok(serde_json::json!({"schemas":19}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();

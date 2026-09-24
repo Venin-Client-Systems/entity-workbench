@@ -34,6 +34,8 @@ pub enum Error {
     Cleanup(String),
     #[error("Worker termination could not be verified: {0}")]
     TerminationUnverified(String),
+    #[error("Derivative storage is unavailable (published reference: {published})")]
+    DerivativeUnavailable { published: bool },
     #[error("Filesystem: {0}")]
     Io(#[from] std::io::Error),
     #[error("Invalid JSON: {0}")]

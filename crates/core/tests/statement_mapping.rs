@@ -305,7 +305,7 @@ fn schema_one_upgrade_creates_a_recoverable_backup_with_originals() {
     conn.pragma_update(None, "user_version", 1).unwrap();
     drop(conn);
     let upgraded = Workspace::open(temp.path().join("case")).unwrap();
-    assert_eq!(upgraded.view().unwrap().schema_version, 3);
+    assert_eq!(upgraded.view().unwrap().schema_version, 4);
     assert_eq!(upgraded.revision().unwrap(), before + 1);
     let backup = std::fs::read_dir(temp.path().join("case/backups"))
         .unwrap()
@@ -322,7 +322,7 @@ fn schema_one_upgrade_creates_a_recoverable_backup_with_originals() {
     );
     let restored = Workspace::restore(&backup, &temp.path().join("restored")).unwrap();
     assert_eq!(restored.view().unwrap().evidence[0].id, id);
-    assert_eq!(restored.view().unwrap().schema_version, 3);
+    assert_eq!(restored.view().unwrap().schema_version, 4);
 }
 #[test]
 fn failed_upgrade_rolls_back_version_and_records_and_retains_backup() {
@@ -333,7 +333,7 @@ fn failed_upgrade_rolls_back_version_and_records_and_retains_backup() {
     let db = temp.path().join("case/workspace.db");
     let conn = rusqlite::Connection::open(&db).unwrap();
     conn.pragma_update(None, "user_version", 1).unwrap();
-    conn.execute_batch("CREATE TRIGGER reject_upgrade BEFORE INSERT ON events WHEN NEW.action='workspace.schema_v3' BEGIN SELECT RAISE(ABORT,'synthetic failure'); END;").unwrap();
+    conn.execute_batch("CREATE TRIGGER reject_upgrade BEFORE INSERT ON events WHEN NEW.action='workspace.schema_v4' BEGIN SELECT RAISE(ABORT,'synthetic failure'); END;").unwrap();
     drop(conn);
     assert!(Workspace::open(temp.path().join("case")).is_err());
     let conn = rusqlite::Connection::open(&db).unwrap();

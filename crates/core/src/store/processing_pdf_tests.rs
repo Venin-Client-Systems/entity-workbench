@@ -20,7 +20,7 @@ fn pdf_request_identity_binds_page_dpi_operation_and_preserves_legacy_versions()
     let job = workspace
         .queue_pdf_page_ocr(&source, &request, 2, 144)
         .unwrap();
-    assert_eq!(job.schema_version, 3);
+    assert_eq!(job.schema_version, 4);
     let revision = workspace.revision().unwrap();
     assert_eq!(
         workspace
@@ -57,7 +57,7 @@ fn pdf_request_identity_binds_page_dpi_operation_and_preserves_legacy_versions()
         serde_json::from_value::<Command>(json!({"action":"finish_pdf_job","job_id":job.id}))
             .is_err()
     );
-    for version in [1, 2, 4] {
+    for version in [1, 2, 5] {
         let mut invalid = job.clone();
         invalid.schema_version = version;
         assert!(supported_job(&invalid).is_err());

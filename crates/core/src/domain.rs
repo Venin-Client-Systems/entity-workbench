@@ -411,6 +411,13 @@ pub enum Command {
     InspectPdfExtraction {
         extraction_id: String,
     },
+    QueueImageOcrRegions {
+        evidence_id: String,
+        request_key: String,
+    },
+    InspectImageRegionExtraction {
+        extraction_id: String,
+    },
     QueueImageOcr {
         evidence_id: String,
         request_key: String,
