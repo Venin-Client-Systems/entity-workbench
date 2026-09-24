@@ -56,6 +56,7 @@ pub enum ProbeCheckpoint {
     RestrictedDaclSetFailed { code: u32 },
     RestrictedDaclVerifyFailed { code: u32 },
     RestrictedDaclVerified,
+    RestrictedLabelVerifyFailed { code: u32 },
     RestrictedResultWrite,
     CallerEnvironment,
     TcpConnect,
@@ -202,6 +203,7 @@ mod tests {
             ProbeCheckpoint::RestrictedOpenFailed { code: u32::MAX },
             ProbeCheckpoint::RestrictedDaclSetFailed { code: u32::MAX },
             ProbeCheckpoint::RestrictedDaclVerifyFailed { code: u32::MAX },
+            ProbeCheckpoint::RestrictedLabelVerifyFailed { code: u32::MAX },
             ProbeCheckpoint::RestrictedDescriptorFailed { code: u32::MAX },
             ProbeCheckpoint::RestrictedDirectoryCreateFailed { code: u32::MAX },
         ] {

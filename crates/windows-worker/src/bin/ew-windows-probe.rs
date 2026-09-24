@@ -659,7 +659,7 @@ mod native {
                 serde_json::to_value(&baseline_creation)?,
             );
             require(
-                baseline_creation.passed(),
+                baseline_creation.baseline_passed(),
                 "unconfined directory creation controls failed",
             )?;
             request.input = serde_json::to_vec(&input)?;

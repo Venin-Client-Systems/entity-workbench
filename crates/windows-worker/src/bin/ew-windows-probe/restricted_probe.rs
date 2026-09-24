@@ -15,7 +15,10 @@ use windows_sys::Win32::{
     Foundation::*,
     Security::{Authorization::*, *},
     Storage::FileSystem::*,
-    System::Threading::{GetCurrentProcess, OpenProcessToken},
+    System::{
+        SystemServices::{SYSTEM_MANDATORY_LABEL_ACE_TYPE, SYSTEM_MANDATORY_LABEL_NO_WRITE_UP},
+        Threading::{GetCurrentProcess, OpenProcessToken},
+    },
 };
 use workbench_windows_worker::{Error, ProbeCheckpoint, Result};
 type AnyResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -94,7 +97,7 @@ fn sid_text(sid: PSID) -> Result<String> {
     drop(allocation);
     result
 }
-fn creation_descriptor() -> Result<Descriptor> {
+fn creation_descriptor(low_label: bool) -> Result<Descriptor> {
     let mut raw = null_mut();
     native(
         unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut raw) },
@@ -118,7 +121,8 @@ fn creation_descriptor() -> Result<Descriptor> {
     };
     // Both sides of AppContainer's dual-principal check receive access only to
     // this new empty child. The assigned parent/input/runtime ACLs are untouched.
-    descriptor(&format!("D:P(A;;FA;;;{user_sid}){package_ace}"))
+    let label = if low_label { "S:(ML;;NW;;;LW)" } else { "" };
+    descriptor(&format!("D:P(A;;FA;;;{user_sid}){package_ace}{label}"))
 }
 fn assign_dacl(file: &File, descriptor: &Descriptor) -> Result<()> {
     let (mut present, mut defaulted) = (0, 0);
@@ -186,6 +190,76 @@ fn verify_empty(file: &File) -> Result<()> {
     }
     Ok(())
 }
+fn descriptor_has_low_label(descriptor: &Descriptor) -> Result<bool> {
+    let (mut present, mut defaulted) = (0, 0);
+    let mut sacl = null_mut();
+    native(
+        unsafe { GetSecurityDescriptorSacl(descriptor.0, &mut present, &mut sacl, &mut defaulted) },
+        "RestrictedLabelSacl",
+    )?;
+    if present == 0 || sacl.is_null() {
+        return Ok(false);
+    }
+    if unsafe { IsValidAcl(sacl) } == 0 {
+        return Err(Error::Blocked("invalid synthetic label ACL"));
+    }
+    if unsafe { (*sacl).AceCount } != 1 {
+        return Ok(false);
+    }
+    let mut raw = null_mut();
+    native(unsafe { GetAce(sacl, 0, &mut raw) }, "RestrictedLabelAce")?;
+    let ace = raw.cast::<SYSTEM_MANDATORY_LABEL_ACE>();
+    // IsValidAcl/GetAce establish the enclosing ACE bounds. Validate its label
+    // type and fixed fields before reading the trailing, OS-returned SID.
+    if unsafe { (*ace).Header.AceSize }
+        < (std::mem::offset_of!(SYSTEM_MANDATORY_LABEL_ACE, SidStart) + 12) as u16
+        || unsafe { (*ace).Header.AceType } as u32 != SYSTEM_MANDATORY_LABEL_ACE_TYPE
+        || (unsafe { (*ace).Header.AceFlags } as u32) & INHERIT_ONLY_ACE != 0
+        || unsafe { (*ace).Mask } != SYSTEM_MANDATORY_LABEL_NO_WRITE_UP
+    {
+        return Ok(false);
+    }
+    let sid: PSID = unsafe { std::ptr::addr_of_mut!((*ace).SidStart) }.cast();
+    // A low integrity SID has one subauthority (12 bytes). The earlier ACE
+    // length check covers that entire representation before SID APIs inspect it.
+    if unsafe { *sid.cast::<u8>().add(1) } != 1 {
+        return Ok(false);
+    }
+    Ok(unsafe { IsValidSid(sid) } != 0 && unsafe { IsWellKnownSid(sid, WinLowLabelSid) } != 0)
+}
+fn read_low_label(file: &File) -> Result<bool> {
+    let mut raw = null_mut();
+    // LABEL_SECURITY_INFORMATION requires READ_CONTROL, not audit-SACL access
+    // or a security privilege. Request only the mandatory label descriptor.
+    let code = unsafe {
+        GetSecurityInfo(
+            file.as_raw_handle(),
+            SE_FILE_OBJECT,
+            LABEL_SECURITY_INFORMATION,
+            null_mut(),
+            null_mut(),
+            null_mut(),
+            null_mut(),
+            &mut raw,
+        )
+    };
+    if code != 0 {
+        return Err(Error::Api {
+            operation: "RestrictedReadLabel",
+            code,
+        });
+    }
+    descriptor_has_low_label(&Descriptor(raw))
+}
+fn verify_low_label(file: &File) -> Result<()> {
+    if !read_low_label(file)? {
+        return Err(Error::Blocked(
+            "synthetic directory lacks low no-write-up label",
+        ));
+    }
+    Ok(())
+}
+
 fn checked<T>(
     result: Result<T>,
     failed: fn(u32) -> ProbeCheckpoint,
@@ -215,7 +289,7 @@ pub fn create(
     checkpoint: impl Fn(ProbeCheckpoint) -> AnyResult<()>,
 ) -> AnyResult<File> {
     let creation = checked(
-        creation_descriptor(),
+        creation_descriptor(true),
         |code| ProbeCheckpoint::RestrictedIdentityFailed { code },
         &checkpoint,
     )?;
@@ -262,6 +336,11 @@ pub fn create(
     if !metadata.is_dir() || metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
         return Err(Error::Blocked("invalid synthetic directory handle").into());
     }
+    checked(
+        verify_low_label(&directory),
+        |code| ProbeCheckpoint::RestrictedLabelVerifyFailed { code },
+        &checkpoint,
+    )?;
     checkpoint(ProbeCheckpoint::RestrictedDaclSet)?;
     checked(
         assign_dacl(&directory, &empty),
@@ -271,6 +350,11 @@ pub fn create(
     checked(
         verify_empty(&directory),
         |code| ProbeCheckpoint::RestrictedDaclVerifyFailed { code },
+        &checkpoint,
+    )?;
+    checked(
+        verify_low_label(&directory),
+        |code| ProbeCheckpoint::RestrictedLabelVerifyFailed { code },
         &checkpoint,
     )?;
     checkpoint(ProbeCheckpoint::RestrictedDaclVerified)?;
@@ -283,10 +367,23 @@ pub struct CreationAttempt {
     created: bool,
     create_code: u32,
     roundtrip_code: Option<u32>,
+    low_label: Option<bool>,
+    label_code: Option<u32>,
 }
 impl CreationAttempt {
     fn passed(&self) -> bool {
         self.created && self.create_code == 0 && self.roundtrip_code == Some(0)
+    }
+    fn passed_labelled(&self) -> bool {
+        self.passed() && self.low_label == Some(true) && self.label_code == Some(0)
+    }
+    fn observed_unlabelled(&self) -> bool {
+        self.passed()
+            || (!self.created
+                && self.create_code == ERROR_ACCESS_DENIED
+                && self.roundtrip_code.is_none()
+                && self.low_label.is_none()
+                && self.label_code.is_none())
     }
 }
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -298,19 +395,22 @@ pub struct DirectoryControls {
     ordinary_absolute: CreationAttempt,
     explicit_relative: CreationAttempt,
     explicit_absolute: CreationAttempt,
+    labelled_relative: CreationAttempt,
+    labelled_absolute: CreationAttempt,
 }
 impl DirectoryControls {
+    pub fn baseline_passed(&self) -> bool {
+        self.passed() && self.explicit_relative.passed() && self.explicit_absolute.passed()
+    }
     pub fn passed(&self) -> bool {
         self.parent_add_opened
             && self.parent_add_code == 0
-            && [
-                &self.ordinary_relative,
-                &self.ordinary_absolute,
-                &self.explicit_relative,
-                &self.explicit_absolute,
-            ]
-            .iter()
-            .all(|attempt| attempt.passed())
+            && self.ordinary_relative.passed()
+            && self.ordinary_absolute.passed()
+            && self.labelled_relative.passed_labelled()
+            && self.labelled_absolute.passed_labelled()
+            && self.explicit_relative.observed_unlabelled()
+            && self.explicit_absolute.observed_unlabelled()
     }
 }
 fn io_code(error: &std::io::Error) -> u32 {
@@ -337,6 +437,8 @@ fn create_attempt(path: &Path, descriptor: Option<&Descriptor>) -> CreationAttem
             created: false,
             create_code: unsafe { GetLastError() },
             roundtrip_code: None,
+            low_label: None,
+            label_code: None,
         };
     }
     let payload = path.join("sentinel.txt");
@@ -347,14 +449,34 @@ fn create_attempt(path: &Path, descriptor: Option<&Descriptor>) -> CreationAttem
         Ok(_) => ERROR_INVALID_DATA,
         Err(error) => io_code(&error),
     };
+    let inspection = OpenOptions::new()
+        .access_mode(READ_CONTROL | FILE_READ_ATTRIBUTES)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(
+            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+        )
+        .open(path)
+        .map_err(|error| Error::Api {
+            operation: "RestrictedControlLabelOpen",
+            code: io_code(&error),
+        })
+        .and_then(|file| read_low_label(&file));
+    let (low_label, label_code) = match inspection {
+        Ok(value) => (Some(value), Some(0)),
+        Err(Error::Api { code, .. }) => (None, Some(code)),
+        Err(_) => (None, Some(ERROR_INVALID_DATA)),
+    };
     CreationAttempt {
         created: true,
         create_code: 0,
         roundtrip_code: Some(code),
+        low_label,
+        label_code,
     }
 }
 fn directory_controls_at(relative_root: &Path, absolute_root: &Path) -> Result<DirectoryControls> {
-    let descriptor = creation_descriptor()?;
+    let descriptor = creation_descriptor(false)?;
+    let labelled = creation_descriptor(true)?;
     let parent = OpenOptions::new()
         .access_mode(FILE_ADD_SUBDIRECTORY)
         .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
@@ -382,6 +504,14 @@ fn directory_controls_at(relative_root: &Path, absolute_root: &Path) -> Result<D
             &absolute_root.join("explicit-absolute"),
             Some(&descriptor),
         ),
+        labelled_relative: create_attempt(
+            &relative_root.join("labelled-relative"),
+            Some(&labelled),
+        ),
+        labelled_absolute: create_attempt(
+            &absolute_root.join("labelled-absolute"),
+            Some(&labelled),
+        ),
     })
 }
 /// Diagnostic comparison only: the same paths and calls run both unconfined and
@@ -399,21 +529,36 @@ mod tests {
         let tree = tempfile::tempdir().unwrap();
         let controls = directory_controls_at(tree.path(), tree.path()).unwrap();
         assert!(
-            controls.passed(),
+            controls.baseline_passed(),
             "unconfined directory creation controls failed: {controls:?}"
         );
         let mut failed = controls.clone();
         failed.parent_add_opened = false;
         assert!(!failed.passed());
         let mut failed = controls.clone();
-        failed.explicit_relative.created = false;
+        failed.labelled_relative.created = false;
         assert!(!failed.passed());
         let mut failed = controls.clone();
         failed.ordinary_absolute.roundtrip_code = None;
         assert!(!failed.passed());
-        let mut failed = controls;
-        failed.explicit_absolute.create_code = ERROR_ACCESS_DENIED;
+        let mut failed = controls.clone();
+        failed.labelled_absolute.low_label = Some(false);
         assert!(!failed.passed());
+        let mut failed = controls.clone();
+        failed.labelled_absolute.label_code = Some(ERROR_ACCESS_DENIED);
+        assert!(!failed.passed());
+        let mut denied = controls;
+        denied.explicit_relative = CreationAttempt {
+            created: false,
+            create_code: ERROR_ACCESS_DENIED,
+            roundtrip_code: None,
+            low_label: None,
+            label_code: None,
+        };
+        assert!(denied.passed());
+        assert!(!denied.baseline_passed());
+        denied.explicit_relative.create_code = ERROR_ALREADY_EXISTS;
+        assert!(!denied.passed());
     }
     #[test]
     fn created_child_locks_out_new_inspection_but_retains_security_handle() {
@@ -421,14 +566,43 @@ mod tests {
         let path = tree.path().join("restricted");
         let file = create(&path, |_| Ok(())).unwrap();
         verify_empty(&file).unwrap();
+        verify_low_label(&file).unwrap();
         assert_eq!(
             std::fs::read_dir(&path).unwrap_err().kind(),
             std::io::ErrorKind::PermissionDenied
         );
         // Restore only this owned empty fixture through its pre-lockout handle.
-        assign_dacl(&file, &creation_descriptor().unwrap()).unwrap();
+        assign_dacl(&file, &creation_descriptor(true).unwrap()).unwrap();
         drop(file);
         std::fs::remove_dir(&path).unwrap();
+    }
+    #[test]
+    fn fixture_descriptor_changes_only_the_mandatory_label() {
+        let unlabelled = creation_descriptor(false).unwrap();
+        let labelled = creation_descriptor(true).unwrap();
+        assert!(!descriptor_has_low_label(&unlabelled).unwrap());
+        assert!(descriptor_has_low_label(&labelled).unwrap());
+        for sddl in ["S:(ML;;NW;;;ME)", "S:(ML;;NR;;;LW)", "S:(ML;IO;NW;;;LW)"] {
+            assert!(!descriptor_has_low_label(&descriptor(sddl).unwrap()).unwrap());
+        }
+        fn acl_bytes(descriptor: &Descriptor) -> Vec<u8> {
+            let (mut present, mut defaulted) = (0, 0);
+            let mut dacl = null_mut();
+            native(
+                unsafe {
+                    GetSecurityDescriptorDacl(descriptor.0, &mut present, &mut dacl, &mut defaulted)
+                },
+                "SyntheticDacl",
+            )
+            .unwrap();
+            assert!(present != 0 && !dacl.is_null());
+            unsafe { std::slice::from_raw_parts(dacl.cast(), (*dacl).AclSize as usize) }.to_vec()
+        }
+        // Never print SID-bearing ACL bytes on a failed equality assertion.
+        assert!(
+            acl_bytes(&unlabelled) == acl_bytes(&labelled),
+            "fixture DACL grants changed"
+        );
     }
     #[test]
     fn fixture_refuses_existing_directory_without_locking_it() {
