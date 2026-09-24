@@ -1,0 +1,25 @@
+{
+  "format_version": 1,
+  "scope": "prepared local vector sources only; native Figma authoring and visual verification pending",
+  "observed_date": "2026-09-25",
+  "files": [
+    {
+      "path": "source-ledger.svg",
+      "bytes": 13773,
+      "sha256": "832812c6326994e6f727e1521e247cbaa2a1a54b9ef3a7aaaddbba2de4cd4d4b",
+      "native_frame_id": null,
+      "native_editable_layers_verified": false,
+      "native_export_verified": false,
+      "remote_sync": "not_applicable_not_authored"
+    },
+    {
+      "path": "source-states.svg",
+      "bytes": 5620,
+      "sha256": "4876b41f1d66499ba6b681bd5b51b7473316922b614be255a70b55f01058ebfc",
+      "native_frame_id": null,
+      "native_editable_layers_verified": false,
+      "native_export_verified": false,
+      "remote_sync": "not_applicable_not_authored"
+    }
+  ]
+}

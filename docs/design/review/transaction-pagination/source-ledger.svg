@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1110" viewBox="0 0 1120 1110">
+<rect x="0" y="0" width="1120" height="1110" fill="#f7f8f4"/>
+<rect x="0" y="0" width="1120" height="7" fill="#a64814"/>
+<text x="28" y="37" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">TRANSACTIONS / CANONICAL LEDGER</text>
+<text x="28" y="75" font-family="Inter" font-size="29" font-weight="650" fill="#202729">Ledger pages</text>
+<text x="28" y="101" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">Exact rows · explicit scope · source review remains one action away</text>
+<rect x="914" y="28" width="178" height="35" fill="#202729"/>
+<text x="930" y="51" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#f7f8f4">REVISION 84 / CURRENT</text>
+<rect x="28" y="122" width="1064" height="1" fill="#cbd0ca"/>
+<text x="28" y="151" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">DRAFT FILTERS</text>
+<text x="28" y="179" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">FROM DATE</text>
+<rect x="28" y="188" width="176" height="36" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="38" y="211" font-family="JetBrains Mono" font-size="13" font-weight="400" fill="#202729">2025-01-01</text>
+<text x="218" y="179" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">THROUGH DATE</text>
+<rect x="218" y="188" width="176" height="36" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="228" y="211" font-family="JetBrains Mono" font-size="13" font-weight="400" fill="#202729">2025-03-31</text>
+<text x="408" y="179" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">EXACT ACCOUNT</text>
+<rect x="408" y="188" width="215" height="36" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="418" y="211" font-family="JetBrains Mono" font-size="13" font-weight="400" fill="#202729">000042</text>
+<text x="637" y="179" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">CURRENCY</text>
+<rect x="637" y="188" width="143" height="36" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="647" y="211" font-family="JetBrains Mono" font-size="13" font-weight="400" fill="#202729">AUD</text>
+<text x="794" y="179" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">REVIEW</text>
+<rect x="794" y="188" width="298" height="36" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="804" y="211" font-family="JetBrains Mono" font-size="13" font-weight="400" fill="#202729">Pending</text>
+<text x="28" y="249" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">DATE ORDER</text>
+<rect x="28" y="258" width="285" height="36" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="38" y="281" font-family="JetBrains Mono" font-size="13" font-weight="400" fill="#202729">Oldest first</text>
+<text x="327" y="249" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">ROWS PER REQUEST</text>
+<rect x="327" y="258" width="185" height="36" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="337" y="281" font-family="JetBrains Mono" font-size="13" font-weight="400" fill="#202729">Up to 25</text>
+<rect x="734" y="258" width="104" height="36" fill="#f7f8f4" stroke="#cbd0ca"/>
+<text x="746" y="281" font-family="Inter" font-size="12" font-weight="600" fill="#202729">Clear draft</text>
+<rect x="850" y="258" width="242" height="36" fill="#202729" stroke="#cbd0ca"/>
+<text x="862" y="281" font-family="Inter" font-size="12" font-weight="600" fill="#f7f8f4">Apply filters · first page</text>
+<text x="28" y="322" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">APPLIED  2025-01-01 — 2025-03-31 inclusive / account 000042 / AUD / pending</text>
+<text x="28" y="345" font-family="Inter" font-size="12" font-weight="400" fill="#4f5c60">Oldest first · equal dates keep canonical row order · analysis scopes below remain separate</text>
+<rect x="28" y="366" width="1064" height="1" fill="#cbd0ca"/>
+<rect x="28" y="384" width="213" height="88" fill="#202729" stroke="#cbd0ca"/>
+<text x="43" y="410" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#bfc8c8">SCOPED ROWS</text>
+<text x="43" y="448" font-family="Inter" font-size="25" font-weight="600" fill="#f7f8f4">1,248</text>
+<rect x="241" y="384" width="213" height="88" fill="#202729" stroke="#cbd0ca"/>
+<text x="256" y="410" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#bfc8c8">ACCEPTED</text>
+<text x="256" y="448" font-family="Inter" font-size="25" font-weight="600" fill="#f7f8f4">880</text>
+<rect x="454" y="384" width="213" height="88" fill="#202729" stroke="#cbd0ca"/>
+<text x="469" y="410" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#bfc8c8">PENDING</text>
+<text x="469" y="448" font-family="Inter" font-size="25" font-weight="600" fill="#f7f8f4">326</text>
+<rect x="667" y="384" width="213" height="88" fill="#202729" stroke="#cbd0ca"/>
+<text x="682" y="410" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#bfc8c8">REJECTED</text>
+<text x="682" y="448" font-family="Inter" font-size="25" font-weight="600" fill="#f7f8f4">18</text>
+<rect x="880" y="384" width="213" height="88" fill="#202729" stroke="#cbd0ca"/>
+<text x="895" y="410" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#bfc8c8">DEFERRED</text>
+<text x="895" y="448" font-family="Inter" font-size="25" font-weight="600" fill="#f7f8f4">24</text>
+<text x="28" y="498" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">326 SELECTED / 25 ON THIS PAGE</text>
+<text x="600" y="498" font-family="Inter" font-size="12" font-weight="400" fill="#4f5c60">Review counts describe the full applied scope.</text>
+<rect x="28" y="518" width="1064" height="34" fill="#202729"/>
+<text x="42" y="540" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#f7f8f4">DATE</text>
+<text x="155" y="540" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#f7f8f4">ORIGINAL DESCRIPTION</text>
+<text x="554" y="540" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#f7f8f4">ACCOUNT</text>
+<text x="700" y="540" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#f7f8f4">AMOUNT</text>
+<text x="848" y="540" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#f7f8f4">CHECKS</text>
+<text x="1000" y="540" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#f7f8f4">REVIEW</text>
+<rect x="28" y="552" width="1064" height="45" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="42" y="580" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">2025-02-04</text>
+<text x="155" y="580" font-family="Inter" font-size="12" font-weight="500" fill="#202729">NORTH QUAY MARKET 0042</text>
+<text x="554" y="580" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">000042</text>
+<text x="700" y="580" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">-64.20 AUD</text>
+<text x="848" y="580" font-family="Inter" font-size="10" font-weight="500" fill="#a64814">Possible duplicate</text>
+<text x="1000" y="580" font-family="Inter" font-size="11" font-weight="500" fill="#202729">Pending</text>
+<rect x="28" y="597" width="1064" height="45" fill="#f7f8f4" stroke="#cbd0ca"/>
+<text x="42" y="625" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">2025-02-04</text>
+<text x="155" y="625" font-family="Inter" font-size="12" font-weight="500" fill="#202729">LOCAL CAFE / TERMINAL 03</text>
+<text x="554" y="625" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">000042</text>
+<text x="700" y="625" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">-12.50 AUD</text>
+<text x="848" y="625" font-family="Inter" font-size="10" font-weight="500" fill="#202729">—</text>
+<text x="1000" y="625" font-family="Inter" font-size="11" font-weight="500" fill="#202729">Pending</text>
+<rect x="28" y="642" width="1064" height="45" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="42" y="670" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">2025-02-05</text>
+<text x="155" y="670" font-family="Inter" font-size="12" font-weight="500" fill="#202729">DIRECT DEBIT • WATER</text>
+<text x="554" y="670" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">000042</text>
+<text x="700" y="670" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">-76.00 AUD</text>
+<text x="848" y="670" font-family="Inter" font-size="10" font-weight="500" fill="#202729">—</text>
+<text x="1000" y="670" font-family="Inter" font-size="11" font-weight="500" fill="#202729">Pending</text>
+<rect x="28" y="687" width="1064" height="45" fill="#f7f8f4" stroke="#cbd0ca"/>
+<text x="42" y="715" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">2025-02-06</text>
+<text x="155" y="715" font-family="Inter" font-size="12" font-weight="500" fill="#202729">ATM CASH WITHDRAWAL</text>
+<text x="554" y="715" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">000042</text>
+<text x="700" y="715" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">-100.00 AUD</text>
+<text x="848" y="715" font-family="Inter" font-size="10" font-weight="500" fill="#202729">—</text>
+<text x="1000" y="715" font-family="Inter" font-size="11" font-weight="500" fill="#202729">Pending</text>
+<rect x="28" y="732" width="1064" height="45" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="42" y="760" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">2025-02-07</text>
+<text x="155" y="760" font-family="Inter" font-size="12" font-weight="500" fill="#202729">REFUND / OFFICE SUPPLIES</text>
+<text x="554" y="760" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">000042</text>
+<text x="700" y="760" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">18.95 AUD</text>
+<text x="848" y="760" font-family="Inter" font-size="10" font-weight="500" fill="#202729">—</text>
+<text x="1000" y="760" font-family="Inter" font-size="11" font-weight="500" fill="#202729">Pending</text>
+<rect x="28" y="777" width="1064" height="45" fill="#f7f8f4" stroke="#cbd0ca"/>
+<text x="42" y="805" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">2025-02-07</text>
+<text x="155" y="805" font-family="Inter" font-size="12" font-weight="500" fill="#202729">HARBOUR TRANSIT</text>
+<text x="554" y="805" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">000042</text>
+<text x="700" y="805" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">-8.40 AUD</text>
+<text x="848" y="805" font-family="Inter" font-size="10" font-weight="500" fill="#202729">—</text>
+<text x="1000" y="805" font-family="Inter" font-size="11" font-weight="500" fill="#202729">Pending</text>
+<rect x="28" y="822" width="1064" height="45" fill="#ffffff" stroke="#cbd0ca"/>
+<text x="42" y="850" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">2025-02-08</text>
+<text x="155" y="850" font-family="Inter" font-size="12" font-weight="500" fill="#202729">LOCAL CAFE / TERMINAL 03</text>
+<text x="554" y="850" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">000042</text>
+<text x="700" y="850" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#202729">-12.50 AUD</text>
+<text x="848" y="850" font-family="Inter" font-size="10" font-weight="500" fill="#a64814">Possible duplicate</text>
+<text x="1000" y="850" font-family="Inter" font-size="11" font-weight="500" fill="#202729">Pending</text>
+<text x="28" y="890" font-family="Inter" font-size="11" font-weight="400" fill="#4f5c60">Illustrative viewport: the remaining loaded rows continue within the ledger scroll region.</text>
+<rect x="28" y="909" width="1064" height="1" fill="#cbd0ca"/>
+<text x="28" y="945" font-family="Inter" font-size="16" font-weight="600" fill="#202729">26–50 of 326 selected</text>
+<text x="28" y="968" font-family="JetBrains Mono" font-size="11" font-weight="400" fill="#4f5c60">25 returned · up to 25 requested</text>
+<rect x="533" y="923" width="75" height="36" fill="#f7f8f4" stroke="#cbd0ca"/>
+<text x="545" y="946" font-family="Inter" font-size="12" font-weight="600" fill="#202729">First</text>
+<rect x="618" y="923" width="78" height="36" fill="#f7f8f4" stroke="#cbd0ca"/>
+<text x="630" y="946" font-family="Inter" font-size="12" font-weight="600" fill="#202729">Back</text>
+<rect x="706" y="923" width="78" height="36" fill="#202729" stroke="#cbd0ca"/>
+<text x="718" y="946" font-family="Inter" font-size="12" font-weight="600" fill="#f7f8f4">Next</text>
+<rect x="806" y="923" width="286" height="36" fill="#f7f8f4" stroke="#cbd0ca"/>
+<text x="818" y="946" font-family="Inter" font-size="12" font-weight="600" fill="#202729">Export these 25 rows</text>
+<text x="28" y="1007" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#a64814">CURRENT-PAGE EXPORT ONLY</text>
+<text x="28" y="1030" font-family="Inter" font-size="12" font-weight="400" fill="#4f5c60">Includes these 25 exact rows, applied scope and revision 84. The full selection contains 326 rows.</text>
+<text x="28" y="1052" font-family="Inter" font-size="12" font-weight="400" fill="#4f5c60">Repeated purchases remain visible. No currency conversion or page-only financial total is calculated.</text>
+<text x="28" y="1090" font-family="JetBrains Mono" font-size="9" font-weight="500" fill="#a64814">ILLUSTRATIVE SYNTHETIC DESIGN / NO QUERY OR FINANCIAL RESULT IS CLAIMED</text>
+</svg>
