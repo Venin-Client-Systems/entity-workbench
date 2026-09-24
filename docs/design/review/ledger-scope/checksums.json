@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T20:03:33.731548+00:00",
+  "figma_file": "O50ISV0LGG8nKDcFORNMbO",
+  "frame_id": "57:2",
+  "name": "20 / Instrument \u2014 Ledger scope and native save",
+  "size": [
+    1120,
+    1140
+  ],
+  "position": [
+    33000,
+    -500
+  ],
+  "editable_text_and_vector_layers_observed": true,
+  "native_export": true,
+  "independent_remote_readback": "Unverified: separate existing review view returned debugger unattached; newly opened verification view timed out. Originals remain untouched.",
+  "export_zip_sha256": "a42587f346607b2b48c6531eb9ffb6d07448402acefe186daa5e432675983312",
+  "images": {
+    "docs/design/review/ledger-scope/figma-ledger.png": "d08058d3b089956ec37091fa9fe082a134e2a7cbe31aaaadc048100c9b5151b8",
+    "docs/design/review/desktop-summary/ledger-1440.png": "37105d1642cbdd5550bd59f6883aae72941059872949a8fb21b717ba27c688b7",
+    "docs/design/review/desktop-summary/ledger-960.png": "73472dabfb3f7f0d2d06aaa0b4db2bb3560db7a5c4971de76387890df81fbea8"
+  },
+  "scope": "Synthetic component design with four specimen rows; not measured application output or complete workflow sign-off."
+}

@@ -4,7 +4,7 @@ This increment implements the consumer migration in [DESKTOP-SUMMARY-CUTOVER.md]
 
 The interface uses a distinct summary/workspace type. It does not fill omitted transaction or decision arrays with empty arrays. Overview and currency cards use explicit review, duplicate, balance and included/excluded counts; chart positions remain approximate while monetary text remains exact. Finding citations/history and pattern/comparison source reads continue through their dedicated APIs. Account/currency choices reuse the bounded [facet selector](TRANSACTION-FACETS.md).
 
-The envelope's schema version is 1. The retained workspace has its own canonical storage schema version, currently 4; these are different version domains. The transport guard checks the envelope, retained fields and nonnegative consistent denominators. A missing workspace is not treated as a successful backup: backup has a separate explicit response check. Summary publication is monotonic within the current workspace so an older successful response cannot replace a newer imported state. Discarding an obsolete presentation does not retry or reverse its completed mutation. Future workspace switching must explicitly reset this revision guard with workspace identity.
+The envelope's schema version is 1. The retained workspace has its own canonical storage schema version, currently 5; these are different version domains. The transport guard checks the envelope, retained fields and nonnegative consistent denominators. A missing workspace is not treated as a successful backup: backup has a separate explicit response check. Summary publication is monotonic within the current workspace so an older successful response cannot replace a newer imported state. Discarding an obsolete presentation does not retry or reverse its completed mutation. Future workspace switching must explicitly reset this revision guard with workspace identity.
 
 ## Ledger scope and provenance
 
@@ -49,3 +49,8 @@ The new checks include real traversal past 100 prior pages, actual byte-short pa
 The compact ledger retains the existing focusable horizontal table region; page-wide controls fit without document overflow. Long inert description tokens wrap within their cells. The counterpart image is scrolled within the existing review modal. These are implementation captures, not pixel-equivalence claims or editable Figma exports.
 
 [Verification readout](review/desktop-summary/verification.json), [accessibility observations](review/desktop-summary/accessibility.json) and [checksums](review/desktop-summary/checksums.json) bind these observations to the saved source and artifacts. Native combined-application and 100,000-row verification are owned by the coordinating task and remain separate from this browser/core evidence.
+
+
+## Later design and native-save verification
+
+The [editable ledger scope extension](LEDGER-SCOPE.md) now has native layer verification and an inspected Figma export. Independent remote readback and the remaining state/compact frames are still open. The later [native save implementation](../exports/NATIVE-SAVES.md) replaces the WebKit download path for native JSON and HTML exports with typed core-owned verified files. The earlier browser evidence above remains historical and source-bound.

@@ -69,3 +69,6 @@ The separate Figma Make experiment is not the application. Its generated identit
 The two-stage local statement workflow now has [editable Figma frames, component specifications and rendered comparisons](STATEMENT-IMPORT.md). It preserves the industrial visual language while separating source mapping, full-row validation and pending import.
 
 The next assessment increment adds an [editable finding-review frame and working authoring/review flow](ASSESSMENT-REVIEW.md). Its source export, 1440/960 comparisons, accessibility observations and remaining frame scope are retained there.
+
+
+The [ledger scope extension](LEDGER-SCOPE.md) adds editable applied-filter, count, paging and native-save components, with an inspected native Figma export and explicit remaining remote/compact/state verification.
