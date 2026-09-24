@@ -184,6 +184,12 @@ fn worker_profile(
             ));
         }
     }
+    if component == "image" {
+        result.push_str(&format!(
+            "(allow file-write* (literal {}))\n",
+            quote(&job.join("raster.pgm"))?
+        ));
+    }
     Ok(result)
 }
 
@@ -404,6 +410,27 @@ pub(super) fn run_parser_java(
         Some(cancellation),
     )
 }
+pub(super) fn run_image_java(
+    runtime: &Path,
+    job: &Path,
+    class: &str,
+    args: &[String],
+    timeout: Duration,
+    cancellation: &super::CancellationToken,
+) -> Result<()> {
+    run_assigned_java(
+        runtime,
+        job,
+        JavaAssignment {
+            component: "image",
+            index: None,
+            class,
+        },
+        args,
+        timeout,
+        Some(cancellation),
+    )
+}
 struct JavaAssignment<'a> {
     component: &'static str,
     index: Option<(&'a Path, bool)>,
@@ -454,6 +481,7 @@ fn run_assigned_java(
             "-Xmx256m",
             "-XX:-UsePerfData",
             "-XX:+DisableAttachMechanism",
+            "-Djava.awt.headless=true",
         ])
         .arg(format!(
             "-Djava.io.tmpdir={}",
@@ -476,6 +504,21 @@ fn run_assigned_java(
         .stdout(Stdio::null())
         .stderr(Stdio::null());
     configure_process(&mut command)?;
+    if assignment.component == "image" {
+        // SAFETY: this hook only supplies a fixed stack value to setrlimit.
+        unsafe {
+            command.pre_exec(|| {
+                let limit = libc::rlimit {
+                    rlim_cur: (super::ocr::MAX_PIXELS + 32) as u64,
+                    rlim_max: (super::ocr::MAX_PIXELS + 32) as u64,
+                };
+                if libc::setrlimit(libc::RLIMIT_FSIZE, &limit) != 0 {
+                    return Err(std::io::Error::last_os_error());
+                }
+                Ok(())
+            });
+        }
+    }
     if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
         return Err(Error::Blocked("Local worker cancelled".into()));
     }
@@ -525,3 +568,6 @@ pub(super) fn read_result(path: &Path, limit: u64) -> Result<Vec<u8>> {
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod image_tests;

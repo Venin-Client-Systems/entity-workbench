@@ -7,6 +7,7 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
+pub mod image;
 pub mod ocr;
 pub mod parser;
 #[cfg(target_os = "macos")]

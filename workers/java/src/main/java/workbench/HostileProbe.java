@@ -12,6 +12,7 @@ public final class HostileProbe {
     }
     public static void main(String[] args) throws Exception {
         String mode=args[0];
+        if(mode.equals("identify_timeout")) { Files.writeString(Path.of("result.json"),Long.toString(ProcessHandle.current().pid())); Thread.sleep(60_000); return; }
         if(mode.equals("timeout")) { Thread.sleep(60_000); return; }
         if(mode.equals("permissions")) {
             Path nested=Path.of("scratch/locked/nested");
