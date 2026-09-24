@@ -98,23 +98,40 @@ public final class ParseWorker {
         }
         return document&&types;
     }
-    private static void pdf(Path input,JsonNode request,Map<String,Object> result)throws Exception {
-        result.put("parser","pdfbox-3.0.8");result.put("media_type","application/pdf");result.put("status","partial");
+    static void pdf(Path input,JsonNode request,Map<String,Object> result)throws Exception {
+        boolean localFonts=AppLocalFonts.selected();
+        result.put("parser",localFonts?AppLocalFonts.PARSER:"pdfbox-3.0.8");
+        result.put("media_type","application/pdf");result.put("status","partial");
         limitation(result,"ocr_not_performed");limitation(result,"embedded_documents_excluded");
-        try(var document=Loader.loadPDF(input.toFile())) {
-            if(!document.getCurrentAccessPermission().canExtractContent()) {fail(result,"text_extraction_restricted");return;}
-            int pages=request.path("limits").path("pages").asInt(0);
-            if(pages<1||pages>100)throw new IOException("Invalid page limit");
-            if(document.getNumberOfPages()>pages)limitation(result,"page_limit");
-            PDFTextStripper stripper=new PDFTextStripper();stripper.setEndPage(pages);
-            BoundedWriter text=new BoundedWriter();
-            try {stripper.writeText(document,text);} catch(TextLimit limit) {limitation(result,"text_limit");}
-            result.put("text",text.toString().replace("\0",""));
-            Metadata metadata=new Metadata();metadata.set("pdf:pages",Integer.toString(document.getNumberOfPages()));
-            var information=document.getDocumentInformation();
-            if(information.getTitle()!=null)metadata.set("title",information.getTitle());
-            if(information.getAuthor()!=null)metadata.set("author",information.getAuthor());
-            result.put("metadata",boundedMetadata(metadata,result));
+        try(AppLocalFonts fonts=localFonts?AppLocalFonts.install():null) {
+            try {
+                Protocol.checkpoint("pdf_load_started");
+                try(var document=Loader.loadPDF(input.toFile())) {
+                    Protocol.checkpoint("pdf_loaded");
+                    if(!document.getCurrentAccessPermission().canExtractContent()) {fail(result,"text_extraction_restricted");return;}
+                    int pages=request.path("limits").path("pages").asInt(0);
+                    if(pages<1||pages>100)throw new IOException("Invalid page limit");
+                    if(document.getNumberOfPages()>pages)limitation(result,"page_limit");
+                    Protocol.checkpoint("pdf_stripper_started");
+                    PDFTextStripper stripper=new PDFTextStripper();stripper.setEndPage(pages);
+                    Protocol.checkpoint("pdf_stripper_ready");
+                    BoundedWriter text=new BoundedWriter();
+                    Protocol.checkpoint("pdf_text_started");
+                    try {stripper.writeText(document,text);} catch(TextLimit limit) {limitation(result,"text_limit");}
+                    Protocol.checkpoint("pdf_text_finished");
+                    result.put("text",text.toString().replace("\0",""));
+                    Metadata metadata=new Metadata();metadata.set("pdf:pages",Integer.toString(document.getNumberOfPages()));
+                    var information=document.getDocumentInformation();
+                    if(information.getTitle()!=null)metadata.set("title",information.getTitle());
+                    if(information.getAuthor()!=null)metadata.set("author",information.getAuthor());
+                    result.put("metadata",boundedMetadata(metadata,result));
+                }
+            } finally {
+                if(fonts!=null&&fonts.used()) {
+                    limitation(result,"font_substituted");
+                    limitation(result,"font_coverage_unverified");
+                }
+            }
         }
     }
     private static void docx(Path input,Map<String,Object> result)throws Exception {
@@ -160,7 +177,8 @@ public final class ParseWorker {
                         }
                     } catch(CharacterCodingException unsupported) { /* retain explicit unsupported result */ }
                 }
-            } catch(InvalidPasswordException encrypted) {fail(result,"encrypted_document");}
+            } catch(AppLocalFonts.AssetException asset) {fail(result,"font_asset_unavailable");}
+              catch(InvalidPasswordException encrypted) {fail(result,"encrypted_document");}
               catch(ArchiveLimit limit) {fail(result,"archive_limits");}
               catch(Exception malformed) {
                   fail(result,"malformed_document");

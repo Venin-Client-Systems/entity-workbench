@@ -20,6 +20,8 @@ SOURCES = [
     "crates/core/src/engines/supervision/tests.rs",
     "workers/java/src/main/java/workbench/Protocol.java",
     "workers/java/src/main/java/workbench/SearchWorker.java",
+    "workers/java/src/main/java/workbench/FlatIndex.java",
+    "workers/java/src/main/java/workbench/CappedDirectory.java",
     "workers/java/src/main/java/workbench/HostileProbe.java",
     "scripts/test_macos_confinement.py",
 ]

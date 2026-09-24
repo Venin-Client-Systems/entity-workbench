@@ -1,5 +1,6 @@
 //! Isolated development launcher; the desktop does not enable it until native evidence exists.
 use std::{path::PathBuf, time::Duration};
+pub mod java;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
