@@ -119,6 +119,10 @@ impl JobCoordinator {
         self.dispatch_with(command, Workspace::dispatch_presentation)
     }
 
+    /// Shares canonical mutation, cancellation and wakeup ownership with other modes.
+    pub fn dispatch_summary(&self, command: Command) -> Result<serde_json::Value> {
+        self.dispatch_with(command, Workspace::dispatch_summary)
+    }
     fn dispatch_with(
         &self,
         command: Command,
@@ -472,6 +476,78 @@ mod tests {
         assert!(left.load(Ordering::Acquire));
         assert!(inspect(&coordinator, &job.id).result_ids.is_empty());
     }
+    #[test]
+    fn summary_dispatch_wakes_once_and_signals_the_same_cancellation_owner() {
+        let dir = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let workspace = Workspace::open(dir.path()).unwrap();
+        let entered = Arc::new(AtomicUsize::new(0));
+        let left = Arc::new(AtomicBool::new(false));
+        let worker_entered = entered.clone();
+        let worker_left = left.clone();
+        let coordinator = JobCoordinator::with_executor(
+            workspace,
+            1,
+            Arc::new(move |_, _, _, bytes, token| {
+                worker_entered.fetch_add(1, Ordering::AcqRel);
+                while !token.is_cancelled() {
+                    thread::sleep(Duration::from_millis(5));
+                }
+                worker_left.store(true, Ordering::Release);
+                Ok(ProcessingOutput::Document(result(bytes)))
+            }),
+        )
+        .unwrap();
+        let imported = coordinator
+            .dispatch_summary(Command::Import {
+                name: "summary-job.txt".into(),
+                bytes: b"Synthetic summary job".to_vec(),
+            })
+            .unwrap();
+        assert_eq!(imported["workspace"]["revision"], 1);
+        assert!(imported["workspace"].get("transactions").is_none());
+        let command = Command::QueueDocumentParse {
+            evidence_id: imported["workspace"]["evidence"][0]["id"]
+                .as_str()
+                .unwrap()
+                .into(),
+            request_key: uuid::Uuid::new_v4().to_string(),
+        };
+        let job: ProcessingJob =
+            serde_json::from_value(coordinator.dispatch_summary(command.clone()).unwrap()).unwrap();
+        until(|| entered.load(Ordering::Acquire) == 1);
+        assert_eq!(
+            inspect(&coordinator, &job.id).state,
+            ProcessingState::Running
+        );
+        let replay = coordinator.dispatch_summary(command).unwrap();
+        assert_eq!(replay["id"], job.id);
+        let cancellation: ProcessingJob = serde_json::from_value(
+            coordinator
+                .dispatch_summary(Command::CancelProcessingJob {
+                    job_id: job.id.clone(),
+                    expected_attempt: 1,
+                })
+                .unwrap(),
+        )
+        .unwrap();
+        assert!(cancellation.cancellation_requested);
+        until(|| inspect(&coordinator, &job.id).state == ProcessingState::Cancelled);
+        assert!(left.load(Ordering::Acquire));
+        assert_eq!(entered.load(Ordering::Acquire), 1);
+        assert!(inspect(&coordinator, &job.id).result_ids.is_empty());
+        let jobs = coordinator
+            .dispatch_summary(Command::ListProcessingJobs {})
+            .unwrap();
+        assert_eq!(jobs["jobs"].as_array().unwrap().len(), 1);
+        let summary = coordinator.dispatch_summary(Command::View {}).unwrap();
+        assert_eq!(
+            summary["workspace"]["evidence"].as_array().unwrap().len(),
+            1
+        );
+        coordinator.shutdown().unwrap();
+        assert!(coordinator.dispatch_summary(Command::View {}).is_err());
+    }
+
     #[test]
     fn worker_pool_is_bounded_and_shutdown_reaps_all_active_executors() {
         let dir = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();

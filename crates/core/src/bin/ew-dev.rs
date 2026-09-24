@@ -134,6 +134,20 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 ))?,
             ),
             (
+                "desktop-summary-response",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::desktop_summary::DesktopSummaryResponse
+                ))?,
+            ),
+            (
+                "ledger-summary",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::desktop_summary::LedgerSummary
+                ))?,
+            ),
+            (
                 "transaction-search-request",
                 1,
                 serde_json::to_value(schemars::schema_for!(

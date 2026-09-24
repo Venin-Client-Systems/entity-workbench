@@ -13,6 +13,7 @@ mod assessment;
 mod citation_catalogue;
 mod collection;
 mod derivative_files;
+mod desktop_summary;
 mod identity;
 mod presentation;
 mod processing;
@@ -31,6 +32,13 @@ mod transaction_sources;
 mod view_tests;
 
 const SCHEMA: u32 = 4;
+// Only workspace refresh responses vary. Direct reader/job responses are unchanged.
+#[derive(Clone, Copy)]
+enum ResponseMode {
+    Full,
+    Presentation,
+    Summary,
+}
 pub struct Workspace {
     root: PathBuf,
     conn: Connection,
@@ -288,13 +296,17 @@ impl Workspace {
         Ok(view)
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
-        self.dispatch_with_view(command, false)
+        self.dispatch_with_view(command, ResponseMode::Full)
     }
     /// Desktop response mode: immutable report bodies are fetched on explicit export.
     pub fn dispatch_presentation(&mut self, command: Command) -> Result<Value> {
-        self.dispatch_with_view(command, true)
+        self.dispatch_with_view(command, ResponseMode::Presentation)
     }
-    fn dispatch_with_view(&mut self, command: Command, presentation: bool) -> Result<Value> {
+    /// Opt-in smaller refresh response; desktop callers still use presentation mode.
+    pub fn dispatch_summary(&mut self, command: Command) -> Result<Value> {
+        self.dispatch_with_view(command, ResponseMode::Summary)
+    }
+    fn dispatch_with_view(&mut self, command: Command, mode: ResponseMode) -> Result<Value> {
         match command {
             Command::PageCitationCatalogue {
                 request,
@@ -660,10 +672,10 @@ impl Workspace {
                 return Ok(json!({"backup":path.file_name().and_then(|s|s.to_str())}));
             }
         }
-        if presentation {
-            workspace_response(self.presentation()?)
-        } else {
-            workspace_response(self.view()?)
+        match mode {
+            ResponseMode::Full => workspace_response(self.view()?),
+            ResponseMode::Presentation => workspace_response(self.presentation()?),
+            ResponseMode::Summary => Ok(serde_json::to_value(self.desktop_summary()?)?),
         }
     }
     pub fn import(&mut self, name: &str, bytes: &[u8]) -> Result<String> {

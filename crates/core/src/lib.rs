@@ -4,6 +4,7 @@ pub mod citation_catalogue;
 pub mod collection;
 pub mod collection_receipt;
 pub mod coordinator;
+pub mod desktop_summary;
 pub mod domain;
 pub mod engines;
 pub mod literal_search;
