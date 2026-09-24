@@ -18,6 +18,7 @@ mod processing;
 mod processing_regions;
 mod recovery;
 mod report_snapshots;
+mod review_decision_page;
 mod statements;
 mod transaction_analysis;
 mod transaction_comparison;
@@ -292,6 +293,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, presentation: bool) -> Result<Value> {
         match command {
+            Command::PageReviewDecisions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_review_decisions(&request, expected_revision)?,
+                )?);
+            }
             Command::ReadTransactionSources {
                 request,
                 expected_revision,

@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "ReviewDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "target_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "target_id",
+        "state",
+        "reason",
+        "at"
+      ],
+      "type": "object"
+    },
+    "ReviewDecisionTargetKind": {
+      "enum": [
+        "entity",
+        "observation",
+        "hypothesis",
+        "finding",
+        "transaction",
+        "processing_job",
+        "merge"
+      ],
+      "type": "string"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "next_cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "query_sha256": {
+      "type": "string"
+    },
+    "resolved_target_kind": {
+      "$ref": "#/$defs/ReviewDecisionTargetKind",
+      "description": "Current unique supported target; legacy ReviewDecision has no kind field."
+    },
+    "rows": {
+      "description": "Complete canonical records in insertion order, never sorted by timestamp.",
+      "items": {
+        "$ref": "#/$defs/ReviewDecision"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "scope_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "target_id": {
+      "type": "string"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "workspace_revision",
+    "target_id",
+    "resolved_target_kind",
+    "scope_count",
+    "query_sha256",
+    "rows"
+  ],
+  "title": "ReviewDecisionPage",
+  "type": "object"
+}

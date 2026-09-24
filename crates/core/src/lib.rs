@@ -8,6 +8,7 @@ pub mod engines;
 pub mod policy;
 pub mod processing;
 pub mod report;
+pub mod review_decision_page;
 pub mod statements;
 pub mod store;
 pub mod transaction_analysis;
