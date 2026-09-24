@@ -70,6 +70,9 @@ pub(super) fn capture(scratch: &Path, profile: &Path) -> FailureDiagnostics {
         scratch: tree_counts(scratch),
         profile: tree_counts(profile),
         fatal_header: read_fatal_header(scratch),
+        worker_checkpoint: read_output_bounded(&scratch.join("java-checkpoint.json"), 64)
+            .ok()
+            .and_then(|bytes| serde_json::from_slice(&bytes).ok()),
     }
 }
 
@@ -108,6 +111,12 @@ mod tests {
         fs::remove_file(scratch.join("jvm-error.log")).unwrap();
         fs::write(scratch.join("jvm-error.log"), vec![b'#'; 256 * 1024 + 1]).unwrap();
         assert!(capture(&scratch, &profile).fatal_header.is_none());
+        fs::write(&source, br#""metadata_read""#).unwrap();
+        fs::hard_link(&source, scratch.join("java-checkpoint.json")).unwrap();
+        assert!(capture(&scratch, &profile).worker_checkpoint.is_none());
+        fs::remove_file(scratch.join("java-checkpoint.json")).unwrap();
+        fs::write(scratch.join("java-checkpoint.json"), vec![b' '; 65]).unwrap();
+        assert!(capture(&scratch, &profile).worker_checkpoint.is_none());
     }
     #[test]
     fn fallback_diagnostic_requires_one_regular_bounded_numeric_log() {

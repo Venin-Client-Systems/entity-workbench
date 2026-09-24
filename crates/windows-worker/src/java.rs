@@ -311,7 +311,13 @@ fn execute_diagnosed(
     cancelled: impl Fn() -> bool,
     diagnostics: Option<&mut diagnostics::FailureDiagnostics>,
 ) -> Result<JavaOutput> {
-    let prepared = prepare(root, scratch_parent, job)?;
+    let mut prepared = prepare(root, scratch_parent, job)?;
+    if diagnostics.is_some() {
+        prepared
+            .request
+            .arguments
+            .insert(0, "-Dworkbench.probe=true".into());
+    }
     crate::validate(&prepared.request)?;
     bounded(
         prepared.metadata.len() <= 1024 * 1024,

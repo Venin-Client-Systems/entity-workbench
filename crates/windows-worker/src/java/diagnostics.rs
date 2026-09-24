@@ -1,5 +1,5 @@
 //! Fixed diagnostic fields only; worker-controlled raw logs never enter receipts.
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Serialize)]
 pub(crate) struct FailureDiagnostics {
@@ -7,6 +7,17 @@ pub(crate) struct FailureDiagnostics {
     pub scratch: Option<TreeCounts>,
     pub profile: Option<TreeCounts>,
     pub fatal_header: Option<FatalHeader>,
+    pub worker_checkpoint: Option<JavaCheckpoint>,
+}
+#[derive(Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub(crate) enum JavaCheckpoint {
+    FileWorkerEntered,
+    MetadataRead,
+    RequestDecoded,
+    ParserSelected,
+    SearchSelected,
+    WorkerReturned,
 }
 #[derive(Debug, Default, Serialize)]
 pub(crate) struct TreeCounts {
@@ -81,7 +92,7 @@ pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
                 }
             }
         }
-        if content.starts_with("EXCEPTION_") {
+        if content.starts_with("EXCEPTION_") || content.starts_with("Internal Error (0x") {
             if let Some((_, code)) = line.split_once("(0x") {
                 if let Some((code, _)) = code.split_once(')') {
                     if code.len() == 8 && code.bytes().all(|b| b.is_ascii_hexdigit()) {
@@ -169,5 +180,21 @@ mod tests {
         assert!(header.out_of_memory);
         assert_eq!(header.source_component, None);
         assert_eq!(header.source_line, None);
+        let text = b"# A fatal error has been detected by the Java Runtime Environment:\n# Internal Error (0xc0000008), pid=PRIVATE\n";
+        assert_eq!(fatal_header(text).unwrap().exception_code, Some(0xc0000008));
+    }
+    #[test]
+    fn java_checkpoint_is_a_closed_diagnostic_hint() {
+        assert_eq!(
+            serde_json::from_slice::<JavaCheckpoint>(br#""metadata_read""#).unwrap(),
+            JavaCheckpoint::MetadataRead
+        );
+        for bytes in [
+            br#""private_worker_text""#.as_slice(),
+            br#""metadata_read" {}"#,
+            br#"{"metadata_read":true}"#,
+        ] {
+            assert!(serde_json::from_slice::<JavaCheckpoint>(bytes).is_err());
+        }
     }
 }
