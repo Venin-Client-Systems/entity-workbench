@@ -18,6 +18,18 @@ impl Workspace {
                     .into(),
             ));
         }
+        let rows = self.transaction_analysis_rows(|row| request.includes(row))?;
+        let result = transaction_analysis::analyze(&rows, revision, request)?;
+        transaction.commit()?;
+        Ok(result)
+    }
+
+    /// The caller pins the revision and rows with a single SQLite read transaction.
+    /// Recorded counterpart sources support exclusions even when outside the selected scope.
+    pub(super) fn transaction_analysis_rows(
+        &self,
+        includes: impl Fn(&crate::domain::Transaction) -> bool,
+    ) -> Result<Vec<crate::domain::Transaction>> {
         let count: usize = self.conn.query_row(
             "SELECT count(*) FROM records WHERE kind='transaction'",
             [],
@@ -31,19 +43,17 @@ impl Workspace {
         // Include recorded counterpart sources: a filtered-out peer still supports an exclusion.
         let peers: BTreeSet<_> = rows
             .iter()
-            .filter(|t| request.includes(t))
+            .filter(|t| includes(t))
             .filter_map(|t| t.transfer_peer.as_deref())
             .collect();
         let sources: BTreeSet<_> = rows
             .iter()
-            .filter(|t| request.includes(t) || peers.contains(t.id.as_str()))
+            .filter(|t| includes(t) || peers.contains(t.id.as_str()))
             .map(|t| t.anchor.evidence_id())
             .collect();
         for key in sources {
             self.verify_original(&get::<Evidence>(&self.conn, "evidence", key)?)?;
         }
-        let result = transaction_analysis::analyze(&rows, revision, request)?;
-        transaction.commit()?;
-        Ok(result)
+        Ok(rows)
     }
 }

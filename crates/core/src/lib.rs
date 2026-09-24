@@ -11,6 +11,7 @@ pub mod report;
 pub mod statements;
 pub mod store;
 pub mod transaction_analysis;
+pub mod transaction_comparison;
 
 use thiserror::Error;
 #[derive(Debug, Error)]

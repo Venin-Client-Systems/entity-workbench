@@ -216,6 +216,17 @@ impl Accumulator {
         })
     }
 }
+/// Shared exact accumulation for already classified source rows. No review decisions are made here.
+pub(crate) fn sum_transactions<'a>(
+    rows: impl IntoIterator<Item = &'a Transaction>,
+) -> Result<MoneyTotal> {
+    let mut total = Accumulator::default();
+    for row in rows {
+        total.add(row, analytics::amount(&row.amount)?)?;
+    }
+    total.finish()
+}
+
 #[derive(Default)]
 struct CurrencyBuilder {
     scope_count: usize,

@@ -16,6 +16,7 @@ mod processing;
 mod report_snapshots;
 mod statements;
 mod transaction_analysis;
+mod transaction_comparison;
 
 const SCHEMA: u32 = 3;
 pub struct Workspace {
