@@ -17,6 +17,10 @@ use std::{
     ptr::{null, null_mut},
     time::Instant,
 };
+use windows_sys::Wdk::{
+    Foundation::OBJECT_ATTRIBUTES,
+    Storage::FileSystem::{NtOpenFile, FILE_DIRECTORY_FILE, FILE_OPEN_FOR_BACKUP_INTENT},
+};
 use windows_sys::Win32::{
     Foundation::*,
     Security::{Authorization::*, Isolation::*, *},
@@ -295,27 +299,10 @@ fn set_acl(
         // MAXIMUM_ALLOWED is deliberate: SetSecurityInfo documents that this
         // prevents automatic child-ACE propagation. Otherwise repairing a
         // parent DACL could mutate an outside file via a worker-created hardlink.
-        // This handle performs security/metadata operations only. Do not request
-        // synchronous file I/O, which additionally requires SYNCHRONIZE even
-        // when an object's owner retains only READ_CONTROL and WRITE_DAC.
-        let directory = OpenOptions::new()
-            .access_mode(MAXIMUM_ALLOWED)
-            .share_mode(0)
-            .custom_flags(
-                FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-            )
-            .open(path)
-            .map_err(|error| io_operation("OpenCleanupDirectory", error))?;
-        let metadata = directory
-            .metadata()
-            .map_err(|error| io_operation("InspectCleanupDirectory", error))?;
-        blocked(
-            metadata.is_dir() && metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT == 0,
-            "repair target is not an ordinary directory",
-        )?;
+        let (_parent, directory) = open_cleanup_directory(path)?;
         unsafe {
             SetSecurityInfo(
-                directory.as_raw_handle(),
+                directory.0,
                 SE_FILE_OBJECT,
                 flags,
                 null_mut(),
@@ -674,6 +661,71 @@ fn verify_token(process: HANDLE, sid: PSID) -> Result<()> {
 }
 fn clean(path: &Path, owner: &str) -> Result<()> {
     clean_entry(path, owner, 0, &mut 0)
+}
+/// Open only a directory security handle after worker termination. The native
+/// call receives exactly MAXIMUM_ALLOWED: it does not add data/attribute rights
+/// or synchronous I/O requirements to the owner's security-descriptor rights.
+/// FILE_DIRECTORY_FILE rejects files; OBJ_DONT_REPARSE rejects a reparse target
+/// during name resolution. The name is one component relative to the pinned
+/// ordinary parent, avoiding DOS-device reparses and unpinned relative traversal.
+/// Both handles live through SetSecurityInfo. All pointer storage is initialized,
+/// aligned and live for the call. No inherit flag, privilege change or fallback.
+fn open_cleanup_directory(path: &Path) -> Result<(fs::File, Handle)> {
+    let parent_path = path
+        .parent()
+        .ok_or(Error::Blocked("cleanup parent missing"))?;
+    let name = path
+        .file_name()
+        .ok_or(Error::Blocked("cleanup name missing"))?;
+    let parent = pin_directory(parent_path)?;
+    let mut name: Vec<u16> = name.encode_wide().collect();
+    blocked(
+        !name.is_empty() && name.len() <= 32767 && !name.contains(&0),
+        "invalid cleanup component",
+    )?;
+    let name_bytes = (name.len() * size_of::<u16>()) as u16;
+    let name = UNICODE_STRING {
+        Length: name_bytes,
+        MaximumLength: name_bytes,
+        Buffer: name.as_mut_ptr(),
+    };
+    let attributes = OBJECT_ATTRIBUTES {
+        Length: size_of::<OBJECT_ATTRIBUTES>() as u32,
+        RootDirectory: parent.as_raw_handle(),
+        ObjectName: &name,
+        Attributes: OBJ_CASE_INSENSITIVE | OBJ_DONT_REPARSE,
+        SecurityDescriptor: null(),
+        SecurityQualityOfService: null(),
+    };
+    let mut status = unsafe { zeroed::<windows_sys::Win32::System::IO::IO_STATUS_BLOCK>() };
+    let mut handle = null_mut();
+    let code = unsafe {
+        NtOpenFile(
+            &mut handle,
+            MAXIMUM_ALLOWED,
+            &attributes,
+            &mut status,
+            0,
+            FILE_DIRECTORY_FILE | FILE_OPEN_FOR_BACKUP_INTENT,
+        )
+    };
+    // NtOpenFile completes its open synchronously; no I/O is issued on the
+    // returned security handle. Treat every non-success status as failure.
+    let handle = if !handle.is_null() && handle != INVALID_HANDLE_VALUE {
+        Some(Handle(handle))
+    } else {
+        None
+    };
+    if code != 0 {
+        return Err(Error::Api {
+            operation: "NtOpenCleanupDirectory",
+            code: code as u32,
+        });
+    }
+    Ok((
+        parent,
+        handle.ok_or(Error::Blocked("native cleanup handle missing"))?,
+    ))
 }
 fn io_operation(operation: &'static str, error: std::io::Error) -> Error {
     match error.raw_os_error() {
@@ -1307,6 +1359,13 @@ mod tests {
             attempts.insert(name, serde_json::json!({"opened":result.is_ok(),"error_code":result.as_ref().err().and_then(std::io::Error::raw_os_error)}));
             drop(result);
         }
+        let native_open = open_cleanup_directory(path);
+        let native_opened = native_open.is_ok();
+        let native_code = native_open.as_ref().err().and_then(|error| match error {
+            Error::Api { code, .. } => Some(*code),
+            _ => None,
+        });
+        drop(native_open);
         println!(
             "restrictive_fixture_access={}",
             serde_json::json!({
@@ -1319,6 +1378,8 @@ mod tests {
                 "owner_is_enabled_group":owner_is_enabled_group,
                 "empty_dacl":empty_dacl,
                 "open_attempts":attempts,
+                "native_directory_opened":native_opened,
+                "native_directory_error_code":native_code,
             })
         );
         drop(descriptor);
@@ -1337,6 +1398,10 @@ mod tests {
         permissions.set_readonly(true);
         fs::set_permissions(&outside, permissions).unwrap();
         let dacl_before = dacl_snapshot(&outside);
+        assert!(
+            open_cleanup_directory(&scratch.join("alias.txt")).is_err(),
+            "directory repair must never open a hardlinked file"
+        );
         let attributes_before = fs::metadata(&outside).unwrap().file_attributes();
         let outcome = clean(&scratch, &user_sid().unwrap());
         assert!(
@@ -1412,6 +1477,20 @@ mod tests {
             .output()
             .unwrap();
         assert!(status.status.success(), "synthetic junction setup failed");
+        let outside_dacl = dacl_snapshot(&outside);
+        assert!(
+            open_cleanup_directory(&link).is_err(),
+            "native cleanup open followed a junction"
+        );
+        assert!(
+            set_acl(&link, &user_sid().unwrap(), None, true).is_err(),
+            "directory repair accepted a junction"
+        );
+        assert_eq!(
+            dacl_snapshot(&outside),
+            outside_dacl,
+            "junction repair changed target DACL"
+        );
         assert!(matches!(
             walk(&scratch, 1024, 20),
             Err(Error::Blocked("reparse path rejected"))
