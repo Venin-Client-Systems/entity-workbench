@@ -253,6 +253,19 @@ impl Workspace {
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
         match command {
+            Command::QueueImageOcr {
+                evidence_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.queue_image_ocr(&evidence_id, &request_key)?,
+                )?);
+            }
+            Command::InspectImageExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(
+                    self.image_extraction(&extraction_id)?,
+                )?);
+            }
             Command::QueueDocumentParse {
                 evidence_id,
                 request_key,

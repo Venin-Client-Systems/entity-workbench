@@ -1,13 +1,28 @@
 use super::*;
+#[cfg(any(test, debug_assertions))]
+use crate::engines::parser::ParseResult;
 use crate::{
-    engines::parser::{validate_result, ParseResult, ParseStatus},
+    engines::parser::{validate_result, ParseStatus},
     processing::*,
 };
 use std::fs::File;
 
+#[path = "processing_publication.rs"]
+mod publication;
+use publication::validated_derivative;
+
 const MAX_PENDING: usize = 64;
 const MAX_ATTEMPTS: u32 = 3;
 const PAGE_LIMIT: u32 = 200;
+
+fn supported_job(job: &ProcessingJob) -> Result<()> {
+    require(
+        job.schema_version == 2
+            || (job.schema_version == 1
+                && matches!(job.input, ProcessingInput::ParseDocument { .. })),
+        "Unsupported processing job version or operation",
+    )
+}
 
 fn attempt(job: &ProcessingJob, expected: u32) -> Result<()> {
     if job.attempt != expected {
@@ -58,16 +73,41 @@ impl Workspace {
         evidence_id: &str,
         request_key: &str,
     ) -> Result<ProcessingJob> {
+        self.queue_processing(evidence_id, request_key, false)
+    }
+
+    pub fn queue_image_ocr(
+        &mut self,
+        evidence_id: &str,
+        request_key: &str,
+    ) -> Result<ProcessingJob> {
+        self.queue_processing(evidence_id, request_key, true)
+    }
+
+    fn queue_processing(
+        &mut self,
+        evidence_id: &str,
+        request_key: &str,
+        image: bool,
+    ) -> Result<ProcessingJob> {
         require(
             Uuid::parse_str(request_key).is_ok_and(|key| key.to_string() == request_key),
             "A canonical UUID request key is required",
         )?;
         let expected = self.revision()?;
         let evidence: Evidence = get(&self.conn, "evidence", evidence_id)?;
-        let input = ProcessingInput::ParseDocument {
-            evidence_id: evidence.id.clone(),
-            sha256: evidence.sha256.clone(),
-            bytes: evidence.bytes,
+        let input = if image {
+            ProcessingInput::ImageOcr {
+                evidence_id: evidence.id.clone(),
+                sha256: evidence.sha256.clone(),
+                bytes: evidence.bytes,
+            }
+        } else {
+            ProcessingInput::ParseDocument {
+                evidence_id: evidence.id.clone(),
+                sha256: evidence.sha256.clone(),
+                bytes: evidence.bytes,
+            }
         };
         let existing: Option<String> = self
             .conn
@@ -95,7 +135,7 @@ impl Workspace {
         )?;
         let at = now();
         let job = ProcessingJob {
-            schema_version: 1,
+            schema_version: 2,
             id: id(),
             request_key: request_key.into(),
             input,
@@ -111,7 +151,12 @@ impl Workspace {
             started_at: None,
             finished_at: None,
             failure: None,
-            detail: "Queued for local document parsing".into(),
+            detail: if image {
+                "Queued for local image decoding and OCR"
+            } else {
+                "Queued for local document parsing"
+            }
+            .into(),
             result_ids: Vec::new(),
             lease: None,
         };
@@ -125,7 +170,9 @@ impl Workspace {
     }
 
     pub fn processing_job(&self, job_id: &str) -> Result<ProcessingJob> {
-        get(&self.conn, "processing_job", job_id)
+        let job = get(&self.conn, "processing_job", job_id)?;
+        supported_job(&job)?;
+        Ok(job)
     }
 
     pub fn processing_jobs(&self) -> Result<ProcessingJobPage> {
@@ -139,7 +186,11 @@ impl Workspace {
         )?;
         let rows = stmt.query_map([PAGE_LIMIT], |row| row.get::<_, String>(0))?;
         let jobs = rows
-            .map(|body| Ok(serde_json::from_str(&body?)?))
+            .map(|body| {
+                let job = serde_json::from_str(&body?)?;
+                supported_job(&job)?;
+                Ok(job)
+            })
             .collect::<Result<Vec<_>>>()?;
         Ok(ProcessingJobPage {
             jobs,
@@ -231,29 +282,25 @@ impl Workspace {
     }
 
     fn verify_processing_input(&self, input: &ProcessingInput) -> Result<Vec<u8>> {
-        let ProcessingInput::ParseDocument {
-            evidence_id,
-            sha256,
-            bytes,
-        } = input;
+        let (evidence_id, sha256, bytes) = input.source();
         let evidence: Evidence = get(&self.conn, "evidence", evidence_id)?;
         require(
-            evidence.sha256 == *sha256
-                && evidence.bytes == *bytes
-                && *bytes <= policy::MAX_IMPORT_BYTES as u64,
+            evidence.sha256 == sha256
+                && evidence.bytes == bytes
+                && bytes <= policy::MAX_IMPORT_BYTES as u64,
             "Job input no longer matches the retained evidence",
         )?;
         self.verify_original(&evidence)?;
         // Check the bytes actually passed to the worker too, not only an earlier filesystem read.
         let content = fs::read(self.root.join("originals").join(sha256))?;
         require(
-            content.len() as u64 == *bytes && hash(&content) == *sha256,
+            content.len() as u64 == bytes && hash(&content) == sha256,
             "Job input changed while reading",
         )?;
         Ok(content)
     }
 
-    pub(crate) fn claim_document_job(&mut self) -> Result<Option<PreparedDocumentJob>> {
+    pub(crate) fn claim_processing_job(&mut self) -> Result<Option<PreparedProcessingJob>> {
         require_verified_worker_exit(&self.conn)?;
         let expected = self.revision()?;
         let body: Option<String> = self.conn.query_row("SELECT body FROM records WHERE kind='processing_job' AND json_extract(body,'$.state')='queued' ORDER BY sequence LIMIT 1", [], |row| row.get(0)).optional()?;
@@ -261,6 +308,7 @@ impl Workspace {
             return Ok(None);
         };
         let mut job: ProcessingJob = serde_json::from_str(&body)?;
+        supported_job(&job)?;
         let bytes = match self.verify_processing_input(&job.input) {
             Ok(bytes) => bytes,
             Err(_) => {
@@ -285,17 +333,24 @@ impl Workspace {
         job.lease = Some(lease.clone());
         job.started_at = Some(now());
         job.updated_at = now();
-        job.detail = "Local document worker is running".into();
+        job.detail = match job.input {
+            ProcessingInput::ParseDocument { .. } => "Local document worker is running",
+            ProcessingInput::ImageOcr { .. } => {
+                "Local image decoding and OCR workers are running in sequence"
+            }
+        }
+        .into();
         self.change(Some(expected), "processing.claim", false, |conn| {
             require_verified_worker_exit(conn)?;
             put(conn, "processing_job", &job.id, &job)
         })?;
-        Ok(Some(PreparedDocumentJob {
+        Ok(Some(PreparedProcessingJob {
             ticket: JobTicket {
                 job_id: job.id,
                 attempt: job.attempt,
                 lease,
             },
+            input: job.input,
             bytes,
         }))
     }
@@ -328,6 +383,9 @@ impl Workspace {
     pub(crate) fn recover_processing_jobs(&mut self) -> Result<usize> {
         let expected = self.revision()?;
         let jobs: Vec<ProcessingJob> = all(&self.conn, "processing_job")?;
+        for job in &jobs {
+            supported_job(job)?;
+        }
         let jobs: Vec<_> = jobs
             .into_iter()
             .filter(|job| {
@@ -354,11 +412,25 @@ impl Workspace {
         Ok(count)
     }
 
-    /// Only the local coordinator has a claim ticket. Worker output is validated before publication.
+    #[cfg(any(test, debug_assertions))]
     pub(crate) fn finish_document_job(
         &mut self,
         ticket: &JobTicket,
         result: Result<ParseResult>,
+    ) -> Result<ProcessingJob> {
+        match result {
+            Ok(result) => {
+                self.finish_processing_job(ticket, Ok(&ProcessingOutput::Document(result)))
+            }
+            Err(error) => self.finish_processing_job(ticket, Err(error)),
+        }
+    }
+
+    /// Only the local coordinator has a claim ticket. Worker output is validated before publication.
+    pub(crate) fn finish_processing_job(
+        &mut self,
+        ticket: &JobTicket,
+        result: Result<&ProcessingOutput>,
     ) -> Result<ProcessingJob> {
         let expected = self.revision()?;
         let mut job = self.processing_job(&ticket.job_id)?;
@@ -370,12 +442,8 @@ impl Workspace {
         if job.state != ProcessingState::Running {
             // A completion may be delivered again after acknowledgement is lost. Never publish twice.
             if let Ok(result) = &result {
-                let result_hash = hash(&serde_json::to_vec(result)?);
-                if let Some(key) = job.result_ids.last() {
-                    let previous = self.extraction(key)?;
-                    if previous.attempt == ticket.attempt && previous.result_sha256 == result_hash {
-                        return Ok(job);
-                    }
+                if self.is_processing_replay(&job, ticket, result)? {
+                    return Ok(job);
                 }
             }
             return Err(Error::Conflict(
@@ -401,66 +469,49 @@ impl Workspace {
                 Some(ProcessingFailure::CancelledByAnalyst),
                 "Worker stopped; no result from the cancelled attempt was published",
             );
-        } else if self.verify_processing_input(&job.input).is_err() {
-            terminal(
-                &mut job,
-                ProcessingState::Blocked,
-                Some(ProcessingFailure::InputUnavailable),
-                "Retained input failed verification; the result was not published",
-            );
         } else {
-            match result {
-                Ok(result) => {
-                    let ProcessingInput::ParseDocument { sha256, bytes, .. } = &job.input;
-                    if validate_result(&result, sha256, *bytes).is_err() {
-                        terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::InvalidResult), "Worker result failed canonical validation; no derivative was published");
-                    } else {
-                        let result_hash = hash(&serde_json::to_vec(&result)?);
-                        let key = hash(format!("{}:{}", job.id, job.attempt).as_bytes());
-                        match result.status {
-                            ParseStatus::Complete => terminal(&mut job, ProcessingState::Completed, None, "Parsing completed; extraction awaits analyst review"),
-                            ParseStatus::Partial => terminal(&mut job, ProcessingState::Partial, None, "Partial extraction retained with explicit limitations; review is required"),
-                            ParseStatus::Unsupported => terminal(&mut job, ProcessingState::Blocked, Some(ProcessingFailure::UnsupportedFormat), "The packaged parser does not support this document"),
-                            ParseStatus::Failed => terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::DocumentFailed), "Document parsing failed; inspect the typed failure in its extraction record"),
+            let original = self.verify_processing_input(&job.input);
+            match (original, result) {
+                (Err(_), _) => terminal(
+                    &mut job,
+                    ProcessingState::Blocked,
+                    Some(ProcessingFailure::InputUnavailable),
+                    "Retained input failed verification; the result was not published",
+                ),
+                (Ok(original), Ok(output)) => {
+                    match validated_derivative(&mut job, &original, output) {
+                        Ok(record) => {
+                            job.result_ids.push(record.id().to_owned());
+                            extraction = Some(record);
                         }
-                        extraction = Some(ExtractionRecord {
-                            schema_version: 1,
-                            id: key.clone(),
-                            job_id: job.id.clone(),
-                            attempt: job.attempt,
-                            input: job.input.clone(),
-                            created_at: now(),
-                            result_sha256: result_hash,
-                            result,
-                        });
-                        job.result_ids.push(key);
+                        Err(_) => terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::InvalidResult), "Worker result failed canonical validation; no derivative was published"),
                     }
                 }
-                Err(Error::Cleanup(_)) => terminal(
+                (Ok(_), Err(Error::Cleanup(_))) => terminal(
                     &mut job,
                     ProcessingState::Failed,
                     Some(ProcessingFailure::CleanupFailed),
                     "Worker scratch cleanup failed; no derivative was published",
                 ),
-                Err(Error::Interrupted(_)) => terminal(
+                (Ok(_), Err(Error::Interrupted(_))) => terminal(
                     &mut job,
                     ProcessingState::Failed,
                     Some(ProcessingFailure::Interrupted),
                     "Coordinator stopped the worker; an explicit manual retry is required",
                 ),
-                Err(Error::Blocked(_)) => terminal(
+                (Ok(_), Err(Error::Blocked(_))) => terminal(
                     &mut job,
                     ProcessingState::Blocked,
                     Some(ProcessingFailure::RuntimeUnavailable),
                     "The required confined local runtime is unavailable",
                 ),
-                Err(Error::QuotaExhausted(_)) => terminal(
+                (Ok(_), Err(Error::QuotaExhausted(_))) => terminal(
                     &mut job,
                     ProcessingState::QuotaExhausted,
                     Some(ProcessingFailure::WorkerFailed),
                     "Worker resource limit exhausted",
                 ),
-                Err(_) => terminal(
+                (Ok(_), Err(_)) => terminal(
                     &mut job,
                     ProcessingState::Failed,
                     Some(ProcessingFailure::WorkerFailed),
@@ -473,7 +524,7 @@ impl Workspace {
                 suspend_queued_jobs(conn)?;
             }
             if let Some(record) = &extraction {
-                put(conn, "extraction", &record.id, record)?;
+                record.publish(conn)?;
             }
             put(conn, "processing_job", &job.id, &job)
         })?;
@@ -540,7 +591,7 @@ mod tests {
     fn publication_is_atomic_idempotent_and_preserves_original_text() {
         let (_dir, mut workspace, evidence) = fixture();
         let job = queue(&mut workspace, &evidence);
-        let prepared = workspace.claim_document_job().unwrap().unwrap();
+        let prepared = workspace.claim_processing_job().unwrap().unwrap();
         let result = result(&prepared.bytes);
         workspace.conn.execute_batch("CREATE TRIGGER reject_finish BEFORE UPDATE ON records WHEN NEW.kind='processing_job' AND json_extract(NEW.body,'$.state')='completed' BEGIN SELECT RAISE(ABORT,'synthetic publication failure'); END;").unwrap();
         let revision = workspace.revision().unwrap();
@@ -588,7 +639,7 @@ mod tests {
     fn cancellation_wins_a_success_race_and_stale_actions_cannot_touch_retry() {
         let (_dir, mut workspace, evidence) = fixture();
         let job = queue(&mut workspace, &evidence);
-        let prepared = workspace.claim_document_job().unwrap().unwrap();
+        let prepared = workspace.claim_processing_job().unwrap().unwrap();
         assert!(workspace.cancel_processing_job(&job.id, 0).is_err());
         let pending = workspace.cancel_processing_job(&job.id, 1).unwrap();
         assert_eq!(pending.state, ProcessingState::Running);
@@ -605,7 +656,7 @@ mod tests {
             workspace.cancel_processing_job(&job.id, 1).is_err(),
             "A stale cancellation must not cancel a queued retry"
         );
-        let next = workspace.claim_document_job().unwrap().unwrap();
+        let next = workspace.claim_processing_job().unwrap().unwrap();
         assert_eq!(next.ticket.attempt, 2);
         assert!(workspace.cancel_processing_job(&job.id, 1).is_err());
         assert!(workspace
@@ -624,10 +675,10 @@ mod tests {
             workspace.cancel_processing_job(&job.id, 1).unwrap().state,
             ProcessingState::Cancelled
         );
-        assert!(workspace.claim_document_job().unwrap().is_none());
+        assert!(workspace.claim_processing_job().unwrap().is_none());
         let job = queue(&mut workspace, &evidence);
         for attempt in 1..=3 {
-            let prepared = workspace.claim_document_job().unwrap().unwrap();
+            let prepared = workspace.claim_processing_job().unwrap().unwrap();
             assert_eq!(prepared.ticket.attempt, attempt);
             let failed = workspace
                 .finish_document_job(
@@ -636,7 +687,7 @@ mod tests {
                 )
                 .unwrap();
             assert_eq!(failed.state, ProcessingState::Failed);
-            assert!(workspace.claim_document_job().unwrap().is_none());
+            assert!(workspace.claim_processing_job().unwrap().is_none());
             let retry = workspace.retry_processing_job(&job.id, attempt, "Retry synthetic job");
             assert_eq!(retry.is_ok(), attempt < 3);
         }
@@ -646,7 +697,7 @@ mod tests {
         let (dir, mut workspace, evidence) = fixture();
         let job = queue(&mut workspace, &evidence);
         let ownership = workspace.lock_processing().unwrap();
-        let prepared = workspace.claim_document_job().unwrap().unwrap();
+        let prepared = workspace.claim_processing_job().unwrap().unwrap();
         let pending = queue(&mut workspace, &evidence);
         let mut another = Workspace::open(dir.path()).unwrap();
         assert!(another.lock_processing().is_err());
@@ -667,7 +718,7 @@ mod tests {
         assert!(another
             .retry_processing_job(&job.id, 1, "Unverified recovery retry")
             .is_err());
-        assert!(another.claim_document_job().is_err());
+        assert!(another.claim_processing_job().is_err());
         assert!(another.queue_document_parse(&evidence, &id()).is_err());
         assert_eq!(
             another.processing_job(&pending.id).unwrap().failure,
@@ -681,7 +732,7 @@ mod tests {
             .unwrap()
             .result_ids
             .is_empty());
-        assert!(reopened.claim_document_job().is_err());
+        assert!(reopened.claim_processing_job().is_err());
         assert_eq!(
             all::<ExtractionRecord>(&reopened.conn, "extraction")
                 .unwrap()
@@ -693,7 +744,7 @@ mod tests {
     fn bad_results_and_changed_originals_never_publish() {
         let (dir, mut workspace, evidence) = fixture();
         let job = queue(&mut workspace, &evidence);
-        let prepared = workspace.claim_document_job().unwrap().unwrap();
+        let prepared = workspace.claim_processing_job().unwrap().unwrap();
         let mut invalid = result(&prepared.bytes);
         invalid.content_sha256 = "0".repeat(64);
         assert_eq!(
@@ -706,11 +757,11 @@ mod tests {
         workspace
             .retry_processing_job(&job.id, 1, "Retry with verified synthetic input")
             .unwrap();
-        let prepared = workspace.claim_document_job().unwrap().unwrap();
-        let ProcessingInput::ParseDocument { sha256, .. } =
-            workspace.processing_job(&job.id).unwrap().input;
+        let prepared = workspace.claim_processing_job().unwrap().unwrap();
+        let input = workspace.processing_job(&job.id).unwrap().input;
+        let (_, sha256, _) = input.source();
         fs::rename(
-            dir.path().join("originals").join(&sha256),
+            dir.path().join("originals").join(sha256),
             dir.path().join("scratch").join("removed-original"),
         )
         .unwrap();
@@ -729,7 +780,7 @@ mod tests {
     fn backup_restores_jobs_derivatives_and_their_originals() {
         let (dir, mut workspace, evidence) = fixture();
         let job = queue(&mut workspace, &evidence);
-        let prepared = workspace.claim_document_job().unwrap().unwrap();
+        let prepared = workspace.claim_processing_job().unwrap().unwrap();
         let finished = workspace
             .finish_document_job(&prepared.ticket, Ok(result(&prepared.bytes)))
             .unwrap();
@@ -772,7 +823,7 @@ mod tests {
     fn interrupted_cancellation_does_not_claim_verified_worker_exit() {
         let (_dir, mut workspace, evidence) = fixture();
         let job = queue(&mut workspace, &evidence);
-        let _prepared = workspace.claim_document_job().unwrap().unwrap();
+        let _prepared = workspace.claim_processing_job().unwrap().unwrap();
         workspace.cancel_processing_job(&job.id, 1).unwrap();
         let _ownership = workspace.lock_processing().unwrap();
         workspace.recover_processing_jobs().unwrap();
@@ -791,7 +842,7 @@ mod tests {
         for legacy_orphan in [false, true] {
             let (_dir, mut workspace, evidence) = fixture();
             let job = queue(&mut workspace, &evidence);
-            let prepared = workspace.claim_document_job().unwrap().unwrap();
+            let prepared = workspace.claim_processing_job().unwrap().unwrap();
             let mut finished = workspace
                 .finish_document_job(
                     &prepared.ticket,
@@ -815,7 +866,7 @@ mod tests {
             );
             let retry = workspace.retry_processing_job(&job.id, 1, "Synthetic recovery review");
             assert_eq!(retry.is_ok(), !legacy_orphan);
-            assert_eq!(workspace.claim_document_job().is_ok(), !legacy_orphan);
+            assert_eq!(workspace.claim_processing_job().is_ok(), !legacy_orphan);
         }
     }
 
@@ -823,7 +874,7 @@ mod tests {
     fn orphan_recovery_and_queue_suspension_commit_together() {
         let (_dir, mut workspace, evidence) = fixture();
         let running = queue(&mut workspace, &evidence);
-        workspace.claim_document_job().unwrap().unwrap();
+        workspace.claim_processing_job().unwrap().unwrap();
         let queued = queue(&mut workspace, &evidence);
         let _ownership = workspace.lock_processing().unwrap();
         let revision = workspace.revision().unwrap();
@@ -858,13 +909,13 @@ mod tests {
         for cancelled in [false, true] {
             let (dir, mut workspace, evidence) = fixture();
             let job = queue(&mut workspace, &evidence);
-            let prepared = workspace.claim_document_job().unwrap().unwrap();
+            let prepared = workspace.claim_processing_job().unwrap().unwrap();
             if cancelled {
                 workspace.cancel_processing_job(&job.id, 1).unwrap();
             }
-            let ProcessingInput::ParseDocument { sha256, .. } = job.input;
+            let (_, sha256, _) = job.input.source();
             fs::rename(
-                dir.path().join("originals").join(&sha256),
+                dir.path().join("originals").join(sha256),
                 dir.path().join("scratch").join("removed-original"),
             )
             .unwrap();
@@ -892,7 +943,7 @@ mod tests {
         for cancelled in [false, true] {
             let (dir, mut workspace, evidence) = fixture();
             let job = queue(&mut workspace, &evidence);
-            let prepared = workspace.claim_document_job().unwrap().unwrap();
+            let prepared = workspace.claim_processing_job().unwrap().unwrap();
             let pending = queue(&mut workspace, &evidence);
             if cancelled {
                 workspace.cancel_processing_job(&job.id, 1).unwrap();
@@ -923,11 +974,11 @@ mod tests {
             assert!(workspace
                 .retry_processing_job(&job.id, 1, "Unsafe retry")
                 .is_err());
-            assert!(workspace.claim_document_job().is_err());
+            assert!(workspace.claim_processing_job().is_err());
             drop(workspace);
             let mut reopened = Workspace::open(dir.path()).unwrap();
             assert!(
-                reopened.claim_document_job().is_err(),
+                reopened.claim_processing_job().is_err(),
                 "Restart must not erase unknown process state"
             );
         }
@@ -937,3 +988,15 @@ mod tests {
 #[cfg(debug_assertions)]
 #[path = "processing_demo.rs"]
 mod demo;
+
+#[cfg(any(test, debug_assertions))]
+#[path = "processing_image_fixtures.rs"]
+mod image_fixtures;
+
+#[cfg(debug_assertions)]
+#[path = "processing_image_demo.rs"]
+mod image_demo;
+
+#[cfg(test)]
+#[path = "processing_image_tests.rs"]
+mod image_tests;

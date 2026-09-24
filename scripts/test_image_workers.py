@@ -76,9 +76,9 @@ def native_tests(runtime, report):
             shutil.copytree(runtime / component, moved / component)
         environment = dict(os.environ, WORKBENCH_TEST_IMAGE_RUNTIME=str(moved),
                            WORKBENCH_TEST_SECRET="synthetic-environment-sentinel")
-        command = ["cargo", "test", "--locked", "-p", "workbench-core", "--lib", "image",
-                   "--", "--include-ignored", "--skip", "engines::ocr::",
-                   "--test-threads=1", "--nocapture"]
+        command = ["cargo", "test", "--locked", "-p", "workbench-core", "--lib", "--",
+                   "engines::image::", "engines::supervision::image_tests::",
+                   "--include-ignored", "--test-threads=1", "--nocapture"]
         report["phase"] = "native_tests"
         return subprocess.run(command, cwd=ROOT, env=environment, capture_output=True,
                               text=True, timeout=180)

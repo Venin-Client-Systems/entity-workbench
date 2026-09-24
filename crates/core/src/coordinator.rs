@@ -1,7 +1,8 @@
-//! Bounded local document execution. The workspace mutex is released while a worker runs.
+//! Bounded local parsing and image OCR execution. The workspace mutex is released while a worker runs.
 use crate::{
     domain::Command,
-    engines::{parser::ParseResult, CancellationToken, Runtime},
+    engines::{CancellationToken, Runtime},
+    processing::{ProcessingInput, ProcessingOutput},
     store::Workspace,
     Error, Result,
 };
@@ -18,8 +19,15 @@ use std::{
     time::Duration,
 };
 
-type Executor =
-    dyn Fn(Option<Runtime>, &Path, &[u8], &CancellationToken) -> Result<ParseResult> + Send + Sync;
+type Executor = dyn Fn(
+        Option<Runtime>,
+        &Path,
+        &ProcessingInput,
+        &[u8],
+        &CancellationToken,
+    ) -> Result<ProcessingOutput>
+    + Send
+    + Sync;
 struct Shared {
     workspace: Mutex<Workspace>,
     active: Mutex<BTreeMap<String, CancellationToken>>,
@@ -40,12 +48,18 @@ impl JobCoordinator {
         Self::with_executor(
             workspace,
             concurrency,
-            Arc::new(|runtime, scratch, bytes, token| {
-                runtime
-                    .ok_or_else(|| {
-                        Error::Blocked("Packaged document runtime is unavailable".into())
-                    })?
-                    .parse_with_cancel(scratch, bytes, token)
+            Arc::new(|runtime, scratch, input, bytes, token| {
+                let runtime = runtime.ok_or_else(|| {
+                    Error::Blocked("Packaged processing runtime is unavailable".into())
+                })?;
+                match input {
+                    ProcessingInput::ParseDocument { .. } => runtime
+                        .parse_with_cancel(scratch, bytes, token)
+                        .map(ProcessingOutput::Document),
+                    ProcessingInput::ImageOcr { .. } => runtime
+                        .ocr_image_with_cancel(scratch, bytes, token)
+                        .map(|output| ProcessingOutput::Image(Box::new(output))),
+                }
             }),
         )
     }
@@ -57,7 +71,7 @@ impl JobCoordinator {
     ) -> Result<Self> {
         crate::require(
             (1..=2).contains(&concurrency),
-            "Document concurrency must be one or two",
+            "Processing concurrency must be one or two",
         )?;
         let ownership = workspace.lock_processing()?;
         workspace.recover_processing_jobs()?;
@@ -82,7 +96,7 @@ impl JobCoordinator {
                 .map_err(|_| Error::Blocked("Worker registry is unavailable".into()))?
                 .push(
                     thread::Builder::new()
-                        .name(format!("document-worker-{slot}"))
+                        .name(format!("processing-worker-{slot}"))
                         .spawn(move || work(shared))?,
                 );
         }
@@ -149,7 +163,7 @@ impl JobCoordinator {
         }
         if failed {
             return Err(Error::Interrupted(
-                "A document executor stopped unexpectedly".into(),
+                "A processing executor stopped unexpectedly".into(),
             ));
         }
         Ok(())
@@ -164,7 +178,7 @@ fn work(shared: Arc<Shared>) {
         if shared.stopping.load(Ordering::Acquire) {
             return;
         }
-        let prepared = match workspace.claim_document_job() {
+        let prepared = match workspace.claim_processing_job() {
             Ok(Some(prepared)) => prepared,
             Ok(None) | Err(_) => {
                 // Periodic wake also sees requests queued by another application view.
@@ -194,11 +208,11 @@ fn work(shared: Arc<Shared>) {
             ))
         } else {
             std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                (shared.executor)(runtime, &scratch, &prepared.bytes, &token)
+                (shared.executor)(runtime, &scratch, &prepared.input, &prepared.bytes, &token)
             }))
             .unwrap_or_else(|_| {
-                Err(Error::Validation(
-                    "Document adapter stopped unexpectedly".into(),
+                Err(Error::TerminationUnverified(
+                    "Processing adapter panicked; worker exit is unverified".into(),
                 ))
             })
         };
@@ -218,7 +232,7 @@ fn work(shared: Arc<Shared>) {
                 Err(Error::Interrupted("Coordinator stopped".into()))
             } else {
                 match &result {
-                    Ok(value) => Ok(value.clone()),
+                    Ok(value) => Ok(value),
                     Err(Error::Cleanup(_)) => Err(Error::Cleanup("Scratch cleanup failed".into())),
                     Err(Error::Blocked(_)) => {
                         Err(Error::Blocked("Confined runtime unavailable".into()))
@@ -229,7 +243,7 @@ fn work(shared: Arc<Shared>) {
                     Err(_) => Err(Error::Validation("Document worker failed".into())),
                 }
             };
-            let finished = workspace.finish_document_job(&prepared.ticket, completion);
+            let finished = workspace.finish_processing_job(&prepared.ticket, completion);
             if finished.is_ok() || shared.stopping.load(Ordering::Acquire) {
                 if let Ok(mut active) = shared.active.lock() {
                     active.remove(&prepared.ticket.job_id);
@@ -252,10 +266,14 @@ impl Drop for JobCoordinator {
 }
 
 #[cfg(test)]
+#[path = "coordinator_image_tests.rs"]
+mod image_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{
-        engines::parser::{ParseLimitation, ParseStatus},
+        engines::parser::{ParseLimitation, ParseResult, ParseStatus},
         processing::{ProcessingJob, ProcessingState},
         store::hash,
     };
@@ -312,14 +330,14 @@ mod tests {
         let coordinator = JobCoordinator::with_executor(
             workspace,
             1,
-            Arc::new(move |_, _, bytes, token| {
+            Arc::new(move |_, _, _, bytes, token| {
                 entered_worker.store(true, Ordering::Release);
                 while !token.is_cancelled() {
                     thread::sleep(Duration::from_millis(5));
                 }
                 left_worker.store(true, Ordering::Release);
                 // Deliberately race a valid success against cancellation.
-                Ok(result(bytes))
+                Ok(ProcessingOutput::Document(result(bytes)))
             }),
         )
         .unwrap();
@@ -362,7 +380,7 @@ mod tests {
         let coordinator = JobCoordinator::with_executor(
             workspace,
             2,
-            Arc::new(move |_, _, _, token| {
+            Arc::new(move |_, _, _, _, token| {
                 active_worker.fetch_add(1, Ordering::AcqRel);
                 while !token.is_cancelled() {
                     thread::sleep(Duration::from_millis(5));
@@ -413,9 +431,9 @@ mod tests {
             JobCoordinator::with_executor(
                 workspace,
                 1,
-                Arc::new(move |_, _, bytes, _| {
+                Arc::new(move |_, _, _, bytes, _| {
                     worker_launches.fetch_add(1, Ordering::AcqRel);
-                    Ok(result(bytes))
+                    Ok(ProcessingOutput::Document(result(bytes)))
                 }),
             )
             .unwrap(),

@@ -383,6 +383,13 @@ pub enum Command {
         request: crate::transaction_analysis::TransactionAnalysisRequest,
         expected_revision: u64,
     },
+    QueueImageOcr {
+        evidence_id: String,
+        request_key: String,
+    },
+    InspectImageExtraction {
+        extraction_id: String,
+    },
     QueueDocumentParse {
         evidence_id: String,
         request_key: String,

@@ -1,4 +1,4 @@
-//! Durable, offline document jobs. Records are canonical; engine processes never write them.
+//! Durable, offline document and image jobs. Records are canonical; engine processes never write them.
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -23,6 +23,50 @@ pub enum ProcessingInput {
         sha256: String,
         bytes: u64,
     },
+    ImageOcr {
+        evidence_id: String,
+        sha256: String,
+        bytes: u64,
+    },
+}
+
+impl ProcessingInput {
+    pub(crate) fn source(&self) -> (&str, &str, u64) {
+        match self {
+            Self::ParseDocument {
+                evidence_id,
+                sha256,
+                bytes,
+            }
+            | Self::ImageOcr {
+                evidence_id,
+                sha256,
+                bytes,
+            } => (evidence_id, sha256, *bytes),
+        }
+    }
+}
+
+// Preserve the parse-only extraction v1 wire and schema contract.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
+#[schemars(rename = "ProcessingInput")]
+pub enum ParseDocumentInput {
+    ParseDocument {
+        evidence_id: String,
+        sha256: String,
+        bytes: u64,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
+pub enum ImageOcrInput {
+    ImageOcr {
+        evidence_id: String,
+        sha256: String,
+        bytes: u64,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
@@ -35,6 +79,7 @@ pub enum ProcessingFailure {
     InvalidResult,
     UnsupportedFormat,
     DocumentFailed,
+    ImageDecodeFailed,
     CancelledByAnalyst,
     CleanupFailed,
     WorkerExitUnverified,
@@ -87,9 +132,16 @@ pub(crate) struct JobTicket {
     pub lease: String,
 }
 
-pub(crate) struct PreparedDocumentJob {
+pub(crate) struct PreparedProcessingJob {
     pub ticket: JobTicket,
+    pub input: ProcessingInput,
     pub bytes: Vec<u8>,
+}
+
+/// In-memory only: image rasters are needed for acceptance, never serialized into job records.
+pub(crate) enum ProcessingOutput {
+    Document(crate::engines::parser::ParseResult),
+    Image(Box<crate::engines::image::ImageOcr>),
 }
 
 /// An immutable, unreviewed derivative. Parsing does not replace source text or accept facts.
@@ -100,8 +152,31 @@ pub struct ExtractionRecord {
     pub id: String,
     pub job_id: String,
     pub attempt: u32,
-    pub input: ProcessingInput,
+    pub input: ParseDocumentInput,
     pub created_at: String,
     pub result_sha256: String,
     pub result: crate::engines::parser::ParseResult,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ImageExtractionResult {
+    pub decoder: crate::engines::image::ImageDecodeResult,
+    pub recognition: Option<crate::engines::ocr::OcrResult>,
+    /// Always false in v1: the raster was validated in memory and then discarded.
+    pub raster_retained: bool,
+}
+
+/// An immutable, unreviewed image derivative. No pixel regions or accepted observations.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ImageExtractionRecord {
+    pub schema_version: u32,
+    pub id: String,
+    pub job_id: String,
+    pub attempt: u32,
+    pub input: ImageOcrInput,
+    pub created_at: String,
+    pub result_sha256: String,
+    pub result: ImageExtractionResult,
 }

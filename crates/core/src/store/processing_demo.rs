@@ -19,7 +19,7 @@ impl Workspace {
         )?;
         let job = self.queue_document_parse(&source, &id())?;
         let prepared = self
-            .claim_document_job()?
+            .claim_processing_job()?
             .ok_or_else(|| Error::Validation("Synthetic claim unavailable".into()))?;
         require(
             prepared.ticket.job_id == job.id,
@@ -69,7 +69,7 @@ impl Workspace {
                 continue;
             }
             let prepared = self
-                .claim_document_job()?
+                .claim_processing_job()?
                 .ok_or_else(|| Error::Validation("Synthetic claim unavailable".into()))?;
             require(
                 prepared.ticket.job_id == job.id,
@@ -182,7 +182,7 @@ mod tests {
         for job in page.jobs {
             for key in job.result_ids {
                 let extraction = workspace.extraction(&key).unwrap();
-                let ProcessingInput::ParseDocument { sha256, bytes, .. } = &extraction.input;
+                let ParseDocumentInput::ParseDocument { sha256, bytes, .. } = &extraction.input;
                 validate_result(&extraction.result, sha256, *bytes).unwrap();
             }
         }

@@ -32,6 +32,15 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         return Ok(serde_json::to_value(workspace.view()?)?);
     }
     #[cfg(debug_assertions)]
+    if arg == "seed-image-processing-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_image_processing_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
     if arg == "seed-processing-review" || arg == "seed-processing-recovery-review" {
         let path = std::env::args().nth(2).ok_or_else(|| {
             workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
@@ -47,6 +56,8 @@ fn run() -> workbench_core::Result<serde_json::Value> {
     if arg == "schemas" {
         let root = PathBuf::from("schemas");
         std::fs::create_dir_all(&root)?;
+        // Prior command/job schema files are immutable history. Emit only current versions;
+        // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
         for (name, version, value) in [
             (
                 "workspace",
@@ -55,7 +66,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                6,
+                7,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (
@@ -74,7 +85,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "processing-job",
-                1,
+                2,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ProcessingJob
                 ))?,
@@ -84,6 +95,13 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 1,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ExtractionRecord
+                ))?,
+            ),
+            (
+                "image-extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageExtractionRecord
                 ))?,
             ),
             (
@@ -132,7 +150,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":12}));
+        return Ok(serde_json::json!({"schemas":15}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();
