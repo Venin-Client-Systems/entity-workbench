@@ -165,7 +165,9 @@ fn cleanup_repairs_directories_without_touching_link_targets_and_reports_failure
         };
         let result = finish_job(job, outcome);
         fs::set_permissions(&parent, fs::Permissions::from_mode(0o700)).unwrap();
-        let message = result.unwrap_err().to_string();
+        let error = result.unwrap_err();
+        assert!(matches!(error, Error::Cleanup(_)));
+        let message = error.to_string();
         assert!(message.contains("scratch cleanup failed"));
         if fail_worker {
             assert!(message.contains("original worker failure"));
