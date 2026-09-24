@@ -17,6 +17,16 @@ final class FontFixtures {
         }
     }
 
+    static byte[] drawingOnly()throws IOException {
+        try(PDDocument document=new PDDocument()) {
+            PDPage page=new PDPage();document.addPage(page);
+            try(PDPageContentStream content=new PDPageContentStream(document,page)) {
+                content.setNonStrokingColor(0.7f);content.addRect(48,680,300,40);content.fill();
+            }
+            return save(document);
+        }
+    }
+
     static byte[] corpus() throws Exception {
         try (AppLocalFonts fonts=AppLocalFonts.install(); PDDocument document=new PDDocument()) {
             for (FontName name:FontName.values()) {

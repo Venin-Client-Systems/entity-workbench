@@ -91,6 +91,23 @@ impl FontFixture {
     }
 }
 
+pub(crate) fn validate_no_text_pdf(reply: &Value) -> Result<()> {
+    bounded(
+        reply["parser"] == PARSER
+            && reply["status"] == "partial"
+            && reply["error"].is_null()
+            && reply["text"] == "\r\n"
+            && reply["metadata"]["pdf:pages"] == serde_json::json!(["1"])
+            && reply["limitations"]
+                == serde_json::json!([
+                    "no_source_anchors",
+                    "ocr_not_performed",
+                    "embedded_documents_excluded"
+                ]),
+        "non-text PDF separator/status mismatch",
+    )
+}
+
 fn section(text: &str, label: &str) -> Result<String> {
     let begin = format!("BEGIN_{label}");
     let end = format!("END_{label}");
@@ -109,6 +126,26 @@ fn section(text: &str, label: &str) -> Result<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn non_text_windows_pdf_requires_only_one_expected_page_separator() {
+        let result = serde_json::json!({"parser":PARSER,"status":"partial","error":null,"text":"\r\n","metadata":{"pdf:pages":["1"]},"limitations":["no_source_anchors","ocr_not_performed","embedded_documents_excluded"]});
+        assert!(validate_no_text_pdf(&result).is_ok());
+        for text in ["", "\n", " ", "\t", "\r\n\r\n", "unexpected\r\n"] {
+            let mut invalid = result.clone();
+            invalid["text"] = text.into();
+            assert!(validate_no_text_pdf(&invalid).is_err());
+        }
+        for (key, value) in [
+            ("status", serde_json::json!("complete")),
+            ("error", serde_json::json!("malformed_document")),
+            ("limitations", serde_json::json!([])),
+            ("metadata", serde_json::json!({"pdf:pages":["2"]})),
+        ] {
+            let mut invalid = result.clone();
+            invalid[key] = value;
+            assert!(validate_no_text_pdf(&invalid).is_err());
+        }
+    }
     #[test]
     fn separate_unicode_cases_cannot_mask_absent_or_unmapped_pages() {
         let text = "BEGIN_SIMPLE_UNICODE\n一😀ا\nEND_SIMPLE_UNICODE\nBEGIN_CID_UNMAPPED\nEND_CID_UNMAPPED\n";

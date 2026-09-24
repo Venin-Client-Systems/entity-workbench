@@ -75,6 +75,14 @@ class AppLocalFontsTest {
         }
     }
 
+    @Test void drawingOnlyPdfProducesExactlyOnePlatformPageSeparator()throws Exception {
+        var result=extract(FontFixtures.drawingOnly());
+        assertEquals("partial",result.get("status"));assertEquals(AppLocalFonts.PARSER,result.get("parser"));
+        assertEquals(System.lineSeparator(),result.get("text"));
+        assertEquals(List.of("1"),((Map<?,?>)result.get("metadata")).get("pdf:pages"));
+        assertEquals(List.of("ocr_not_performed","embedded_documents_excluded"),result.get("limitations"));
+    }
+
     @Test void embeddedFontDoesNotClaimFallback()throws Exception {
         var result=extract(FontFixtures.embedded());
         assertEquals("Embedded \u00e9 \u03a9 \u0416",((String)result.get("text")).strip());

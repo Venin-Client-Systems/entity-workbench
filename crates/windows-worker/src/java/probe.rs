@@ -389,10 +389,7 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
             }
             "font-corpus.pdf" => font_fixtures::FontFixture::Corpus.validate(&result)?,
             "embedded-font.pdf" => font_fixtures::FontFixture::Embedded.validate(&result)?,
-            "no-text.pdf" => bounded(
-                result["status"] == "partial" && result["text"] == "",
-                "image-only PDF result mismatch",
-            )?,
+            "no-text.pdf" => font_fixtures::validate_no_text_pdf(&result)?,
             "traversal.zip" => bounded(
                 result["status"] == "failed" && result["error"] == "archive_limits",
                 "archive traversal was not rejected",
