@@ -69,3 +69,57 @@ SQLite version and 21 individual phase timings. These copied, read-only probes
 identify the baseline scan cost; they are not an alternate application query
 implementation and are excluded from command timings. They remain fixed when a
 production optimization removes one scan, so the original cost remains inspectable.
+
+## Retained 25 September 2026 observation
+
+The [paired observation](observations/2026-09-25-transaction-pages.json) contains
+all raw timings and identity hashes from clean signed source `26e03df` (baseline)
+and `5464823` (one query shortcut). Both ran on the same Apple M1 Mac with 16 GiB
+physical memory. The original campaign files remained unchanged. Both runs used
+prepared database SHA-256
+`fa3f6c17db05502d0a853c1f22f00802e3bf1f851e69cfcbfc79591e58aa7955`
+at revision 95,102, with the same original CSV. All 189 command samples per run
+passed their checks; every response byte count and response SHA-256 matched
+between runs.
+
+| Actual operation | Baseline warm p50 / p95 (ms) | Optimized warm p50 / p95 (ms) | JSON bytes |
+| --- | ---: | ---: | ---: |
+| All rows, first page | 330.322 / 368.508 | 313.935 / 332.994 | 94,696 |
+| All rows, second page | 344.674 / 440.055 | 317.464 / 334.109 | 94,711 |
+| Descending date, first page | 305.315 / 327.024 | 315.525 / 350.506 | 94,740 |
+| Account/currency/year/accepted, first page | 190.052 / 196.272 | 190.829 / 212.773 | 94,803 |
+| Same filter, second page | 190.608 / 200.215 | 190.565 / 195.914 | 94,809 |
+| Pending selection, first page | 304.281 / 344.780 | 315.123 / 319.877 | 94,694 |
+| Empty account scope | 158.190 / 164.865 | 78.585 / 83.660 | 262 |
+| Stale revision, expected conflict | 0.009 / 0.010 | 0.007 / 0.010 | No success payload |
+| Full presentation response | 952.327 / 991.064 | 952.671 / 1,005.394 | 83,986,629 |
+
+The 200-row first page contains about **887 times fewer serialized bytes** than
+the complete presentation. This does not mean the application's default response
+has been changed or that its UI is 887 times faster. Decisions, evidence text,
+analysis and the remaining whole-workspace response are outside this paging slice.
+
+The concrete query finding was an unnecessary second scan after an empty selected
+count was already known. Bundled SQLite 3.50.2 reported a `kind` index search plus
+temporary grouping/ordering trees. The separately measured baseline empty count
+scan had p50/p95 78.367/80.562 ms; its candidate scan had 79.980/84.026 ms. Returning
+an empty page after **full cursor validation** removed that second scan. Observed
+empty-command p50 fell by 50.3%, and p95 by 49.3%. A regression verifies that a
+cursor naming a real but excluded row still fails in both empty and pending-only
+scopes. No schema, index, cursor format, denominator or money semantics changed.
+
+Nonempty query paths were not changed. Their timing differences between runs are
+not evidence of an improvement; host/cache variance was not controlled. Those
+queries still scan and sort SQLite JSON records. This experiment does not justify
+a major storage migration or establish a statistically qualified p95.
+
+Peak RSS is retained per child in the observation. It includes preparation of the
+fixture oracle and the complete process lifetime, and varies across runs; no
+query-allocation or overall desktop-memory claim follows from it. It excludes
+other application processes. The full presentation still constructs its large
+JSON value, even though the diagnostic serializer avoids a second giant buffer.
+
+After these successful measurements, peer review found that an early host/git
+metadata failure could precede creation of a failure report. The runner now saves
+a minimal report first and has a regression for that failure. This reporting-only
+follow-up does not replace or relabel the measured source/executable identities.

@@ -68,12 +68,8 @@ def run(source, reuse_build=False):
     directory.mkdir(parents=True)
     path = directory / "report.json"
     report = {"schema_version": 1, "scope": "isolated synthetic 100k canonical transaction pages",
-              "observed_at": dt.datetime.now(dt.timezone.utc).isoformat(), "host": baseline.host(),
-              "source_revision": baseline.capture(["git", "rev-parse", "HEAD"]),
-              "source_dirty": bool(baseline.capture(["git", "status", "--porcelain"])),
-              "source_sha256": baseline.sources(), "runner_sha256": baseline.digest(Path(__file__)),
-              "shared_runner_sha256": baseline.digest(Path(baseline.__file__)),
-              "phase": "preflight", "outcome": "incomplete", "complete_release": False,
+              "observed_at": dt.datetime.now(dt.timezone.utc).isoformat(),
+              "phase": "metadata", "outcome": "incomplete", "complete_release": False,
               "operations": {name: {"outcome": "not_run"} for name in OPERATIONS},
               "limits": {"operation_process_seconds": 180, "samples": SAMPLES, "page_size": 200},
               "unverified": ["cold OS caches", "GUI/IPC rendering", "statistically qualified tail latency",
@@ -82,6 +78,15 @@ def run(source, reuse_build=False):
     baseline.save(path, report)
     initial = None
     try:
+        # A metadata/tool failure must retain a failed observation too. Create the
+        # minimal report before any host, repository or source-file inspection.
+        report.update(host=baseline.host(),
+                      source_revision=baseline.capture(["git", "rev-parse", "HEAD"]),
+                      source_dirty=bool(baseline.capture(["git", "status", "--porcelain"])),
+                      source_sha256=baseline.sources(), runner_sha256=baseline.digest(Path(__file__)),
+                      shared_runner_sha256=baseline.digest(Path(baseline.__file__)))
+        report["phase"] = "preflight"
+        baseline.save(path, report)
         initial = source_identity(source)
         report["original_source_files"] = initial
         report["phase"] = "build"

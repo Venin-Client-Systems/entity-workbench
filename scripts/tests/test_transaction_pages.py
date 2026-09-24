@@ -53,6 +53,21 @@ class PageBenchmarkTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "closed and checkpointed"):
                 benchmark.source_identity(source)
 
+    def test_metadata_tool_failure_retains_report_before_source_preflight(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with patch.object(benchmark, "ROOT", root), \
+                 patch.object(benchmark.baseline, "host", return_value={}), \
+                 patch.object(benchmark.baseline, "capture", side_effect=OSError("Synthetic metadata failure")):
+                self.assertEqual(benchmark.run(root / "missing"), 1)
+            reports = list(root.glob("artifacts/transaction-pages/*/report.json"))
+            self.assertEqual(len(reports), 1)
+            value = json.loads(reports[0].read_text())
+            self.assertEqual(value["outcome"], "failed")
+            self.assertEqual(value["phase"], "metadata")
+            self.assertEqual(value["failure"], "Synthetic metadata failure")
+            self.assertTrue(all(v["outcome"] == "not_run" for v in value["operations"].values()))
+
     def test_failed_preflight_retains_distinct_observations(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
