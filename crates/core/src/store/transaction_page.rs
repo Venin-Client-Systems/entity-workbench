@@ -147,6 +147,24 @@ impl Workspace {
                 "Transaction cursor no longer identifies a row in the selected scope",
             )?;
         }
+        // Counts and cursor validation share this snapshot. Once no selected
+        // rows exist, a second scoped scan cannot contribute a row or source.
+        // Keep this after cursor validation: empty selections must not turn an
+        // invalid continuation into a successful empty response.
+        if selected_count == 0 {
+            let result = TransactionPage {
+                schema_version: 1,
+                workspace_revision: revision,
+                query_sha256,
+                scope_count,
+                review_counts: counts,
+                selected_count,
+                rows: Vec::new(),
+                next_cursor: None,
+            };
+            snapshot.commit()?;
+            return Ok(result);
+        }
         // Direction is a closed enum, never an analyst-supplied SQL fragment.
         // Equal-date ties remain sequence-ascending in both orders.
         let (direction, comparison) = match request.order {

@@ -406,3 +406,53 @@ fn page_dispatch_returns_only_the_page_and_keeps_legacy_views_unchanged() {
     );
     assert_eq!(workspace.revision().unwrap(), revision);
 }
+
+#[test]
+fn empty_selection_still_rejects_a_cursor_for_an_excluded_existing_row() {
+    let (_temp, workspace) = workspace();
+    let revision = workspace.revision().unwrap();
+    let row = &workspace.view().unwrap().transactions[0];
+    let sequence: i64 = workspace
+        .conn
+        .query_row(
+            "SELECT sequence FROM records WHERE kind='transaction' AND id=?",
+            [&row.id],
+            |record| record.get(0),
+        )
+        .unwrap();
+    for filter in [
+        TransactionPageFilter {
+            review: Some(ReviewState::Accepted),
+            ..Default::default()
+        },
+        TransactionPageFilter {
+            currency: Some("EUR".into()),
+            ..Default::default()
+        },
+    ] {
+        let mut request = TransactionPageRequest {
+            filter,
+            ..Default::default()
+        };
+        let page = workspace.page_transactions(&request, revision).unwrap();
+        assert_eq!(page.selected_count, 0);
+        assert!(page.rows.is_empty());
+        // Correct query/revision digest and real row position, but the row is
+        // excluded by this selection. The optimization must still reject it.
+        request.cursor = Some(
+            Cursor {
+                schema_version: 1,
+                query_sha256: query_hash(&request, revision).unwrap(),
+                date: row.date.clone(),
+                sequence,
+            }
+            .encode()
+            .unwrap(),
+        );
+        let error = workspace.page_transactions(&request, revision).unwrap_err();
+        assert!(matches!(error, Error::Validation(_)));
+        assert!(error.to_string().contains("selected scope"));
+        assert!(workspace.conn.is_autocommit());
+        assert_eq!(workspace.revision().unwrap(), revision);
+    }
+}
