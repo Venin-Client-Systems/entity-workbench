@@ -10,6 +10,7 @@ use std::{
 };
 use uuid::Uuid;
 mod assessment;
+mod collection;
 mod identity;
 mod statements;
 
@@ -28,15 +29,32 @@ fn now() -> String {
 fn id() -> String {
     Uuid::new_v4().to_string()
 }
-fn private_dir(path: &Path) -> Result<()> {
+fn is_link(metadata: &fs::Metadata) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        metadata.file_attributes() & 0x400 != 0 // FILE_ATTRIBUTE_REPARSE_POINT, including junctions.
+    }
+    #[cfg(not(windows))]
+    {
+        metadata.file_type().is_symlink()
+    }
+}
+fn reject_link_ancestors(path: &Path) -> Result<()> {
     for ancestor in path.ancestors() {
-        if ancestor.exists() {
-            require(
-                !fs::symlink_metadata(ancestor)?.file_type().is_symlink(),
-                "Workspace path contains a symbolic link",
-            )?;
+        match fs::symlink_metadata(ancestor) {
+            Ok(metadata) => require(
+                !is_link(&metadata),
+                "Workspace path contains a link or reparse point",
+            )?,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
         }
     }
+    Ok(())
+}
+fn private_dir(path: &Path) -> Result<()> {
+    reject_link_ancestors(path)?;
     fs::create_dir_all(path)?;
     #[cfg(unix)]
     {
@@ -256,6 +274,12 @@ impl Workspace {
                 max_requests,
                 max_seconds,
             } => self.collect_web(urls, max_hops, max_requests, max_seconds)?,
+            Command::InspectCollection { job_id } => {
+                return Ok(serde_json::to_value(self.collection_receipt(&job_id)?)?);
+            }
+            Command::ExportCollection { job_id } => {
+                return self.export_collection(&job_id);
+            }
             Command::SeedDemo {} => self.seed_demo()?,
             Command::Import { name, bytes } => {
                 self.import(&name, &bytes)?;
@@ -438,7 +462,11 @@ impl Workspace {
     pub fn import(&mut self, name: &str, bytes: &[u8]) -> Result<String> {
         validate_import_input(name, bytes)?;
         let digest = hash(bytes);
-        if get::<Evidence>(&self.conn, "evidence", &digest).is_ok() {
+        let existing = get::<Evidence>(&self.conn, "evidence", &digest).ok();
+        if existing
+            .as_ref()
+            .is_some_and(|e| e.extraction_status != "acquisition_only")
+        {
             return Ok(digest);
         }
         let extension = Path::new(name)
@@ -488,7 +516,7 @@ impl Workspace {
             }
             .into(),
             text,
-            acquisitions: vec![],
+            acquisitions: existing.map(|e| e.acquisitions).unwrap_or_default(),
         };
         retain_original(&self.root, &evidence, bytes)?;
         self.change(None, "evidence.import", true, |conn| {
@@ -750,80 +778,6 @@ impl Workspace {
     }
 }
 
-impl Workspace {
-    pub fn collect_web(
-        &mut self,
-        urls: Vec<String>,
-        hops: u32,
-        requests: u32,
-        seconds: u64,
-    ) -> Result<()> {
-        crate::collection::validate_seeds(&urls)?;
-        require(
-            hops <= 2 && requests > 0 && requests <= 50 && seconds > 0 && seconds <= 600,
-            "Collection limits exceed policy",
-        )?;
-        let mut job = CollectionJob {
-            id: id(),
-            queries: urls.clone(),
-            adapters: vec!["direct_web".into()],
-            max_hops: hops,
-            max_requests: requests,
-            max_seconds: seconds,
-            requests_used: 0,
-            state: JobState::Running,
-            detail: "Analyst selected direct website collection".into(),
-        };
-        self.change(None, "collection.start", false, |conn| {
-            put(conn, "job", &job.id, &job)
-        })?;
-        match crate::collection::collect(urls, hops, requests, seconds) {
-            Ok(result) => {
-                job.requests_used = result.requests;
-                job.state = result.state;
-                job.detail = format!(
-                    "{} pages retained. {}",
-                    result.pages.len(),
-                    result.notes.join("; ")
-                );
-                for page in result.pages {
-                    if let Err(error) = self.retain_page(&job.id, page) {
-                        job.state = JobState::Failed;
-                        job.detail = format!(
-                            "Collection storage failed; earlier evidence retained. {error}"
-                        );
-                        break;
-                    }
-                }
-            }
-            Err(error) => {
-                job.state = JobState::Failed;
-                job.detail = error.to_string();
-            }
-        }
-        self.change(None, "collection.finish", false, |conn| {
-            put(conn, "job", &job.id, &job)
-        })
-    }
-    fn retain_page(&mut self, job_id: &str, page: crate::collection::Page) -> Result<()> {
-        let digest = self.import("captured-page.html", &page.bytes)?;
-        self.change(None, "collection.derivative", true, |conn| {
-            let mut evidence: Evidence = get(conn, "evidence", &digest)?;
-            evidence.text = Some(page.text);
-            evidence.media_type = "text/html".into();
-            // Identical bytes do not become independent sources just because
-            // they were retrieved at another URL. Keep every acquisition.
-            evidence.acquisitions.push(Acquisition {
-                job_id: job_id.into(),
-                url: page.url,
-                retrieved_at: now(),
-            });
-            evidence.extraction_status = "static_text_only".into();
-            put(conn, "evidence", &digest, &evidence)
-        })
-    }
-}
-
 // Bounded candidate examples, linear grouping. Repeated transactions are retained.
 fn refresh_duplicates(conn: &Connection) -> Result<()> {
     use std::collections::HashMap;
@@ -884,9 +838,10 @@ fn verify_original(root: &Path, e: &Evidence) -> Result<()> {
         "Invalid evidence digest",
     )?;
     let path = root.join("originals").join(&e.sha256);
+    reject_link_ancestors(&path)?;
     let meta = fs::symlink_metadata(&path)?;
     require(
-        meta.is_file() && !meta.file_type().is_symlink() && meta.len() == e.bytes,
+        meta.is_file() && !is_link(&meta) && meta.len() == e.bytes,
         "Missing or altered original evidence",
     )?;
     require(
@@ -897,6 +852,7 @@ fn verify_original(root: &Path, e: &Evidence) -> Result<()> {
 
 fn retain_original(root: &Path, evidence: &Evidence, bytes: &[u8]) -> Result<()> {
     let path = root.join("originals").join(&evidence.sha256);
+    reject_link_ancestors(&path)?;
     if path.exists() {
         return verify_original(root, evidence);
     }
@@ -908,32 +864,4 @@ fn retain_original(root: &Path, evidence: &Evidence, bytes: &[u8]) -> Result<()>
     file.write_all(bytes)?;
     file.sync_all()?;
     private_file(&path, 0o400)
-}
-
-#[cfg(test)]
-mod acquisition_tests {
-    use super::*;
-    #[test]
-    fn identical_captures_keep_both_urls_and_their_original_group() {
-        let temp = tempfile::TempDir::new_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
-        let mut w = Workspace::open(temp.path().join("case")).unwrap();
-        for host in ["one.example", "two.example"] {
-            w.retain_page(
-                "test-job",
-                crate::collection::Page {
-                    url: format!("https://{host}/"),
-                    bytes: b"<p>Copied synthetic source</p>".to_vec(),
-                    text: "Copied synthetic source".into(),
-                },
-            )
-            .unwrap();
-        }
-        let evidence = w.view().unwrap().evidence;
-        assert_eq!(evidence.len(), 1);
-        assert_eq!(evidence[0].origin_group, evidence[0].sha256);
-        assert_eq!(evidence[0].acquisitions.len(), 2);
-        assert_eq!(evidence[0].acquisitions[0].url, "https://one.example/");
-        assert_eq!(evidence[0].acquisitions[1].url, "https://two.example/");
-        assert!(!evidence[0].acquisitions[0].retrieved_at.is_empty());
-    }
 }

@@ -87,7 +87,7 @@ See [the evidence format](RUN-FORMAT.md) for the exact run contract. The scorer 
 
 1. Independently review this task set, publisher independence, criteria and fixed thresholds before first live measurement; record the review against the frozen digest.
 2. Review each publisher's current access constraints through the authorised application path. Do not infer automated-access permission from public visibility.
-3. Connect actual Rust broker/job receipts, cold-corpus resets, original hashes, local-search output and application views to the run format. The operator must demonstrate actual in-app results; an external browser session does not satisfy it.
+3. Connect the [canonical Rust acquisition receipts](ACQUISITION-RECEIPTS.md), cold-corpus resets, original hashes, local-search output and application views to the run format. The operator must demonstrate actual in-app results; an external browser session does not satisfy it.
 4. Attempt every task under the fixed limits. Preserve the original campaign, collect independent labels and run the offline scorer.
 5. Review source semantics, disclosure records, all chains, blocked cases and coverage limitations. Publish a sanitised measured report with its input and evidence hashes.
 6. If usefulness or permitted collection cannot satisfy the thresholds, record the concrete product/architectural blocker by Sprint 1's end, retain the failed campaign and continue independent local features. Leave the complete-release gate open.

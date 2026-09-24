@@ -389,6 +389,12 @@ pub enum Command {
         max_requests: u32,
         max_seconds: u64,
     },
+    InspectCollection {
+        job_id: String,
+    },
+    ExportCollection {
+        job_id: String,
+    },
     SeedDemo {},
     Import {
         name: String,

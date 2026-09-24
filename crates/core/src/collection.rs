@@ -1,5 +1,6 @@
 //! The only live HTTP transport. All requests are explicit, bounded and DNS-pinned.
 use crate::{
+    collection_receipt::{AcquisitionMode, FetchOutcome, RequestPurpose, RequestReceipt},
     policy::{self, DiscoveryBudget},
     require, Error, Result,
 };
@@ -18,6 +19,7 @@ const PAGE_BYTES: usize = 2 * 1024 * 1024;
 const AGENT: &str = "EntityWorkbench";
 #[derive(Debug)]
 pub struct Page {
+    pub request_sequence: u32,
     pub url: String,
     pub bytes: Vec<u8>,
     pub text: String,
@@ -29,6 +31,18 @@ pub struct CollectionResult {
     pub requests: u32,
     pub state: crate::domain::JobState,
     pub notes: Vec<String>,
+    pub mode: AcquisitionMode,
+    pub started_at: String,
+    pub ended_at: String,
+    pub elapsed_milliseconds: u64,
+    pub trace: Vec<RequestReceipt>,
+    #[serde(skip)]
+    pub responses: Vec<ResponseBody>,
+}
+#[derive(Debug)]
+pub struct ResponseBody {
+    pub sequence: u32,
+    pub bytes: Vec<u8>,
 }
 pub fn validate_seeds(seeds: &[String]) -> Result<Vec<Url>> {
     require(
@@ -51,13 +65,20 @@ struct Fetched {
     body: Vec<u8>,
     redirect: Option<String>,
     content_type: String,
+    complete: bool,
 }
 trait Transport {
+    fn mode(&self) -> AcquisitionMode {
+        AcquisitionMode::Synthetic
+    }
     fn fetch(&mut self, url: &Url, hop: u32) -> Result<Fetched>;
     fn requests_used(&self) -> u32;
     fn elapsed_seconds(&self) -> u64;
 }
 impl Transport for Broker {
+    fn mode(&self) -> AcquisitionMode {
+        AcquisitionMode::Live
+    }
     fn requests_used(&self) -> u32 {
         self.budget.used
     }
@@ -148,25 +169,146 @@ impl Transport for Broker {
             .and_then(|h| h.to_str().ok())
             .unwrap_or("")
             .to_string();
-        if let Some(size) = response.content_length() {
-            require(
-                size <= PAGE_BYTES as u64,
-                "Response exceeds page size limit",
-            )?;
-        }
+        let declared_within_limit = response
+            .content_length()
+            .is_none_or(|size| size <= PAGE_BYTES as u64);
         let mut body = vec![];
-        response
-            .take((PAGE_BYTES + 1) as u64)
-            .read_to_end(&mut body)?;
-        require(body.len() <= PAGE_BYTES, "Response exceeds page size limit")?;
+        let complete = declared_within_limit
+            && response
+                .take((PAGE_BYTES + 1) as u64)
+                .read_to_end(&mut body)
+                .is_ok()
+            && body.len() <= PAGE_BYTES;
+        if !complete {
+            body.clear();
+        }
         Ok(Fetched {
             status,
             body,
             redirect,
             content_type,
+            complete,
         })
     }
 }
+// Only parsed media type and a policy-validated redirect target are retained;
+// cookies, authentication headers and unsafe Location values never enter receipts.
+fn media_type(raw: &str) -> Option<String> {
+    let value = raw.split(';').next()?.trim().to_ascii_lowercase();
+    (!value.is_empty()
+        && value.len() <= 128
+        && value.is_ascii()
+        && !value.chars().any(char::is_control))
+    .then_some(value)
+}
+
+struct Trace {
+    started_at: String,
+    wall: chrono::DateTime<chrono::Utc>,
+    monotonic: Instant,
+    requests: Vec<RequestReceipt>,
+    responses: Vec<ResponseBody>,
+}
+impl Trace {
+    fn new() -> Self {
+        let wall = chrono::Utc::now();
+        Self {
+            started_at: wall.to_rfc3339_opts(chrono::SecondsFormat::Secs, true),
+            wall,
+            monotonic: Instant::now(),
+            requests: vec![],
+            responses: vec![],
+        }
+    }
+    fn stamp(&self) -> String {
+        (self.wall + chrono::Duration::milliseconds(self.monotonic.elapsed().as_millis() as i64))
+            .to_rfc3339_opts(chrono::SecondsFormat::Secs, true)
+    }
+    fn fetch(
+        &mut self,
+        broker: &mut impl Transport,
+        url: &Url,
+        hop: u32,
+        purpose: RequestPurpose,
+        parent: Option<u32>,
+    ) -> (Option<u32>, Result<Fetched>) {
+        let before = broker.requests_used();
+        let started_at = self.stamp();
+        let mut result = broker.fetch(url, hop);
+        let used = broker.requests_used();
+        if used == before {
+            // A refused reservation is a stop decision, not a charged fetch attempt.
+            if result.is_ok() {
+                result = Err(Error::Validation(
+                    "Transport returned an uncharged response".into(),
+                ));
+            }
+            return (None, result);
+        }
+        if used != before + 1 || self.requests.len() != before as usize {
+            return (
+                None,
+                Err(Error::Validation(
+                    "Transport request accounting is inconsistent".into(),
+                )),
+            );
+        }
+        let sequence = self.requests.len() as u32;
+        let mut request = RequestReceipt {
+            sequence,
+            url: url.to_string(),
+            method: "GET".into(),
+            purpose,
+            parent_request: parent,
+            hop,
+            started_at,
+            ended_at: self.stamp(),
+            outcome: FetchOutcome::Failed,
+            http_status: None,
+            media_type: None,
+            redirect_url: None,
+            body_sha256: None,
+            body_bytes: None,
+            original_evidence_id: None,
+        };
+        match &mut result {
+            Ok(response) => {
+                if response.body.len() > PAGE_BYTES {
+                    response.complete = false;
+                    response.body.clear();
+                }
+                request.http_status = Some(response.status);
+                request.media_type = media_type(&response.content_type);
+                if [301, 302, 303, 307, 308].contains(&response.status) {
+                    request.redirect_url = response
+                        .redirect
+                        .as_ref()
+                        .and_then(|raw| url.join(raw).ok())
+                        .and_then(|u| policy::validate_https_url(u.as_str()).ok())
+                        .map(|u| u.to_string());
+                }
+                if response.complete {
+                    request.outcome = FetchOutcome::Fetched;
+                    request.body_sha256 = Some(crate::store::hash(&response.body));
+                    request.body_bytes = Some(response.body.len() as u64);
+                    self.responses.push(ResponseBody {
+                        sequence,
+                        bytes: response.body.clone(),
+                    });
+                } else {
+                    request.outcome = FetchOutcome::Incomplete;
+                }
+            }
+            Err(Error::Blocked(_) | Error::Validation(_) | Error::QuotaExhausted(_)) => {
+                request.outcome = FetchOutcome::Blocked;
+            }
+            Err(_) => {}
+        }
+        self.requests.push(request);
+        (Some(sequence), result)
+    }
+}
+
 /// Memory-safe static text/link extraction. Never executes or renders source markup.
 pub fn extract_html(raw: &str, base: &Url) -> (String, Vec<Url>) {
     let html = Html::parse_document(raw);
@@ -240,13 +382,18 @@ fn collect_with_transport(
         .iter()
         .filter_map(|s| s.host_str().map(str::to_owned))
         .collect();
-    let mut queue: VecDeque<_> = seeds.into_iter().map(|s| (s, 0, 0)).collect();
+    let mut queue: VecDeque<_> = seeds
+        .into_iter()
+        .map(|s| (s, 0, 0, RequestPurpose::Seed, None))
+        .collect();
+    let mode = broker.mode();
+    let mut trace = Trace::new();
     let mut visited = HashSet::new();
     let mut robots: BTreeMap<String, Option<String>> = BTreeMap::new();
     let mut pages = vec![];
     let mut notes = vec![];
     let mut outcome = Outcome::default();
-    while let Some((url, hop, redirects)) = queue.pop_front() {
+    while let Some((url, hop, redirects, purpose, parent)) = queue.pop_front() {
         if visited.len() >= 500 {
             outcome.exhausted = true;
             break;
@@ -266,7 +413,21 @@ fn collect_with_transport(
             let mut robots_url = url.clone();
             robots_url.set_path("/robots.txt");
             robots_url.set_query(None);
-            match broker.fetch(&robots_url, hop) {
+            let (_, fetched) = trace.fetch(
+                &mut broker,
+                &robots_url,
+                0,
+                RequestPurpose::AccessReview,
+                None,
+            );
+            match fetched {
+                Ok(r) if !r.complete => {
+                    outcome.failed = true;
+                    notes.push(format!(
+                        "Incomplete robots response from {host}; no original accepted"
+                    ));
+                    robots.insert(host.clone(), None);
+                }
                 Ok(r) if r.status == 404 => {
                     robots.insert(host.clone(), Some(String::new()));
                 }
@@ -343,7 +504,14 @@ fn collect_with_transport(
             outcome.exhausted = true;
             break;
         }
-        match broker.fetch(&url, hop) {
+        let (request_sequence, fetched) = trace.fetch(&mut broker, &url, hop, purpose, parent);
+        match fetched {
+            Ok(r) if !r.complete => {
+                outcome.failed = true;
+                notes.push(format!(
+                    "Incomplete response from {host}; no original accepted"
+                ));
+            }
             Ok(r) if [301, 302, 303, 307, 308].contains(&r.status) => {
                 if redirects >= 5 {
                     outcome.blocked = true;
@@ -356,7 +524,13 @@ fn collect_with_transport(
                             .host_str()
                             .is_some_and(|h| hosts.iter().any(|s| s == h))
                         {
-                            queue.push_front((next, hop, redirects + 1));
+                            queue.push_front((
+                                next,
+                                hop,
+                                redirects + 1,
+                                RequestPurpose::Redirect,
+                                request_sequence,
+                            ));
                         } else {
                             outcome.blocked = true;
                             notes.push("Redirect leaves selected hosts".into());
@@ -376,23 +550,23 @@ fn collect_with_transport(
                 break;
             }
             Ok(r) if r.status == 200 => {
-                if !r.content_type.starts_with("text/html")
-                    && !r.content_type.starts_with("text/plain")
+                if media_type(&r.content_type).as_deref() != Some("text/html")
+                    && media_type(&r.content_type).as_deref() != Some("text/plain")
                 {
                     outcome.failed = true;
                     notes.push(format!(
-                        "Unsupported response type from {host}; no source retained"
+                        "Unsupported response type from {host}; no searchable derivative accepted"
                     ));
                     continue;
                 }
                 let Ok(raw) = std::str::from_utf8(&r.body) else {
                     outcome.failed = true;
                     notes.push(format!(
-                        "Non-UTF-8 response from {host}; no source retained"
+                        "Non-UTF-8 response from {host}; no searchable derivative accepted"
                     ));
                     continue;
                 };
-                let (text, links) = if r.content_type.starts_with("text/html") {
+                let (text, links) = if media_type(&r.content_type).as_deref() == Some("text/html") {
                     extract_html(raw, &url)
                 } else {
                     (raw.to_owned(), vec![])
@@ -404,11 +578,20 @@ fn collect_with_transport(
                                 .host_str()
                                 .is_some_and(|h| hosts.iter().any(|s| s == h))
                         {
-                            queue.push_back((link, hop + 1, 0));
+                            queue.push_back((
+                                link,
+                                hop + 1,
+                                0,
+                                RequestPurpose::Link,
+                                request_sequence,
+                            ));
                         }
                     }
                 }
                 pages.push(Page {
+                    request_sequence: request_sequence.ok_or_else(|| {
+                        Error::Validation("Fetched response lacks accounting".into())
+                    })?,
                     url: url.to_string(),
                     bytes: r.body,
                     text,
@@ -433,8 +616,20 @@ fn collect_with_transport(
             }
         }
     }
+    let elapsed_milliseconds = trace.monotonic.elapsed().as_millis() as u64;
+    if elapsed_milliseconds > seconds * 1000 {
+        outcome.exhausted = true;
+        notes.push("Observed collection time exceeded the configured limit".into());
+    }
     let state = outcome.state(pages.is_empty());
+    let ended_at = trace.stamp();
     Ok(CollectionResult {
+        mode,
+        started_at: trace.started_at,
+        ended_at,
+        elapsed_milliseconds,
+        trace: trace.requests,
+        responses: trace.responses,
         pages,
         requests: broker.requests_used(),
         state,
