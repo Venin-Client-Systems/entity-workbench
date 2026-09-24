@@ -193,13 +193,34 @@ test("request ancestry, escaped source, immutable export and keyboard review use
     expect(sha(originalBytes)).toBe(original.sha256);
     expect(originalBytes.length).toBe(original.bytes);
   }
+  // Saving the export and refreshing the workspace are separate real commands.
+  // Hold the second refresh to exercise the interval where the saved receipt is
+  // visible but modal actions remain disabled; do not focus disabled controls.
+  let releaseRefresh!: () => void;
+  let observedRefresh!: () => void;
+  const refreshGate = new Promise<void>((resolve) => { releaseRefresh = resolve; });
+  const refreshObserved = new Promise<void>((resolve) => { observedRefresh = resolve; });
+  await page.route("**/api/workbench", async (route) => {
+    if (route.request().postDataJSON().action !== "view") return route.continue();
+    const response = await route.fetch();
+    observedRefresh();
+    await refreshGate;
+    await route.fulfill({ response });
+  });
   await dialog
     .getByRole("button", { name: "Export acquisition bundle", exact: true })
     .click();
   await expect(saved.locator("dd").nth(0)).not.toHaveText(exportedPath);
   expect(readFileSync(resolve(root, exportedPath))).toEqual(bytes);
   expect(readdirSync(resolve(root, "exports"))).toHaveLength(2);
-  await dialog.getByRole("button", { name: "Close collection review" }).focus();
+  await refreshObserved;
+  const closeReview = dialog.getByRole("button", { name: "Close collection review" });
+  await expect(closeReview).toBeDisabled();
+  releaseRefresh();
+  await expect(closeReview).toBeEnabled();
+  await page.unroute("**/api/workbench");
+  await closeReview.focus();
+  await expect(closeReview).toBeFocused();
   await page.keyboard.press("Shift+Tab");
   await expect(
     dialog.getByRole("button", {
