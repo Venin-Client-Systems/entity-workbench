@@ -825,7 +825,9 @@ pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
         let mut process: PROCESS_INFORMATION = unsafe { zeroed() };
         let executable = wide(executable)?;
         let current_dir = wide(&scratch)?;
-        // No inherited handles, including stdin/stdout/stderr. Worker IPC is files.
+        // File IPC needs neither inherited handles nor an attached console.
+        // CREATE_NO_WINDOW still requests a windowless console; DETACHED_PROCESS
+        // avoids that startup dependency without permitting helper children.
         api(
             unsafe {
                 CreateProcessW(
@@ -837,7 +839,7 @@ pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
                     EXTENDED_STARTUPINFO_PRESENT
                         | CREATE_SUSPENDED
                         | CREATE_UNICODE_ENVIRONMENT
-                        | CREATE_NO_WINDOW,
+                        | DETACHED_PROCESS,
                     environment.as_ptr().cast(),
                     current_dir.as_ptr(),
                     &startup.StartupInfo,

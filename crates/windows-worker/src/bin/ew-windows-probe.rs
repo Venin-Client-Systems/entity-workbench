@@ -21,7 +21,7 @@ mod native {
         Foundation::*,
         Security::{Authorization::*, *},
         Storage::FileSystem::*,
-        System::Threading::*,
+        System::{Console::GetConsoleProcessList, Threading::*},
     };
     use workbench_windows_worker::{protect_private_tree, run, Error, Request};
     type AnyResult<T> = Result<T, Box<dyn std::error::Error>>;
@@ -204,6 +204,12 @@ mod native {
         }
         let mut results = BTreeMap::new();
         results.insert("app_container", token_is_container());
+        // Retain only attachment state, never PIDs. Baseline intentionally uses
+        // CREATE_NO_WINDOW; the confined launcher must use DETACHED_PROCESS.
+        let mut console_process = 0;
+        results.insert("console_attached", unsafe {
+            GetConsoleProcessList(&mut console_process, 1) > 0
+        });
         results.insert("other_workspace_read", fs::read(&input.other).is_ok());
         results.insert(
             "original_write",
@@ -441,7 +447,7 @@ mod native {
                 baseline
                     .iter()
                     .all(|(key, value)| *value == (key != "app_container"))
-                    && baseline.len() == 17,
+                    && baseline.len() == 18,
                 "unconfined control did not establish every attempted permission",
             )?;
             fs::write(&original, b"retained original")?;
