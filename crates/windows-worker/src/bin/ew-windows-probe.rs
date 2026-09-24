@@ -529,23 +529,37 @@ mod native {
             report.insert("phase".into(), serde_json::json!("readonly-file"));
             input.mode = "readonly-file".into();
             request.input = serde_json::to_vec(&input)?;
-            let error = run(&request, || false)
-                .err()
-                .ok_or("readonly scratch unexpectedly accepted")?;
-            report.insert(
-                "readonly-file".into(),
-                serde_json::json!({"rejected":true,"diagnostic":error.to_string()}),
-            );
-            require(
-                matches!(error, Error::Cleanup { .. }),
-                "readonly scratch did not retain cleanup failure",
-            )?;
-            // This is explicit recovery of owned synthetic artifacts, not the
-            // production cleanup policy. Never apply it to real workspace data.
-            clear_synthetic_readonly(&jobs)?;
-            for entry in fs::read_dir(&jobs)? {
-                fs::remove_dir_all(entry?.path())?;
+            match run(&request, || false) {
+                Ok(output) => {
+                    require(output.bytes == b"{}", "readonly worker result mismatch")?;
+                    require(
+                        fs::read_dir(&jobs)?.next().is_none(),
+                        "successful readonly cleanup retained scratch",
+                    )?;
+                    report.insert(
+                        "readonly-file".into(),
+                        serde_json::json!({"cleanup":"removed","result_accepted":true}),
+                    );
+                }
+                Err(Error::Cleanup { prior: None }) => {
+                    require(
+                        fs::read_dir(&jobs)?.next().is_some(),
+                        "cleanup failure had no retained scratch",
+                    )?;
+                    report.insert("readonly-file".into(), serde_json::json!({"cleanup":"blocked_and_retained","result_accepted":false}));
+                    // Explicit recovery of owned synthetic artifacts, never a
+                    // production fallback or operation on real workspace data.
+                    clear_synthetic_readonly(&jobs)?;
+                    for entry in fs::read_dir(&jobs)? {
+                        fs::remove_dir_all(entry?.path())?;
+                    }
+                }
+                Err(error) => return Err(error.into()),
             }
+            require(
+                fs::read_dir(&jobs)?.next().is_none(),
+                "readonly case left scratch after recovery",
+            )?;
             if let Some(java_runtime) = java {
                 report.insert("phase".into(), serde_json::json!("java_21"));
                 // CI compiles this class before launch using its installed JDK;

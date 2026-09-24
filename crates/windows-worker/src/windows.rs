@@ -589,6 +589,8 @@ fn clean_entry(path: &Path, owner: &str, depth: usize, entries: &mut usize) -> R
         fs::remove_dir(path)?;
     } else {
         // Deletion through the parent DACL does not need to change the file ACL.
+        // Rust may use Windows POSIX unlink semantics that ignore READONLY for
+        // this directory entry; this does not require clearing file attributes.
         fs::remove_file(path)?;
     }
     Ok(())
@@ -924,7 +926,7 @@ mod tests {
     }
 
     #[test]
-    fn cleanup_does_not_repair_readonly_hardlinked_file_attributes() {
+    fn cleanup_preserves_outside_readonly_hardlink_state() {
         let tree = tempfile::tempdir().unwrap();
         let outside = tree.path().join("outside.txt");
         let scratch = tree.path().join("scratch");
@@ -936,16 +938,61 @@ mod tests {
         permissions.set_readonly(true);
         fs::set_permissions(&outside, permissions).unwrap();
         let dacl_before = dacl_snapshot(&outside);
-        assert!(clean(&scratch, &user_sid().unwrap()).is_err());
+        let attributes_before = fs::metadata(&outside).unwrap().file_attributes();
+        let outcome = clean(&scratch, &user_sid().unwrap());
         assert!(
             dacl_before == dacl_snapshot(&outside),
             "cleanup changed outside hardlink DACL"
         );
-        assert!(fs::metadata(&outside).unwrap().permissions().readonly());
+        assert_eq!(
+            fs::metadata(&outside).unwrap().file_attributes(),
+            attributes_before,
+            "cleanup changed outside hardlink attributes"
+        );
         assert_eq!(fs::read(&outside).unwrap(), b"retained");
+        // Modern Windows permits POSIX unlink while ignoring READONLY. Other
+        // filesystems may refuse deletion. Neither outcome may mutate the
+        // surviving outside hardlink's content, attributes or DACL.
+        match outcome {
+            Ok(()) => assert!(!scratch.exists(), "successful cleanup retained scratch"),
+            Err(Error::Io(std::io::ErrorKind::PermissionDenied)) => {
+                assert!(
+                    scratch.join("alias.txt").exists(),
+                    "denied cleanup lost retained alias"
+                );
+            }
+            Err(error) => panic!("unexpected cleanup error: {error}"),
+        }
         // Restore only this test-owned sentinel after checking the boundary.
         fs::set_permissions(&outside, original_permissions).unwrap();
         clean(&scratch, &user_sid().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn cleanup_reports_delete_sharing_failure_until_handle_closes() {
+        let tree = tempfile::tempdir().unwrap();
+        let scratch = tree.path().join("scratch");
+        fs::create_dir(&scratch).unwrap();
+        let file = scratch.join("locked.txt");
+        fs::write(&file, b"retained").unwrap();
+        // Denying delete sharing is a real kernel obstacle independent of the
+        // read-only attribute and POSIX unlink support.
+        let handle = OpenOptions::new()
+            .read(true)
+            .share_mode(FILE_SHARE_READ)
+            .open(&file)
+            .unwrap();
+        assert!(
+            matches!(clean(&scratch, &user_sid().unwrap()), Err(Error::Io(_))),
+            "cleanup hid a denied unlink or failed for an unrelated reason"
+        );
+        assert_eq!(fs::read(&file).unwrap(), b"retained");
+        drop(handle);
+        clean(&scratch, &user_sid().unwrap()).unwrap();
+        assert!(
+            !scratch.exists(),
+            "cleanup failed after the denying handle closed"
+        );
     }
 
     #[test]
