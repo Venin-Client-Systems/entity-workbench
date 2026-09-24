@@ -1,0 +1,250 @@
+{
+  "$defs": {
+    "AcquisitionMode": {
+      "enum": [
+        "live",
+        "synthetic"
+      ],
+      "type": "string"
+    },
+    "FetchOutcome": {
+      "enum": [
+        "fetched",
+        "blocked",
+        "failed",
+        "incomplete"
+      ],
+      "type": "string"
+    },
+    "JobState": {
+      "enum": [
+        "queued",
+        "running",
+        "blocked",
+        "quota_exhausted",
+        "failed",
+        "successful_no_results",
+        "successful",
+        "cancelled"
+      ],
+      "type": "string"
+    },
+    "RequestPurpose": {
+      "enum": [
+        "access_review",
+        "seed",
+        "link",
+        "redirect"
+      ],
+      "type": "string"
+    },
+    "RequestReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "body_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "body_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ended_at": {
+          "type": "string"
+        },
+        "hop": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "http_status": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "media_type": {
+          "description": "Parsed, normalized media type; not the complete response header block.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "method": {
+          "type": "string"
+        },
+        "original_evidence_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "outcome": {
+          "$ref": "#/$defs/FetchOutcome"
+        },
+        "parent_request": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "purpose": {
+          "$ref": "#/$defs/RequestPurpose"
+        },
+        "redirect_url": {
+          "description": "Resolved credential-free HTTPS destination, including out-of-scope hosts.\nInvalid/credential-bearing Location values are omitted, never echoed.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sequence": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sequence",
+        "url",
+        "method",
+        "purpose",
+        "hop",
+        "started_at",
+        "ended_at",
+        "outcome"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "application_version": {
+      "type": "string"
+    },
+    "collector_policy": {
+      "type": "string"
+    },
+    "elapsed_milliseconds": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "ended_at": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "max_hops": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "max_requests": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "max_seconds": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "mode": {
+      "$ref": "#/$defs/AcquisitionMode"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "requests": {
+      "items": {
+        "$ref": "#/$defs/RequestReceipt"
+      },
+      "type": "array"
+    },
+    "requests_used": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "retained_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "retention_complete": {
+      "type": "boolean"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "selected_urls": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "start_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "started_at": {
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/JobState"
+    },
+    "time_limit_exceeded": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_id",
+    "mode",
+    "application_version",
+    "collector_policy",
+    "selected_urls",
+    "max_hops",
+    "max_requests",
+    "max_seconds",
+    "requests_used",
+    "started_at",
+    "ended_at",
+    "elapsed_milliseconds",
+    "time_limit_exceeded",
+    "start_revision",
+    "retained_revision",
+    "state",
+    "retention_complete",
+    "requests",
+    "notes"
+  ],
+  "title": "CollectionReceipt",
+  "type": "object"
+}

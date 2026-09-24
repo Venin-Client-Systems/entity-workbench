@@ -4,6 +4,7 @@ use std::{
     path::PathBuf,
 };
 use workbench_core::{
+    collection_receipt::CollectionReceipt,
     domain::*,
     policy::WorkerRequest,
     statements::{StatementMapping, StatementPreview, StatementSample},
@@ -32,8 +33,13 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                3,
+                4,
                 serde_json::to_value(schemars::schema_for!(Command))?,
+            ),
+            (
+                "collection-receipt",
+                1,
+                serde_json::to_value(schemars::schema_for!(CollectionReceipt))?,
             ),
             (
                 "worker-request",
@@ -76,7 +82,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":9}));
+        return Ok(serde_json::json!({"schemas":10}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();
