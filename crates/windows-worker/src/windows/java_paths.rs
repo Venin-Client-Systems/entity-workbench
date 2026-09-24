@@ -58,9 +58,15 @@ mod tests {
         // launch helper itself must never silently normalize an unsafe spelling.
         let canonical = supplied.canonicalize().unwrap();
         assert_eq!(canonical, file.canonicalize().unwrap());
+        // TEMP may use an 8.3 alias even when canonicalize returns the long
+        // name. The contract is equal file identity, not equal path strings.
         assert_eq!(
-            launch_text(&canonical).unwrap(),
-            launch_text(&file).unwrap()
+            Path::new(&launch_text(&canonical).unwrap())
+                .canonicalize()
+                .unwrap(),
+            Path::new(&launch_text(&file).unwrap())
+                .canonicalize()
+                .unwrap()
         );
     }
 }
