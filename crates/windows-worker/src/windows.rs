@@ -1209,11 +1209,119 @@ mod tests {
             walk(&scratch, 1024, 20),
             Err(Error::Io(std::io::ErrorKind::PermissionDenied))
         ));
-        clean(&scratch, &user_sid().unwrap()).unwrap();
+        restrictive_fixture_access_diagnostics(&restricted, "before_cleanup");
+        let outcome = clean(&scratch, &user_sid().unwrap());
+        if outcome.is_err() {
+            restrictive_fixture_access_diagnostics(&restricted, "after_cleanup_failure");
+        }
+        outcome.unwrap();
         assert!(
             !scratch.exists(),
             "restricted synthetic directory survived cleanup"
         );
+    }
+
+    /// Read-only diagnostics of this disposable fixture only. Never serialize
+    /// SID strings/bytes, names, token details, paths or security descriptors.
+    /// Fixed booleans and error codes distinguish default-owner assumptions from
+    /// access-mask behavior without changing the object or process privileges.
+    fn restrictive_fixture_access_diagnostics(path: &Path, phase: &'static str) {
+        use windows_sys::Win32::System::SystemServices::{
+            SE_GROUP_ENABLED, SE_GROUP_USE_FOR_DENY_ONLY,
+        };
+        let token = token(unsafe { GetCurrentProcess() }).unwrap();
+        let user = token_info(token.0, TokenUser).unwrap();
+        let default_owner = token_info(token.0, TokenOwner).unwrap();
+        let groups = token_info(token.0, TokenGroups).unwrap();
+        let user_sid = unsafe { (*user.as_ptr().cast::<TOKEN_USER>()).User.Sid };
+        let default_owner_sid = unsafe { (*default_owner.as_ptr().cast::<TOKEN_OWNER>()).Owner };
+        let groups_ptr = groups.as_ptr().cast::<TOKEN_GROUPS>();
+        let count = unsafe { (*groups_ptr).GroupCount as usize };
+        let start = std::mem::offset_of!(TOKEN_GROUPS, Groups);
+        assert!(start <= groups.len() * size_of::<usize>());
+        assert!(
+            count <= (groups.len() * size_of::<usize>() - start) / size_of::<SID_AND_ATTRIBUTES>()
+        );
+        let groups = unsafe {
+            std::slice::from_raw_parts(
+                groups
+                    .as_ptr()
+                    .cast::<u8>()
+                    .add(start)
+                    .cast::<SID_AND_ATTRIBUTES>(),
+                count,
+            )
+        };
+        let same =
+            |a: PSID, b: PSID| !a.is_null() && !b.is_null() && unsafe { EqualSid(a, b) } != 0;
+        let enabled_group = |sid| {
+            groups.iter().any(|group| {
+                same(sid, group.Sid)
+                    && group.Attributes & SE_GROUP_ENABLED as u32 != 0
+                    && group.Attributes & SE_GROUP_USE_FOR_DENY_ONLY as u32 == 0
+            })
+        };
+        let mut owner = null_mut();
+        let mut dacl = null_mut();
+        let mut descriptor = null_mut();
+        let name = wide(path).unwrap();
+        let security_code = unsafe {
+            GetNamedSecurityInfoW(
+                name.as_ptr(),
+                SE_FILE_OBJECT,
+                OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+                &mut owner,
+                null_mut(),
+                &mut dacl,
+                null_mut(),
+                &mut descriptor,
+            )
+        };
+        let descriptor = Local(descriptor);
+        let owner_is_user = (security_code == 0).then(|| same(owner, user_sid));
+        let owner_is_default = (security_code == 0).then(|| same(owner, default_owner_sid));
+        let owner_is_enabled_group = (security_code == 0).then(|| enabled_group(owner));
+        let empty_dacl =
+            (security_code == 0).then(|| !dacl.is_null() && unsafe { (*dacl).AceCount } == 0);
+        let mut attempts = BTreeMap::new();
+        for (name, access) in [
+            ("metadata_only", 0),
+            ("read_control", READ_CONTROL),
+            ("write_dac", WRITE_DAC),
+            ("owner_security", READ_CONTROL | WRITE_DAC),
+            ("maximum_allowed", MAXIMUM_ALLOWED),
+            (
+                "maximum_and_owner_security",
+                MAXIMUM_ALLOWED | READ_CONTROL | WRITE_DAC,
+            ),
+        ] {
+            let result = OpenOptions::new()
+                .access_mode(access)
+                .share_mode(0)
+                .custom_flags(
+                    FILE_FLAG_OPEN_REPARSE_POINT
+                        | FILE_FLAG_BACKUP_SEMANTICS
+                        | FILE_FLAG_OVERLAPPED,
+                )
+                .open(path);
+            attempts.insert(name, serde_json::json!({"opened":result.is_ok(),"error_code":result.as_ref().err().and_then(std::io::Error::raw_os_error)}));
+            drop(result);
+        }
+        println!(
+            "restrictive_fixture_access={}",
+            serde_json::json!({
+                "phase":phase,
+                "default_owner_is_user":same(default_owner_sid, user_sid),
+                "default_owner_is_enabled_group":enabled_group(default_owner_sid),
+                "security_query_code":security_code,
+                "owner_is_user":owner_is_user,
+                "owner_is_default":owner_is_default,
+                "owner_is_enabled_group":owner_is_enabled_group,
+                "empty_dacl":empty_dacl,
+                "open_attempts":attempts,
+            })
+        );
+        drop(descriptor);
     }
 
     #[test]
