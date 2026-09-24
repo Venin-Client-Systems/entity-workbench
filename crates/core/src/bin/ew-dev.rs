@@ -409,7 +409,12 @@ fn run() -> workbench_core::Result<serde_json::Value> {
     let mut extra = std::env::args().skip(2);
     let next = extra.next();
     let presentation = next.as_deref() == Some("--presentation");
-    let runtime = if presentation { extra.next() } else { next };
+    let summary = next.as_deref() == Some("--summary");
+    let runtime = if presentation || summary {
+        extra.next()
+    } else {
+        next
+    };
     workbench_core::require(extra.next().is_none(), "Unexpected development argument")?;
     if let Some(runtime) = runtime {
         workspace.attach_runtime(workbench_core::engines::Runtime {
@@ -417,7 +422,9 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         });
     }
     let command = serde_json::from_str(&input)?;
-    if presentation {
+    if summary {
+        workspace.dispatch_summary(command)
+    } else if presentation {
         workspace.dispatch_presentation(command)
     } else {
         workspace.dispatch(command)

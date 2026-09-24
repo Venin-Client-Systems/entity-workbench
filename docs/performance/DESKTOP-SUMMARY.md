@@ -8,6 +8,14 @@ and cancellation ownership. No command variant, command version, storage schema,
 desktop transport or UI default changes in this slice. The application and the
 development bridge continue using presentation mode.
 
+The development executable also accepts the additive `ew-dev WORKSPACE --summary`
+mode, with an optional runtime path after the flag. Its default full response and
+existing `--presentation` mode are unchanged. A subprocess integration test sends
+an actual import, view and complete transaction export through all three modes;
+it checks omitted summary arrays, unchanged legacy arrays, exact decimal values
+and identical dedicated export responses. This flag prepares the browser bridge
+cutover without activating it.
+
 The response has `schema_version: 1`, `workspace` and `analysis`. Its workspace
 contains the same fields as `WorkspaceView<ReportMetadata>`, except that it omits
 `transactions` and generic `decisions` and adds `review_decision_count`. These
