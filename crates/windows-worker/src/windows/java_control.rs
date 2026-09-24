@@ -24,6 +24,11 @@ pub(crate) fn file_worker_control(
         .insert(0, "-Dworkbench.probe=true".into());
     validate(&prepared.request)?;
     prepared.verify_runtime(runtime)?;
+    // The staging CLI uses relative paths with '/' separators. Inventory and
+    // ancestor checks must run on that supplied path before canonicalization;
+    // only then render its canonical identity using the strict launch grammar.
+    let runtime = runtime.canonicalize()?;
+    prepared.request.runtime = runtime.clone();
     ordinary(parent)?;
     let temporary = tempfile::Builder::new()
         .prefix("file-worker-control-")
@@ -44,7 +49,7 @@ pub(crate) fn file_worker_control(
             ("$EW_INPUT", path_text(&input)?),
             ("$EW_REQUEST", path_text(&metadata)?),
             ("$EW_SCRATCH", path_text(&scratch)?),
-            ("$EW_RUNTIME", path_text(runtime)?),
+            ("$EW_RUNTIME", path_text(&runtime)?),
         ];
         let mut arguments = vec![path_text(&executable)?];
         for argument in &prepared.request.arguments {

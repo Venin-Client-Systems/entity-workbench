@@ -46,4 +46,21 @@ mod tests {
         }
         assert!(launch_text(&root.path().join("missing")).is_err());
     }
+    #[test]
+    fn validated_control_paths_are_canonicalized_before_strict_launch_spelling() {
+        let root = tempfile::tempdir().unwrap();
+        let file = root.path().join("synthetic.txt");
+        fs::write(&file, b"synthetic-only").unwrap();
+        let normal = launch_text(&root.path().canonicalize().unwrap()).unwrap();
+        let supplied = PathBuf::from(format!("{}/./synthetic.txt", normal.replace('\\', "/")));
+        assert!(launch_text(&supplied).is_err());
+        // Canonicalization is a separate setup action, after validation; the
+        // launch helper itself must never silently normalize an unsafe spelling.
+        let canonical = supplied.canonicalize().unwrap();
+        assert_eq!(canonical, file.canonicalize().unwrap());
+        assert_eq!(
+            launch_text(&canonical).unwrap(),
+            launch_text(&file).unwrap()
+        );
+    }
 }
