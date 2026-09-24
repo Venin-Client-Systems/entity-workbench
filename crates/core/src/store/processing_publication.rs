@@ -1,4 +1,5 @@
-//! Validate and publish bounded immutable results without retaining raster bytes.
+//! Validate bounded worker results and publish immutable canonical references.
+use super::super::processing_regions as regions;
 use super::*;
 use crate::engines::{image, ocr};
 #[path = "processing_pdf_publication.rs"]
@@ -8,6 +9,7 @@ pub(super) enum Derivative {
     Document(Box<ExtractionRecord>),
     Image(Box<ImageExtractionRecord>),
     Pdf(Box<PdfExtractionRecord>),
+    ImageRegions(Box<ImageRegionExtractionRecord>, Vec<u8>),
 }
 
 impl Derivative {
@@ -16,13 +18,36 @@ impl Derivative {
             Self::Document(record) => &record.id,
             Self::Image(record) => &record.id,
             Self::Pdf(record) => &record.id,
+            Self::ImageRegions(record, _) => &record.id,
         }
+    }
+    pub(super) fn prepare_files(
+        &self,
+        root: &Path,
+        conn: &Connection,
+        output: &ProcessingOutput,
+    ) -> Result<()> {
+        if let Self::ImageRegions(record, json) = self {
+            let ProcessingOutput::ImageRegions(output) = output else {
+                return Err(Error::Validation(
+                    "Image-region preparation operation mismatch".into(),
+                ));
+            };
+            regions::retain(root, conn, record, json, output)?;
+        }
+        Ok(())
     }
     pub(super) fn publish(&self, conn: &Connection) -> Result<()> {
         match self {
             Self::Document(record) => put(conn, "extraction", &record.id, record),
             Self::Image(record) => put(conn, "image_extraction", &record.id, record),
             Self::Pdf(record) => put(conn, "pdf_extraction", &record.id, record),
+            Self::ImageRegions(record, _) => {
+                for reference in regions::refs(record) {
+                    super::super::derivative_files::catalog(conn, reference)?;
+                }
+                put(conn, "image_region_extraction", &record.id, record)
+            }
         }
     }
 }
@@ -64,6 +89,20 @@ impl Workspace {
                 let previous = self.pdf_extraction(key)?;
                 Ok(previous.attempt == ticket.attempt
                     && previous.result_sha256 == hash(&serde_json::to_vec(&pdf::summary(result))?))
+            }
+            (ProcessingInput::ImageOcrRegions { .. }, ProcessingOutput::ImageRegions(output)) => {
+                let original = self.verify_processing_input(&job.input)?;
+                crate::engines::image_regions::validate_result(
+                    &output.image.result,
+                    &original,
+                    output.image.raster.as_deref(),
+                    output.ocr.as_ref().map(|value| &value.result),
+                    output.ocr.as_ref().map(|value| value.tsv.as_slice()),
+                )?;
+                let previous = self.inspect_image_region_extraction(key)?;
+                Ok(previous.extraction.attempt == ticket.attempt
+                    && previous.extraction.result.sha256
+                        == hash(&serde_json::to_vec(&regions::summary(output))?))
             }
             _ => Ok(false),
         }
@@ -185,16 +224,16 @@ pub(super) fn validated_derivative(
                 result_sha256: hash(&serde_json::to_vec(&result)?),
                 result,
             };
-            match output.image.result.status {
-                image::DecodeStatus::Decoded => {
-                    let empty = output.ocr.as_ref().is_some_and(|value| value.status == ocr::OcrStatus::NoTextRecognized);
-                    terminal(job, ProcessingState::Completed, None, if empty { "Image decoded and OCR completed without recognized text; no facts were accepted. Raster was not retained" } else { "Image OCR completed; unreviewed recognition and provenance retained. Raster was not retained" });
-                }
-                image::DecodeStatus::Unsupported => terminal(job, ProcessingState::Blocked, Some(ProcessingFailure::UnsupportedFormat), "The image decoder does not support this input; no OCR was run"),
-                image::DecodeStatus::Failed => terminal(job, ProcessingState::Failed, Some(ProcessingFailure::ImageDecodeFailed), "Image decoding failed; its typed outcome was retained and no OCR was run"),
-                image::DecodeStatus::QuotaExhausted => terminal(job, ProcessingState::QuotaExhausted, Some(ProcessingFailure::WorkerFailed), "Image decoding exceeded its limit; its typed outcome was retained and no OCR was run"),
-            }
+            let empty = output
+                .ocr
+                .as_ref()
+                .is_some_and(|value| value.status == ocr::OcrStatus::NoTextRecognized);
+            image_outcome(job, &output.image.result.status, empty, false);
             Ok(Derivative::Image(Box::new(record)))
+        }
+        (ProcessingInput::ImageOcrRegions { .. }, ProcessingOutput::ImageRegions(output)) => {
+            let (record, json) = regions::build(job, original, output, key)?;
+            Ok(Derivative::ImageRegions(Box::new(record), json))
         }
         (ProcessingInput::PdfPageOcr { .. }, ProcessingOutput::Pdf(output)) => {
             pdf::validate(job, original, output, key)

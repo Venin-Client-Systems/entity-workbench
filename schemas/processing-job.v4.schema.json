@@ -1,0 +1,272 @@
+{
+  "$defs": {
+    "ProcessingFailure": {
+      "enum": [
+        "interrupted",
+        "input_unavailable",
+        "runtime_unavailable",
+        "worker_failed",
+        "invalid_result",
+        "unsupported_format",
+        "document_failed",
+        "image_decode_failed",
+        "encrypted_document",
+        "pdf_render_failed",
+        "cancelled_by_analyst",
+        "cleanup_failed",
+        "worker_exit_unverified",
+        "recovery_required",
+        "derivative_unavailable"
+      ],
+      "type": "string"
+    },
+    "ProcessingInput": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "parse_document",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "image_ocr",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "image_ocr_regions",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dpi": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "pdf_page_ocr",
+              "type": "string"
+            },
+            "page_number": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes",
+            "page_number",
+            "dpi"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ProcessingState": {
+      "enum": [
+        "queued",
+        "running",
+        "partial",
+        "blocked",
+        "quota_exhausted",
+        "failed",
+        "cancelled",
+        "completed"
+      ],
+      "type": "string"
+    },
+    "RetryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "automatic": {
+          "description": "Retries always require an explicit analyst request.",
+          "type": "boolean"
+        },
+        "max_attempts": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "automatic",
+        "max_attempts"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "attempt": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "cancellation_requested": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "failure": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProcessingFailure"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "finished_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": "string"
+    },
+    "input": {
+      "$ref": "#/$defs/ProcessingInput"
+    },
+    "lease": {
+      "description": "Opaque attempt ownership, never supplied by a worker or frontend.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "request_key": {
+      "type": "string"
+    },
+    "result_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "retry": {
+      "$ref": "#/$defs/RetryPolicy"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "started_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "state": {
+      "$ref": "#/$defs/ProcessingState"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "request_key",
+    "input",
+    "state",
+    "attempt",
+    "retry",
+    "cancellation_requested",
+    "created_at",
+    "updated_at",
+    "detail",
+    "result_ids"
+  ],
+  "title": "ProcessingJob",
+  "type": "object"
+}

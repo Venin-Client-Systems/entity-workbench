@@ -197,7 +197,7 @@ fn schema_two_upgrade_reopens_legacy_findings_and_preserves_report_and_originals
     drop(conn);
     let w = Workspace::open(temp.path().join("case")).unwrap();
     let v = w.view().unwrap();
-    assert_eq!(v.schema_version, 3);
+    assert_eq!(v.schema_version, 4);
     assert_eq!(v.revision, rev + 1);
     assert!(v.findings[0].needs_review);
     assert!(v.findings[0].hypothesis_ids.is_empty());
@@ -244,7 +244,7 @@ fn failed_schema_two_upgrade_rolls_back_finding_review_and_recovers_from_backup(
     let db = temp.path().join("case/workspace.db");
     let conn = rusqlite::Connection::open(&db).unwrap();
     conn.pragma_update(None, "user_version", 2).unwrap();
-    conn.execute_batch("CREATE TRIGGER fail_upgrade BEFORE INSERT ON events WHEN NEW.action='workspace.schema_v3' BEGIN SELECT RAISE(ABORT,'synthetic failure'); END;").unwrap();
+    conn.execute_batch("CREATE TRIGGER fail_upgrade BEFORE INSERT ON events WHEN NEW.action='workspace.schema_v4' BEGIN SELECT RAISE(ABORT,'synthetic failure'); END;").unwrap();
     drop(conn);
     assert!(Workspace::open(temp.path().join("case")).is_err());
     let conn = rusqlite::Connection::open(&db).unwrap();
@@ -284,4 +284,43 @@ fn failed_schema_two_upgrade_rolls_back_finding_review_and_recovers_from_backup(
     let restored = Workspace::restore(&clean, &temp.path().join("restored")).unwrap();
     assert_eq!(restored.view().unwrap().findings[0].id, id);
     assert_eq!(restored.revision().unwrap(), rev + 1);
+}
+
+#[test]
+fn schema_three_storage_upgrade_preserves_reviewed_findings_and_report_bytes() {
+    let (temp, mut workspace) = workspace();
+    let source = workspace
+        .import("source.txt", b"Synthetic reviewed source")
+        .unwrap();
+    let finding_id = workspace
+        .add_finding(finding(&source), workspace.revision().unwrap())
+        .unwrap();
+    workspace
+        .review_finding(
+            &finding_id,
+            "Reviewed synthetic source",
+            workspace.revision().unwrap(),
+        )
+        .unwrap();
+    workspace.save_report().unwrap();
+    let before = workspace.view().unwrap();
+    drop(workspace);
+    let connection = rusqlite::Connection::open(temp.path().join("case/workspace.db")).unwrap();
+    connection
+        .execute_batch("DROP TABLE derivative_objects; PRAGMA user_version=3;")
+        .unwrap();
+    drop(connection);
+    let workspace = Workspace::open(temp.path().join("case")).unwrap();
+    let after = workspace.view().unwrap();
+    assert_eq!(after.schema_version, 4);
+    assert_eq!(after.revision, before.revision + 1);
+    assert_eq!(
+        serde_json::to_value(&after.findings).unwrap(),
+        serde_json::to_value(&before.findings).unwrap()
+    );
+    assert!(!after.findings[0].needs_review);
+    assert_eq!(
+        serde_json::to_value(&after.reports).unwrap(),
+        serde_json::to_value(&before.reports).unwrap()
+    );
 }

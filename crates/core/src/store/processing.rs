@@ -17,9 +17,14 @@ const PAGE_LIMIT: u32 = 200;
 
 fn supported_job(job: &ProcessingJob) -> Result<()> {
     require(
-        job.schema_version == 3
+        job.schema_version == 4
+            || (job.schema_version == 3
+                && !matches!(job.input, ProcessingInput::ImageOcrRegions { .. }))
             || (job.schema_version == 2
-                && !matches!(job.input, ProcessingInput::PdfPageOcr { .. }))
+                && !matches!(
+                    job.input,
+                    ProcessingInput::PdfPageOcr { .. } | ProcessingInput::ImageOcrRegions { .. }
+                ))
             || (job.schema_version == 1
                 && matches!(job.input, ProcessingInput::ParseDocument { .. })),
         "Unsupported processing job version or operation",
@@ -42,7 +47,7 @@ fn attempt(job: &ProcessingJob, expected: u32) -> Result<()> {
     Ok(())
 }
 
-fn terminal(
+pub(super) fn terminal(
     job: &mut ProcessingJob,
     state: ProcessingState,
     failure: Option<ProcessingFailure>,
@@ -54,6 +59,44 @@ fn terminal(
     job.updated_at = now();
     job.finished_at = Some(job.updated_at.clone());
 }
+pub(super) fn image_outcome(
+    job: &mut ProcessingJob,
+    status: &crate::engines::image::DecodeStatus,
+    empty: bool,
+    retained: bool,
+) {
+    use crate::engines::image::DecodeStatus;
+    match status {
+        DecodeStatus::Decoded => {
+            let detail=match (retained,empty) {
+                (true,true)=>"Image word-region OCR completed without recognized text. Validated raster, TSV and result retained; no facts were accepted",
+                (true,false)=>"Unreviewed image word regions and validated raster, TSV and result retained; no facts were accepted",
+                (false,true)=>"Image decoded and OCR completed without recognized text; no facts were accepted. Raster was not retained",
+                (false,false)=>"Image OCR completed; unreviewed recognition and provenance retained. Raster was not retained",
+            };
+            terminal(job, ProcessingState::Completed, None, detail);
+        }
+        DecodeStatus::Unsupported => terminal(
+            job,
+            ProcessingState::Blocked,
+            Some(ProcessingFailure::UnsupportedFormat),
+            "The image decoder does not support this input; no OCR was run",
+        ),
+        DecodeStatus::Failed => terminal(
+            job,
+            ProcessingState::Failed,
+            Some(ProcessingFailure::ImageDecodeFailed),
+            "Image decoding failed; its typed outcome was retained and no OCR was run",
+        ),
+        DecodeStatus::QuotaExhausted => terminal(
+            job,
+            ProcessingState::QuotaExhausted,
+            Some(ProcessingFailure::WorkerFailed),
+            "Image decoding exceeded its limit; its typed outcome was retained and no OCR was run",
+        ),
+    }
+}
+
 fn pending_count(conn: &Connection) -> Result<usize> {
     Ok(conn.query_row("SELECT count(*) FROM records WHERE kind='processing_job' AND json_extract(body,'$.state') IN ('queued','running')", [], |row| row.get(0))?)
 }
@@ -80,6 +123,7 @@ fn suspend_queued_jobs(conn: &Connection) -> Result<()> {
 enum RequestedOperation {
     Parse,
     Image,
+    ImageRegions,
     Pdf { page_number: u32, dpi: u32 },
 }
 
@@ -98,6 +142,14 @@ impl Workspace {
         request_key: &str,
     ) -> Result<ProcessingJob> {
         self.queue_processing(evidence_id, request_key, RequestedOperation::Image)
+    }
+
+    pub fn queue_image_ocr_regions(
+        &mut self,
+        evidence_id: &str,
+        request_key: &str,
+    ) -> Result<ProcessingJob> {
+        self.queue_processing(evidence_id, request_key, RequestedOperation::ImageRegions)
     }
 
     pub fn queue_pdf_page_ocr(
@@ -138,6 +190,11 @@ impl Workspace {
                 sha256: evidence.sha256.clone(),
                 bytes: evidence.bytes,
             },
+            RequestedOperation::ImageRegions => ProcessingInput::ImageOcrRegions {
+                evidence_id: evidence.id.clone(),
+                sha256: evidence.sha256.clone(),
+                bytes: evidence.bytes,
+            },
             RequestedOperation::Pdf { page_number, dpi } => ProcessingInput::PdfPageOcr {
                 evidence_id: evidence.id.clone(),
                 sha256: evidence.sha256.clone(),
@@ -172,7 +229,7 @@ impl Workspace {
         )?;
         let at = now();
         let job = ProcessingJob {
-            schema_version: 3,
+            schema_version: 4,
             id: id(),
             request_key: request_key.into(),
             input,
@@ -191,6 +248,9 @@ impl Workspace {
             detail: match operation {
                 RequestedOperation::Parse => "Queued for local document parsing",
                 RequestedOperation::Image => "Queued for local image decoding and OCR",
+                RequestedOperation::ImageRegions => {
+                    "Queued for local image word regions and retained derivative files"
+                }
                 RequestedOperation::Pdf { .. } => {
                     "Queued for local rendering and OCR of the selected PDF page"
                 }
@@ -320,7 +380,7 @@ impl Workspace {
         Ok(job)
     }
 
-    fn verify_processing_input(&self, input: &ProcessingInput) -> Result<Vec<u8>> {
+    pub(super) fn verify_processing_input(&self, input: &ProcessingInput) -> Result<Vec<u8>> {
         let (evidence_id, sha256, bytes) = input.source();
         let evidence: Evidence = get(&self.conn, "evidence", evidence_id)?;
         require(
@@ -376,6 +436,9 @@ impl Workspace {
             ProcessingInput::ParseDocument { .. } => "Local document worker is running",
             ProcessingInput::PdfPageOcr { .. } => {
                 "Local PDF page rendering and OCR workers are running in sequence"
+            }
+            ProcessingInput::ImageOcrRegions { .. } => {
+                "Local image decoding and word-region OCR workers are running in sequence"
             }
             ProcessingInput::ImageOcr { .. } => {
                 "Local image decoding and OCR workers are running in sequence"
@@ -513,7 +576,7 @@ impl Workspace {
             );
         } else {
             let original = self.verify_processing_input(&job.input);
-            match (original, result) {
+            match (original, &result) {
                 (Err(_), _) => terminal(
                     &mut job,
                     ProcessingState::Blocked,
@@ -559,6 +622,31 @@ impl Workspace {
                     Some(ProcessingFailure::WorkerFailed),
                     "Worker failed; no derivative was published",
                 ),
+            }
+        }
+        if let (Some(record), Ok(output)) = (&extraction, &result) {
+            match record.prepare_files(&self.root, &self.conn, output) {
+                Ok(()) => {}
+                Err(Error::DerivativeUnavailable { published }) => {
+                    job.result_ids.pop();
+                    extraction = None;
+                    terminal(
+                        &mut job,
+                        ProcessingState::Failed,
+                        Some(ProcessingFailure::DerivativeUnavailable),
+                        if published {
+                            "A previously published derivative is missing or altered; restore verified storage before retrying. No new result was published"
+                        } else {
+                            "Unreferenced derivative storage could not be prepared or verified. No new result was published"
+                        },
+                    );
+                }
+                Err(Error::Cleanup(_)) => {
+                    job.result_ids.pop();
+                    extraction = None;
+                    terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::CleanupFailed), "Derivative staging cleanup failed and requires attention. No new result was published");
+                }
+                Err(error) => return Err(error),
             }
         }
         self.change(Some(expected), "processing.finish", false, |conn| {
@@ -1052,3 +1140,7 @@ mod pdf_fixtures;
 #[cfg(test)]
 #[path = "processing_pdf_tests.rs"]
 mod pdf_tests;
+
+#[cfg(test)]
+#[path = "processing_region_tests.rs"]
+mod region_tests;

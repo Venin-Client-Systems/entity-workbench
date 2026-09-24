@@ -11,8 +11,11 @@ use std::{
 use uuid::Uuid;
 mod assessment;
 mod collection;
+mod derivative_files;
 mod identity;
 mod processing;
+mod processing_regions;
+mod recovery;
 mod report_snapshots;
 mod statements;
 mod transaction_analysis;
@@ -20,7 +23,7 @@ mod transaction_comparison;
 #[cfg(test)]
 mod view_tests;
 
-const SCHEMA: u32 = 3;
+const SCHEMA: u32 = 4;
 pub struct Workspace {
     root: PathBuf,
     conn: Connection,
@@ -155,7 +158,8 @@ impl Workspace {
                 CREATE TABLE records(sequence INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL CHECK(json_valid(body)), UNIQUE(kind,id));
                 CREATE TABLE history(sequence INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT NOT NULL,id TEXT NOT NULL,body TEXT NOT NULL,revision INTEGER NOT NULL);
                 CREATE TABLE events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,revision INTEGER NOT NULL,action TEXT NOT NULL,at TEXT NOT NULL);
-                PRAGMA user_version=3;")?;
+                PRAGMA user_version=4;")?;
+            tx.execute_batch(derivative_files::CREATE_CATALOG)?;
             tx.commit()?;
         }
         conn.execute_batch(
@@ -172,11 +176,22 @@ impl Workspace {
             // Older readers lack mapping or finding-review semantics. Retain a
             // complete recovery point before changing records or compatibility.
             workspace.backup()?;
-            workspace.change(None, "workspace.schema_v3", true, |conn| {
+            workspace.change(None, "workspace.schema_v4", version < 3, |conn| {
+                conn.execute_batch(derivative_files::CREATE_CATALOG)?;
                 conn.pragma_update(None, "user_version", SCHEMA)?;
                 let actual: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
                 require(actual == SCHEMA, "Schema upgrade postcondition failed")
             })?;
+        }
+        if workspace
+            .conn
+            .pragma_query_value::<u32, _>(None, "user_version", |r| r.get(0))?
+            == SCHEMA
+        {
+            let _: u64 =
+                workspace
+                    .conn
+                    .query_row("SELECT count(*) FROM derivative_objects", [], |r| r.get(0))?;
         }
         let interrupted: Vec<CollectionJob> = all::<CollectionJob>(&workspace.conn, "job")?
             .into_iter()
@@ -276,6 +291,19 @@ impl Workspace {
             }
             Command::InspectPdfExtraction { extraction_id } => {
                 return Ok(serde_json::to_value(self.pdf_extraction(&extraction_id)?)?)
+            }
+            Command::QueueImageOcrRegions {
+                evidence_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.queue_image_ocr_regions(&evidence_id, &request_key)?,
+                )?);
+            }
+            Command::InspectImageRegionExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(
+                    self.inspect_image_region_extraction(&extraction_id)?,
+                )?);
             }
             Command::QueueImageOcr {
                 evidence_id,
@@ -745,63 +773,6 @@ impl Workspace {
     }
     fn verify_original(&self, e: &Evidence) -> Result<()> {
         verify_original(&self.root, e)
-    }
-    pub fn backup(&mut self) -> Result<PathBuf> {
-        let evidence = all::<Evidence>(&self.conn, "evidence")?;
-        for e in &evidence {
-            self.verify_original(e)?;
-        }
-        let path = self.root.join("backups").join(id());
-        private_dir(&path)?;
-        private_dir(&path.join("originals"))?;
-        self.conn.backup("main", path.join("workspace.db"), None)?;
-        private_file(&path.join("workspace.db"), 0o600)?;
-        for e in &evidence {
-            let target = path.join("originals").join(&e.sha256);
-            fs::copy(self.root.join("originals").join(&e.sha256), &target)?;
-            private_file(&target, 0o400)?;
-        }
-        fs::write(
-            path.join("manifest.json"),
-            serde_json::to_vec_pretty(
-                &json!({"schema_version":self.conn.pragma_query_value::<u32, _>(None, "user_version", |r| r.get(0))?,"revision":self.revision()?,"evidence":evidence.iter().map(|e|&e.sha256).collect::<Vec<_>>()}),
-            )?,
-        )?;
-        private_file(&path.join("manifest.json"), 0o600)?;
-        Ok(path)
-    }
-    pub fn restore(backup: &Path, destination: &Path) -> Result<Self> {
-        require(!destination.exists(), "Restore destination must not exist")?;
-        let source = Self {
-            root: backup.to_path_buf(),
-            runtime: None,
-            conn: Connection::open_with_flags(
-                backup.join("workspace.db"),
-                rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-            )?,
-        };
-        let version: u32 = source
-            .conn
-            .pragma_query_value(None, "user_version", |r| r.get(0))?;
-        require(
-            (1..=SCHEMA).contains(&version),
-            "Backup schema is unsupported",
-        )?;
-        let evidence = all::<Evidence>(&source.conn, "evidence")?;
-        for e in &evidence {
-            source.verify_original(e)?;
-        }
-        private_dir(destination)?;
-        private_dir(&destination.join("originals"))?;
-        source
-            .conn
-            .backup("main", destination.join("workspace.db"), None)?;
-        for e in &evidence {
-            let target = destination.join("originals").join(&e.sha256);
-            fs::copy(backup.join("originals").join(&e.sha256), &target)?;
-            private_file(&target, 0o400)?;
-        }
-        Self::open(destination)
     }
     pub fn seed_demo(&mut self) -> Result<()> {
         if !all::<Entity>(&self.conn, "entity")?.is_empty() {

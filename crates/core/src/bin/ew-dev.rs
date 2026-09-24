@@ -75,7 +75,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                9,
+                10,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (
@@ -108,7 +108,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "processing-job",
-                3,
+                4,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ProcessingJob
                 ))?,
@@ -125,6 +125,27 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 1,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::PdfExtractionRecord
+                ))?,
+            ),
+            (
+                "image-region-extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionExtractionRecord
+                ))?,
+            ),
+            (
+                "image-region-result",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionResult
+                ))?,
+            ),
+            (
+                "image-region-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionInspection
                 ))?,
             ),
             (
@@ -180,7 +201,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":16}));
+        return Ok(serde_json::json!({"schemas":19}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();

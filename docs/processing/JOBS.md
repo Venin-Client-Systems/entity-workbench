@@ -105,3 +105,5 @@ with source/runtime identities and collision-safe history. The ordinary core
 suite remains the broader regression check.
 
 No complete-release gate is changed by this implementation.
+
+Retained PNG/JPEG word regions are a separate opt-in operation: see [retained image-region jobs](IMAGE-REGIONS.md). Existing image/PDF text jobs retain their previous output and raster-discard policy. The new path uses workspace storage schema 4, small canonical references and verified filesystem derivative objects.
