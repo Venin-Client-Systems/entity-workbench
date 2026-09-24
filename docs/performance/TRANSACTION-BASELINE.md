@@ -152,3 +152,5 @@ the fixture, bounds or measurement scope to manufacture a pass.
 
 The first retained [100,000-row observation](OBSERVATION-2026-09-24.md) reports the
 actual raw measurements and the next profiling questions.
+A separate [payload diagnostic](PAYLOAD-DIAGNOSTIC.md) measures the exact canonical
+View fields before and after one retained HTML snapshot without changing that run.

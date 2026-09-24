@@ -461,6 +461,107 @@ fn denominators(value: &Value) -> Value {
         "deferred":count(&value["deferred_ids"]),"reviewed_transfer_excluded":count(&value["excluded_transfer_ids"])})
 }
 
+/// A labelled payload diagnostic, separate from timed samples. Avoid another giant JSON buffer.
+fn serialized_bytes(value: &Value) -> Result<usize> {
+    struct Counter(usize);
+    impl std::io::Write for Counter {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.0 += bytes.len();
+            if self.0 > 256 * 1024 * 1024 {
+                return Err(std::io::Error::other("Diagnostic JSON exceeds 256 MiB"));
+            }
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut counter = Counter(0);
+    serde_json::to_writer(&mut counter, value)?;
+    Ok(counter.0)
+}
+
+fn field_sizes(value: &Value) -> Result<Value> {
+    let mut fields = BTreeMap::new();
+    let object = value
+        .as_object()
+        .ok_or_else(|| workbench_core::Error::Validation("Expected response object".into()))?;
+    let mut value_bytes = 0;
+    for (key, value) in object {
+        let bytes = serialized_bytes(value)?;
+        value_bytes += bytes;
+        fields.insert(
+            key,
+            json!({"serialized_value_bytes":bytes,"array_items":value.as_array().map(Vec::len)}),
+        );
+    }
+    let total = serialized_bytes(value)?;
+    Ok(
+        json!({"fields":fields,"serialized_object_bytes":total,"keys_and_punctuation_bytes":total-value_bytes}),
+    )
+}
+
+fn diagnose(root: &Path, case: &str) -> Result<()> {
+    let (directory, report_count) = match case {
+        "baseline" => (root.join("case"), 0),
+        "one_report" => (root.join("measure-html_export"), 1),
+        _ => {
+            return Err(workbench_core::Error::Validation(
+                "Only fixed retained diagnostic cases are supported".into(),
+            ))
+        }
+    };
+    require(
+        directory.join("workspace.db").is_file(),
+        "Retained diagnostic workspace is missing",
+    )?;
+    let mut workspace = Workspace::open(directory)?;
+    let revision = workspace.revision()?;
+    let value = workspace.dispatch(Command::View {})?;
+    let view = &value["workspace"];
+    require(
+        view["transactions"]
+            .as_array()
+            .is_some_and(|a| a.len() == 100_000)
+            && view["reports"]
+                .as_array()
+                .is_some_and(|a| a.len() == report_count),
+        "Diagnostic requires retained 100k baseline or one-report workspace",
+    )?;
+    let evidence = view["evidence"].as_array().unwrap();
+    require(
+        evidence.len() == 1 && evidence[0]["sha256"] == fixture::frozen_sha256(100_000),
+        "Diagnostic fixture differs",
+    )?;
+    let mut text = Vec::new();
+    for e in evidence {
+        text.push(
+            json!({"evidence_id":e["id"],"text_raw_utf8_bytes":e["text"].as_str().map(str::len),
+            "text_serialized_string_bytes":serialized_bytes(&e["text"])?}),
+        );
+    }
+    let mut reports = Vec::new();
+    for report in view["reports"].as_array().unwrap() {
+        let html = report["html"].as_str().unwrap();
+        require(
+            digest(html.as_bytes()) == report["sha256"].as_str().unwrap(),
+            "Canonical report digest differs",
+        )?;
+        reports.push(json!({"id":report["id"],"workspace_revision":report["workspace_revision"],"sha256":report["sha256"],
+            "html_raw_utf8_bytes":html.len(),"html_serialized_string_bytes":serialized_bytes(&report["html"])?}));
+    }
+    require(
+        workspace.revision()? == revision,
+        "Diagnostic mutated revision",
+    )?;
+    emit(
+        json!({"event":"payload_diagnostic","case":case,"workspace_revision":revision,
+        "top_level":field_sizes(&value)?,"workspace":field_sizes(view)?,"evidence_text":text,"reports_html":reports,
+        "timing_claim":false,"report_count":report_count}),
+    );
+    Ok(())
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let result = (|| {
@@ -476,6 +577,8 @@ fn main() {
                     .parse()
                     .map_err(|_| workbench_core::Error::Validation("Invalid rows".into()))?,
             )
+        } else if args[1] == "diagnose" {
+            diagnose(root, &args[3])
         } else if args[1] == "measure" {
             measure(
                 root,
@@ -524,5 +627,24 @@ mod tests {
         value["total"]["credits"] = json!("1.01");
         value["total"]["transaction_ids"] = json!([]);
         assert!(e.check(&value).is_err());
+    }
+    #[test]
+    fn payload_counter_matches_json_escaping_and_complete_object_overhead() {
+        let value = json!({"text":"<tag>\n\"escaped\"","rows":[1,2,3],"none":null});
+        let sizes = field_sizes(&value).unwrap();
+        assert_eq!(
+            serialized_bytes(&value).unwrap(),
+            serde_json::to_vec(&value).unwrap().len()
+        );
+        let fields = sizes["fields"]
+            .as_object()
+            .unwrap()
+            .values()
+            .map(|v| v["serialized_value_bytes"].as_u64().unwrap())
+            .sum::<u64>();
+        assert_eq!(
+            fields + sizes["keys_and_punctuation_bytes"].as_u64().unwrap(),
+            serialized_bytes(&value).unwrap() as u64
+        );
     }
 }

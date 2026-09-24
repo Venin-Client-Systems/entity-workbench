@@ -10,6 +10,8 @@ from unittest import mock
 SPEC = importlib.util.spec_from_file_location("transaction_performance", Path(__file__).resolve().parents[1] / "transaction_performance.py")
 runner = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runner)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+import transaction_payload_diagnostic as diagnostic
 
 
 def records():
@@ -20,6 +22,15 @@ def records():
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_html_partition_is_exact_and_does_not_treat_escaped_text_as_heading(self):
+        data=b'<html>prefix<h2>One</h2>&lt;h2&gt;inert<h2>Two</h2>end</html>'
+        sections=diagnostic.html_sections(data)
+        self.assertEqual([v["section"] for v in sections], ["document_prefix", "One", "Two"])
+        self.assertEqual(sum(v["raw_utf8_bytes"] for v in sections),len(data))
+        for bad in (b'no heading',b'<h2>'+b'x'*300+b'</h2>',b'<h2>A</h2>'*33):
+            with self.assertRaises(ValueError):
+                diagnostic.html_sections(bad)
+
     @unittest.skipUnless(runner.platform.system() in ("Darwin", "Linux"), "Process-group runner is Unix-only")
     def test_actual_timeout_retains_partial_output_without_success(self):
         with tempfile.TemporaryDirectory() as temporary:

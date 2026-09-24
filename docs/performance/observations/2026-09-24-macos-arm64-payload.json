@@ -1,0 +1,631 @@
+{
+  "schema_version": 1,
+  "scope": "separate canonical payload byte diagnostic",
+  "observed_at": "2026-09-24T14:36:57.556929+00:00",
+  "outcome": "measured",
+  "timing_claim": false,
+  "complete_release": false,
+  "baseline_report_sha256": "3c16f2e415b55a5e83df3ee2c849069b7ef65ecd7b75df1b0f6e80562a81e3ab",
+  "source_revision": "da532e57261986df560d554f4b1dbf440d095df7",
+  "source_dirty": true,
+  "source_sha256": {
+    "Cargo.toml": "3e04d486bf293907e3567aaad4ba96376d5aa45ee091c32f8955c233c38141af",
+    "Cargo.lock": "d70523cf36c9acf90b9fa08bef855392a6a855502a36b97eb4b7c5ba593d1a6e",
+    "crates/core/Cargo.toml": "58f079d0439841c5869ddd88d7e170db7b5c812cdf1d5512a26632497ef2c05a",
+    "crates/core/src/analytics.rs": "820b42639d62b97b93791fa8355803e2fc314444fd32fd71921d6f8ef2e38e0d",
+    "crates/core/src/bin/ew-dev.rs": "1df37fcb548b3596d7844f266343476029eaa3e079c690454828d97d1dd2befc",
+    "crates/core/src/collection.rs": "210fa59766dd5421b1ffad93b8638b9f999f1d83aa2786ef5f5fcb0144bec0f0",
+    "crates/core/src/collection_receipt.rs": "167cbb9104e778c52ba6c502280bc0238a44181268016594abd8f070ac176bf0",
+    "crates/core/src/collection_tests.rs": "037a03a08ce18e991563e09ebd16d7a418be63b873893603789b431b7b591bb3",
+    "crates/core/src/coordinator.rs": "b5e3575c045668f8ed12fea898c361d71e05f37085d43fda251ffdf7d3b35ee9",
+    "crates/core/src/coordinator_image_tests.rs": "923554695a34aa2f6aa41940960c3f63af0de39fdc3e56d24730f5cf03139772",
+    "crates/core/src/coordinator_pdf_tests.rs": "26086e76643637f19ac6f7339871f51136f8414b263a6cff8cb25d8db91cee73",
+    "crates/core/src/domain.rs": "3173332dc1748b70527b90faac3072ba3a372dc95ce3392bc85d7f8878c3cc87",
+    "crates/core/src/engines/image/tests.rs": "69121d90e5c537baef1b5edcb946cc28baf6b22179511ce954c529e56f8b1fda",
+    "crates/core/src/engines/image.rs": "3329e137dcc45f15af223617faa3d57d185e578b6825b44f554afff85aa89cc9",
+    "crates/core/src/engines/ocr/tests.rs": "e34044decc51f342bb2a253bb7c8b1aed8b2e3264b3156f080d68960cf197f1c",
+    "crates/core/src/engines/ocr.rs": "d8108cea564c82e55fe27c11c8d314374b7f6690ddebda0a6f74d36f6811e077",
+    "crates/core/src/engines/parser/tests.rs": "85a4446aa985abc276a1724555c87acb2fed4cee3823807abfdb9f5a02d2334e",
+    "crates/core/src/engines/parser.rs": "4c5d66b8cce10c485d6a9829739de7eef5358827b8e7043db908cb1bb71b9e5c",
+    "crates/core/src/engines/pdf_render/runtime.rs": "531c65765ebb57dd978fd90a8d89aa4e02c48b814feccfb740cc37c250bdb045",
+    "crates/core/src/engines/pdf_render/tests.rs": "f1ba55ccf2a5fee9f7b6471fe1b0768cc4bfa18615edfac25c8ab0724d25ea5d",
+    "crates/core/src/engines/pdf_render.rs": "096cca5807a403b92680c48fcbf73a2256915e360495be47906bd3fefe5fe863",
+    "crates/core/src/engines/supervision/image_tests.rs": "5232e9128c75e2fb7add211f5a813f27e3248a3b57564359e9316deb8fa9ddd9",
+    "crates/core/src/engines/supervision/ocr/tests.rs": "95c2d58a0b49ae57e2acf750b7c62149f2a87314ae1e0170eb3ccb7113831140",
+    "crates/core/src/engines/supervision/ocr.rs": "d86a5cd5214ac1454c54014e9c7b3c895cb59662e334376d4c8c063da64e568a",
+    "crates/core/src/engines/supervision/pdf_tests.rs": "00453c0ea7d50b75d1f3296a05d53eae0c0cf68ad20a2e9464528626b6763c72",
+    "crates/core/src/engines/supervision/tests.rs": "5bf48ba9a0c81d35e330e7417e86560572d8b8ba74e4d6f17e8ae3fd7608df4f",
+    "crates/core/src/engines/supervision.rs": "ded9677efb7f86389603ddfce677eb50e90309d5b31bb94727f984f4aa2a312f",
+    "crates/core/src/engines.rs": "ae7144c7715831507cff08f270850e3dd83cd7b65c052465402a1d0f56a2de45",
+    "crates/core/src/lib.rs": "41f3fcf8db0af4f96e14d40e3f329b81bb389706de884d954688215de57d0f0d",
+    "crates/core/src/policy.rs": "9a3c728da7ff43a3e9b2ca53b24c56640db87079c2df6342c4dfc5031d7f3636",
+    "crates/core/src/processing.rs": "0df01e16b38297f3e96b8d1610ab83e953ea98fc5bf924db21b406024c2c3b10",
+    "crates/core/src/report.rs": "0aeb63a6253dee04bec8f9d128ef663135b71a8c3153854bf6f8ee3fdcfa30f1",
+    "crates/core/src/statements.rs": "13c3037affe77f44889c7d58610e2de45cbcf47b6c89f5680747ab0260c4e2c2",
+    "crates/core/src/store/assessment.rs": "15bb90f1486771f94097e3fce148b3b23ea18b7945951f1a6e7efde6e9dd347f",
+    "crates/core/src/store/collection.rs": "aa1492fba8e89c3f2b2e136a3f81a810b5772a656c1be45d65d2ed08860c5d20",
+    "crates/core/src/store/collection_demo.rs": "e891c4063b2cd115408f04ca454d0b3cb23edea7d5260900aea39478d702679c",
+    "crates/core/src/store/collection_tests.rs": "dddf5d67c8c40103e303887ef7665cd930af2246acac52e1cc1c5564a9216fbf",
+    "crates/core/src/store/identity.rs": "234d34c09cba7e6b4ab61a56bf447ed9961571029b55a8840129895d07795995",
+    "crates/core/src/store/processing.rs": "33a1b887cae49e51c77390547b3080be4666613740a93fa1a693be851fc31c8c",
+    "crates/core/src/store/processing_demo.rs": "b743cf0877c01c792eee6d345a93c92e66e8cb95762e489590606c1ff9aa847e",
+    "crates/core/src/store/processing_image_demo.rs": "d8d11323c4423206b86b38cbcdcfda5a5d6030ef5e631eeb6747f4504464e7e0",
+    "crates/core/src/store/processing_image_fixtures.rs": "6f96b34c2740ea8a33df22ec1745ebdf3d57858d3f7aa303c83846c0b27d09ce",
+    "crates/core/src/store/processing_image_tests.rs": "3d00f3901eb6c4defd80d897e4140ce57d460c984800902d2bf5d26f5bdc1411",
+    "crates/core/src/store/processing_pdf_demo.rs": "5fbc62e89b0d154a655bec5ed9a38403da7aef619d8d3beebe295e774526b6a9",
+    "crates/core/src/store/processing_pdf_fixtures.rs": "7db1f7ab1df79330ee3f4f444a45cb497d536d332f734914048728f2dde47567",
+    "crates/core/src/store/processing_pdf_publication.rs": "f3c52ed0ebda8a49c51c85b70001074138190b51718268cd918357519249729b",
+    "crates/core/src/store/processing_pdf_tests.rs": "d50ded5d61351dfcf3e1d78578fbfaf9ae981cfdb0848852824b9b3a43b4b4bc",
+    "crates/core/src/store/processing_publication.rs": "1ecf23a3dfd0c02cb4f93cc3e65179ec455d1eb4ed8b0e006c68b0211ee1ebdd",
+    "crates/core/src/store/report_snapshots.rs": "cf672da35256a500971e5155efd9c34b341a14d7fe1f47cd4955611725bf8d8b",
+    "crates/core/src/store/statements.rs": "5ecbf9b264cc7bdc290ae0711703e2216015a6202755b3042042b47fbd6fbf4a",
+    "crates/core/src/store/transaction_analysis.rs": "8eed1ea284b29e9a96602c5705c1c0790f65f7f4dc7e1bb72c42dd01c3bc913c",
+    "crates/core/src/store/transaction_comparison.rs": "b2d222e5a6d46908b7d0fb9b3dac79d776b78383be0298d9482ad3cec71b241b",
+    "crates/core/src/store.rs": "78231f3438a1bebba33f4af7f6bdcf482f26e1dfdcc1553cbaaae678680ae41c",
+    "crates/core/src/transaction_analysis.rs": "d7ecd825d7f01da74c26fc2f76ad54e565996b49c1b60411a1da73149a46e376",
+    "crates/core/src/transaction_comparison.rs": "0d041d6de8173fb608c16bdc4c1cd78cae7096ab11eb06ebca2ea2f572d5372f",
+    "crates/core/examples/performance_baseline/fixture.rs": "f4ecfb416734aa1389ef2839cb0656bbbc542c4b7bb1e755e9fd7a8cc4107e54",
+    "crates/core/examples/performance_baseline.rs": "1980fdc3ecb96741d7aaad9ce19f9d5d7bf770b04de7139e11345902b4526269"
+  },
+  "script_sha256": "be53fb17ce36423a1d439fad9515f882f1447ecf8fa75b9a18e2fddca5b876d5",
+  "runner_sha256": "d6513bfcbddbe2a6d618b07c6b185c74921cc4685825199d0eff0d335a337964",
+  "cases": {
+    "baseline": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 2310.5322499759495,
+      "child_lifetime_peak_rss_bytes": 602914816,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "baseline.stdout.jsonl",
+      "stdout_sha256": "eeb07e5601f42ec843e76288eb32af1b6b9e5113e83e2bdfe4026a6bb18b614e",
+      "stderr": "baseline.stderr.txt",
+      "stderr_sha256": "562e13eb1a020bca20fd9bbff03d6bc426acccaae4f324ec573954bd6424552d",
+      "events": [
+        {
+          "case": "baseline",
+          "event": "payload_diagnostic",
+          "evidence_text": [
+            {
+              "evidence_id": "c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7",
+              "text_raw_utf8_bytes": 5010041,
+              "text_serialized_string_bytes": 5110044
+            }
+          ],
+          "report_count": 0,
+          "reports_html": [],
+          "timing_claim": false,
+          "top_level": {
+            "fields": {
+              "analysis": {
+                "array_items": null,
+                "serialized_value_bytes": 6196135
+              },
+              "workspace": {
+                "array_items": null,
+                "serialized_value_bytes": 77790468
+              }
+            },
+            "keys_and_punctuation_bytes": 26,
+            "serialized_object_bytes": 83986629
+          },
+          "workspace": {
+            "fields": {
+              "addresses": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "assertions": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "decisions": {
+                "array_items": 95100,
+                "serialized_value_bytes": 25568901
+              },
+              "entities": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "evidence": {
+                "array_items": 1,
+                "serialized_value_bytes": 5110461
+              },
+              "findings": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "hypotheses": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "identity_decisions": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "jobs": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "leads": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "locations": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "merges": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "observations": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "reports": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "revision": {
+                "array_items": null,
+                "serialized_value_bytes": 5
+              },
+              "schema_version": {
+                "array_items": null,
+                "serialized_value_bytes": 1
+              },
+              "statement_imports": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "statement_profiles": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "transactions": {
+                "array_items": 100000,
+                "serialized_value_bytes": 47110803
+              }
+            },
+            "keys_and_punctuation_bytes": 269,
+            "serialized_object_bytes": 77790468
+          },
+          "workspace_revision": 95101
+        }
+      ],
+      "outcome": "measured",
+      "payload": {
+        "case": "baseline",
+        "event": "payload_diagnostic",
+        "evidence_text": [
+          {
+            "evidence_id": "c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7",
+            "text_raw_utf8_bytes": 5010041,
+            "text_serialized_string_bytes": 5110044
+          }
+        ],
+        "report_count": 0,
+        "reports_html": [],
+        "timing_claim": false,
+        "top_level": {
+          "fields": {
+            "analysis": {
+              "array_items": null,
+              "serialized_value_bytes": 6196135
+            },
+            "workspace": {
+              "array_items": null,
+              "serialized_value_bytes": 77790468
+            }
+          },
+          "keys_and_punctuation_bytes": 26,
+          "serialized_object_bytes": 83986629
+        },
+        "workspace": {
+          "fields": {
+            "addresses": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "assertions": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "decisions": {
+              "array_items": 95100,
+              "serialized_value_bytes": 25568901
+            },
+            "entities": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "evidence": {
+              "array_items": 1,
+              "serialized_value_bytes": 5110461
+            },
+            "findings": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "hypotheses": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "identity_decisions": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "jobs": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "leads": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "locations": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "merges": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "observations": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "reports": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "revision": {
+              "array_items": null,
+              "serialized_value_bytes": 5
+            },
+            "schema_version": {
+              "array_items": null,
+              "serialized_value_bytes": 1
+            },
+            "statement_imports": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "statement_profiles": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "transactions": {
+              "array_items": 100000,
+              "serialized_value_bytes": 47110803
+            }
+          },
+          "keys_and_punctuation_bytes": 269,
+          "serialized_object_bytes": 77790468
+        },
+        "workspace_revision": 95101
+      }
+    },
+    "one_report": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 2808.571249945089,
+      "child_lifetime_peak_rss_bytes": 1127202816,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "one_report.stdout.jsonl",
+      "stdout_sha256": "2058f2ef464947f8c9a0df075b03ad01209d3a5de4466bbb1a8013428477928a",
+      "stderr": "one_report.stderr.txt",
+      "stderr_sha256": "973a519ce59c8c7b2a6eee397b16bc0f6b27dc9278e57f175dc4551d80bf0f7a",
+      "events": [
+        {
+          "case": "one_report",
+          "event": "payload_diagnostic",
+          "evidence_text": [
+            {
+              "evidence_id": "c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7",
+              "text_raw_utf8_bytes": 5010041,
+              "text_serialized_string_bytes": 5110044
+            }
+          ],
+          "report_count": 1,
+          "reports_html": [
+            {
+              "html_raw_utf8_bytes": 113592530,
+              "html_serialized_string_bytes": 114462557,
+              "id": "681321c7-b883-4800-a81c-4d5db6cd3107",
+              "sha256": "3be44e386ec0dea70c7ccf715f48ce23daf93b7fd8df06977507ccf5bc158f0d",
+              "workspace_revision": 95101
+            }
+          ],
+          "timing_claim": false,
+          "top_level": {
+            "fields": {
+              "analysis": {
+                "array_items": null,
+                "serialized_value_bytes": 6196135
+              },
+              "workspace": {
+                "array_items": null,
+                "serialized_value_bytes": 192253229
+              }
+            },
+            "keys_and_punctuation_bytes": 26,
+            "serialized_object_bytes": 198449390
+          },
+          "workspace": {
+            "fields": {
+              "addresses": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "assertions": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "decisions": {
+                "array_items": 95100,
+                "serialized_value_bytes": 25568901
+              },
+              "entities": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "evidence": {
+                "array_items": 1,
+                "serialized_value_bytes": 5110461
+              },
+              "findings": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "hypotheses": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "identity_decisions": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "jobs": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "leads": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "locations": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "merges": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "observations": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "reports": {
+                "array_items": 1,
+                "serialized_value_bytes": 114462763
+              },
+              "revision": {
+                "array_items": null,
+                "serialized_value_bytes": 5
+              },
+              "schema_version": {
+                "array_items": null,
+                "serialized_value_bytes": 1
+              },
+              "statement_imports": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "statement_profiles": {
+                "array_items": 0,
+                "serialized_value_bytes": 2
+              },
+              "transactions": {
+                "array_items": 100000,
+                "serialized_value_bytes": 47110803
+              }
+            },
+            "keys_and_punctuation_bytes": 269,
+            "serialized_object_bytes": 192253229
+          },
+          "workspace_revision": 95102
+        }
+      ],
+      "outcome": "measured",
+      "payload": {
+        "case": "one_report",
+        "event": "payload_diagnostic",
+        "evidence_text": [
+          {
+            "evidence_id": "c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7",
+            "text_raw_utf8_bytes": 5010041,
+            "text_serialized_string_bytes": 5110044
+          }
+        ],
+        "report_count": 1,
+        "reports_html": [
+          {
+            "html_raw_utf8_bytes": 113592530,
+            "html_serialized_string_bytes": 114462557,
+            "id": "681321c7-b883-4800-a81c-4d5db6cd3107",
+            "sha256": "3be44e386ec0dea70c7ccf715f48ce23daf93b7fd8df06977507ccf5bc158f0d",
+            "workspace_revision": 95101
+          }
+        ],
+        "timing_claim": false,
+        "top_level": {
+          "fields": {
+            "analysis": {
+              "array_items": null,
+              "serialized_value_bytes": 6196135
+            },
+            "workspace": {
+              "array_items": null,
+              "serialized_value_bytes": 192253229
+            }
+          },
+          "keys_and_punctuation_bytes": 26,
+          "serialized_object_bytes": 198449390
+        },
+        "workspace": {
+          "fields": {
+            "addresses": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "assertions": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "decisions": {
+              "array_items": 95100,
+              "serialized_value_bytes": 25568901
+            },
+            "entities": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "evidence": {
+              "array_items": 1,
+              "serialized_value_bytes": 5110461
+            },
+            "findings": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "hypotheses": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "identity_decisions": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "jobs": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "leads": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "locations": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "merges": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "observations": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "reports": {
+              "array_items": 1,
+              "serialized_value_bytes": 114462763
+            },
+            "revision": {
+              "array_items": null,
+              "serialized_value_bytes": 5
+            },
+            "schema_version": {
+              "array_items": null,
+              "serialized_value_bytes": 1
+            },
+            "statement_imports": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "statement_profiles": {
+              "array_items": 0,
+              "serialized_value_bytes": 2
+            },
+            "transactions": {
+              "array_items": 100000,
+              "serialized_value_bytes": 47110803
+            }
+          },
+          "keys_and_punctuation_bytes": 269,
+          "serialized_object_bytes": 192253229
+        },
+        "workspace_revision": 95102
+      }
+    }
+  },
+  "build": {
+    "returncode": 0,
+    "timed_out": false,
+    "process_elapsed_ms": 559.039167012088,
+    "child_lifetime_peak_rss_bytes": 103071744,
+    "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+    "stdout": "build.stdout.jsonl",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "build.stderr.txt",
+    "stderr_sha256": "373130ef009cfb98898f730729e6bf35902b34c5dec7f6a8f6e27eac2fe67b55",
+    "events": []
+  },
+  "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+  "binary_sha256": "1cdd9a9434c492a711b0c384d70a560d5af0c77c58740c0a649f16a67a8b2bbd",
+  "fixture_sha256": "c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7",
+  "html": {
+    "sha256": "3be44e386ec0dea70c7ccf715f48ce23daf93b7fd8df06977507ccf5bc158f0d",
+    "raw_utf8_bytes": 113592530,
+    "section_partition": [
+      {
+        "section": "document_prefix",
+        "raw_utf8_bytes": 1079
+      },
+      {
+        "section": "Questions and alternatives",
+        "raw_utf8_bytes": 35
+      },
+      {
+        "section": "Findings",
+        "raw_utf8_bytes": 17
+      },
+      {
+        "section": "Reviewed transaction calculations",
+        "raw_utf8_bytes": 29216300
+      },
+      {
+        "section": "Transaction exhibit",
+        "raw_utf8_bytes": 60071871
+      },
+      {
+        "section": "Entity register",
+        "raw_utf8_bytes": 24
+      },
+      {
+        "section": "Identity decisions",
+        "raw_utf8_bytes": 27
+      },
+      {
+        "section": "Review history",
+        "raw_utf8_bytes": 19292323
+      },
+      {
+        "section": "Observations",
+        "raw_utf8_bytes": 21
+      },
+      {
+        "section": "Evidence register",
+        "raw_utf8_bytes": 5010478
+      },
+      {
+        "section": "Public web acquisition history",
+        "raw_utf8_bytes": 39
+      },
+      {
+        "section": "Limitations and outstanding enquiries",
+        "raw_utf8_bytes": 316
+      }
+    ]
+  }
+}
