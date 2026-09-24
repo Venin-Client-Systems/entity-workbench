@@ -11,6 +11,7 @@ import type {
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { AssessmentWorkbench } from "./AssessmentWorkbench";
 import { CollectionHistory } from "./CollectionReview";
+import { DocumentJobs } from "./DocumentJobs";
 import { Dialog } from "./Dialog";
 import { ReviewSurface } from "./ReviewSurface";
 import { EntityWorkbench } from "./EntityWorkbench";
@@ -57,6 +58,7 @@ function App() {
   const [searchHits, setSearchHits] = useState<
     { id: string; name: string; score: number }[] | null
   >(null);
+  const pendingDocumentRequests = useRef(new Map<string, string>());
   const upload = useRef<HTMLInputElement>(null);
   const [statementFile, setStatementFile] = useState<StatementFile | null>(
     null,
@@ -454,40 +456,52 @@ function App() {
                 </>
               )}
               {section === "Evidence" && (
-                <section className="panel">
-                  <div className="toolbar">
-                    <input
-                      aria-label="Search evidence"
-                      placeholder="Search terms, phrase or Lucene query…"
-                      value={query}
-                      onChange={(e) => {
-                        setQuery(e.target.value);
-                        setSearchHits(null);
-                      }}
+                <>
+                  <section className="panel">
+                    <div className="toolbar">
+                      <input
+                        aria-label="Search evidence"
+                        placeholder="Search terms, phrase or Lucene query…"
+                        value={query}
+                        onChange={(e) => {
+                          setQuery(e.target.value);
+                          setSearchHits(null);
+                        }}
+                      />
+                      <button
+                        className="button"
+                        disabled={busy || !query}
+                        onClick={() => void searchCorpus()}
+                      >
+                        Search local index
+                      </button>
+                      <span>{evidenceList.length} source items</span>
+                    </div>
+                    <p className="muted">
+                      Type to filter extracted text, or search the local Lucene
+                      index with Boolean, phrase, proximity, fuzzy and fielded
+                      queries. The packaged macOS development build includes the
+                      local search runtime.
+                    </p>
+                    <EvidenceRows
+                      evidence={evidenceList}
+                      onOpen={setEvidence}
                     />
-                    <button
-                      className="button"
-                      disabled={busy || !query}
-                      onClick={() => void searchCorpus()}
-                    >
-                      Search local index
-                    </button>
-                    <span>{evidenceList.length} source items</span>
-                  </div>
-                  <p className="muted">
-                    Type to filter extracted text, or search the local Lucene
-                    index with Boolean, phrase, proximity, fuzzy and fielded
-                    queries. The packaged macOS development build includes the
-                    local search runtime.
-                  </p>
-                  <EvidenceRows evidence={evidenceList} onOpen={setEvidence} />
-                  <p className="context-note">
-                    UTF-8 text and mapped CSV/TSV statements are active.
-                    Statement imports are previewed locally before publication.
-                    Other formats are preserved and labelled unsupported until
-                    isolated parsing workers are available.
-                  </p>
-                </section>
+                    <p className="context-note">
+                      UTF-8 text and mapped CSV/TSV statements are active.
+                      Statement imports are previewed locally before
+                      publication. Originals are retained separately. Document
+                      jobs publish unreviewed derivatives with explicit parser
+                      status and limitations.
+                    </p>
+                  </section>
+                  <DocumentJobs
+                    requestKeys={pendingDocumentRequests.current}
+                    evidence={w.evidence}
+                    busy={busy}
+                    onRefresh={() => run({ action: "view" })}
+                  />
+                </>
               )}
               {section === "Entities" && (
                 <EntityWorkbench
@@ -1040,7 +1054,9 @@ function App() {
           <h2>{evidence.name}</h2>
           <p className="hash">SHA-256 {evidence.sha256}</p>
           <span className="pill">
-            {evidence.extraction_status.replaceAll("_", " ")}
+            {evidence.extraction_status === "unsupported_in_development_build"
+              ? "Legacy import · not yet processed"
+              : evidence.extraction_status.replaceAll("_", " ")}
           </span>
           {evidence.acquisitions.map((capture, i) => (
             <p className="hash" key={i}>
@@ -1095,7 +1111,9 @@ function EvidenceRows({
             <small>
               Source {String(i + 1).padStart(2, "0")} ·{" "}
               {(e.bytes / 1024).toFixed(1)} KB ·{" "}
-              {e.extraction_status.replaceAll("_", " ")}
+              {e.extraction_status === "unsupported_in_development_build"
+                ? "Legacy import · not yet processed"
+                : e.extraction_status.replaceAll("_", " ")}
             </small>
           </div>
           <code>{e.sha256.slice(0, 12)}…</code>

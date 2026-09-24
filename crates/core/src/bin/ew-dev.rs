@@ -31,6 +31,19 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         workspace.seed_collection_review()?;
         return Ok(serde_json::to_value(workspace.view()?)?);
     }
+    #[cfg(debug_assertions)]
+    if arg == "seed-processing-review" || arg == "seed-processing-recovery-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        if arg == "seed-processing-recovery-review" {
+            workspace.seed_processing_recovery_review()?;
+        } else {
+            workspace.seed_processing_review()?;
+        }
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
     if arg == "schemas" {
         let root = PathBuf::from("schemas");
         std::fs::create_dir_all(&root)?;
