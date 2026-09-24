@@ -51,6 +51,8 @@ jobs:
       - run: cargo clippy -p workbench-core --all-targets --locked -- -D warnings
       - run: npm run build
       - name: Verify native export policy and completion tracking
+        env:
+          TAURI_CONFIG: '{"bundle":{"active":false,"resources":[]}}'
         run: cargo test -p entity-workbench --locked
       - name: Compile native development binary (not a complete distribution)
         working-directory: desktop
