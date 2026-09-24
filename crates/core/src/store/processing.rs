@@ -850,3 +850,7 @@ mod tests {
         }
     }
 }
+
+#[cfg(debug_assertions)]
+#[path = "processing_demo.rs"]
+mod demo;
