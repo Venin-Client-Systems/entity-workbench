@@ -11,7 +11,7 @@ export default defineConfig({
   webServer: {
     command: "npm run dev",
     url: "http://127.0.0.1:1420",
-    reuseExistingServer: true,
+    reuseExistingServer: false,
   },
   reporter: "list",
 });
