@@ -2,6 +2,7 @@
 // Native collection/acceptance is intentionally inactive on other platforms.
 #![cfg_attr(not(any(windows, test)), allow(dead_code))]
 pub(crate) mod diagnostics;
+pub(crate) mod paths;
 #[cfg(windows)]
 mod probe;
 mod runtime;

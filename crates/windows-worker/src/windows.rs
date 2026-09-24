@@ -4,6 +4,7 @@
 use crate::{quote_argument, validate, Error, Output, ProbeDiagnostics, Request, Result};
 mod java_control;
 mod java_diagnostics;
+mod java_paths;
 pub(crate) use java_control::file_worker_control;
 use std::{
     collections::BTreeMap,
@@ -1097,16 +1098,27 @@ fn run_assigned<T>(
             "missing staged executable",
         )?;
         let path_text = |path: &Path| {
-            path.to_str()
-                .map(str::to_owned)
-                .ok_or(Error::Blocked("invalid UTF-16 path"))
+            if java.is_some() {
+                java_paths::launch_text(path)
+            } else {
+                path.to_str()
+                    .map(str::to_owned)
+                    .ok_or(Error::Blocked("invalid UTF-16 path"))
+            }
         };
         let replacements = [
             ("$EW_INPUT", path_text(&input)?),
             ("$EW_SCRATCH", path_text(&scratch)?),
             ("$EW_RUNTIME", path_text(&runtime)?),
             ("$EW_REQUEST", path_text(&metadata)?),
-            ("$EW_INDEX", path_text(&index_snapshot)?),
+            (
+                "$EW_INDEX",
+                if java.is_none() || java.is_some_and(|prepared| prepared.snapshot().is_some()) {
+                    path_text(&index_snapshot)?
+                } else {
+                    String::new()
+                },
+            ),
         ];
         let mut args = vec![path_text(&executable)?];
         args.extend(request.arguments.iter().map(|arg| {
@@ -1126,7 +1138,8 @@ fn run_assigned<T>(
             "command line exceeds bound",
         )?;
         let mut command = wide(command)?;
-        let environment = worker_environment(&os_environment()?, &scratch)?;
+        let scratch_text = path_text(&scratch)?;
+        let environment = worker_environment(&os_environment()?, Path::new(&scratch_text))?;
         let capabilities = SECURITY_CAPABILITIES {
             AppContainerSid: profile.sid,
             Capabilities: null_mut(),
@@ -1142,8 +1155,8 @@ fn run_assigned<T>(
         startup.lpAttributeList = attributes.ptr();
         let job = create_job(request.memory_bytes)?;
         let mut process: PROCESS_INFORMATION = unsafe { zeroed() };
-        let executable = wide(executable)?;
-        let current_dir = wide(&scratch)?;
+        let executable = wide(path_text(&executable)?)?;
+        let current_dir = wide(scratch_text)?;
         // File IPC needs neither inherited handles nor an attached console.
         // CREATE_NO_WINDOW still requests a windowless console; DETACHED_PROCESS
         // avoids that startup dependency without permitting helper children.

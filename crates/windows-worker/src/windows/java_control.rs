@@ -39,11 +39,7 @@ pub(crate) fn file_worker_control(
         fs::write(&metadata, &prepared.metadata)?;
         fs::create_dir(&scratch)?;
         let executable = runtime.join(&prepared.request.executable);
-        let path_text = |path: &Path| {
-            path.to_str()
-                .map(str::to_owned)
-                .ok_or(Error::Blocked("control path encoding rejected"))
-        };
+        let path_text = java_paths::launch_text;
         let replacements = [
             ("$EW_INPUT", path_text(&input)?),
             ("$EW_REQUEST", path_text(&metadata)?),
@@ -68,9 +64,10 @@ pub(crate) fn file_worker_control(
             "control command exceeds bound",
         )?;
         let mut command = wide(command)?;
-        let executable = wide(&executable)?;
-        let current_dir = wide(&scratch)?;
-        let environment = worker_environment(&os_environment()?, &scratch)?;
+        let executable = wide(path_text(&executable)?)?;
+        let scratch_text = path_text(&scratch)?;
+        let current_dir = wide(&scratch_text)?;
+        let environment = worker_environment(&os_environment()?, Path::new(&scratch_text))?;
         let children: u32 = PROCESS_CREATION_CHILD_PROCESS_RESTRICTED;
         let mut attributes = Attributes::new(1)?;
         attributes.set(PROC_THREAD_ATTRIBUTE_CHILD_PROCESS_POLICY, &children)?;
