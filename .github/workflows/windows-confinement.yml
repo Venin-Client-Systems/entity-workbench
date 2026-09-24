@@ -3,15 +3,20 @@ on:
   pull_request:
     paths:
       - 'crates/windows-worker/**'
+      - 'crates/core/**'
       - 'Cargo.toml'
       - 'Cargo.lock'
       - '.github/workflows/windows-confinement.yml'
       - 'docs/security/WINDOWS-WORKERS.md'
       - 'docs/security/WINDOWS-JAVA-WORKERS.md'
+      - 'docs/security/WINDOWS-PARSER-COORDINATOR.md'
       - 'workers/java/**'
       - 'fixtures/parser/**'
+      - 'fixtures/parser-fonts/**'
       - 'scripts/stage_windows_engines.py'
       - 'scripts/tests/test_windows_engine_staging.py'
+      - 'scripts/test_windows_parser_coordinator.py'
+      - 'scripts/tests/test_windows_parser_coordinator.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -43,6 +48,16 @@ jobs:
             failure = 'Java engine probe has not completed'
             tests = @{ phase = 'not_started' }
           } | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 artifacts/windows-confinement/java-engines-report.json
+          @{
+            schema_version = 1
+            source_commit = (git rev-parse HEAD).Trim()
+            complete_release = $false
+            passed = $false
+            failure = 'canonical parser probe has not completed'
+            phase = 'not_started'
+            expected_checks = 25
+            fixture_count = 10
+          } | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 artifacts/windows-confinement/coordinator-report.json
           $os = Get-CimInstance Win32_OperatingSystem
           $jdk = $env:JAVA_HOME_21_X64
           if (-not $jdk -or -not (Test-Path "$jdk/bin/java.exe")) {
@@ -115,6 +130,27 @@ jobs:
           } | ConvertTo-Json | Set-Content -Encoding utf8 artifacts/windows-confinement/java-probe-identity.json
           & $binary --report artifacts/windows-confinement/java-engines-report.json runtime/windows-java-development
           if ($LASTEXITCODE -ne 0) { throw 'Windows Java engine recipes failed; preserve evidence and keep adapters disabled.' }
+      - name: Verify canonical campaign receipt validation
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python -m unittest discover -s scripts/tests -p test_windows_parser_coordinator.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical campaign receipt contract tests failed.' }
+      - name: Build the source-bound canonical coordinator probe
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:WORKBENCH_COORDINATOR_PROBE_SOURCE = (git rev-parse HEAD).Trim()
+          & cargo test -p workbench-core --example windows_parser_probe --locked -- --test-threads=1
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical probe fixture and copy contracts failed.' }
+          & cargo build -p workbench-core --example windows_parser_probe --locked
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical coordinator probe build failed.' }
+      - name: Run canonical imports, document jobs and complete recovery checks
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python scripts/test_windows_parser_coordinator.py --binary target/debug/examples/windows_parser_probe.exe --runtime runtime/windows-java-development --destination artifacts/windows-confinement
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical parser campaign failed; retain failed receipt and keep complete release blocked.' }
       - name: Retain sanitized evidence on success or failure
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
