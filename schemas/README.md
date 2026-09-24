@@ -1,9 +1,19 @@
 # Versioned public data shapes
 
-The schema generator is the Rust development CLI: `cargo run -p workbench-core --bin ew-dev -- schemas`. Canonical validation remains in Rust; JSON Schema describes the public shape but cannot replace contextual checks such as source-anchor validity, exact decimal arithmetic, workspace revision or preview binding.
+The Rust development CLI emits current schemas with `cargo run -p workbench-core --bin ew-dev -- schemas`. Rust remains the canonical validator: JSON Schema cannot replace contextual checks for exact money, source integrity, workspace revisions, selected scope, worker identity or permissions. Historical JSON schemas are retained byte-for-byte when a new version is introduced.
 
-The current workspace and command interfaces are `workspace.v3.schema.json` and `command.v6.schema.json`. Command version 4 added acquisition receipt inspection/export; version 5 adds durable document jobs and unreviewed extraction inspection. `processing-job.v1.schema.json` and `extraction.v1.schema.json` describe those records. Version 6 adds read-only, revision-bound transaction patterns, described by `transaction-analysis-request.v1.schema.json` and `transaction-analysis.v1.schema.json`. Historical command v1–v5 and workspace v1/v2 schemas are not rewritten by the current generator. Workspace SQLite compatibility remains version 3, with the guarded v1/v2 upgrade described in `docs/OPERATIONS.md`.
+| Interface | Current public shape | Compatibility |
+|---|---|---|
+| Commands | `command.v22.schema.json` | v21 added immutable DOCX capture/catalogue/inspection; v22 adds typed capture recovery. Earlier versions remain published. |
+| Workspace | `workspace.v3.schema.json` | Historical full workspace and presentation responses remain available to their existing callers. |
+| Desktop refresh | `desktop-summary-response.v1.schema.json` | The desktop uses this projection plus bounded transaction, citation, report and review readers. |
+| Processing jobs | `processing-job.v4.schema.json` | Earlier v1–v3 descriptions remain fixed; the current version includes retained image-region jobs. |
+| Document derivatives | `extraction.v2.schema.json` | New parse publications use v2. Verified historical v1 records remain readable without rewriting their stored bytes. |
+| Editable reports | `docx-snapshot.v1.schema.json` and associated page/inspection/recovery schemas | Snapshots retain a frozen document model and DOCX; recovery is distinct from metadata-only catalogue reads. |
+| Native saves | `native-export-request.v1.schema.json`, `prepared-export.v1.schema.json`, `saved-export-receipt.v1.schema.json` | Rust verifies the selected artifact and controls staging, no-clobber saving and acknowledgement recovery. |
 
-Statement mapping, sample and preview output each have a first-version schema. Worker-request, analysis-manifest, identity-comparison and source-excerpt contracts retain their existing versions. A statement import is canonical Rust work; no worker can bypass its validation or write these records directly.
+Image, PDF and image-region derivatives, statement mapping, analytical requests/results, source excerpts, identity comparisons and collection receipts have separate versioned shapes. A worker never acquires canonical write authority merely by returning schema-shaped data.
 
-Release-tooling contracts are maintained separately from the Rust generator: `release-ledger.v2.schema.json`, `release-evidence.v1.schema.json`, `release-review.v1.schema.json` and the runtime inventory contract. The offline Python tools own their contextual validation. See [release evidence](../docs/release-evidence/README.md) for artifact/hash bindings, required OS versions, review receipts and the distinction between source CI and installed-artifact acceptance.
+SQLite storage compatibility is **version 5**, separate from these public interface versions. Guarded v1–v4 upgrades create consistent recoverable backups covering the database and referenced originals/derivatives/report artifacts; unsupported newer storage is refused. See [workspace operations](../docs/OPERATIONS.md), [DOCX storage](../docs/reports/DOCX-SNAPSHOTS.md) and [extraction compatibility](../docs/processing/EXTRACTION-V2.md).
+
+Release-tooling contracts are maintained separately from the Rust generator: `release-ledger.v2.schema.json`, `release-evidence.v1.schema.json`, `release-review.v1.schema.json` and `runtime-inventory.v1.json`. The offline release tools own their contextual checks. See [release evidence](../docs/release-evidence/README.md) for exact artifact bindings and the distinction between source CI and installed-artifact acceptance.

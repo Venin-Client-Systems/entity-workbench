@@ -1,4 +1,5 @@
-//! Fixed development recipes. No application adapter calls these yet.
+//! Fixed development recipes. The Windows core parser uses the parser role;
+//! search application integration remains separate.
 // Native collection/acceptance is intentionally inactive on other platforms.
 #![cfg_attr(not(any(windows, test)), allow(dead_code))]
 pub(crate) mod diagnostics;

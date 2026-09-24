@@ -1,6 +1,6 @@
 # Development verification — 2026-09-23
 
-These observations describe the initial implementation, not completion of the full plan.
+These observations retain the implementation history, not completion of the full plan. The latest combined result is [390 ordinary core tests and 125 real-core browser workflows](#integrated-docx-recovery-and-extraction-v2--25-september-2026).
 
 | Check | Observed result | Scope |
 |---|---|---|
@@ -425,3 +425,16 @@ Native `docx_report` preparation retains report ID, captured source revision, do
 The isolated handoff passes 358 ordinary tests, 7 catalogue cases and 16 native lifecycle cases, plus core and desktop strict all-target Clippy. Source-only desktop checks use the existing empty-resource override and do not establish native installed behavior. The handoff SHA-256 is `75f500224de9e7fa8e2e8cb943fdff30c9182f1f10fc1823a4e9fe6d2d241f78`. Root's integrated result is **372 ordinary core tests**, zero failures, 22 specialized ignored and strict all-target Clippy. All **five native-export browser compatibility cases** pass after integration, retaining JSON exact bytes, lost-ack replay, abandoned stage cleanup, mismatched metadata refusal and immutable historical HTML. DOCX catalogue UI, actual native DOCX saving and Word compatibility are separate follow-up checks.
 
 Root logs: core SHA-256 `30c503979d70de71efaae8cc2318f96064dbf00f8274c1a713b21d5282ec532b`; Clippy `bd5d7eaae1316e6d13a2cc0d3cb78df4dcb3cffba153c799ee3ea43bc97c2266`; native-export compatibility `0d3ffa6ef55202e5634602352ab388bc91f73ecf91ef982d2e45bf1117ccbe71`.
+
+
+## Integrated DOCX recovery and extraction v2 — 25 September 2026
+
+Clean source `3ce80007de315c588157cfee319529dec407b75d` combines the DOCX catalogue/native-save UI, Command-v22 recovery, extraction v2, the Windows canonical parser route and the transaction review completion repair. Root verification passes **390 ordinary core tests** (315 library plus 75 integration), zero failures and 22 specialized/native exclusions; strict all-target core Clippy, the production interface build and **125/125 real-core browser workflows** also pass. Regenerating current schemas changes no tracked file. All **80 historical JSON schemas** at `523bcfb` are byte-identical; the additions are command v22, DOCX capture resolution v1 and extraction v2. The schema README was updated separately because its previous current-version statements were stale.
+
+The initial integrated browser campaign at `d839085` passed 118/119 and exposed a genuine late-close race. Two held-response regressions then failed before the repair for same-row and different-row reopenings. Source `f645ce7` binds close to the submitting selection; the later draft remains stale and visible. All 15 targeted cases and the final 125-case campaign pass. Original logs and failure context remain private retained evidence; no timeout was increased to hide the failure.
+
+DOCX UI source `1929391` passes 17 isolated compatibility cases; typed recovery source `4066fcc` passes 377 isolated ordinary Rust tests and 21 browser cases, including pinned-snapshot concurrent-writer and uncertain-acknowledgement tests. Their handoff hashes are `c04c087644b4dddc9b044dfadf2214ff05f925bcace1b7a5ff274c3ec571e9c1` and `54a3c59ee3f41753c74e53522765a0e579ba7c09e987176414d54b4103409def`. Real Rust binary-saving bridges do not establish actual WebKit/Word interaction. The [14-case native Mac extraction compatibility report](processing/verification/extraction-v2-native-mac.json) remains bound to its signed source and unchanged staged Java runtime.
+
+Windows runtime classification source `395215be` passes 52 host tests, host strict Clippy and Windows-target all-target check/Clippy. Its two before-fix failures are retained. Windows-specific branches were compiled locally, not executed on this Mac. The canonical adapter passes host binding and both-dispatch publication checks; actual Windows execution remains the next campaign. The earlier published `523bcfb` passed all five hosted source/AppContainer checks. Those results do not substitute for verification of this new source.
+
+Combined local verification record: `artifacts/integration-3ce8000/verification.json`, SHA-256 `a85c6b84004c8dbba89a7e7413c15979148ad35addb6773dbf4030fd64ed4b76`. No release gate is changed.
