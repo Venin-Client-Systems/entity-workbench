@@ -12,6 +12,7 @@ use uuid::Uuid;
 mod assessment;
 mod collection;
 mod identity;
+mod processing;
 mod statements;
 
 const SCHEMA: u32 = 3;
@@ -250,6 +251,42 @@ impl Workspace {
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
         match command {
+            Command::QueueDocumentParse {
+                evidence_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.queue_document_parse(&evidence_id, &request_key)?,
+                )?)
+            }
+            Command::ListProcessingJobs {} => {
+                return Ok(serde_json::to_value(self.processing_jobs()?)?)
+            }
+            Command::InspectExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(self.extraction(&extraction_id)?)?)
+            }
+            Command::InspectProcessingJob { job_id } => {
+                return Ok(serde_json::to_value(self.processing_job(&job_id)?)?)
+            }
+            Command::CancelProcessingJob {
+                job_id,
+                expected_attempt,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.cancel_processing_job(&job_id, expected_attempt)?,
+                )?)
+            }
+            Command::RetryProcessingJob {
+                job_id,
+                expected_attempt,
+                reason,
+            } => {
+                return Ok(serde_json::to_value(self.retry_processing_job(
+                    &job_id,
+                    expected_attempt,
+                    &reason,
+                )?)?)
+            }
             Command::View {} => {}
             Command::InspectSource { anchor } => {
                 return Ok(serde_json::to_value(self.inspect_source(&anchor)?)?);

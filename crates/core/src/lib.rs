@@ -2,9 +2,11 @@
 pub mod analytics;
 pub mod collection;
 pub mod collection_receipt;
+pub mod coordinator;
 pub mod domain;
 pub mod engines;
 pub mod policy;
+pub mod processing;
 pub mod report;
 pub mod statements;
 pub mod store;
@@ -20,6 +22,8 @@ pub enum Error {
     Blocked(String),
     #[error("Collection limit exhausted: {0}")]
     QuotaExhausted(String),
+    #[error("Processing interrupted: {0}")]
+    Interrupted(String),
     #[error("Network request failed: {0}")]
     Network(String),
     #[error("Database: {0}")]

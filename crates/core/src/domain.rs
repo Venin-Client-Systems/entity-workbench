@@ -379,6 +379,26 @@ pub struct WorkspaceView {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    QueueDocumentParse {
+        evidence_id: String,
+        request_key: String,
+    },
+    ListProcessingJobs {},
+    InspectExtraction {
+        extraction_id: String,
+    },
+    InspectProcessingJob {
+        job_id: String,
+    },
+    CancelProcessingJob {
+        job_id: String,
+        expected_attempt: u32,
+    },
+    RetryProcessingJob {
+        job_id: String,
+        expected_attempt: u32,
+        reason: String,
+    },
     View {},
     Search {
         query: String,

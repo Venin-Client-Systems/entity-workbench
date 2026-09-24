@@ -33,8 +33,22 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                4,
+                5,
                 serde_json::to_value(schemars::schema_for!(Command))?,
+            ),
+            (
+                "processing-job",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ProcessingJob
+                ))?,
+            ),
+            (
+                "extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ExtractionRecord
+                ))?,
             ),
             (
                 "collection-receipt",
@@ -82,7 +96,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":10}));
+        return Ok(serde_json::json!({"schemas":12}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();
