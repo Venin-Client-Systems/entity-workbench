@@ -5,6 +5,7 @@ pub mod collection_receipt;
 pub mod coordinator;
 pub mod domain;
 pub mod engines;
+pub mod literal_search;
 pub mod policy;
 pub mod processing;
 pub mod report;
@@ -15,6 +16,7 @@ pub mod transaction_analysis;
 pub mod transaction_comparison;
 pub mod transaction_facets;
 pub mod transaction_page;
+pub mod transaction_search;
 pub mod transaction_sources;
 
 use thiserror::Error;
