@@ -17,6 +17,8 @@ mod report_snapshots;
 mod statements;
 mod transaction_analysis;
 mod transaction_comparison;
+#[cfg(test)]
+mod view_tests;
 
 const SCHEMA: u32 = 3;
 pub struct Workspace {
@@ -230,27 +232,32 @@ impl Workspace {
         Ok(())
     }
     pub fn view(&self) -> Result<WorkspaceView> {
-        Ok(WorkspaceView {
+        // Pin the revision and every table to one SQLite read snapshot.
+        // A coordinator on another connection may commit while this view loads.
+        let transaction = self.conn.unchecked_transaction()?;
+        let view = WorkspaceView {
             schema_version: SCHEMA,
             revision: self.revision()?,
-            entities: all(&self.conn, "entity")?,
-            evidence: all(&self.conn, "evidence")?,
-            observations: all(&self.conn, "observation")?,
-            assertions: all(&self.conn, "assertion")?,
-            transactions: all(&self.conn, "transaction")?,
-            addresses: all(&self.conn, "address")?,
-            locations: all(&self.conn, "location")?,
-            leads: all(&self.conn, "lead")?,
-            jobs: all(&self.conn, "job")?,
-            findings: all(&self.conn, "finding")?,
-            hypotheses: all(&self.conn, "hypothesis")?,
-            decisions: all(&self.conn, "decision")?,
-            merges: all(&self.conn, "merge")?,
-            identity_decisions: all(&self.conn, "identity_decision")?,
-            reports: all(&self.conn, "report")?,
-            statement_profiles: all(&self.conn, "statement_profile")?,
-            statement_imports: all(&self.conn, "statement_import")?,
-        })
+            entities: all(&transaction, "entity")?,
+            evidence: all(&transaction, "evidence")?,
+            observations: all(&transaction, "observation")?,
+            assertions: all(&transaction, "assertion")?,
+            transactions: all(&transaction, "transaction")?,
+            addresses: all(&transaction, "address")?,
+            locations: all(&transaction, "location")?,
+            leads: all(&transaction, "lead")?,
+            jobs: all(&transaction, "job")?,
+            findings: all(&transaction, "finding")?,
+            hypotheses: all(&transaction, "hypothesis")?,
+            decisions: all(&transaction, "decision")?,
+            merges: all(&transaction, "merge")?,
+            identity_decisions: all(&transaction, "identity_decision")?,
+            reports: all(&transaction, "report")?,
+            statement_profiles: all(&transaction, "statement_profile")?,
+            statement_imports: all(&transaction, "statement_import")?,
+        };
+        transaction.commit()?;
+        Ok(view)
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
         match command {
