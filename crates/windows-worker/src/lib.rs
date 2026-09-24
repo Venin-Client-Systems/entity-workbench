@@ -24,7 +24,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 /// Synthetic probe hints only. Worker-written checkpoints never independently
 /// prove isolation or change general worker acceptance; arbitrary text is rejected.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "snake_case")]
+#[serde(rename_all = "snake_case", deny_unknown_fields)]
 pub enum ProbeCheckpoint {
     ChildEntered,
     InputRead,
@@ -45,6 +45,12 @@ pub enum ProbeCheckpoint {
     InheritedHandleRead,
     ConfinedHandleRead,
     HandleReadReturned,
+    RestrictedDescriptorFailed { code: u32 },
+    RestrictedDescriptorReady,
+    RestrictedDirectoryCreate,
+    RestrictedDirectoryCreateFailed { code: u32 },
+    RestrictedDirectoryCreated,
+    RestrictedResultWrite,
     CallerEnvironment,
     TcpConnect,
     HttpConnect,
@@ -185,6 +191,21 @@ mod tests {
             serde_json::from_slice::<ProbeCheckpoint>(b"\"token_query\"").unwrap(),
             ProbeCheckpoint::TokenQuery
         );
+        for checkpoint in [
+            ProbeCheckpoint::RestrictedDescriptorFailed { code: u32::MAX },
+            ProbeCheckpoint::RestrictedDirectoryCreateFailed { code: u32::MAX },
+        ] {
+            let bytes = serde_json::to_vec(&checkpoint).unwrap();
+            assert!(bytes.len() <= 64);
+            assert_eq!(
+                serde_json::from_slice::<ProbeCheckpoint>(&bytes).unwrap(),
+                checkpoint
+            );
+        }
+        assert!(serde_json::from_slice::<ProbeCheckpoint>(
+            br#"{"restricted_directory_create_failed":{"code":5,"path":"untrusted"}}"#
+        )
+        .is_err());
         for bytes in [
             b"\"private-path-or-document-content\"".as_slice(),
             b"{}",

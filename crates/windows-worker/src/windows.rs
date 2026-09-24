@@ -1137,6 +1137,67 @@ mod tests {
     }
 
     #[test]
+    fn empty_protected_dacl_fixture_denies_inspection_and_can_be_cleaned() {
+        // Same SDDL and creation API as the worker, without AppContainer. This
+        // proves the hostile fixture is meaningful independently of its launch.
+        let tree = tempfile::tempdir().unwrap();
+        let scratch = tree.path().join("scratch");
+        fs::create_dir(&scratch).unwrap();
+        let restricted = scratch.join("restricted");
+        let sddl = wide("D:P").unwrap();
+        let mut descriptor = null_mut();
+        api(
+            unsafe {
+                ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                    sddl.as_ptr(),
+                    1,
+                    &mut descriptor,
+                    null_mut(),
+                )
+            },
+            "SyntheticRestrictedDescriptor",
+        )
+        .unwrap();
+        let descriptor = Local(descriptor);
+        let (mut present, mut defaulted) = (0, 0);
+        let mut dacl = null_mut();
+        api(
+            unsafe {
+                GetSecurityDescriptorDacl(descriptor.0, &mut present, &mut dacl, &mut defaulted)
+            },
+            "SyntheticRestrictedDacl",
+        )
+        .unwrap();
+        assert!(present != 0 && !dacl.is_null());
+        assert_eq!(unsafe { (*dacl).AceCount }, 0);
+        let attributes = SECURITY_ATTRIBUTES {
+            nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
+            lpSecurityDescriptor: descriptor.0,
+            bInheritHandle: 0,
+        };
+        let name = wide(&restricted).unwrap();
+        api(
+            unsafe { CreateDirectoryW(name.as_ptr(), &attributes) },
+            "SyntheticRestrictedCreate",
+        )
+        .unwrap();
+        drop(descriptor);
+        assert_eq!(
+            fs::read_dir(&restricted).unwrap_err().kind(),
+            std::io::ErrorKind::PermissionDenied
+        );
+        assert!(matches!(
+            walk(&scratch, 1024, 20),
+            Err(Error::Io(std::io::ErrorKind::PermissionDenied))
+        ));
+        clean(&scratch, &user_sid().unwrap()).unwrap();
+        assert!(
+            !scratch.exists(),
+            "restricted synthetic directory survived cleanup"
+        );
+    }
+
+    #[test]
     fn cleanup_preserves_outside_readonly_hardlink_state() {
         let tree = tempfile::tempdir().unwrap();
         let outside = tree.path().join("outside.txt");

@@ -139,31 +139,54 @@ mod native {
     fn restricted_directory() -> AnyResult<()> {
         let sddl = utf16(std::ffi::OsStr::new("D:P"));
         let mut descriptor = null_mut();
-        require(
-            unsafe {
-                ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                    sddl.as_ptr(),
-                    1,
-                    &mut descriptor,
-                    null_mut(),
-                )
-            } != 0,
-            "synthetic security descriptor failed",
-        )?;
+        if unsafe {
+            ConvertStringSecurityDescriptorToSecurityDescriptorW(
+                sddl.as_ptr(),
+                1,
+                &mut descriptor,
+                null_mut(),
+            )
+        } == 0
+        {
+            let code = unsafe { GetLastError() };
+            checkpoint(ProbeCheckpoint::RestrictedDescriptorFailed { code })?;
+            return Err(Error::Api {
+                operation: "RestrictedDescriptor",
+                code,
+            }
+            .into());
+        }
         let attributes = SECURITY_ATTRIBUTES {
             nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
             lpSecurityDescriptor: descriptor,
             bInheritHandle: 0,
         };
         let name = utf16(std::ffi::OsStr::new("restricted"));
-        let result = unsafe { CreateDirectoryW(name.as_ptr(), &attributes) };
+        let attempt = (|| -> AnyResult<(i32, u32)> {
+            checkpoint(ProbeCheckpoint::RestrictedDescriptorReady)?;
+            checkpoint(ProbeCheckpoint::RestrictedDirectoryCreate)?;
+            let result = unsafe { CreateDirectoryW(name.as_ptr(), &attributes) };
+            // Capture before LocalFree or any file diagnostic overwrites it.
+            let code = if result == 0 {
+                unsafe { GetLastError() }
+            } else {
+                0
+            };
+            Ok((result, code))
+        })();
         unsafe {
             LocalFree(descriptor);
         }
-        require(
-            result != 0,
-            "synthetic restricted directory creation failed",
-        )
+        let (result, code) = attempt?;
+        if result == 0 {
+            checkpoint(ProbeCheckpoint::RestrictedDirectoryCreateFailed { code })?;
+            return Err(Error::Api {
+                operation: "CreateRestrictedDirectory",
+                code,
+            }
+            .into());
+        }
+        checkpoint(ProbeCheckpoint::RestrictedDirectoryCreated)
     }
     fn child(path: &Path) -> AnyResult<()> {
         checkpoint(ProbeCheckpoint::ChildEntered)?;
@@ -230,7 +253,9 @@ mod native {
             }
             "restricted-directory" => {
                 restricted_directory()?;
+                checkpoint(ProbeCheckpoint::RestrictedResultWrite)?;
                 fs::write("result.json", b"{}")?;
+                checkpoint(ProbeCheckpoint::Completed)?;
                 return Ok(());
             }
             "readonly-file" => {
@@ -676,9 +701,12 @@ mod native {
                 request.input = serde_json::to_vec(&input)?;
                 request.wall_time = Duration::from_secs(3);
                 let start = Instant::now();
-                let result = run(&request, || {
-                    mode == "cancel" && start.elapsed() >= Duration::from_millis(750)
-                });
+                let mut diagnostics = ProbeDiagnostics::default();
+                let result = run_probe(
+                    &request,
+                    || mode == "cancel" && start.elapsed() >= Duration::from_millis(750),
+                    &mut diagnostics,
+                );
                 let error = result.err().ok_or("hostile mode unexpectedly succeeded")?;
                 let correct = matches!(
                     (mode, &error),
@@ -695,7 +723,7 @@ mod native {
                             Error::Io(std::io::ErrorKind::PermissionDenied)
                         )
                 );
-                report.insert(mode.into(), serde_json::json!({"rejected":true,"expected_failure":correct,"diagnostic":error.to_string()}));
+                report.insert(mode.into(), serde_json::json!({"rejected":true,"expected_failure":correct,"diagnostic":error.to_string(),"checkpoints":diagnostics}));
                 require(correct, "hostile mode failed for an unexpected reason")?;
                 require(
                     start.elapsed() < Duration::from_secs(15),
