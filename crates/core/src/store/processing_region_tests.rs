@@ -610,3 +610,58 @@ fn region_incomplete_or_mismatched_backup_manifest_never_publishes_database() {
         assert!(!destination.exists());
     }
 }
+
+#[test]
+fn retained_regions_and_docx_share_snapshot_backup_without_reference_loss() {
+    let (temp, mut workspace, source) = workspace();
+    let (job, _, _) = publish(&mut workspace, &source);
+    let region_id = &job.result_ids[0];
+    let raster = workspace.read_image_region_raster(region_id).unwrap();
+    workspace
+        .conn
+        .pragma_update(None, "user_version", 4)
+        .unwrap();
+    drop(workspace);
+    let mut workspace = Workspace::open(temp.path().join("case")).unwrap();
+    let recovery = fs::read_dir(workspace.root.join("backups"))
+        .unwrap()
+        .next()
+        .unwrap()
+        .unwrap()
+        .path();
+    let prior: Value =
+        serde_json::from_slice(&fs::read(recovery.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(prior["format_version"], 2);
+    assert_eq!(prior["schema_version"], 4);
+    assert_eq!(prior["derivatives"].as_array().unwrap().len(), 3);
+    let migrated_restore =
+        Workspace::restore(&recovery, &temp.path().join("migrated-restore")).unwrap();
+    assert_eq!(
+        migrated_restore
+            .read_image_region_raster(region_id)
+            .unwrap(),
+        raster
+    );
+    let report = workspace
+        .save_docx_snapshot(&id(), workspace.revision().unwrap())
+        .unwrap();
+    let docx = workspace
+        .read_docx_snapshot(&report.id, &report.document.sha256, &report.docx.sha256)
+        .unwrap();
+    let backup = workspace.backup().unwrap();
+    let manifest: Value =
+        serde_json::from_slice(&fs::read(backup.join("manifest.json")).unwrap()).unwrap();
+    assert_eq!(manifest["format_version"], 3);
+    assert_eq!(manifest["derivatives"].as_array().unwrap().len(), 5);
+    let restored = Workspace::restore(&backup, &temp.path().join("mixed-restored")).unwrap();
+    assert_eq!(
+        restored.read_image_region_raster(region_id).unwrap(),
+        raster
+    );
+    assert_eq!(
+        restored
+            .read_docx_snapshot(&report.id, &report.document.sha256, &report.docx.sha256)
+            .unwrap(),
+        docx
+    );
+}

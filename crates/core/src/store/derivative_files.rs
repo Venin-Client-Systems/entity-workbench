@@ -1,5 +1,6 @@
 //! Private content-addressed derivatives. Unreferenced immutable files may survive failed publication.
 use super::*;
+use crate::docx_snapshot::ReportArtifactRef;
 use crate::processing::{DerivativeKind, DerivativeRef};
 #[cfg(unix)]
 use std::fs::File;
@@ -36,9 +37,47 @@ pub(super) fn reference(kind: DerivativeKind, bytes: &[u8]) -> Result<Derivative
     validate_ref(&reference)?;
     Ok(reference)
 }
-fn ordinary(metadata: &fs::Metadata, reference: &DerivativeRef) -> Result<()> {
+/// Closed storage boundary: reference formats keep their own versioned validators.
+#[derive(Clone)]
+pub(super) enum ObjectRef {
+    Ocr(DerivativeRef),
+    Report(ReportArtifactRef),
+}
+impl ObjectRef {
+    pub(super) fn sha256(&self) -> &str {
+        match self {
+            Self::Ocr(r) => &r.sha256,
+            Self::Report(r) => &r.sha256,
+        }
+    }
+    pub(super) fn bytes(&self) -> u64 {
+        match self {
+            Self::Ocr(r) => r.bytes,
+            Self::Report(r) => r.bytes,
+        }
+    }
+    fn validate(&self) -> Result<()> {
+        match self {
+            Self::Ocr(r) => validate_ref(r),
+            Self::Report(r) => r.validate(),
+        }
+    }
+}
+pub(super) fn read(root: &Path, reference: &DerivativeRef) -> Result<Vec<u8>> {
+    read_object(root, &ObjectRef::Ocr(reference.clone()))
+}
+pub(super) fn retain(root: &Path, reference: &DerivativeRef, bytes: &[u8]) -> Result<()> {
+    retain_object(root, &ObjectRef::Ocr(reference.clone()), bytes)
+}
+pub(super) fn catalog(conn: &Connection, reference: &DerivativeRef) -> Result<()> {
+    catalog_object(conn, &ObjectRef::Ocr(reference.clone()))
+}
+pub(super) fn verify_catalog(conn: &Connection, reference: &DerivativeRef) -> Result<()> {
+    verify_object_catalog(conn, &ObjectRef::Ocr(reference.clone()))
+}
+fn ordinary(metadata: &fs::Metadata, reference: &ObjectRef) -> Result<()> {
     require(
-        metadata.is_file() && !is_link(metadata) && metadata.len() == reference.bytes,
+        metadata.is_file() && !is_link(metadata) && metadata.len() == reference.bytes(),
         "Derivative is missing, linked, special or altered",
     )?;
     #[cfg(unix)]
@@ -57,17 +96,17 @@ fn ordinary(metadata: &fs::Metadata, reference: &DerivativeRef) -> Result<()> {
     )?;
     Ok(())
 }
-pub(super) fn read(root: &Path, reference: &DerivativeRef) -> Result<Vec<u8>> {
+pub(super) fn read_object(root: &Path, reference: &ObjectRef) -> Result<Vec<u8>> {
     read_checked(root, reference, |_| Ok(()), |_| Ok(()))
 }
 fn read_checked(
     root: &Path,
-    reference: &DerivativeRef,
+    reference: &ObjectRef,
     before_open: impl FnOnce(&Path) -> Result<()>,
     after_open: impl FnOnce(&Path) -> Result<()>,
 ) -> Result<Vec<u8>> {
-    validate_ref(reference)?;
-    let path = root.join("derivatives/objects").join(&reference.sha256);
+    reference.validate()?;
+    let path = root.join("derivatives/objects").join(reference.sha256());
     reject_link_ancestors(&path)?;
     let before = fs::symlink_metadata(&path)?;
     ordinary(&before, reference)?;
@@ -93,10 +132,10 @@ fn read_checked(
     after_open(&path)?;
     let mut bytes = Vec::new();
     (&mut file)
-        .take(reference.bytes + 1)
+        .take(reference.bytes() + 1)
         .read_to_end(&mut bytes)?;
     require(
-        bytes.len() as u64 == reference.bytes && hash(&bytes) == reference.sha256,
+        bytes.len() as u64 == reference.bytes() && hash(&bytes) == reference.sha256(),
         "Derivative checksum mismatch",
     )?;
     let finished = file.metadata()?;
@@ -122,18 +161,18 @@ fn read_checked(
 }
 
 /// Prepare complete files before the canonical transaction. Never replace existing digest names.
-pub(super) fn retain(root: &Path, reference: &DerivativeRef, bytes: &[u8]) -> Result<()> {
-    validate_ref(reference)?;
+pub(super) fn retain_object(root: &Path, reference: &ObjectRef, bytes: &[u8]) -> Result<()> {
+    reference.validate()?;
     require(
-        bytes.len() as u64 == reference.bytes && hash(bytes) == reference.sha256,
+        bytes.len() as u64 == reference.bytes() && hash(bytes) == reference.sha256(),
         "Derivative bytes do not match their reference",
     )?;
     let directory = root.join("derivatives/objects");
     private_dir(&directory)?;
-    let target = directory.join(&reference.sha256);
+    let target = directory.join(reference.sha256());
     match fs::symlink_metadata(&target) {
         Ok(_) => {
-            read(root, reference)?;
+            read_object(root, reference)?;
             return Ok(());
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
@@ -189,25 +228,25 @@ pub(super) fn retain(root: &Path, reference: &DerivativeRef, bytes: &[u8]) -> Re
             }
         }
     }
-    read(root, reference)?;
+    read_object(root, reference)?;
     Ok(())
 }
-pub(super) fn catalog(conn: &Connection, reference: &DerivativeRef) -> Result<()> {
-    validate_ref(reference)?;
+pub(super) fn catalog_object(conn: &Connection, reference: &ObjectRef) -> Result<()> {
+    reference.validate()?;
     conn.execute(
         "INSERT OR IGNORE INTO derivative_objects(sha256,bytes) VALUES(?,?)",
-        params![reference.sha256, reference.bytes],
+        params![reference.sha256(), reference.bytes()],
     )?;
-    verify_catalog(conn, reference)
+    verify_object_catalog(conn, reference)
 }
-pub(super) fn verify_catalog(conn: &Connection, reference: &DerivativeRef) -> Result<()> {
+pub(super) fn verify_object_catalog(conn: &Connection, reference: &ObjectRef) -> Result<()> {
     let bytes: u64 = conn.query_row(
         "SELECT bytes FROM derivative_objects WHERE sha256=?",
-        [&reference.sha256],
+        [&reference.sha256()],
         |row| row.get(0),
     )?;
     require(
-        bytes == reference.bytes,
+        bytes == reference.bytes(),
         "Derivative catalog length conflicts with reference",
     )
 }

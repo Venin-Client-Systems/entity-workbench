@@ -35,7 +35,7 @@ fn replaced_name_after_open_is_refused_even_when_bytes_are_identical() {
     let (_temp, root, reference) = fixture();
     let result = read_checked(
         &root,
-        &reference,
+        &ObjectRef::Ocr(reference.clone()),
         |_| Ok(()),
         |path| {
             fs::remove_file(path)?;
@@ -54,7 +54,7 @@ fn substituted_fifo_does_not_block_before_type_check() {
     let started = std::time::Instant::now();
     let result = read_checked(
         &root,
-        &reference,
+        &ObjectRef::Ocr(reference.clone()),
         |path| {
             fs::remove_file(path)?;
             let name = std::ffi::CString::new(path.as_os_str().as_bytes()).unwrap();
@@ -74,7 +74,7 @@ fn same_length_in_place_change_is_refused_even_if_original_bytes_are_restored() 
     let (_temp, root, reference) = fixture();
     assert!(read_checked(
         &root,
-        &reference,
+        &ObjectRef::Ocr(reference.clone()),
         |_| Ok(()),
         |path| {
             fs::set_permissions(path, fs::Permissions::from_mode(0o600))?;
@@ -91,7 +91,7 @@ fn retained_handle_denies_conflicting_write_and_delete() {
     let (_temp, root, reference) = fixture();
     let bytes = read_checked(
         &root,
-        &reference,
+        &ObjectRef::Ocr(reference.clone()),
         |_| Ok(()),
         |path| {
             require(

@@ -26,8 +26,8 @@ or a promise that future software can silently reinterpret an older calculation.
 
 The adapter checks unique typed record identities, evidence ID/digest equality,
 reference existence, bounded anchor structure and text-line ranges. **It does not
-open or rehash originals.** A future canonical publisher must capture a consistent
-view, verify its original files, use a revision conflict guard and publish validated
+open or rehash originals.** The separate [canonical publisher](DOCX-SNAPSHOTS.md) captures a consistent
+view, verifies its original files, uses a revision conflict guard and publishes validated
 artifacts with recoverable backup references. It must not rebuild a historical
 DOCX from a newer workspace. Existing HTML-only snapshots remain HTML-only; their
 saved HTML bytes and hashes are unchanged by this foundation.
@@ -118,5 +118,6 @@ actual alpha renderer; it is not a stable LibreOffice or Microsoft Word pass.
 Initial layout observations and failed compiler runs remain retained locally;
 final visual/native evidence must identify its exact source and artifact hashes.
 Microsoft Word native opening/editability, other platforms, maximum-size document
-layout, approved fonts, assembly/exhibits, canonical publication/migration and
-backup/restore integration remain separate acceptance work.
+layout, approved fonts, assembly/exhibits and desktop/native DOCX integration remain separate acceptance work.
+Canonical publication/migration and backup/restore now have a separate bounded
+[Rust API implementation](DOCX-SNAPSHOTS.md).

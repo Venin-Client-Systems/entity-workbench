@@ -15,6 +15,7 @@ mod collection;
 mod collection_jobs;
 mod derivative_files;
 mod desktop_summary;
+mod docx_snapshots;
 mod evidence;
 use evidence::{all_evidence, find_evidence, get_evidence};
 mod file_identity;
@@ -43,7 +44,7 @@ mod transfer_candidates;
 #[cfg(test)]
 mod view_tests;
 
-const SCHEMA: u32 = 4;
+const SCHEMA: u32 = 5;
 // Only workspace refresh responses vary. Direct reader/job responses are unchanged.
 #[derive(Clone, Copy)]
 enum ResponseMode {
@@ -185,7 +186,7 @@ impl Workspace {
                 CREATE TABLE records(sequence INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL CHECK(json_valid(body)), UNIQUE(kind,id));
                 CREATE TABLE history(sequence INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT NOT NULL,id TEXT NOT NULL,body TEXT NOT NULL,revision INTEGER NOT NULL);
                 CREATE TABLE events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,revision INTEGER NOT NULL,action TEXT NOT NULL,at TEXT NOT NULL);
-                PRAGMA user_version=4;")?;
+                PRAGMA user_version=5;")?;
             tx.execute_batch(derivative_files::CREATE_CATALOG)?;
             tx.commit()?;
         }
@@ -203,7 +204,7 @@ impl Workspace {
             // Older readers lack mapping or finding-review semantics. Retain a
             // complete recovery point before changing records or compatibility.
             workspace.backup()?;
-            workspace.change(None, "workspace.schema_v4", version < 3, |conn| {
+            workspace.change(None, "workspace.schema_v5", version < 3, |conn| {
                 conn.execute_batch(derivative_files::CREATE_CATALOG)?;
                 conn.pragma_update(None, "user_version", SCHEMA)?;
                 let actual: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;

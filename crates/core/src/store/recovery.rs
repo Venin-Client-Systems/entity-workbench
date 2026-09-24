@@ -1,14 +1,20 @@
 //! Backup references come from one SQLite snapshot, not a sequence of live queries.
+use super::derivative_files::ObjectRef;
 use super::*;
-use crate::processing::{DerivativeRef, ImageRegionExtractionRecord};
+use crate::processing::ImageRegionExtractionRecord;
 use std::{collections::BTreeMap, io::Read};
 
 impl Workspace {
-    pub(super) fn derivative_refs(&self) -> Result<Vec<DerivativeRef>> {
+    pub(super) fn derivative_refs(&self) -> Result<Vec<ObjectRef>> {
         let records: Vec<ImageRegionExtractionRecord> = all(&self.conn, "image_region_extraction")?;
         let version: u32 = self
             .conn
             .pragma_query_value(None, "user_version", |r| r.get(0))?;
+        let reports = self.docx_records()?;
+        require(
+            version >= 5 || reports.is_empty(),
+            "Older workspace cannot contain DOCX snapshots",
+        )?;
         if version < 4 {
             require(
                 records.is_empty(),
@@ -21,10 +27,23 @@ impl Workspace {
             let inspected = self.inspect_image_region_extraction(&record.id)?;
             for reference in processing_regions::refs(&inspected.extraction) {
                 if let Some(previous) =
-                    references.insert(reference.sha256.clone(), reference.clone())
+                    references.insert(reference.sha256.clone(), ObjectRef::Ocr(reference.clone()))
                 {
                     require(
-                        previous.bytes == reference.bytes,
+                        previous.bytes() == reference.bytes,
+                        "Conflicting derivative byte lengths",
+                    )?;
+                }
+            }
+        }
+        for report in reports {
+            self.verify_docx_snapshot(&report)?;
+            for reference in docx_snapshots::refs(&report) {
+                if let Some(previous) =
+                    references.insert(reference.sha256().to_owned(), reference.clone())
+                {
+                    require(
+                        previous.bytes() == reference.bytes(),
                         "Conflicting derivative byte lengths",
                     )?;
                 }
@@ -38,7 +57,7 @@ impl Workspace {
             .collect::<std::result::Result<BTreeMap<_, _>, _>>()?;
         let expected: BTreeMap<_, _> = references
             .iter()
-            .map(|(sha, r)| (sha.clone(), r.bytes))
+            .map(|(sha, r)| (sha.clone(), r.bytes()))
             .collect();
         require(
             catalog == expected,
@@ -88,12 +107,16 @@ impl Workspace {
             .write(true)
             .open(&snapshot)?
             .sync_all()?;
+        let schema_version: u32 = source
+            .conn
+            .pragma_query_value(None, "user_version", |r| r.get(0))?;
+        let format_version = if schema_version >= 5 { 3 } else { 2 };
         let manifest = json!({
-            "format_version":2,"complete":true,
-            "schema_version":source.conn.pragma_query_value::<u32,_>(None,"user_version",|r|r.get(0))?,
+            "format_version":format_version,"complete":true,
+            "schema_version":schema_version,
             "revision":source.revision()?,
             "evidence":evidence.iter().map(|e|&e.sha256).collect::<Vec<_>>(),
-            "derivatives":derivatives.iter().map(|r|json!({"sha256":r.sha256,"bytes":r.bytes})).collect::<Vec<_>>()
+            "derivatives":derivatives.iter().map(|r|json!({"sha256":r.sha256(),"bytes":r.bytes()})).collect::<Vec<_>>()
         });
         let manifest_path = path.join("manifest.json");
         let mut file = OpenOptions::new()
@@ -146,12 +169,24 @@ impl Workspace {
             manifest["schema_version"] == version && manifest["revision"] == source.revision()?,
             "Backup manifest does not match its snapshot",
         )?;
-        if version >= 4 {
-            require(
-                manifest["format_version"] == 2 && manifest["complete"] == true,
-                "Derivative backup is incomplete",
-            )?;
-        }
+        // Historical schemas 1–3 omitted format_version. Later writers also
+        // produce format 2 recovery points before migrating those databases.
+        // An explicit unknown version is never interpreted as a legacy manifest.
+        let versioned_manifest = match manifest.get("format_version") {
+            None if version <= 3 => false,
+            Some(format) if format == if version >= 5 { 3 } else { 2 } => {
+                require(
+                    manifest["complete"] == true,
+                    "Derivative backup is incomplete",
+                )?;
+                true
+            }
+            _ => {
+                return Err(Error::Validation(
+                    "Unsupported backup manifest format".into(),
+                ))
+            }
+        };
         let evidence = all_evidence(&source.conn)?;
         for e in &evidence {
             source.verify_original(e)?;
@@ -161,12 +196,12 @@ impl Workspace {
             manifest["evidence"] == json!(evidence.iter().map(|e| &e.sha256).collect::<Vec<_>>()),
             "Backup evidence manifest differs from snapshot",
         )?;
-        if version >= 4 {
+        if versioned_manifest {
             require(
                 manifest["derivatives"]
                     == json!(derivatives
                         .iter()
-                        .map(|r| json!({"sha256":r.sha256,"bytes":r.bytes}))
+                        .map(|r| json!({"sha256":r.sha256(),"bytes":r.bytes()}))
                         .collect::<Vec<_>>()),
                 "Backup derivative manifest differs from snapshot",
             )?;
@@ -206,7 +241,7 @@ fn copy_sources(
     source: &Path,
     destination: &Path,
     evidence: &[Evidence],
-    derivatives: &[DerivativeRef],
+    derivatives: &[ObjectRef],
 ) -> Result<()> {
     private_dir(&destination.join("originals"))?;
     for e in evidence {
@@ -220,8 +255,8 @@ fn copy_sources(
         originals::write_verified_copy(&target, e, &bytes)?;
     }
     for reference in derivatives {
-        let bytes = derivative_files::read(source, reference)?;
-        derivative_files::retain(destination, reference, &bytes)?;
+        let bytes = derivative_files::read_object(source, reference)?;
+        derivative_files::retain_object(destination, reference, &bytes)?;
     }
     Ok(())
 }
@@ -270,7 +305,7 @@ mod tests {
                 .execute_batch("DROP TABLE derivative_objects; PRAGMA user_version=3;")
                 .unwrap();
             if fail {
-                workspace.conn.execute_batch("CREATE TRIGGER reject_upgrade BEFORE INSERT ON events WHEN NEW.action='workspace.schema_v4' BEGIN SELECT RAISE(ABORT,'synthetic upgrade failure'); END;").unwrap();
+                workspace.conn.execute_batch("CREATE TRIGGER reject_upgrade BEFORE INSERT ON events WHEN NEW.action='workspace.schema_v5' BEGIN SELECT RAISE(ABORT,'synthetic upgrade failure'); END;").unwrap();
             }
             drop(workspace);
             let upgraded = Workspace::open(&root);
@@ -279,7 +314,7 @@ mod tests {
             let version: u32 = check
                 .pragma_query_value(None, "user_version", |r| r.get(0))
                 .unwrap();
-            assert_eq!(version, if fail { 3 } else { 4 });
+            assert_eq!(version, if fail { 3 } else { 5 });
             assert_eq!(
                 check
                     .query_row::<u32, _, _>(
@@ -324,7 +359,7 @@ mod tests {
             }
             fs::write(&manifest_path, serde_json::to_vec(&manifest).unwrap()).unwrap();
             let restored = Workspace::restore(&backup, &temp.path().join("restored")).unwrap();
-            assert_eq!(restored.view().unwrap().schema_version, 4);
+            assert_eq!(restored.view().unwrap().schema_version, 5);
             assert_eq!(restored.view().unwrap().evidence[0].id, source);
             assert_eq!(
                 fs::read(temp.path().join("restored/originals").join(source)).unwrap(),

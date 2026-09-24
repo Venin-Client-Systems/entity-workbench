@@ -85,7 +85,7 @@ fn queue_identity_bounds_and_original_legacy_schemas_stay_untouched() {
         w.conn
             .pragma_query_value::<u32, _>(None, "user_version", |r| r.get(0))
             .unwrap(),
-        4
+        5
     );
     assert!(w.view().unwrap().jobs.is_empty());
     assert!(w.view().unwrap().observations.is_empty());
