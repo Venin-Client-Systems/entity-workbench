@@ -66,7 +66,7 @@ impl Workspace {
         let tx = self.conn.unchecked_transaction()?;
         let e: Evidence = get(&tx, "evidence", anchor.evidence_id())?;
         require(
-            e.id == anchor.evidence_id(),
+            e.id == anchor.evidence_id() && e.id == e.sha256,
             "Canonical source identity is invalid",
         )?;
         // A retained derivative is not proof that its original is still intact.

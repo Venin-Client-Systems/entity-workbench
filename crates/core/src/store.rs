@@ -926,6 +926,10 @@ fn validate_import_input(name: &str, bytes: &[u8]) -> Result<()> {
 
 fn verify_original(root: &Path, e: &Evidence) -> Result<()> {
     require(
+        e.id == e.sha256,
+        "Canonical evidence identity does not match its original digest",
+    )?;
+    require(
         e.sha256.len() == 64 && e.sha256.bytes().all(|b| b.is_ascii_hexdigit()),
         "Invalid evidence digest",
     )?;

@@ -79,6 +79,34 @@ fn valid_original_does_not_hide_canonical_evidence_identity_corruption() {
 }
 
 #[test]
+fn retargeting_an_evidence_digest_cannot_verify_a_different_original() {
+    let (_temp, mut w, key) = workspace();
+    let second = w
+        .import("second-synthetic.txt", b"A different preserved original.\n")
+        .unwrap();
+    let source: Evidence = get(&w.conn, "evidence", &key).unwrap();
+    let substitute: Evidence = get(&w.conn, "evidence", &second).unwrap();
+    // Preserve A's key, body ID and derivative, while maliciously repointing
+    // its digest/length to intact original B. A must not quote B as its proof.
+    w.conn.execute("UPDATE records SET body=json_set(body,'$.sha256',?1,'$.bytes',?2) WHERE kind='evidence' AND id=?3", params![substitute.sha256, substitute.bytes, key]).unwrap();
+    let corrupted: Evidence = get(&w.conn, "evidence", &key).unwrap();
+    assert!(w
+        .verify_original(&corrupted)
+        .unwrap_err()
+        .to_string()
+        .contains("identity does not match its original digest"));
+    let original = w.root.join("originals").join(source.sha256);
+    writable(&original);
+    fs::remove_file(original).unwrap();
+    assert!(w
+        .inspect_source(&anchor(&key))
+        .unwrap_err()
+        .to_string()
+        .contains("Canonical source identity"));
+    assert!(w.conn.is_autocommit());
+}
+
+#[test]
 fn cell_excerpt_retains_original_decimal_text_and_refuses_changed_statement() {
     let (_temp, mut w, _key) = workspace();
     let key = w.import("synthetic.csv", b"account,date,description,amount,currency\n0042,2025-01-01,Synthetic purchase,-0.10000001,AUD\n").unwrap();

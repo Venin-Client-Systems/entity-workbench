@@ -2,7 +2,7 @@
 
 `InspectSource` continues to accept the historical typed text or CSV-cell anchor
 and return the same `SourceExcerpt` schema. The read now checks that the retained
-evidence body identifies the requested canonical key and verifies the original
+evidence body identifies the requested canonical key and content digest, then verifies the original
 file's safe path, byte length and SHA-256 before returning the quoted derivative.
 An altered or missing original is an explicit error even if cached text is still
 available in the workspace. Restoring the exact original bytes permits a fresh
@@ -22,8 +22,8 @@ views that display cached text without an anchor do not run this command and do
 not acquire an integrity attestation through this repair. A source-catalogue
 metadata response likewise is not a substitute for source inspection or review.
 
-Three core regressions cover same-length digest corruption, missing originals,
-restoration, mismatched evidence identity, exact CSV decimal excerpts and unchanged
+Four core regressions cover same-length digest corruption, missing originals,
+restoration, mismatched evidence identity, digest retargeting to another intact original, exact CSV decimal excerpts and unchanged
 read-only dispatch. A real-core browser regression first loads the interface's
 cached derivative, then alters the original without changing its length. Both
 the direct transaction excerpt and nested anchor excerpt report the checksum
@@ -31,7 +31,15 @@ failure without a quoted value or validation message. Closing and reopening
 after byte restoration returns the exact value. The test restores the fixture
 and confirms the entire canonical workspace is unchanged.
 
-The repair passes 212 ordinary core tests with 21 native/runtime exclusions,
-strict core Clippy and nine targeted browser workflows. The interface layout and
-historical schemas are unchanged. A broader combined browser campaign follows
-the next integration; this increment passes no complete-release gate.
+Bounded peer review found that a body-ID check alone could still allow digest
+retargeting to another intact original. The repaired invariant binds the requested
+key, body ID and content digest. Common original verification also enforces body
+ID/digest equality, so other callers cannot treat a substituted original as the
+same evidence. The new two-original regression covers that exact failure mode.
+
+The repaired source passes 213 ordinary core tests with 21 native/runtime
+exclusions and strict core Clippy. The preceding excerpt repair passed all 70
+browser workflows; that run's compiled binary predates the final shared digest
+check, which will be rebuilt in the next combined campaign. Nine earlier targeted
+workflows also passed. The interface layout and historical schemas are unchanged.
+This increment passes no complete-release gate.
