@@ -31,7 +31,7 @@ def main():
     for component in ("parser", "search"):
         if not (runtime / component / "workers-0.1.0.jar").is_file():
             parser.error("Both independent adapter JARs must be staged")
-    command = ["cargo", "test", "--locked", "-p", "workbench-core", "--lib", "engines::", "--", "--include-ignored", "--skip", "engines::ocr::", "--skip", "engines::supervision::ocr::", "--skip", "engines::image::", "--skip", "engines::supervision::image_tests::", "--skip", "engines::pdf_render::", "--skip", "engines::supervision::pdf_tests::", "--test-threads=1", "--nocapture"]
+    command = ["cargo", "test", "--locked", "-p", "workbench-core", "--lib", "engines::", "--", "--include-ignored", "--skip", "engines::ocr::", "--skip", "engines::ocr_regions::", "--skip", "engines::supervision::ocr::", "--skip", "engines::image::", "--skip", "engines::supervision::image_tests::", "--skip", "engines::pdf_render::", "--skip", "engines::supervision::pdf_tests::", "--test-threads=1", "--nocapture"]
     environment = dict(os.environ, WORKBENCH_TEST_RUNTIME=str(runtime), WORKBENCH_TEST_SECRET="synthetic-environment-sentinel")
     result = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, text=True, timeout=180)
     cases = dict(re.findall(r"test engines::(?:\w+::)*tests::(\w+) \.\.\. (ok|FAILED|ignored)", result.stdout))
