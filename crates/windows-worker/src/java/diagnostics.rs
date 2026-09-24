@@ -15,11 +15,19 @@ pub(crate) struct TreeCounts {
     pub largest_file_bytes: u64,
     pub minidump_named_files: usize,
     pub fixed_error_file_seen: bool,
+    pub fallback_error_files: usize,
 }
 #[derive(Debug, Default, PartialEq, Eq, Serialize)]
 pub(crate) struct FatalHeader {
     pub exception_code: Option<u32>,
     pub frame_module: Option<&'static str>,
+}
+pub(crate) fn fallback_name(name: &str) -> bool {
+    name.strip_prefix("hs_err_pid")
+        .and_then(|s| s.strip_suffix(".log"))
+        .is_some_and(|digits| {
+            !digits.is_empty() && digits.len() <= 10 && digits.bytes().all(|b| b.is_ascii_digit())
+        })
 }
 pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
     // Only the first 32 lines of an already bounded file are inspected. Emit
@@ -66,6 +74,21 @@ pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn fallback_names_are_only_bounded_numeric_jvm_log_names() {
+        assert!(fallback_name("hs_err_pid1234.log"));
+        for name in [
+            "hs_err_pid.log",
+            "hs_err_pid12345678901.log",
+            "hs_err_pidprivate.log",
+            "hs_err_pid12.mdmp",
+            "hs_err_pid1.log:stream",
+            "../hs_err_pid12.log",
+            "hs_err_pid1/2.log",
+        ] {
+            assert!(!fallback_name(name));
+        }
+    }
     #[test]
     fn fatal_hints_emit_only_fixed_modules_and_numeric_exception_codes() {
         let text = b"#\n# A fatal error has been detected by the Java Runtime Environment:\n#\n#  EXCEPTION_INVALID_HANDLE (0xc0000008) at pc=0xPRIVATE, pid=PRIVATE\n# Problematic frame:\n# C  [ntdll.dll+0xPRIVATE] private_name\n# PRIVATE_PATH\n";

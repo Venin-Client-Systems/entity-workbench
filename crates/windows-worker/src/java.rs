@@ -243,24 +243,27 @@ impl Prepared<'_> {
     }
 }
 fn prepare<'a>(root: &Path, scratch_parent: &Path, job: &'a Job) -> Result<Prepared<'a>> {
+    // Substitution can produce verbatim Windows paths. Appended separators must
+    // already be backslashes; Win32 does not normalize '/' after a \\?\ prefix.
     let mut arguments = vec![
         "-Xmx256m".into(),
         "-XX:ActiveProcessorCount=2".into(),
         "-XX:+UseSerialGC".into(),
-        "-XX:ErrorFile=$EW_SCRATCH/jvm-error.log".into(),
+        "-XX:-CreateCoredumpOnCrash".into(),
+        r"-XX:ErrorFile=$EW_SCRATCH\jvm-error.log".into(),
         "-Djava.io.tmpdir=$EW_SCRATCH".into(),
         "-Duser.home=$EW_SCRATCH".into(),
         "-Dfile.encoding=UTF-8".into(),
         "-Dworkbench.assignedInput=$EW_INPUT".into(),
     ];
     match job.operation {
-        Operation::Index { .. } => arguments.push("-Dworkbench.index=$EW_SCRATCH/index".into()),
+        Operation::Index { .. } => arguments.push(r"-Dworkbench.index=$EW_SCRATCH\index".into()),
         Operation::Search { .. } => arguments.push("-Dworkbench.index=$EW_INDEX".into()),
         Operation::Parse => {}
     }
     arguments.extend([
         "-cp".into(),
-        "$EW_RUNTIME/worker.jar;$EW_RUNTIME/lib/*".into(),
+        r"$EW_RUNTIME\worker.jar;$EW_RUNTIME\lib\*".into(),
         "workbench.FileWorker".into(),
         job.operation_name().into(),
         "$EW_REQUEST".into(),

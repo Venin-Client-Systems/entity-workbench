@@ -46,7 +46,16 @@ fn recipes_have_fixed_paths_classes_and_jvm_options() {
         assert!(prepared
             .request
             .arguments
-            .contains(&"-XX:ErrorFile=$EW_SCRATCH/jvm-error.log".into()));
+            .contains(&r"-XX:ErrorFile=$EW_SCRATCH\jvm-error.log".into()));
+        assert!(prepared
+            .request
+            .arguments
+            .contains(&"-XX:-CreateCoredumpOnCrash".into()));
+        assert!(prepared
+            .request
+            .arguments
+            .iter()
+            .all(|arg| !arg.contains('/')));
         assert_eq!(prepared.build_index(), job.operation_name() == "index");
         assert_eq!(
             prepared.snapshot().is_some(),
@@ -64,6 +73,55 @@ fn recipes_have_fixed_paths_classes_and_jvm_options() {
         assert_eq!(metadata["inputs"], serde_json::json!(["input.json"]));
         assert_eq!(metadata["output"], "result.json");
     }
+}
+#[cfg(windows)]
+#[test]
+fn recipe_suffixes_resolve_real_files_with_verbatim_windows_roots() {
+    use std::os::windows::ffi::OsStrExt;
+    use windows_sys::Win32::Storage::FileSystem::{GetFileAttributesW, INVALID_FILE_ATTRIBUTES};
+    fn exists_native(value: &str) -> bool {
+        let name: Vec<u16> = std::ffi::OsStr::new(value)
+            .encode_wide()
+            .chain(Some(0))
+            .collect();
+        // Read-only Win32 query of a live, nul-terminated synthetic path.
+        unsafe { GetFileAttributesW(name.as_ptr()) != INVALID_FILE_ATTRIBUTES }
+    }
+    let temp = tempfile::tempdir().unwrap();
+    let root = temp.path().canonicalize().unwrap();
+    let text = root.to_str().unwrap();
+    assert!(text.starts_with(r"\\?\"));
+    fs::write(root.join("jvm-error.log"), b"synthetic").unwrap();
+    fs::write(root.join("worker.jar"), b"synthetic").unwrap();
+    fs::create_dir(root.join("lib")).unwrap();
+    fs::create_dir(root.join("index")).unwrap();
+    let job = index();
+    let prepared = prepare(&root, &root, &job).unwrap();
+    let arguments: Vec<_> = prepared
+        .request
+        .arguments
+        .iter()
+        .map(|arg| {
+            arg.replace("$EW_RUNTIME", text)
+                .replace("$EW_SCRATCH", text)
+        })
+        .collect();
+    let error_file = arguments
+        .iter()
+        .find_map(|a| a.strip_prefix("-XX:ErrorFile="))
+        .unwrap();
+    let index = arguments
+        .iter()
+        .find_map(|a| a.strip_prefix("-Dworkbench.index="))
+        .unwrap();
+    let classpath = &arguments[arguments.iter().position(|a| a == "-cp").unwrap() + 1];
+    assert!(exists_native(error_file));
+    assert!(exists_native(index));
+    for asset in classpath.split(';') {
+        assert!(exists_native(asset.strip_suffix(r"\*").unwrap_or(asset)));
+    }
+    // This is the old emitted form, not a PathBuf operation that might repair it.
+    assert!(!exists_native(&format!("{text}/jvm-error.log")));
 }
 #[test]
 fn result_acknowledgements_cannot_publish_wrong_or_ambiguous_index() {

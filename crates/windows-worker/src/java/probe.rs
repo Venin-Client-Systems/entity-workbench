@@ -155,7 +155,7 @@ fn probe_arguments(
         prepared
             .request
             .arguments
-            .insert(0, format!("-Dworkbench.probeIndex=$EW_INDEX/{segment}"));
+            .insert(0, format!(r"-Dworkbench.probeIndex=$EW_INDEX\{segment}"));
     }
     prepared.request.arguments.extend([
         "workbench.WindowsJavaProbe".into(),
