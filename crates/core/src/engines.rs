@@ -8,10 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 #[cfg(target_os = "macos")]
-use std::{
-    process::{Command, Stdio},
-    time::{Duration, Instant},
-};
+mod supervision;
 use uuid::Uuid;
 #[derive(Clone)]
 pub struct Runtime {
@@ -45,6 +42,14 @@ impl Runtime {
         )?;
         fs::create_dir_all(cache)?;
         let cache = cache.canonicalize()?;
+        let lock = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(cache.join("coordinator.lock"))?;
+        lock.try_lock()
+            .map_err(|_| Error::Blocked("Local index is already in use".into()))?;
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
@@ -58,6 +63,10 @@ impl Runtime {
             .ok()
             .and_then(|s| s.parse::<u64>().ok());
         if indexed != Some(revision) {
+            // A failed rebuild cannot leave a revision marker claiming a valid index.
+            if marker.exists() {
+                fs::remove_file(&marker)?;
+            }
             let manifest = serde_json::to_vec(
                 &serde_json::json!({"workspace_revision":revision,"documents":evidence.iter().filter_map(|e|e.text.as_ref().map(|text|serde_json::json!({"id":e.id,"name":e.name,"text":text}))).collect::<Vec<_>>()}),
             )?;
@@ -67,8 +76,9 @@ impl Runtime {
             )?;
             let input = format!("manifest-{}.json", Uuid::new_v4());
             write_new(&cache.join(&input), &manifest)?;
-            self.run(&cache, WorkerOperation::Index, &input)?;
+            let indexed_result = self.run(&cache, WorkerOperation::Index, &input);
             fs::remove_file(cache.join(input))?;
+            indexed_result?;
             fs::write(&marker, revision.to_string())?;
         }
         let input = format!("query-{}.json", Uuid::new_v4());
@@ -76,9 +86,9 @@ impl Runtime {
             &cache.join(&input),
             &serde_json::to_vec(&serde_json::json!({"query":query}))?,
         )?;
-        let result: SearchResults =
-            serde_json::from_slice(&self.run(&cache, WorkerOperation::Search, &input)?)?;
+        let bytes = self.run(&cache, WorkerOperation::Search, &input);
         fs::remove_file(cache.join(input))?;
+        let result: SearchResults = serde_json::from_slice(&bytes?)?;
         require(
             result.workspace_revision == revision.to_string() && result.hits.len() <= 100,
             "Index revision or hit limit is invalid",
@@ -99,21 +109,20 @@ impl Runtime {
         ))
     }
     #[cfg(target_os = "macos")]
-    fn run(&self, job: &Path, operation: WorkerOperation, input: &str) -> Result<Vec<u8>> {
-        let root = self
-            .root
-            .canonicalize()
-            .map_err(|_| Error::Blocked("Packaged Java runtime is unavailable".into()))?;
-        let java = root.join("java/bin/java");
-        require(java.is_file(), "Packaged Java runtime is missing")?;
-        let key = Uuid::new_v4().to_string();
-        let output = format!("result-{key}.json");
+    fn run(&self, cache: &Path, operation: WorkerOperation, input: &str) -> Result<Vec<u8>> {
+        let job = tempfile::Builder::new().prefix("job-").tempdir_in(cache)?;
+        let job_path = job.path().canonicalize()?;
+        let index = cache.join("index");
+        fs::create_dir_all(&index)?;
+        supervision::validate_index(&index)?;
+        // Rust stages only this request's input. No worker can read sibling jobs.
+        write_new(&job_path.join("input.json"), &fs::read(cache.join(input))?)?;
         let request = WorkerRequest {
             protocol_version: 1,
-            job_id: key,
+            job_id: Uuid::new_v4().to_string(),
             operation,
-            inputs: vec![input.into()],
-            output: output.clone(),
+            inputs: vec!["input.json".into()],
+            output: "result.json".into(),
             limits: WorkerLimits {
                 seconds: 30,
                 output_bytes: 1024 * 1024,
@@ -126,70 +135,30 @@ impl Runtime {
         };
         let bytes = serde_json::to_vec(&request)?;
         crate::policy::validate_worker_request(&bytes)?;
-        let quote =
-            |path: &Path| serde_json::to_string(&path.to_string_lossy()).map_err(Error::from);
-        let profile=format!("(version 1)\n(deny default)\n(import \"dyld-support.sb\")\n(allow process-fork)\n(allow sysctl-read)\n(allow file-read-metadata)\n(allow process-exec (literal {}))\n(allow file-read* file-map-executable (subpath {}) (subpath \"/usr/lib\") (subpath \"/System\"))\n(allow file-read* (literal \"/dev/random\") (literal \"/dev/urandom\") (literal \"/dev/null\") (subpath {}))\n(allow file-write* (subpath {}))",quote(&java)?,quote(&root)?,quote(job)?,quote(job)?);
-        let profile_path = job.join(format!("worker-{}.sb", Uuid::new_v4()));
-        write_new(&profile_path, profile.as_bytes())?;
-        let request_path = job.join(format!("request-{}.json", Uuid::new_v4()));
-        write_new(&request_path, &bytes)?;
-        let classpath = format!(
-            "{}:{}",
-            root.join("search/workers-0.1.0.jar").display(),
-            root.join("search/lib/*").display()
-        );
-        let mut child = Command::new("/usr/bin/sandbox-exec")
-            .args(["-f"])
-            .arg(&profile_path)
-            .arg(java)
-            .args(["-Xmx256m", "-XX:-UsePerfData"])
-            .arg(format!("-Djava.io.tmpdir={}", job.display()))
-            .args(["-cp", &classpath, "workbench.SearchWorker"])
-            .current_dir(job)
-            .env_clear()
-            // Preserve the actual OS home value: sandbox-exec on macOS 26 crashes
-            // when it is absent. No other caller environment is inherited.
-            .envs(std::env::vars_os().filter(|(key, _)| key == "HOME"))
-            .stdin(fs::File::open(request_path)?)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()?;
-        let started = Instant::now();
-        let status = loop {
-            if let Some(status) = child.try_wait()? {
-                break status;
-            }
-            if started.elapsed() > Duration::from_secs(30) {
-                child.kill()?;
-                child.wait()?;
-                return Err(Error::Blocked("Local search worker timed out".into()));
-            }
-            std::thread::sleep(Duration::from_millis(20));
-        };
-        require(
-            status.success(),
-            "Local search worker failed; no result was accepted",
+        write_new(&job_path.join("request.json"), &bytes)?;
+        supervision::run_java(
+            &self.root,
+            &job_path,
+            &index,
+            matches!(request.operation, WorkerOperation::Index),
+            "workbench.SearchWorker",
+            &[],
+            std::time::Duration::from_secs(u64::from(request.limits.seconds)),
         )?;
-        let path = job.join(output);
-        let metadata = fs::symlink_metadata(&path)?;
-        require(
-            metadata.is_file()
-                && !metadata.file_type().is_symlink()
-                && metadata.len() <= 1024 * 1024,
-            "Worker returned an invalid result file",
-        )?;
-        let result = fs::read(&path)?;
-        fs::remove_file(path)?;
-        Ok(result)
+        supervision::read_result(&job_path.join("result.json"), request.limits.output_bytes)
     }
 }
 
 fn write_new(path: &Path, bytes: &[u8]) -> Result<()> {
     use std::io::Write;
-    let mut file = fs::OpenOptions::new()
-        .write(true)
-        .create_new(true)
-        .open(path)?;
+    let mut options = fs::OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(path)?;
     file.write_all(bytes)?;
     file.sync_all()?;
     Ok(())
