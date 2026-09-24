@@ -10,7 +10,7 @@ The executable contract is `scripts/discovery_benchmark.py`. Unknown or missing 
 | `benchmark_sha256` | Hash of the exact benchmark file bytes used for this campaign. |
 | `run_id` | Stable identifier for this campaign. |
 | `mode` | `live` for public-reference benchmark or `synthetic` for fictional fixture benchmark; these cannot mix. |
-| `started_at`, `ended_at` | Enclose every task; follow the freeze; span at most 14 days. |
+| `started_at`, `ended_at` | Enclose every task; follow the freeze; span at most 14 days; do not exceed current UTC. |
 | `app_revision` | Exact 40-digit lower-case hexadecimal Git revision. |
 | `app_version` | Pinned application build/version description, at most 128 characters. |
 | `platform` | `windows-x86_64`, `macos-aarch64` or `macos-x86_64`. One platform per campaign. |
@@ -62,7 +62,7 @@ Request timestamps are serial and lie inside the task. `outcome` is `fetched`, `
 
 ## Independent labels
 
-Labels contain exactly `reviewer_id`, `reviewed_at`, `relevant_result`, `useful_expansion`, `rationale`, `source_requests` and `chain`. The reviewer differs from the runner and reviews after collection. The two labels are Booleans. The rationale refers to the frozen criteria and explains support, conflict, irrelevance or failure. `source_requests` is a unique list of zero-based request indexes.
+Labels contain exactly `reviewer_id`, `reviewed_at`, `relevant_result`, `useful_expansion`, `rationale`, `source_requests` and `chain`. The reviewer differs from the runner and reviews after collection, no later than current UTC. Future collection or review timestamps are rejected for both live and synthetic records. The two labels are Booleans. The rationale refers to the frozen criteria and explains support, conflict, irrelevance or failure. `source_requests` is a unique list of zero-based request indexes.
 
 Positive relevance requires at least one successful source. Irrelevant labels have an empty source list. Expansion requires relevance and a `chain` with exactly:
 

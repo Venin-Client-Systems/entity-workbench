@@ -1,5 +1,6 @@
 """Scorer correctness against synthetic evidence, never live collection."""
 import copy
+from datetime import datetime, timedelta, timezone
 import importlib.util
 import json
 from pathlib import Path
@@ -7,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -142,7 +145,7 @@ class DiscoveryBenchmarkTests(unittest.TestCase):
         self.run['results'][0]['requests'][0]['hop'] = 3
         self.rejects()
         self.run = copy.deepcopy(original)
-        self.run['results'][0]['ended_at'] = '2026-09-25T00:10:01Z'
+        self.run['results'][0]['ended_at'] = '2026-09-24T00:10:01Z'
         self.rejects()
         self.run = copy.deepcopy(original)
         request = self.run['results'][0]['requests'][0]
@@ -169,7 +172,7 @@ class DiscoveryBenchmarkTests(unittest.TestCase):
         refused = copy.deepcopy(first)
         refused.update(url='https://elsewhere.example/', purpose='redirect', parent_request=0,
                        outcome='blocked', original_artifact=None, http_status=None,
-                       started_at='2026-09-25T00:25:01Z', ended_at='2026-09-25T00:25:02Z')
+                       started_at='2026-09-24T00:25:01Z', ended_at='2026-09-24T00:25:02Z')
         result['requests'].append(refused)
         report = self.score()
         self.assertEqual(report['status_counts']['blocked'], 2)
@@ -233,6 +236,30 @@ class DiscoveryBenchmarkTests(unittest.TestCase):
             self.skipTest('Platform does not allow unprivileged symlinks')
         self.rejects()
 
+    def test_evidence_root_reparse_metadata_is_rejected(self):
+        real_lstat = Path.lstat
+
+        def root_reparse(path, *args, **kwargs):
+            info = real_lstat(path, *args, **kwargs)
+            if path == self.evidence:
+                return SimpleNamespace(st_mode=info.st_mode, st_file_attributes=0x400)
+            return info
+
+        with patch.object(Path, 'lstat', root_reparse):
+            self.rejects()
+
+    @unittest.skipUnless(sys.platform == 'win32', 'Windows junction coverage')
+    def test_windows_junction_evidence_root_is_rejected(self):
+        junction = self.directory / 'junction'
+        made = subprocess.run(['cmd', '/c', 'mklink', '/J', str(junction), str(self.evidence)],
+                              capture_output=True, text=True, check=False)
+        self.assertEqual(made.returncode, 0, made.stdout + made.stderr)
+        try:
+            with self.assertRaises(scorer.InvalidBenchmark):
+                scorer.score(self.benchmark, self.run_file, junction)
+        finally:
+            junction.rmdir()
+
     def test_duplicate_json_and_boolean_integer_are_rejected(self):
         self.run_file.write_text('{"a":1,"a":2}')
         with self.assertRaises(scorer.InvalidBenchmark):
@@ -243,9 +270,33 @@ class DiscoveryBenchmarkTests(unittest.TestCase):
     def test_collection_must_follow_freeze_and_fit_fourteen_days(self):
         self.run['started_at'] = '2026-09-23T00:00:00Z'
         self.rejects()
-        self.run['started_at'] = '2026-09-25T00:00:00Z'
+        self.run['started_at'] = '2026-09-24T00:00:00Z'
         self.run['ended_at'] = '2026-10-10T00:00:00Z'
         self.rejects()
+
+    def test_future_campaign_and_review_cannot_be_scored(self):
+        original = copy.deepcopy(self.run)
+        future_start = (datetime.now(timezone.utc) + timedelta(days=1)).replace(microsecond=0)
+        shift = future_start - datetime(2026, 9, 24, tzinfo=timezone.utc)
+
+        def move_future(record, keys):
+            for key in keys:
+                original_time = datetime.strptime(record[key], '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
+                record[key] = (original_time + shift).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+        move_future(self.run, ('started_at', 'ended_at'))
+        for result in self.run['results']:
+            move_future(result, ('started_at', 'ended_at'))
+            move_future(result['labels'], ('reviewed_at',))
+            for request in result['requests']:
+                move_future(request, ('started_at', 'ended_at'))
+        with self.assertRaisesRegex(scorer.InvalidBenchmark, 'future collection'):
+            self.score()
+        self.run = original
+        future = (datetime.now(timezone.utc) + timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        self.run['results'][0]['labels']['reviewed_at'] = future
+        with self.assertRaisesRegex(scorer.InvalidBenchmark, 'future review'):
+            self.score()
 
     def test_cli_exit_codes_and_optimized_validation(self):
         command = [sys.executable, '-O', str(ROOT / 'scripts/discovery_benchmark.py'),
@@ -256,6 +307,13 @@ class DiscoveryBenchmarkTests(unittest.TestCase):
         command.extend(['--run', str(self.run_file), '--evidence-root', str(self.evidence)])
         complete = subprocess.run(command, capture_output=True, text=True, check=False)
         self.assertEqual(complete.returncode, 0, complete.stdout + complete.stderr)
+        future = (datetime.now(timezone.utc) + timedelta(days=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+        self.run['results'][0]['labels']['reviewed_at'] = future
+        self.run_file.write_text(json.dumps(self.run))
+        future_review = subprocess.run(command, capture_output=True, text=True, check=False)
+        self.assertEqual(future_review.returncode, 2)
+        self.assertIn('future review', json.loads(future_review.stdout)['error'])
+        self.run['results'][0]['labels']['reviewed_at'] = '2026-09-24T01:00:00Z'
         self.run['mode'] = 'live'
         self.run_file.write_text(json.dumps(self.run))
         invalid = subprocess.run(command, capture_output=True, text=True, check=False)

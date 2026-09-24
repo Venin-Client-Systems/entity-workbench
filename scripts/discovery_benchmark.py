@@ -160,7 +160,9 @@ def validate_benchmark(data):
 def verify_artifacts(entries, root):
     require(isinstance(entries, list) and len(entries) <= 1800, 'Artifact list exceeds limit')
     root = Path(root)
-    require(root.is_dir() and not root.is_symlink(), 'Evidence root must be a real directory')
+    root_info = root.lstat()
+    require(stat.S_ISDIR(root_info.st_mode) and not unsafe_link(root_info),
+            'Evidence root must be a real directory without reparse points')
     artifacts, paths, total = {}, set(), 0
     for entry in entries:
         exact(entry, 'id kind path sha256', 'artifact')
@@ -180,8 +182,7 @@ def verify_artifacts(entries, root):
         for part in parts:
             target /= part
             info = target.lstat()
-            require(not stat.S_ISLNK(info.st_mode) and not
-                    (getattr(info, 'st_file_attributes', 0) & 0x400), 'Artifact links are forbidden')
+            require(not unsafe_link(info), 'Artifact links are forbidden')
         require(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size <= MAX_ARTIFACT_BYTES,
                 'Expected bounded regular artifact file')
         total += info.st_size
@@ -203,12 +204,19 @@ def verify_artifacts(entries, root):
     return artifacts
 
 
+def unsafe_link(info):
+    return stat.S_ISLNK(info.st_mode) or bool(
+        getattr(info, 'st_file_attributes', 0) & getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 0x400)
+    )
+
+
 def artifact_ref(value, kind, artifacts):
     require(isinstance(value, str) and value in artifacts and artifacts[value]['kind'] == kind,
             'Missing artifact or incorrect artifact kind')
 
 
 def score(benchmark_path, run_path=None, evidence_root=None):
+    checked_at = datetime.now(timezone.utc)
     benchmark, digest = read_json(benchmark_path)
     tasks, publishers = validate_benchmark(benchmark)
     report = {'schema_version': 1, 'benchmark_id': benchmark['benchmark_id'], 'benchmark_sha256': digest,
@@ -237,6 +245,7 @@ def score(benchmark_path, run_path=None, evidence_root=None):
     start, end = timestamp(run['started_at']), timestamp(run['ended_at'])
     require(timestamp(benchmark['frozen_at']) <= start <= end <= start + timedelta(days=14),
             'Run must follow the freeze and finish within the collection window')
+    require(end <= checked_at, 'Run cannot claim future collection')
     artifacts = verify_artifacts(run['artifacts'], evidence_root)
     artifact_ref(run['corpus_reset_artifact'], 'corpus_reset', artifacts)
     require(isinstance(run['results'], list) and len(run['results']) <= 30, 'Result list exceeds denominator')
@@ -313,7 +322,8 @@ def score(benchmark_path, run_path=None, evidence_root=None):
             continue
         exact(labels, 'reviewer_id reviewed_at relevant_result useful_expansion rationale source_requests chain', 'labels')
         require(identifier(labels['reviewer_id']) != runner, 'Labels require a reviewer independent of the runner')
-        require(timestamp(labels['reviewed_at']) >= task_end, 'Labels predate collection')
+        require(task_end <= timestamp(labels['reviewed_at']) <= checked_at,
+                'Labels must follow collection and cannot claim future review')
         require(type(labels['relevant_result']) is bool and type(labels['useful_expansion']) is bool, 'Labels must be Boolean')
         text(labels['rationale'], 'Review rationale')
         sources = labels['source_requests']

@@ -21,7 +21,7 @@ def create_replay(destination):
     (destination / 'benchmark.json').write_bytes(raw)
     run = {'schema_version': 1, 'benchmark_sha256': hashlib.sha256(raw).hexdigest(),
            'run_id': 'synthetic-replay-v1', 'mode': 'synthetic',
-           'started_at': '2026-09-25T00:00:00Z', 'ended_at': '2026-09-25T00:30:00Z',
+           'started_at': '2026-09-24T00:00:00Z', 'ended_at': '2026-09-24T00:30:00Z',
            'app_revision': '0' * 40, 'app_version': '0.0.0-synthetic', 'platform': 'macos-aarch64',
            'runner_id': 'synthetic-runner', 'corpus_reset_artifact': 'synthetic-reset',
            'artifacts': [], 'results': []}
@@ -36,7 +36,7 @@ def create_replay(destination):
 
     artifact('synthetic-reset', 'corpus_reset', 'Fictional application corpus reset receipt.')
     publishers = {p['id']: p for p in benchmark['publishers']}
-    start = datetime(2026, 9, 25, tzinfo=timezone.utc)
+    start = datetime(2026, 9, 24, tzinfo=timezone.utc)
 
     def stamp(time):
         return time.strftime('%Y-%m-%dT%H:%M:%SZ')
@@ -71,7 +71,7 @@ def create_replay(destination):
                                        'ended_at': stamp(task_start + timedelta(seconds=number + 1)),
                                        'outcome': 'fetched', 'http_status': 200,
                                        'original_artifact': artifact(task_id + '-original-' + str(number), 'original', body)})
-        result['labels'] = {'reviewer_id': 'synthetic-reviewer', 'reviewed_at': '2026-09-26T00:00:00Z',
+        result['labels'] = {'reviewer_id': 'synthetic-reviewer', 'reviewed_at': '2026-09-24T01:00:00Z',
                             'relevant_result': relevant, 'useful_expansion': expansion,
                             'rationale': 'Fabricated label for scorer verification only.',
                             'source_requests': list(range(len(result['requests']))) if relevant else [],
