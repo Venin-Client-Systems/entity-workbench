@@ -14,6 +14,12 @@ import zipfile
 
 MAX_BYTES = 1024 * 1024 * 1024
 MAX_MEMBERS = 10000
+FONT_RESOURCE = "org/apache/pdfbox/resources/ttf/LiberationSans-Regular.ttf"
+FONT_BYTES = 410712
+FONT_SHA256 = "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8"
+STANDARD_AFM = {"Courier", "Courier-Bold", "Courier-Oblique", "Courier-BoldOblique",
+                "Helvetica", "Helvetica-Bold", "Helvetica-Oblique", "Helvetica-BoldOblique",
+                "Times-Roman", "Times-Bold", "Times-Italic", "Times-BoldItalic", "Symbol", "ZapfDingbats"}
 REQUIRED = {
     "parser": {"tika-core-3.3.2.jar", "tika-parser-microsoft-module-3.3.2.jar", "pdfbox-3.0.8.jar", "jackson-databind-2.22.3.jar"},
     "search": {"lucene-core-10.5.1.jar", "lucene-analysis-common-10.5.1.jar", "lucene-queryparser-10.5.1.jar", "jackson-databind-2.22.3.jar"},
@@ -87,6 +93,32 @@ def inventory(root):
     return dict(sorted(files.items())), sorted(directories)
 
 
+def verify_pdfbox_assets(path):
+    # The full JAR remains inventoried. Bound each inspected embedded asset before
+    # decompression, and preserve the original font/AFM licences and notices.
+    with zipfile.ZipFile(path) as jar:
+        names = jar.namelist()
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate PDFBox resource")
+        required = {FONT_RESOURCE, "META-INF/LICENSE", "META-INF/NOTICE"} | {
+            f"org/apache/pdfbox/resources/afm/{name}.afm" for name in STANDARD_AFM}
+        if not required.issubset(names):
+            raise ValueError("Required app-local font resources or notices absent")
+        for name in sorted(required):
+            member = jar.getinfo(name)
+            limit = FONT_BYTES if name == FONT_RESOURCE else 128 * 1024
+            if member.file_size > limit or member.file_size < 1:
+                raise ValueError("App-local font resource exceeds bound")
+            with jar.open(member) as source:
+                content = source.read(limit + 1)
+            if len(content) != member.file_size or len(content) > limit:
+                raise ValueError("App-local font resource size mismatch")
+            if name == FONT_RESOURCE and (len(content) != FONT_BYTES or hashlib.sha256(content).hexdigest() != FONT_SHA256):
+                raise ValueError("App-local font resource digest mismatch")
+            if name == "META-INF/LICENSE" and b"SIL OPEN FONT LICENSE Version 1.1" not in content:
+                raise ValueError("Bundled font licence absent")
+
+
 def stage(java, worker_target, destination):
     if destination.exists():
         raise ValueError("Use a fresh staging destination")
@@ -103,6 +135,7 @@ def stage(java, worker_target, destination):
     source_libraries = sorted((worker_target / "lib").glob("*.jar"))
     for file in source_libraries:
         ordinary(file)
+    verify_pdfbox_assets(worker_target / "lib/pdfbox-3.0.8.jar")
     with zipfile.ZipFile(worker_target / "workers-0.1.0.jar") as source:
         names = source.namelist()
         if len(names) != len(set(names)):
@@ -114,9 +147,12 @@ def stage(java, worker_target, destination):
             classes = [n for n in names if n in {
                 "workbench/Protocol.class", "workbench/FileWorker.class", f"workbench/{worker}.class",
                 "workbench/WindowsJavaProbe.class", "workbench/WindowsJavaProbe$Attempt.class",
-            } or (n.startswith(f"workbench/{worker}$") and n.endswith(".class"))]
+            } or (n.startswith(f"workbench/{worker}$") and n.endswith(".class"))
+                or (role == "parser" and n in {"workbench/AppLocalFonts.class", "workbench/AppLocalFonts$AssetException.class"})]
             if not {"workbench/Protocol.class", "workbench/FileWorker.class", f"workbench/{worker}.class"}.issubset(classes):
                 raise ValueError("Required fixed worker classes absent")
+            if role == "parser" and not {"workbench/AppLocalFonts.class", "workbench/AppLocalFonts$AssetException.class"}.issubset(classes):
+                raise ValueError("Fixed app-local font adapter absent")
             with zipfile.ZipFile(target / "worker.jar", "w", compression=zipfile.ZIP_DEFLATED) as output:
                 for name in sorted(classes):
                     member = source.getinfo(name)

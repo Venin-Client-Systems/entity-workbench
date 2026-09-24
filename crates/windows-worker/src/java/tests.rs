@@ -59,6 +59,14 @@ fn recipes_have_fixed_paths_classes_and_jvm_options() {
             .arguments
             .iter()
             .all(|arg| !arg.contains('/')));
+        assert_eq!(
+            prepared
+                .request
+                .arguments
+                .iter()
+                .any(|arg| arg == "-Dworkbench.fontPolicy=liberation-sans-2.1.5-extraction-v1"),
+            job.role() == Role::Parser
+        );
         assert_eq!(prepared.build_index(), job.operation_name() == "index");
         assert_eq!(
             prepared.snapshot().is_some(),
@@ -305,4 +313,22 @@ fn fixed_java_recipes_have_no_unconfined_platform_fallback() {
             "Windows Java recipe requires native AppContainer"
         ))
     ));
+}
+
+#[test]
+fn pdf_results_cannot_silently_use_old_policy_or_claim_complete_coverage() {
+    let job = Job::parse(b"%PDF-synthetic".to_vec()).unwrap();
+    let mut result = serde_json::json!({"protocol_version":1,"job_id":job.id,"content_sha256":format!("{:x}",Sha256::digest(&job.input)),"source_bytes":job.input.len(),"parser":PDF_FONT_PARSER,"media_type":"application/pdf","status":"partial","text":"synthetic","metadata":{},"limitations":["font_substituted","font_coverage_unverified"],"error":null});
+    assert!(accept(&job, serde_json::to_vec(&result).unwrap(), vec![]).is_ok());
+    for (field, value) in [
+        ("parser", serde_json::json!("pdfbox-3.0.8")),
+        ("status", serde_json::json!("complete")),
+        ("limitations", serde_json::json!(["font_substituted"])),
+    ] {
+        let mut invalid = result.clone();
+        invalid[field] = value;
+        assert!(accept(&job, serde_json::to_vec(&invalid).unwrap(), vec![]).is_err());
+    }
+    result["limitations"] = serde_json::json!([]);
+    assert!(accept(&job, serde_json::to_vec(&result).unwrap(), vec![]).is_ok());
 }

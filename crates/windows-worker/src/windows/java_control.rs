@@ -1,5 +1,5 @@
 //! Synthetic FileWorker startup control only. Never a production retry/fallback.
-//! Only the compiled notice text/PDF fixtures are permitted. This deliberately has no
+//! Only the compiled notice text/PDF and font-corpus/embedded fixtures are permitted. This deliberately has no
 //! AppContainer token/ACL grant, but preserves the reviewed recipe, environment,
 //! detached/no-inherited-handle launch and Job Object/time/handle/disk limits.
 use super::*;
@@ -9,6 +9,8 @@ use crate::java::{self, diagnostics::FailureDiagnostics, JavaOutput, Job};
 pub(crate) enum ControlDocument {
     Text,
     Pdf,
+    FontCorpus,
+    EmbeddedFont,
 }
 
 pub(crate) fn file_worker_control(
@@ -24,6 +26,13 @@ pub(crate) fn file_worker_control(
                 "/../../fixtures/parser/notice.txt"
             )),
             "complete",
+        ),
+        ControlDocument::FontCorpus => {
+            (java::font_fixtures::FontFixture::Corpus.bytes(), "partial")
+        }
+        ControlDocument::EmbeddedFont => (
+            java::font_fixtures::FontFixture::Embedded.bytes(),
+            "partial",
         ),
         ControlDocument::Pdf => (
             include_bytes!(concat!(
@@ -194,14 +203,32 @@ pub(crate) fn file_worker_control(
             )?;
             let reply: serde_json::Value = serde_json::from_slice(&output.bytes)
                 .map_err(|_| Error::Blocked("control parser schema rejected"))?;
-            blocked(
-                reply["status"] == status
-                    && reply["text"].as_str().is_some_and(|text| {
-                        text.contains("Rowan Ellis")
-                            && text.contains("Fictional Harbour Cooperative")
-                    }),
-                "control parser text/status mismatch",
-            )?;
+            match document {
+                ControlDocument::FontCorpus => {
+                    java::font_fixtures::FontFixture::Corpus.validate(&reply)?
+                }
+                ControlDocument::EmbeddedFont => {
+                    java::font_fixtures::FontFixture::Embedded.validate(&reply)?
+                }
+                ControlDocument::Text | ControlDocument::Pdf => blocked(
+                    reply["status"] == status
+                        && reply["text"].as_str().is_some_and(|text| {
+                            text.contains("Rowan Ellis")
+                                && text.contains("Fictional Harbour Cooperative")
+                        }),
+                    "control parser text/status mismatch",
+                )?,
+            }
+            if matches!(document, ControlDocument::Pdf) {
+                blocked(
+                    reply["parser"] == java::font_fixtures::PARSER
+                        && reply["limitations"].as_array().is_some_and(|v| {
+                            v.iter().any(|x| x == "font_substituted")
+                                && v.iter().any(|x| x == "font_coverage_unverified")
+                        }),
+                    "control fixed font policy absent",
+                )?;
+            }
             Ok(output)
         })();
         if running.stop().is_err() {

@@ -24,8 +24,8 @@ def main():
         parser.error("Parser directory already exists; use a fresh staging destination")
     jar = source / "workers-0.1.0.jar"
     with zipfile.ZipFile(jar) as archive:
-        names = [name for name in archive.namelist() if name in ("workbench/Protocol.class", "workbench/ParseWorker.class", "workbench/HostileProbe.class", "workbench/HostileProbe$Attempt.class") or (name.startswith("workbench/ParseWorker$") and name.endswith(".class"))]
-        if not {"workbench/ParseWorker.class", "workbench/Protocol.class"}.issubset(names):
+        names = [name for name in archive.namelist() if name in ("workbench/Protocol.class", "workbench/ParseWorker.class", "workbench/AppLocalFonts.class", "workbench/AppLocalFonts$AssetException.class", "workbench/HostileProbe.class", "workbench/HostileProbe$Attempt.class") or (name.startswith("workbench/ParseWorker$") and name.endswith(".class"))]
+        if not {"workbench/ParseWorker.class", "workbench/Protocol.class", "workbench/AppLocalFonts.class", "workbench/AppLocalFonts$AssetException.class"}.issubset(names):
             parser.error("Current parser classes are missing from the worker JAR")
         (target / "lib").mkdir(parents=True)
         with zipfile.ZipFile(target / "workers-0.1.0.jar", "w", compression=zipfile.ZIP_DEFLATED) as output:

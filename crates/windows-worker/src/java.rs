@@ -2,6 +2,8 @@
 // Native collection/acceptance is intentionally inactive on other platforms.
 #![cfg_attr(not(any(windows, test)), allow(dead_code))]
 pub(crate) mod diagnostics;
+#[cfg(any(windows, test))]
+pub(crate) mod font_fixtures;
 pub(crate) mod paths;
 #[cfg(windows)]
 mod probe;
@@ -18,6 +20,7 @@ pub(crate) const INDEX_BYTES: usize = 24 * 1024 * 1024;
 pub(crate) const INDEX_FILE_BYTES: usize = 8 * 1024 * 1024;
 pub(crate) const INDEX_MEMBERS: usize = 128;
 pub(crate) const PARSE_BYTES: u64 = 2 * 1024 * 1024;
+pub(crate) const PDF_FONT_PARSER: &str = "pdfbox-3.0.8-local-fonts-v1";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -266,7 +269,9 @@ pub(crate) fn prepare<'a>(
     match job.operation {
         Operation::Index { .. } => arguments.push(r"-Dworkbench.index=$EW_SCRATCH\index".into()),
         Operation::Search { .. } => arguments.push("-Dworkbench.index=$EW_INDEX".into()),
-        Operation::Parse => {}
+        Operation::Parse => {
+            arguments.push("-Dworkbench.fontPolicy=liberation-sans-2.1.5-extraction-v1".into())
+        }
     }
     arguments.extend([
         "-cp".into(),
@@ -453,6 +458,19 @@ pub(crate) fn accept(job: &Job, bytes: Vec<u8>, files: Vec<IndexFile>) -> Result
                     && result.error.as_ref().is_none_or(|s| s.len() <= 128),
                 "parser transport bounds rejected",
             )?;
+            if job.input.starts_with(b"%PDF-") {
+                bounded(
+                    result.parser == PDF_FONT_PARSER
+                        && result.media_type == "application/pdf"
+                        && matches!(result.status.as_str(), "partial" | "failed")
+                        && result.limitations.iter().any(|v| v == "font_substituted")
+                            == result
+                                .limitations
+                                .iter()
+                                .any(|v| v == "font_coverage_unverified"),
+                    "PDF extraction font policy rejected",
+                )?;
+            }
             None
         }
         Operation::Index {

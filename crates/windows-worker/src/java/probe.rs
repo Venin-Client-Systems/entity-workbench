@@ -54,23 +54,19 @@ fn execute_recorded(
 fn control_recorded(
     parser: &Path,
     controls: &Path,
-    pdf: bool,
+    document: crate::windows::ControlDocument,
     report: &mut Report,
 ) -> Result<JavaOutput> {
     let mut diagnostics = diagnostics::FailureDiagnostics::default();
-    let document = if pdf {
-        crate::windows::ControlDocument::Pdf
-    } else {
-        crate::windows::ControlDocument::Text
+    let label = match document {
+        crate::windows::ControlDocument::Text => "file_worker_positive_control",
+        crate::windows::ControlDocument::Pdf => "pdf_file_worker_positive_control",
+        crate::windows::ControlDocument::FontCorpus => "font_corpus_positive_control",
+        crate::windows::ControlDocument::EmbeddedFont => "embedded_font_positive_control",
     };
     let control = crate::windows::file_worker_control(parser, controls, document, &mut diagnostics);
     report.insert(
-        if pdf {
-            "pdf_file_worker_positive_control"
-        } else {
-            "file_worker_positive_control"
-        }
-        .into(),
+        label.into(),
         json!({
             "passed":control.is_ok(), "failure":control.as_ref().err().map(ToString::to_string),
             "output_sha256":control.as_ref().ok().map(|output| &output.output_sha256),
@@ -99,6 +95,8 @@ fn fixture(name: &str) -> &'static [u8] {
             env!("CARGO_MANIFEST_DIR"),
             "/../../fixtures/parser/notice.txt"
         )),
+        "font-corpus.pdf" => font_fixtures::FontFixture::Corpus.bytes(),
+        "embedded-font.pdf" => font_fixtures::FontFixture::Embedded.bytes(),
         "notice.pdf" => include_bytes!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../fixtures/parser/notice.pdf"
@@ -304,7 +302,12 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
     fs::write(private.join("original.txt"), fixture("notice.txt"))?;
     crate::protect_private_tree(&private)?;
     phase(report, "file_worker_positive_control");
-    let control = control_recorded(&parser, &controls, false, report);
+    let control = control_recorded(
+        &parser,
+        &controls,
+        crate::windows::ControlDocument::Text,
+        report,
+    );
     // Preserve a normal control failure alongside the first confined outcome.
     // An unacknowledged termination/cleanup failure stops all further launches.
     if matches!(&control, Err(Error::Cleanup { .. })) {
@@ -316,14 +319,22 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
     for name in [
         "notice.txt",
         "notice.pdf",
+        "font-corpus.pdf",
+        "embedded-font.pdf",
         "notice.docx",
         "no-text.pdf",
         "traversal.zip",
         "unsupported.bin",
     ] {
-        if name == "notice.pdf" {
-            phase(report, "pdf_file_worker_positive_control");
-            let control = control_recorded(&parser, &controls, true, report);
+        let pdf_control = match name {
+            "notice.pdf" => Some(crate::windows::ControlDocument::Pdf),
+            "font-corpus.pdf" => Some(crate::windows::ControlDocument::FontCorpus),
+            "embedded-font.pdf" => Some(crate::windows::ControlDocument::EmbeddedFont),
+            _ => None,
+        };
+        if let Some(document) = pdf_control {
+            phase(report, &format!("control_{name}"));
+            let control = control_recorded(&parser, &controls, document, report);
             if matches!(&control, Err(Error::Cleanup { .. })) {
                 return control.map(|_| ());
             }
@@ -334,12 +345,13 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         let bytes = fixture(name);
         let job = Job::parse(bytes.to_vec())?;
         let outcome = execute_recorded(&parser, &jobs, &job, report);
-        if name == "notice.txt" || name == "notice.pdf" {
+        if name == "notice.txt" || pdf_control.is_some() {
             report.insert(
-                if name == "notice.txt" {
-                    "first_confined_parse"
-                } else {
-                    "confined_pdf_parse"
+                match name {
+                    "notice.txt" => "first_confined_parse",
+                    "notice.pdf" => "confined_pdf_parse",
+                    "font-corpus.pdf" => "confined_font_corpus",
+                    _ => "confined_embedded_font",
                 }
                 .into(),
                 json!({
@@ -375,6 +387,8 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
                     text: result["text"].as_str().unwrap().into(),
                 });
             }
+            "font-corpus.pdf" => font_fixtures::FontFixture::Corpus.validate(&result)?,
+            "embedded-font.pdf" => font_fixtures::FontFixture::Embedded.validate(&result)?,
             "no-text.pdf" => bounded(
                 result["status"] == "partial" && result["text"] == "",
                 "image-only PDF result mismatch",
@@ -388,8 +402,23 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
                 "unsupported input was not explicit",
             )?,
         }
+        if name.ends_with(".pdf") {
+            bounded(
+                result["parser"] == font_fixtures::PARSER,
+                "PDF font policy identity absent",
+            )?;
+        }
+        if name == "notice.pdf" {
+            bounded(
+                result["limitations"].as_array().is_some_and(|v| {
+                    v.iter().any(|x| x == "font_substituted")
+                        && v.iter().any(|x| x == "font_coverage_unverified")
+                }),
+                "PDF font fallback limitations absent",
+            )?;
+        }
         report.insert(format!("parse_{name}"),json!({"source_sha256":format!("{:x}",Sha256::digest(bytes)),"output_sha256":output.output_sha256,
-            "source_bytes":bytes.len(),"status":result["status"],"parser":result["parser"],"text_bytes":result["text"].as_str().unwrap_or("").len()}));
+            "source_bytes":bytes.len(),"status":result["status"],"parser":result["parser"],"limitations":result["limitations"],"text_bytes":result["text"].as_str().unwrap_or("").len()}));
         empty(&jobs)?;
     }
     phase(report, "lucene_index");
