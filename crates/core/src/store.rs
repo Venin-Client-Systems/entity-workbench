@@ -22,6 +22,7 @@ mod review_decision_page;
 mod statements;
 mod transaction_analysis;
 mod transaction_comparison;
+mod transaction_facets;
 mod transaction_page;
 mod transaction_sources;
 #[cfg(test)]
@@ -293,6 +294,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, presentation: bool) -> Result<Value> {
         match command {
+            Command::PageTransactionFacets {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_transaction_facets(&request, expected_revision)?,
+                )?)
+            }
             Command::PageReviewDecisions {
                 request,
                 expected_revision,
