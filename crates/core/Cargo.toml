@@ -30,8 +30,10 @@ zip = { version = "=8.6.0", default-features = false }
 libc = "0.2"
 
 [dev-dependencies]
+workbench-windows-worker = { path = "../windows-worker" }
 rusqlite = { version = "0.37", features = ["hooks"] }
 rustls = { version = "=0.23.45", default-features = false, features = ["ring", "std", "tls12"] }
 
 [target.'cfg(windows)'.dependencies]
+workbench-windows-worker = { path = "../windows-worker" }
 windows-sys = { version = "=0.61.2", features = ["Win32_Storage_FileSystem", "Win32_Networking_WinSock", "Win32_System_IO", "Win32_System_Threading", "Win32_Security"] }

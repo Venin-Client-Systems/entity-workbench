@@ -52,6 +52,8 @@ pub enum Error {
     Cleanup(String),
     #[error("Worker termination could not be verified: {0}")]
     TerminationUnverified(String),
+    #[error("Worker result was rejected: {0}")]
+    InvalidWorkerResult(String),
     #[error("Derivative storage is unavailable (published reference: {published})")]
     DerivativeUnavailable { published: bool },
     #[error("Filesystem: {0}")]

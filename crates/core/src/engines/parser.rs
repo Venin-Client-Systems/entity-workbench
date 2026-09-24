@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 #[cfg(target_os = "macos")]
 use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, path::Path};
+#[cfg(any(windows, test))]
+mod windows;
 
 pub const MAX_TEXT_BYTES: usize = 512_000;
 pub const MAX_RESULT_BYTES: u64 = 2 * 1024 * 1024;
@@ -316,7 +318,7 @@ impl Runtime {
         }
         self.parse_confined(scratch_root, original_bytes, cancellation)
     }
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
     fn parse_confined(
         &self,
         _scratch_root: &Path,
@@ -326,6 +328,15 @@ impl Runtime {
         Err(Error::Blocked(
             "Document worker confinement is not verified on this platform".into(),
         ))
+    }
+    #[cfg(target_os = "windows")]
+    fn parse_confined(
+        &self,
+        scratch_root: &Path,
+        original_bytes: &[u8],
+        cancellation: &CancellationToken,
+    ) -> Result<ParseResult> {
+        windows::parse(&self.root, scratch_root, original_bytes, cancellation)
     }
     #[cfg(target_os = "macos")]
     fn parse_confined(

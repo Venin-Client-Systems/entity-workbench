@@ -609,6 +609,12 @@ impl Workspace {
                     Some(ProcessingFailure::WorkerFailed),
                     "Worker resource limit exhausted",
                 ),
+                (Ok(_), Err(Error::InvalidWorkerResult(_))) => terminal(
+                    &mut job,
+                    ProcessingState::Failed,
+                    Some(ProcessingFailure::InvalidResult),
+                    "Worker result failed its protocol or source binding; no derivative was published",
+                ),
                 (Ok(_), Err(_)) => terminal(
                     &mut job,
                     ProcessingState::Failed,

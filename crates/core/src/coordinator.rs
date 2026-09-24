@@ -331,6 +331,9 @@ fn work(shared: Arc<Shared>) {
                     Err(Error::QuotaExhausted(_)) => {
                         Err(Error::QuotaExhausted("Worker resource limit".into()))
                     }
+                    Err(Error::InvalidWorkerResult(_)) => Err(Error::InvalidWorkerResult(
+                        "Worker result failed its protocol or source binding".into(),
+                    )),
                     Err(_) => Err(Error::Validation("Document worker failed".into())),
                 }
             };
@@ -463,6 +466,86 @@ mod tests {
             coordinator.read_image_region_raster(&key),
             Err(Error::Blocked(_))
         ));
+    }
+
+    #[test]
+    fn malformed_worker_results_stay_invalid_without_publishing_in_both_dispatch_modes() {
+        for summary in [false, true] {
+            let dir = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+            let mut workspace = Workspace::open(dir.path()).unwrap();
+            let source = workspace
+                .import("unreviewed.source", b"Synthetic unaccepted source")
+                .unwrap();
+            let coordinator = JobCoordinator::with_executor(
+                workspace,
+                1,
+                Arc::new(|_, _, _, _, _| {
+                    Err(Error::InvalidWorkerResult(
+                        "Synthetic duplicate field or wrong request".into(),
+                    ))
+                }),
+            )
+            .unwrap();
+            let request_key = uuid::Uuid::new_v4().to_string();
+            let command = Command::QueueDocumentParse {
+                evidence_id: source,
+                request_key,
+            };
+            let response = if summary {
+                coordinator.dispatch_summary(command.clone())
+            } else {
+                coordinator.dispatch(command.clone())
+            }
+            .unwrap();
+            let job: ProcessingJob = serde_json::from_value(response).unwrap();
+            until(|| inspect(&coordinator, &job.id).state == ProcessingState::Failed);
+            let finished = inspect(&coordinator, &job.id);
+            assert_eq!(
+                finished.failure,
+                Some(crate::processing::ProcessingFailure::InvalidResult)
+            );
+            assert!(finished.result_ids.is_empty());
+            let revision = coordinator
+                .shared
+                .workspace
+                .lock()
+                .unwrap()
+                .revision()
+                .unwrap();
+            let replay = if summary {
+                coordinator.dispatch_summary(command)
+            } else {
+                coordinator.dispatch(command)
+            }
+            .unwrap();
+            assert_eq!(replay["id"], job.id);
+            assert_eq!(
+                coordinator
+                    .shared
+                    .workspace
+                    .lock()
+                    .unwrap()
+                    .revision()
+                    .unwrap(),
+                revision
+            );
+            coordinator.shutdown().unwrap();
+            let reopened = Workspace::open(dir.path()).unwrap();
+            assert_eq!(
+                serde_json::to_value(reopened.processing_job(&job.id).unwrap()).unwrap(),
+                serde_json::to_value(finished).unwrap()
+            );
+            assert_eq!(reopened.revision().unwrap(), revision);
+            let connection = rusqlite::Connection::open(dir.path().join("workspace.db")).unwrap();
+            let stored: i64 = connection
+                .query_row(
+                    "SELECT count(*) FROM records WHERE kind = 'extraction'",
+                    [],
+                    |row| row.get(0),
+                )
+                .unwrap();
+            assert_eq!(stored, 0);
+        }
     }
 
     #[test]
