@@ -13,6 +13,7 @@ mod assessment;
 mod collection;
 mod identity;
 mod processing;
+mod report_snapshots;
 mod statements;
 
 const SCHEMA: u32 = 3;
@@ -747,33 +748,6 @@ impl Workspace {
             private_file(&target, 0o400)?;
         }
         Self::open(destination)
-    }
-    pub fn save_report(&mut self) -> Result<String> {
-        let view = self.view()?;
-        for e in &view.evidence {
-            self.verify_original(e)?;
-        }
-        let report_id = id();
-        let html = report::html(&view, &report_id)?;
-        let snapshot = ReportSnapshot {
-            id: report_id.clone(),
-            workspace_revision: view.revision,
-            created_at: now(),
-            sha256: hash(html.as_bytes()),
-            html,
-        };
-        let path = self.root.join("exports").join(format!("{report_id}.html"));
-        let mut file = OpenOptions::new()
-            .create_new(true)
-            .write(true)
-            .open(&path)?;
-        private_file(&path, 0o600)?;
-        file.write_all(snapshot.html.as_bytes())?;
-        file.sync_all()?;
-        self.change(None, "report.snapshot", false, |conn| {
-            put(conn, "report", &report_id, &snapshot)
-        })?;
-        Ok(report_id)
     }
     pub fn seed_demo(&mut self) -> Result<()> {
         if !all::<Entity>(&self.conn, "entity")?.is_empty() {
