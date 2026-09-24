@@ -66,8 +66,22 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                7,
+                8,
                 serde_json::to_value(schemars::schema_for!(Command))?,
+            ),
+            (
+                "transaction-comparison-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_comparison::TransactionComparisonRequest
+                ))?,
+            ),
+            (
+                "transaction-comparison",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_comparison::TransactionComparison
+                ))?,
             ),
             (
                 "transaction-analysis-request",

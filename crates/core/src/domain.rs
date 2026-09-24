@@ -379,6 +379,10 @@ pub struct WorkspaceView {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    CompareTransactionPeriods {
+        request: crate::transaction_comparison::TransactionComparisonRequest,
+        expected_revision: u64,
+    },
     AnalyzeTransactions {
         request: crate::transaction_analysis::TransactionAnalysisRequest,
         expected_revision: u64,

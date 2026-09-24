@@ -1,0 +1,12 @@
+{
+  "figma-period-comparison.png": "fed78f162dc3381d45c449a600b1780c213b0aa9ef92d824bfb830b0178148d6",
+  "comparison-full-surface.png": "c5c8b2cd1f3fd3627d1aabc632ea88d02aff355ebca01c5d50a84d8291fba413",
+  "comparison-desktop.png": "cef6daff3a8e52aef4ca0046561dd753b02e7dc172e0e1878132bda1855c1c23",
+  "comparison-compact.png": "2f2ff687240efaa78f1ce01f73e38ad08bf7f3c30c5ba46f891850c82b73ca99",
+  "source-desktop.png": "dc2a14ef1a7f77bd060755fefa134c2a66203e5970ccdca7310e44161d89a0df",
+  "source-compact.png": "6b6c4b29865a6dda5ccbc47fa193643bc438def765ba83f94ad7baba3489db25",
+  "accessibility-desktop.json": "165973d9caee12673b392e7de3208619da942eeef3f30a489d05713d8eb26306",
+  "accessibility-compact.json": "165973d9caee12673b392e7de3208619da942eeef3f30a489d05713d8eb26306",
+  "accessibility-source-desktop.json": "05d9e269e81e83bd32126df658bf90511dc28d6553da64b370f332145d629206",
+  "accessibility-source-compact.json": "05d9e269e81e83bd32126df658bf90511dc28d6553da64b370f332145d629206"
+}

@@ -303,6 +303,14 @@ impl Workspace {
                     &reason,
                 )?)?)
             }
+            Command::CompareTransactionPeriods {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.compare_transaction_periods(&request, expected_revision)?,
+                )?);
+            }
             Command::AnalyzeTransactions {
                 request,
                 expected_revision,

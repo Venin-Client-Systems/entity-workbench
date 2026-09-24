@@ -15,6 +15,7 @@ import { DocumentJobs } from "./DocumentJobs";
 import { Dialog } from "./Dialog";
 import { ReviewSurface } from "./ReviewSurface";
 import { EntityWorkbench } from "./EntityWorkbench";
+import { TransactionComparison } from "./TransactionComparison";
 import { TransactionPatterns } from "./TransactionPatterns";
 import { StatementImport, type StatementFile } from "./StatementImport";
 import { SourceContent } from "./SourceContent";
@@ -682,6 +683,11 @@ function App() {
                       or propose a correction.
                     </p>
                   </section>
+                  <TransactionComparison
+                    workspace={w}
+                    onInspect={inspectTransaction}
+                    onRefresh={() => run({ action: "view" })}
+                  />
                   <TransactionPatterns
                     workspace={w}
                     onInspect={inspectTransaction}

@@ -1,0 +1,469 @@
+{
+  "$defs": {
+    "AccountCurrencyComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "baseline": {
+          "$ref": "#/$defs/PeriodAccountTotal"
+        },
+        "comparison": {
+          "$ref": "#/$defs/PeriodAccountTotal"
+        },
+        "credits": {
+          "$ref": "#/$defs/AmountChange"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "debits": {
+          "$ref": "#/$defs/AmountChange"
+        },
+        "net": {
+          "$ref": "#/$defs/AmountChange"
+        }
+      },
+      "required": [
+        "account",
+        "currency",
+        "baseline",
+        "comparison",
+        "credits",
+        "debits",
+        "net"
+      ],
+      "type": "object"
+    },
+    "AmountChange": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "type": "string"
+        },
+        "comparison": {
+          "type": "string"
+        },
+        "delta": {
+          "description": "Comparison minus baseline, in the group's currency units.",
+          "type": "string"
+        },
+        "relative_change": {
+          "$ref": "#/$defs/RelativeChange"
+        }
+      },
+      "required": [
+        "baseline",
+        "comparison",
+        "delta",
+        "relative_change"
+      ],
+      "type": "object"
+    },
+    "AnalysisRow": {
+      "additionalProperties": false,
+      "properties": {
+        "cash_rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CashRule"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Rules are hints even when an unreviewed row is excluded from the totals."
+        },
+        "disposition": {
+          "$ref": "#/$defs/RowDisposition"
+        },
+        "has_duplicate_candidates": {
+          "type": "boolean"
+        },
+        "refund_rule": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RefundRule"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "unverified_transfer_match": {
+          "type": "boolean"
+        },
+        "verified_transfer_peer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "version",
+        "disposition",
+        "unverified_transfer_match",
+        "has_duplicate_candidates"
+      ],
+      "type": "object"
+    },
+    "CashRule": {
+      "enum": [
+        "debit_with_atm_token",
+        "debit_with_cash_withdrawal_phrase"
+      ],
+      "type": "string"
+    },
+    "DatePeriod": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "through": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "through"
+      ],
+      "type": "object"
+    },
+    "MoneyTotal": {
+      "additionalProperties": false,
+      "properties": {
+        "credits": {
+          "type": "string"
+        },
+        "debits": {
+          "type": "string"
+        },
+        "net": {
+          "type": "string"
+        },
+        "transaction_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "credits",
+        "debits",
+        "net",
+        "transaction_ids"
+      ],
+      "type": "object"
+    },
+    "PeriodAccountTotal": {
+      "additionalProperties": false,
+      "properties": {
+        "deferred_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "excluded_transfer_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "pending_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rejected_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rows": {
+          "description": "Immutable revision-bound annotations, not a new review or classification decision.",
+          "items": {
+            "$ref": "#/$defs/AnalysisRow"
+          },
+          "type": "array"
+        },
+        "scope_count": {
+          "description": "All source rows in this account/currency/period, including unaccepted and excluded rows.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "total": {
+          "$ref": "#/$defs/MoneyTotal"
+        }
+      },
+      "required": [
+        "scope_count",
+        "total",
+        "pending_ids",
+        "rejected_ids",
+        "deferred_ids",
+        "excluded_transfer_ids",
+        "rows"
+      ],
+      "type": "object"
+    },
+    "RefundRule": {
+      "enum": [
+        "credit_with_refund_token",
+        "credit_with_reversal_token"
+      ],
+      "type": "string"
+    },
+    "RelativeChange": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "description": "Exact ratio; a percentage is numerator / denominator * 100. No decimal division occurs.",
+          "properties": {
+            "denominator": {
+              "type": "string"
+            },
+            "numerator": {
+              "type": "string"
+            },
+            "state": {
+              "const": "defined",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "numerator",
+            "denominator"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "comparison_is_zero": {
+              "type": "boolean"
+            },
+            "state": {
+              "const": "zero_baseline",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "comparison_is_zero"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "A signed net loss baseline does not have an unambiguous conventional growth percentage.",
+          "properties": {
+            "state": {
+              "const": "negative_baseline",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "RowDisposition": {
+      "enum": [
+        "included",
+        "pending",
+        "rejected",
+        "deferred",
+        "reviewed_transfer_excluded"
+      ],
+      "type": "string"
+    },
+    "TransactionComparisonRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "baseline": {
+          "$ref": "#/$defs/DatePeriod"
+        },
+        "comparison": {
+          "$ref": "#/$defs/DatePeriod"
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transfers": {
+          "$ref": "#/$defs/TransferTreatment"
+        }
+      },
+      "required": [
+        "baseline",
+        "comparison",
+        "transfers"
+      ],
+      "type": "object"
+    },
+    "TransactionVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "transaction_id": {
+          "type": "string"
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "version"
+      ],
+      "type": "object"
+    },
+    "TransferTreatment": {
+      "enum": [
+        "include",
+        "exclude_reviewed_pairs"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "account_currency_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "baseline_days": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "baseline_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "comparison_days": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "comparison_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "gap_days": {
+      "description": "Calendar days strictly between the periods, regardless of their selected order.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "groups": {
+      "items": {
+        "$ref": "#/$defs/AccountCurrencyComparison"
+      },
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "outside_account_currency_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "outside_period_rows": {
+      "description": "Account/currency-matching rows before, between or after the selected periods.",
+      "items": {
+        "$ref": "#/$defs/TransactionVersion"
+      },
+      "type": "array"
+    },
+    "request": {
+      "$ref": "#/$defs/TransactionComparisonRequest"
+    },
+    "rules_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "unequal_duration": {
+      "type": "boolean"
+    },
+    "verified_transfer_peers": {
+      "description": "Verified transfer counterparts supporting annotations, including out-of-scope peers.",
+      "items": {
+        "$ref": "#/$defs/TransactionVersion"
+      },
+      "type": "array"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "rules_version",
+    "workspace_revision",
+    "request",
+    "baseline_days",
+    "comparison_days",
+    "unequal_duration",
+    "gap_days",
+    "workspace_transaction_count",
+    "account_currency_transaction_count",
+    "outside_account_currency_count",
+    "baseline_transaction_count",
+    "comparison_transaction_count",
+    "outside_period_rows",
+    "verified_transfer_peers",
+    "groups",
+    "limitations"
+  ],
+  "title": "TransactionComparison",
+  "type": "object"
+}

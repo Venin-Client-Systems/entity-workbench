@@ -498,6 +498,16 @@ fn canonical_comparison_is_revision_bound_read_only_and_recomputes_after_correct
         .compare_transaction_periods(&request(), revision)
         .unwrap();
     assert_eq!(result.workspace_revision, revision);
+    let dispatched = workspace
+        .dispatch(Command::CompareTransactionPeriods {
+            request: request(),
+            expected_revision: revision,
+        })
+        .unwrap();
+    assert_eq!(
+        serde_json::from_value::<TransactionComparison>(dispatched).unwrap(),
+        result
+    );
     assert_eq!(result.groups[0].debits.delta, "10.00");
     assert_eq!(
         serde_json::to_value(workspace.view().unwrap()).unwrap(),

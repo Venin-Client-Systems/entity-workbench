@@ -20,3 +20,5 @@ Independently specified expected results:
 | Accepted debit recurrence denominator | 13 rows with transfers included; six recurring candidate rows, seven unclassified rows |
 
 These rules exercise classification and exact calculation. They do not establish merchant identity, subscription intent, cash use, a refund/purchase match, native installation or benchmark performance.
+
+`comparison.csv` is a separate twelve-row synthetic period-comparison fixture. The UI tests accept every row except row index 3 (pending), 6 (rejected), and 7 (deferred), then pair indexes 8 and 9 as a reviewed transfer. January 2025 has six source rows, February has four, and March has two outside both periods. Account 0001 / AUD has January credits 100.00, debits 20.00, net 80.00 (three included and one pending) and February credits 120.00, debits 30.00, net 90.00 (two included, one rejected, one deferred). Duplicate-looking January purchases both remain counted. USD and accounts 0002/0003 remain separate. The literal HTML-looking descriptions are inert test strings and must remain escaped in every source surface.

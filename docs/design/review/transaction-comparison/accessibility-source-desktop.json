@@ -1,0 +1,9 @@
+{
+  "scope": "dialog[aria-label=\"Comparison source rows\"]",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21aa"
+  ],
+  "violations": []
+}

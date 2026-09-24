@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
+import { AnalysisSourceRow, Pager } from "./TransactionAnalysisSource";
 import {
   defaultPatternRequest,
   type PatternRequest,
@@ -647,59 +648,19 @@ export function TransactionPatterns({
                 {sourceIds.map((id) => {
                   const t = transactions.get(id),
                     a = annotations.get(id);
-                  return t && a && t.version === a.version ? (
-                    <article className="patterns-source" key={id}>
-                      <strong>
-                        {t.date} / {t.account} / {t.amount} {t.currency}
-                      </strong>
-                      <p>{t.description}</p>
-                      <p>
-                        {a.disposition.replaceAll("_", " ")} · {t.review} ·
-                        version {a.version} · source row{" "}
-                        {t.anchor.row ?? "see anchor"}
-                      </p>
-                      <code>{t.id}</code>
-                      {a.has_duplicate_candidates && (
-                        <p>
-                          Possible duplicate: retained in its review-state
-                          partition.
-                        </p>
-                      )}
-                      {a.verified_transfer_peer && (
-                        <p>
-                          Verified reviewed transfer peer:{" "}
-                          <code>{a.verified_transfer_peer}</code>
-                        </p>
-                      )}
-                      {a.unverified_transfer_match && (
-                        <p className="patterns-warning">
-                          Recorded transfer link is not a verified reviewed
-                          pair. It was not excluded.
-                        </p>
-                      )}
-                      {(a.cash_rule || a.refund_rule) && (
-                        <p>
-                          Heuristic:{" "}
-                          {(a.cash_rule ?? a.refund_rule)!.replaceAll("_", " ")}
-                          .
-                        </p>
-                      )}
-                      <button
-                        className="button"
-                        onClick={() => {
-                          handoff.current = true;
-                          setDrill(null);
-                          onInspect(t);
-                        }}
-                      >
-                        Inspect source and review row {t.anchor.row ?? t.id}
-                      </button>
-                    </article>
-                  ) : (
-                    <p key={id} className="error">
-                      Source row {id} is unavailable at the recorded version.
-                      Refresh and recalculate.
-                    </p>
+                  return (
+                    <AnalysisSourceRow
+                      key={id}
+                      id={id}
+                      transaction={t}
+                      expectedVersion={a?.version}
+                      annotation={a}
+                      onInspect={(row) => {
+                        handoff.current = true;
+                        setDrill(null);
+                        onInspect(row);
+                      }}
+                    />
                   );
                 })}
                 <Pager
@@ -715,38 +676,4 @@ export function TransactionPatterns({
       )}
     </section>
   );
-}
-function Pager({
-  page,
-  total,
-  setPage,
-  label,
-}: {
-  page: number;
-  total: number;
-  setPage: (page: number) => void;
-  label: string;
-}) {
-  return total > pageSize ? (
-    <div className="patterns-pager">
-      <span>
-        {page * pageSize + 1}–{Math.min((page + 1) * pageSize, total)} of{" "}
-        {total} {label}
-      </span>
-      <button
-        className="button"
-        disabled={page === 0}
-        onClick={() => setPage(page - 1)}
-      >
-        Previous {label}
-      </button>
-      <button
-        className="button"
-        disabled={(page + 1) * pageSize >= total}
-        onClick={() => setPage(page + 1)}
-      >
-        Next {label}
-      </button>
-    </div>
-  ) : null;
 }
