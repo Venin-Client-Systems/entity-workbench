@@ -2,21 +2,25 @@
 #[cfg(any(windows, test))]
 #[path = "ew-windows-probe/handle_probe.rs"]
 mod handle_probe;
+#[cfg(any(windows, test))]
+#[path = "ew-windows-probe/udp_probe.rs"]
+mod udp_probe;
 #[cfg(windows)]
 mod native {
     use super::handle_probe::{accept_handle_outcome, HandleObservation};
+    use super::udp_probe::{accept_delivery_denial, exchange, Listener, Markers, UdpObservation};
     use serde::{Deserialize, Serialize};
     use std::{
         collections::BTreeMap,
         fs::{self, File},
         io::{Read, Seek, SeekFrom, Write},
         mem::{size_of, zeroed},
-        net::{TcpListener, TcpStream, UdpSocket},
+        net::{TcpListener, TcpStream},
         os::windows::{ffi::OsStrExt, io::AsRawHandle},
         path::{Path, PathBuf},
         ptr::{null, null_mut},
         sync::{
-            atomic::{AtomicBool, AtomicUsize, Ordering},
+            atomic::{AtomicBool, Ordering},
             Arc,
         },
         time::{Duration, Instant},
@@ -166,6 +170,13 @@ mod native {
         checkpoint(ProbeCheckpoint::InputRead)?;
         let input: Input = serde_json::from_slice(&fs::read(path)?)?;
         match input.mode.as_str() {
+            "udp-control" => {
+                checkpoint(ProbeCheckpoint::UdpProbe)?;
+                let observation = exchange(input.dns.parse()?, &input.udp_marker)?;
+                fs::write("result.json", serde_json::to_vec(&observation)?)?;
+                checkpoint(ProbeCheckpoint::Completed)?;
+                return Ok(());
+            }
             "inherited-handle" => {
                 let observation = handle_read(input.handle)?;
                 fs::write("result.json", serde_json::to_vec(&observation)?)?;
@@ -307,22 +318,9 @@ mod native {
         };
         results.insert("direct_http", http_connected);
         checkpoint(ProbeCheckpoint::UdpProbe)?;
-        let (udp_sent, udp_reply) = if let Ok(socket) = UdpSocket::bind("127.0.0.1:0") {
-            socket.set_read_timeout(Some(Duration::from_secs(1)))?;
-            let sent = socket
-                .send_to(input.udp_marker.as_bytes(), &input.dns)
-                .is_ok();
-            let mut response = [0; 64];
-            let reply = sent
-                && socket
-                    .recv_from(&mut response)
-                    .is_ok_and(|(count, _)| &response[..count] == input.udp_marker.as_bytes());
-            (sent, reply)
-        } else {
-            (false, false)
-        };
-        results.insert("direct_udp_send", udp_sent);
-        results.insert("direct_udp_reply", udp_reply);
+        let udp = exchange(input.dns.parse()?, &input.udp_marker)?;
+        results.insert("direct_udp_send", udp.send_accepted);
+        results.insert("direct_udp_reply", udp.reply_received);
         checkpoint(ProbeCheckpoint::ChildSpawn)?;
         let spawned = match std::process::Command::new(std::env::current_exe()?)
             .arg("--grandchild")
@@ -436,15 +434,16 @@ mod native {
         )?;
         let tcp = TcpListener::bind("127.0.0.1:0")?;
         tcp.set_nonblocking(true)?;
-        let udp = UdpSocket::bind("127.0.0.1:0")?;
-        udp.set_read_timeout(Some(Duration::from_millis(50)))?;
+        let markers = Markers::new();
+        let mut udp_listener = Some(Listener::start(markers.clone())?);
+        let dns_address = udp_listener
+            .as_ref()
+            .ok_or("UDP listener missing")?
+            .address
+            .to_string();
         let tcp_address = tcp.local_addr()?.to_string();
-        let dns_address = udp.local_addr()?.to_string();
         let stop = Arc::new(AtomicBool::new(false));
         let tcp_stop = stop.clone();
-        let udp_stop = stop.clone();
-        let confined_udp = Arc::new(AtomicUsize::new(0));
-        let udp_received = confined_udp.clone();
         let tcp_thread = std::thread::spawn(move || {
             while !tcp_stop.load(Ordering::Relaxed) {
                 if let Ok((mut connection, _)) = tcp.accept() {
@@ -457,21 +456,6 @@ mod native {
                 }
             }
         });
-        let udp_thread = std::thread::spawn(move || {
-            let mut bytes = [0; 64];
-            loop {
-                match udp.recv_from(&mut bytes) {
-                    Ok((count, address)) => {
-                        if &bytes[..count] == b"EW_CONFINED_UDP" {
-                            udp_received.fetch_add(1, Ordering::Relaxed);
-                        }
-                        let _ = udp.send_to(&bytes[..count], address);
-                    }
-                    Err(_) if udp_stop.load(Ordering::Relaxed) => break,
-                    Err(_) => {}
-                }
-            }
-        });
         let tests = (|| -> AnyResult<()> {
             let mut input = Input {
                 mode: "probe".into(),
@@ -479,7 +463,7 @@ mod native {
                 original: original.clone(),
                 tcp: tcp_address,
                 dns: dns_address,
-                udp_marker: "EW_BASELINE_UDP".into(),
+                udp_marker: markers.before.clone(),
                 handle: handle.as_raw_handle() as usize,
             };
             let input_path = controls.join("input.json");
@@ -537,7 +521,7 @@ mod native {
             fs::write(&original, b"retained original")?;
             fs::write(runtime.join("runtime.txt"), b"retained runtime")?;
             input.mode = "probe".into();
-            input.udp_marker = "EW_CONFINED_UDP".into();
+            input.udp_marker = markers.confined.clone();
             let mut request = Request {
                 runtime,
                 executable: "probe.exe".into(),
@@ -552,12 +536,66 @@ mod native {
             let output = run_probe(&request, || false, &mut diagnostics);
             report.insert(
                 "confined_diagnostics".into(),
-                serde_json::to_value(diagnostics)?,
+                serde_json::to_value(&diagnostics)?,
             );
             let output = output?;
             let mut confined: BTreeMap<String, bool> = serde_json::from_slice(&output.bytes)?;
+            report.insert(
+                "confined_permissions".into(),
+                serde_json::to_value(&confined)?,
+            );
+            // Keep send acceptance as raw evidence, not a delivery predicate.
+            // Winsock explicitly does not promise delivery after sendto success.
+            let before_udp = UdpObservation {
+                send_accepted: baseline_results["direct_udp_send"],
+                reply_received: baseline_results["direct_udp_reply"],
+            };
+            let confined_udp = UdpObservation {
+                send_accepted: *confined
+                    .get("direct_udp_send")
+                    .ok_or("UDP send observation missing")?,
+                reply_received: *confined
+                    .get("direct_udp_reply")
+                    .ok_or("UDP reply observation missing")?,
+            };
+            report.insert("phase".into(), serde_json::json!("udp_delivery_controls"));
+            report.insert(
+                "udp_delivery_rule".into(),
+                serde_json::json!("loopback_delivery_v1"),
+            );
+            input.mode = "udp-control".into();
+            input.udp_marker = markers.after.clone();
+            fs::write(&input_path, serde_json::to_vec(&input)?)?;
+            baseline(&executable, &input_path, &controls)?;
+            let after_udp: UdpObservation =
+                serde_json::from_slice(&fs::read(controls.join("result.json"))?)?;
+            let after_checkpoint: ProbeCheckpoint =
+                serde_json::from_slice(&fs::read(controls.join("probe-checkpoint.json"))?)?;
+            report.insert("udp_after_control".into(), serde_json::to_value(after_udp)?);
+            report.insert(
+                "udp_after_checkpoint".into(),
+                serde_json::to_value(after_checkpoint)?,
+            );
+            let counts = udp_listener
+                .take()
+                .ok_or("UDP listener missing")?
+                .finish()?;
+            report.insert("udp_delivery_counts".into(), serde_json::to_value(counts)?);
+            report.insert(
+                "confined_udp_received".into(),
+                serde_json::json!(counts.confined),
+            );
+            accept_delivery_denial(
+                before_udp,
+                confined_udp,
+                after_udp,
+                diagnostics.last_worker_checkpoint == Some(ProbeCheckpoint::Completed)
+                    && after_checkpoint == ProbeCheckpoint::Completed,
+                counts,
+            )?;
             let expected: BTreeMap<String, bool> = baseline_results
                 .keys()
+                .filter(|key| key.as_str() != "direct_udp_send")
                 .map(|key| {
                     (
                         key.clone(),
@@ -567,11 +605,10 @@ mod native {
                         ),
                     )
                 })
+                .chain([("direct_udp_delivered".into(), false)])
                 .collect();
-            report.insert(
-                "confined_permissions".into(),
-                serde_json::to_value(&confined)?,
-            );
+            confined.remove("direct_udp_send");
+            confined.insert("direct_udp_delivered".into(), counts.confined != 0);
             let main_expected: BTreeMap<_, _> = expected
                 .iter()
                 .filter(|(key, _)| key.as_str() != "inherited_handle")
@@ -760,11 +797,17 @@ mod native {
         std::env::remove_var("EW_SYNTHETIC_CALLER_SECRET");
         stop.store(true, Ordering::Relaxed);
         let tcp_joined = tcp_thread.join().is_ok();
-        let udp_joined = udp_thread.join().is_ok();
-        let received = confined_udp.load(Ordering::Relaxed);
-        report.insert("confined_udp_received".into(), serde_json::json!(received));
-        require(tcp_joined && udp_joined, "synthetic listener failed")?;
-        require(received == 0, "confined UDP reached parent listener")?;
+        // Early failures still stop/join the listener and retain observed
+        // counts; incomplete controls can never produce a successful result.
+        if let Some(listener) = udp_listener.take() {
+            let counts = listener.finish()?;
+            report.insert("udp_delivery_counts".into(), serde_json::to_value(counts)?);
+            report.insert(
+                "confined_udp_received".into(),
+                serde_json::json!(counts.confined),
+            );
+        }
+        require(tcp_joined, "synthetic TCP listener failed")?;
         tests?;
         temporary.close()?;
         report.insert("phase".into(), serde_json::json!("complete"));
