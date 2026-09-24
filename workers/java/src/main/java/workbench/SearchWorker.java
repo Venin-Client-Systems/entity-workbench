@@ -16,7 +16,12 @@ public final class SearchWorker {
     public static void main(String[] args){
         try{
             JsonNode request=Protocol.read();String operation=request.path("operation").asText();
-            Path index=Protocol.relative("index");
+            // The Rust coordinator assigns the only index allowed by the OS profile.
+            String assignedIndex=System.getProperty("workbench.index");
+            Path index=assignedIndex==null ? Protocol.relative("index") : Path.of(assignedIndex);
+            if(Files.isSymbolicLink(index)||!Files.isDirectory(index,LinkOption.NOFOLLOW_LINKS)) {
+                if(assignedIndex!=null)throw new IOException("Invalid assigned index");
+            }
             try(var directory=FSDirectory.open(index);var analyzer=new StandardAnalyzer()){
                 if(operation.equals("index")){
                     JsonNode manifest=Protocol.JSON.readTree(Files.readAllBytes(Protocol.input(request.path("inputs").get(0).asText())));

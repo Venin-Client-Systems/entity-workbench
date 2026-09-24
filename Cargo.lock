@@ -5155,6 +5155,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "csv",
+ "libc",
  "reqwest 0.12.28",
  "robotstxt",
  "rusqlite",
