@@ -68,7 +68,7 @@ impl Workspace {
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
             )?,
         };
-        let evidence = all::<Evidence>(&source.conn, "evidence")?;
+        let evidence = all_evidence(&source.conn)?;
         let derivatives = source.derivative_refs()?;
         copy_sources(&source.root, &path, &evidence, &derivatives)?;
         let copied = Self {
@@ -152,7 +152,7 @@ impl Workspace {
                 "Derivative backup is incomplete",
             )?;
         }
-        let evidence = all::<Evidence>(&source.conn, "evidence")?;
+        let evidence = all_evidence(&source.conn)?;
         for e in &evidence {
             source.verify_original(e)?;
         }

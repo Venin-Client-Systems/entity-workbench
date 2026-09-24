@@ -178,7 +178,7 @@ impl Workspace {
             "A canonical UUID request key is required",
         )?;
         let expected = self.revision()?;
-        let evidence: Evidence = get(&self.conn, "evidence", evidence_id)?;
+        let evidence = get_evidence(&self.conn, evidence_id)?;
         let input = match operation {
             RequestedOperation::Parse => ProcessingInput::ParseDocument {
                 evidence_id: evidence.id.clone(),

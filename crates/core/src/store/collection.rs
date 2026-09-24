@@ -159,16 +159,8 @@ impl Workspace {
                 && response.bytes.len() <= 2 * 1024 * 1024,
             "Response bytes do not match acquisition receipt",
         )?;
-        let existing: Option<String> = self
-            .conn
-            .query_row(
-                "SELECT body FROM records WHERE kind='evidence' AND id=?",
-                [&digest],
-                |r| r.get(0),
-            )
-            .optional()?;
-        let mut evidence: Evidence = if let Some(body) = existing {
-            serde_json::from_str(&body)?
+        let mut evidence = if let Some(existing) = find_evidence(&self.conn, &digest)? {
+            existing
         } else {
             Evidence {
                 id: digest.clone(),
@@ -215,7 +207,7 @@ impl Workspace {
             "Page differs from acquired original",
         )?;
         self.change(None, "collection.derivative", true, |conn| {
-            let mut evidence: Evidence = get(conn, "evidence", &digest)?;
+            let mut evidence = get_evidence(conn, &digest)?;
             evidence.text = Some(page.text);
             evidence.media_type = request.media_type.clone().unwrap_or_default();
             evidence.extraction_status = "static_text_only".into();
@@ -226,7 +218,7 @@ impl Workspace {
     fn verify_collection_originals(&self, receipt: &CollectionReceipt) -> Result<()> {
         for request in &receipt.requests {
             if let Some(key) = &request.original_evidence_id {
-                let evidence: Evidence = get(&self.conn, "evidence", key)?;
+                let evidence = get_evidence(&self.conn, key)?;
                 require(
                     Some(&evidence.sha256) == request.body_sha256.as_ref()
                         && Some(evidence.bytes) == request.body_bytes
@@ -302,7 +294,7 @@ impl Workspace {
                     if !copied.insert(key) {
                         continue;
                     }
-                    let evidence: Evidence = get(&self.conn, "evidence", key)?;
+                    let evidence = get_evidence(&self.conn, key)?;
                     let bytes = read_original(&self.root, &evidence)?;
                     let relative = format!("originals/{key}.bin");
                     let path = staging.join(&relative);

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T19:14:53.076939+00:00",
+  "base_commit": "e41ac3a3f689eee8cde30cce8a683554ed253c2c",
+  "scope": "Evidence-only lookup-key/body/digest integrity across canonical metadata consumers",
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "ordinary_core": {
+      "passed": 318,
+      "library_passed": 243,
+      "integration_passed": 75,
+      "failed": 0,
+      "specialized_ignored": 22
+    },
+    "strict_clippy_debug": "passed",
+    "strict_clippy_release": "passed",
+    "historical_schemas_unchanged": 73,
+    "public_commands_dependencies_native_transport_and_ui": "unchanged"
+  },
+  "before_fix": {
+    "initial_regressions": {
+      "failed": 5,
+      "passed": 1,
+      "note": "Restore initially refused for duplicate destination protection, masking the lookup binding case."
+    },
+    "refined_restore": {
+      "failed": 1,
+      "note": "Removed the separate B row and matched the body-only manifest; old restore incorrectly succeeded."
+    }
+  },
+  "retained_test_repair": "Initial full-suite compilation refused test-only Page.clone() because Page does not implement Clone; the specimen now copies explicit fields. No production type or test requirement changed.",
+  "regression_coverage": [
+    "Whole valid B body under A refuses source anchors, observation mutations and whole/anchored finding review",
+    "Patterns/comparisons and out-of-scope transfer peer refuse substituted provenance",
+    "All four existing processing queues and duplicate import refuse key substitution",
+    "Views, identity comparisons, new report and backup fail closed while old report/original bytes remain unchanged",
+    "Forged backup snapshot/manifest cannot publish restored canonical database",
+    "Collection promotion rollback preserves evidence, history, revision and receipt",
+    "Missing-versus-malformed, normal import/deduplication, canonical sequence order, body/digest shape, and metadata-only file-independent reads"
+  ],
+  "limits": [
+    "Tests executed on development macOS arm64 only; no native Windows or Intel execution",
+    "Metadata checks do not rehash originals or prove source truth/independence",
+    "Generic non-Evidence record identity rules are unchanged",
+    "Full-body metadata reads retain existing allocation behaviour; no new resource-bound or performance claim",
+    "No public API/schema, storage migration, UI, networking activation, packaging or complete-release claim"
+  ],
+  "file_sha256": {
+    "crates/core/src/store.rs": "18af91c2b6e62ba85ac2435c584e5f454a150d2c7870509d61d9a77f60cbf9d5",
+    "crates/core/src/store/assessment.rs": "608e7f6ac1cd8286e068111bb853139c6e41fe0c403d8183c10f92372c372d3e",
+    "crates/core/src/store/collection.rs": "21653eb486548a7a4cca08f5814683a15ce5696509b8f155afb6feb27a8f7bc0",
+    "crates/core/src/store/collection_tests.rs": "195cd9a207640c6b2c68883bb436d681c6ab18a3dfc98fffc051226258e8d448",
+    "crates/core/src/store/evidence.rs": "c5c7c5dd8511bf17e7fe2498f0fbcb6f8fcecf93fe32f93e8cf850a451d3c393",
+    "crates/core/src/store/evidence_identity_tests.rs": "4f4c66fce70a4ffe049d099d415b0389335a17a838ecfea933d082f20184f60f",
+    "crates/core/src/store/identity.rs": "13ed9c050290e39a970a8c17f39c800efeb5ee4e74c8d46880fece8ddf19e122",
+    "crates/core/src/store/originals.rs": "cc1972298f9d3c52eb253bbe1774e306dc5a8814c7b773c5743991f1511544be",
+    "crates/core/src/store/processing.rs": "6d60c2d99992a6a81dd16692e0e2282d6a13fbdd5aad8119d1b7b46283e605a7",
+    "crates/core/src/store/recovery.rs": "4ab4fed2a048b00ca3431ccaced0238283765511b5bf3402447348906ab33014",
+    "crates/core/src/store/transaction_analysis.rs": "99026dfc707f1213807acf8a0b5cf5a08917d796db30a8d5f5f06af5122e7696",
+    "docs/security/EVIDENCE-IDENTITY.md": "46ffe4e1e82a65355ec7d40fd67f281f9665b057f368c601772c84c1935fa046"
+  },
+  "local_ignored_log_sha256": {
+    "before.log": "a3f821cf97c8ea3509c057aab91732423e246bc0debb7799e402bdead905fbad",
+    "clippy-debug.log": "9aec02e9a85a16e871eee0d0f3fb88d97a9643b6cac634070cb3711e331d6325",
+    "clippy-release.log": "99bc976a6833c2c75deac0635f0d590f740971a59dbb9ba06b3cf9c051178469",
+    "core-final.log": "3865190ea41b6b5ed478da46d8d82a970caf9009ff2f4d70bfc2a6c898a5ed0d",
+    "core-first.log": "d18884a6b013bba7e485b3cd9ca7aa60bcf6646f68bada4cb6b4f42a36675766",
+    "focused.log": "6f4cc605ce9233c29894aecd271a7b8a2e8e91235b69cef3e14cd7130be77dc5",
+    "restore-before.log": "4fddc21ce17d913d877a5085260853c1aa22878af5b09565b683de77d41e377d"
+  }
+}

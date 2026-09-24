@@ -15,6 +15,8 @@ mod collection;
 mod collection_jobs;
 mod derivative_files;
 mod desktop_summary;
+mod evidence;
+use evidence::{all_evidence, find_evidence, get_evidence};
 mod identity;
 mod originals;
 use originals::read_original;
@@ -37,6 +39,8 @@ mod transaction_sources;
 mod transfer_candidates;
 #[cfg(test)]
 mod view_tests;
+#[cfg(test)]
+mod evidence_identity_tests;
 
 const SCHEMA: u32 = 4;
 // Only workspace refresh responses vary. Direct reader/job responses are unchanged.
@@ -282,7 +286,7 @@ impl Workspace {
             schema_version: SCHEMA,
             revision: self.revision()?,
             entities: all(&transaction, "entity")?,
-            evidence: all(&transaction, "evidence")?,
+            evidence: all_evidence(&transaction)?,
             observations: all(&transaction, "observation")?,
             assertions: all(&transaction, "assertion")?,
             transactions: all(&transaction, "transaction")?,
@@ -510,7 +514,7 @@ impl Workspace {
                 let result = runtime.search(
                     &self.root.join("indexes/lucene"),
                     self.revision()?,
-                    &all::<Evidence>(&self.conn, "evidence")?,
+                    &all_evidence(&self.conn)?,
                     &query,
                 )?;
                 return Ok(serde_json::to_value(result)?);
@@ -712,7 +716,7 @@ impl Workspace {
     pub fn import(&mut self, name: &str, bytes: &[u8]) -> Result<String> {
         validate_import_input(name, bytes)?;
         let digest = hash(bytes);
-        let existing = get::<Evidence>(&self.conn, "evidence", &digest).ok();
+        let existing = find_evidence(&self.conn, &digest)?;
         if existing
             .as_ref()
             .is_some_and(|e| e.extraction_status != "acquisition_only")

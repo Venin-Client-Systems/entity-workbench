@@ -154,7 +154,7 @@ impl Workspace {
                 originals.insert(evidence_id);
             }
             for id in originals {
-                verify_original(&root, &get::<Evidence>(conn, "evidence", &id)?)?;
+                verify_original(&root, &get_evidence(conn, &id)?)?;
             }
             f.needs_review = false;
             put(conn, "finding", key, &f)?;

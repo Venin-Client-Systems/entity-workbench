@@ -60,7 +60,7 @@ fn read_checked(
         after_open,
     )
 }
-fn validate_reference(evidence: &Evidence) -> Result<()> {
+pub(super) fn validate_reference(evidence: &Evidence) -> Result<()> {
     require(
         evidence.id == evidence.sha256
             && evidence.sha256.len() == 64

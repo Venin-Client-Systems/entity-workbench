@@ -80,6 +80,49 @@ fn finish(workspace: &mut Workspace, result: CollectionResult) -> String {
 }
 
 #[test]
+fn page_promotion_cannot_write_a_valid_other_body_under_its_acquisition_key() {
+    let (_temp, mut w) = workspace();
+    let result = scripted(&[("/start", 200, "text/plain", b"Synthetic page A", true)]);
+    let page = Page {
+        request_sequence: result.pages[0].request_sequence,
+        url: result.pages[0].url.clone(),
+        bytes: result.pages[0].bytes.clone(),
+        text: result.pages[0].text.clone(),
+    };
+    let job = finish(&mut w, result);
+    let receipt = w.collection_receipt(&job).unwrap();
+    let a = hash(&page.bytes);
+    let b = w.import("other.txt", b"Synthetic source B").unwrap();
+    w.conn.execute("UPDATE records SET body=(SELECT body FROM records WHERE kind='evidence' AND id=?1) WHERE kind='evidence' AND id=?2", params![b, a]).unwrap();
+    let revision = w.revision().unwrap();
+    let evidence_before: Evidence = get(&w.conn, "evidence", &a).unwrap();
+    let history_before: u64 = w
+        .conn
+        .query_row("SELECT count(*) FROM history", [], |r| r.get(0))
+        .unwrap();
+    assert!(w.promote_page(&receipt, page).is_err());
+    assert!(w.collection_receipt(&job).is_err());
+    assert_eq!(w.revision().unwrap(), revision);
+    assert_eq!(
+        serde_json::to_value(get::<Evidence>(&w.conn, "evidence", &a).unwrap()).unwrap(),
+        serde_json::to_value(evidence_before).unwrap()
+    );
+    assert_eq!(
+        w.conn
+            .query_row("SELECT count(*) FROM history", [], |r| r.get::<_, u64>(0))
+            .unwrap(),
+        history_before
+    );
+    assert_eq!(
+        serde_json::to_value(
+            get::<CollectionReceipt>(&w.conn, "collection_receipt", &job).unwrap()
+        )
+        .unwrap(),
+        serde_json::to_value(receipt).unwrap()
+    );
+}
+
+#[test]
 fn empty_and_unsupported_responses_survive_without_search_promotion() {
     let (_temp, mut w) = workspace();
     let key = finish(

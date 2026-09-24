@@ -29,7 +29,7 @@ fn validate_entity(input: &EntityInput) -> Result<()> {
 }
 
 pub(super) fn validate_anchor(conn: &Connection, anchor: &SourceAnchor) -> Result<()> {
-    let e: Evidence = get(conn, "evidence", anchor.evidence_id())?;
+    let e = get_evidence(conn, anchor.evidence_id())?;
     match anchor {
         SourceAnchor::Text { line_start, line_end, .. } => {
             let text = e.text.as_deref().ok_or_else(|| Error::Validation("Source has no text derivative".into()))?;
@@ -277,7 +277,7 @@ impl Workspace {
         let tx = self.conn.unchecked_transaction()?;
         let a: Entity = get(&tx, "entity", left)?;
         let b: Entity = get(&tx, "entity", right)?;
-        let evidence: BTreeMap<_, _> = all::<Evidence>(&tx, "evidence")?
+        let evidence: BTreeMap<_, _> = all_evidence(&tx)?
             .into_iter()
             .map(|e| (e.id, e.origin_group))
             .collect();

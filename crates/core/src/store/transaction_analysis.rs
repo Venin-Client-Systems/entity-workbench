@@ -52,7 +52,7 @@ impl Workspace {
             .map(|t| t.anchor.evidence_id())
             .collect();
         for key in sources {
-            self.verify_original(&get::<Evidence>(&self.conn, "evidence", key)?)?;
+            self.verify_original(&get_evidence(&self.conn, key)?)?;
         }
         Ok(rows)
     }
