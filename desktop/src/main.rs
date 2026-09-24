@@ -1,4 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+mod downloads;
 use std::sync::Arc;
 use tauri::Manager;
 use workbench_core::{coordinator::JobCoordinator, domain::Command, store::Workspace};
@@ -30,6 +31,10 @@ fn main() {
                 root: app.path().resource_dir()?.join("engines"),
             });
             app.manage(Arc::new(JobCoordinator::start(workspace, 2)?));
+            let downloads = downloads::Downloads::default();
+            tauri::WebviewWindowBuilder::from_config(app, &app.config().app.windows[0])?
+                .on_download(move |webview, event| downloads.handle(webview, event))
+                .build()?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![workbench])

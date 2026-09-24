@@ -1,1 +1,11 @@
-{ "identifier": "main", "description": "Bundled interface only; no filesystem, shell, HTTP or opener plugins.", "windows": ["main"], "permissions": [] }
+{
+  "identifier": "main",
+  "description": "Bundled interface only; no filesystem, shell, HTTP or opener plugins.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten"
+  ]
+}

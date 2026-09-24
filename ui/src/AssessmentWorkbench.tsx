@@ -9,7 +9,7 @@ type Props = {
   error: string;
   run: (action: Record<string, unknown>) => Promise<boolean>;
   onSource: (evidence: Evidence, anchor?: Anchor) => void;
-  download: (content: string, name: string, type: string) => void;
+  download: (content: string, name: string, type: string) => Promise<void>;
 };
 type Citation = {
   id: string;
@@ -104,7 +104,7 @@ function ReportExport({ report, download }: {
         action: "inspect_report_snapshot", report_id: report.id,
         expected_sha256: report.sha256,
       });
-      download(snapshot.html, `assessment-${snapshot.id}.html`, "text/html");
+      await download(snapshot.html, `assessment-${snapshot.id}.html`, "text/html");
     } catch (error) {
       setError(error instanceof Error ? error.message : String(error));
     } finally {

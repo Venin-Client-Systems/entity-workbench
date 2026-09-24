@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { command } from "./api";
+import { downloadExport } from "./download";
 import type {
   Response,
   Transaction,
@@ -121,13 +122,10 @@ function App() {
     setCurrency(c);
     setSection("Transactions");
   }, []);
-  const download = (content: string, name: string, type: string) => {
-    const url = URL.createObjectURL(new Blob([content], { type }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const download = async (content: string, name: string, type: string) => {
+    setNotice("");
+    const saved = await downloadExport(content, name, type);
+    if (saved) setNotice(`Saved to Downloads: ${saved}`);
   };
   const w = data?.workspace,
     a = data?.analysis;
@@ -589,7 +587,7 @@ function App() {
                             JSON.stringify(transactions, null, 2),
                             "transactions.json",
                             "application/json",
-                          )
+                          ).catch((cause) => setError(String(cause)))
                         }
                       >
                         Export JSON
