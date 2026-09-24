@@ -44,6 +44,8 @@ jobs:
         run: python scripts/test_pdf_evidence.py
       - name: Verify PDF job failure and history evidence
         run: python scripts/test_pdf_jobs_evidence.py
+      - name: Verify retained image region failure and history evidence
+        run: python scripts/test_image_region_jobs_evidence.py
       - run: cargo fmt --all -- --check
       - run: cargo test -p workbench-core --locked
       - run: cargo clippy -p workbench-core --all-targets --locked -- -D warnings
