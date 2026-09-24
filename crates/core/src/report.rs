@@ -1,5 +1,5 @@
 use crate::{analytics, domain::*, Result};
-use std::fmt::Write;
+use std::{collections::BTreeMap, fmt::Write};
 pub fn escape(value: &str) -> String {
     value
         .replace('&', "&amp;")
@@ -28,8 +28,55 @@ fn citation(view: &WorkspaceView, key: &str) -> String {
         format!("Unresolved citation: {key}")
     }
 }
+fn anchor_label(anchor: &SourceAnchor) -> String {
+    match anchor {
+        SourceAnchor::Cell {
+            sheet, row, column, ..
+        } => format!("{sheet} · row {row} · {column}"),
+        SourceAnchor::Text {
+            line_start,
+            line_end,
+            ..
+        } => format!("Lines {line_start}–{line_end}"),
+        SourceAnchor::Page { page, .. } => format!("Page {page}"),
+        SourceAnchor::Message { .. } => "Source message".into(),
+        SourceAnchor::Capture { .. } => "Captured source location".into(),
+    }
+}
+fn transaction_links(
+    out: &mut String,
+    transactions: &BTreeMap<&str, &Transaction>,
+    label: &str,
+    ids: &[String],
+) -> Result<()> {
+    let _ = write!(
+        out,
+        "<details open><summary>{}: {}</summary><ul>",
+        escape(label),
+        ids.len()
+    );
+    for id in ids {
+        let transaction = transactions.get(id.as_str()).ok_or_else(|| {
+            crate::Error::Validation(
+                "Report calculation refers to an unavailable transaction".into(),
+            )
+        })?;
+        let _ = write!(
+            out,
+            "<li><a href=\"#{}\">{} · {} · {} {} · version {}</a></li>",
+            escape(id),
+            escape(&transaction.date),
+            escape(&transaction.description),
+            escape(&transaction.amount),
+            escape(&transaction.currency),
+            transaction.version,
+        );
+    }
+    out.push_str("</ul></details>");
+    Ok(())
+}
 pub fn html(view: &WorkspaceView, report_id: &str) -> Result<String> {
-    let mut out=format!("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'\"><title>Entity Workbench assessment</title><style>body{{font:16px/1.6 system-ui;max-width:1100px;margin:48px auto;padding:0 24px;color:#172d31}}h1,h2{{line-height:1.2}}table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #ccc;overflow-wrap:anywhere}}code{{overflow-wrap:anywhere}}.notice{{background:#fff1d6;padding:16px}}@media print{{body{{margin:0}}tr{{break-inside:avoid}}}}</style><h1>Investigation assessment</h1><p>Snapshot {} · Workspace revision {}</p><p class=\"notice\">Development assessment. Pending evidence is not an accepted conclusion. Amounts are exact decimal values, grouped by currency. Transfers are excluded only after explicit matching. Source origin groups do not establish independence by themselves.</p>",escape(report_id),view.revision);
+    let mut out=format!("<!doctype html><html lang=\"en\"><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'\"><title>Entity Workbench assessment</title><style>body{{font:16px/1.6 system-ui;max-width:1100px;margin:48px auto;padding:0 24px;color:#172d31}}h1,h2{{line-height:1.2}}table{{width:100%;border-collapse:collapse;font-size:13px}}th,td{{text-align:left;padding:10px;border-bottom:1px solid #ccc;overflow-wrap:anywhere}}code{{overflow-wrap:anywhere}}td details{{max-width:28ch}}.notice{{background:#fff1d6;padding:16px}}@media print{{body{{margin:0}}tr{{break-inside:avoid}}}}</style><h1>Investigation assessment</h1><p>Snapshot {} · Workspace revision {}</p><p class=\"notice\">Development assessment. Pending evidence is not an accepted conclusion. Amounts are exact decimal values, grouped by currency. Transfers are excluded only after explicit matching. Source origin groups do not establish independence by themselves.</p>",escape(report_id),view.revision);
     out.push_str("<h2>Questions and alternatives</h2>");
     for h in &view.hypotheses {
         let _ = write!(
@@ -82,14 +129,53 @@ pub fn html(view: &WorkspaceView, report_id: &str) -> Result<String> {
         out.push_str("</p>");
     }
     let analysis = analytics::analyse(&view.transactions)?;
-    out.push_str("<h2>Reviewed transaction calculations</h2>");
-    for t in analysis.totals {
-        let _=write!(out,"<p>{}: credits {} − debits {} = net {}. Included records: {}; explicitly matched transfer records excluded: {}.</p>",escape(&t.currency),escape(&t.credits),escape(&t.debits),escape(&t.net),t.transaction_ids.len(),t.excluded_transfer_ids.len());
+    let transactions: BTreeMap<_, _> = view
+        .transactions
+        .iter()
+        .map(|t| (t.id.as_str(), t))
+        .collect();
+    out.push_str("<h2>Reviewed transaction calculations</h2><p>Only accepted records contribute to the calculations below. Explicitly matched transfer pairs are excluded. Each record link leads to its version in this immutable snapshot and its retained source anchor.</p>");
+    if analysis.totals.is_empty() {
+        out.push_str("<p>No accepted transactions are available for calculation.</p>");
     }
-    let _=write!(out,"<p>{} transactions pending review. No currency conversion performed. Balance checks include all intervening source rows between available balances within each imported account and currency; opening balances are not inferred.</p>",analysis.pending);
-    out.push_str("<h2>Transaction exhibit</h2><table><tr><th>Date</th><th>Account</th><th>Original description</th><th>Amount</th><th>Review</th><th>Source</th></tr>");
+    for t in analysis.totals {
+        let _=write!(out,"<section data-calculation-currency=\"{}\"><h3>{}</h3><p>Credits {} − debits {} = net {}.</p>",escape(&t.currency),escape(&t.currency),escape(&t.credits),escape(&t.debits),escape(&t.net));
+        transaction_links(
+            &mut out,
+            &transactions,
+            "Included accepted records",
+            &t.transaction_ids,
+        )?;
+        transaction_links(
+            &mut out,
+            &transactions,
+            "Excluded matched transfer records",
+            &t.excluded_transfer_ids,
+        )?;
+        out.push_str("</section>");
+    }
+    out.push_str("<section id=\"transaction-review-coverage\"><h3>Transaction review coverage</h3><p>All workspace records are accounted for below. Pending, rejected and deferred records do not contribute to the reviewed totals.</p>");
+    for (state, label) in [
+        (
+            ReviewState::Accepted,
+            "Accepted records, including matched transfers",
+        ),
+        (ReviewState::Pending, "Pending records"),
+        (ReviewState::Rejected, "Rejected records"),
+        (ReviewState::Deferred, "Deferred records"),
+    ] {
+        let ids = view
+            .transactions
+            .iter()
+            .filter(|t| t.review == state)
+            .map(|t| t.id.clone())
+            .collect::<Vec<_>>();
+        transaction_links(&mut out, &transactions, label, &ids)?;
+    }
+    out.push_str("</section><p>No currency conversion performed. Balance checks include all intervening source rows between available balances within each imported account and currency; opening balances are not inferred.</p>");
+    out.push_str("<h2>Transaction exhibit</h2><table><tr><th>Date</th><th>Account</th><th>Original description</th><th>Amount</th><th>Review</th><th>Version</th><th>Source</th></tr>");
     for t in &view.transactions {
-        let _=write!(out,"<tr id=\"{}\"><td>{}</td><td>{}</td><td>{}</td><td>{} {}</td><td>{:?}</td><td><a href=\"#{}\">{}</a></td></tr>",escape(&t.id),escape(&t.date),escape(&t.account),escape(&t.description),escape(&t.amount),escape(&t.currency),t.review,escape(t.anchor.evidence_id()),escape(&serde_json::to_string(&t.anchor)?));
+        let _=write!(out,"<tr id=\"{}\"><td>{}</td><td>{}</td><td>{}</td><td>{} {}</td><td>{:?}</td><td>{}</td><td><a href=\"#{}\">{}</a><details><summary>Anchor data</summary><code>{}</code></details></td></tr>",escape(&t.id),escape(&t.date),escape(&t.account),escape(&t.description),escape(&t.amount),escape(&t.currency),t.review,t.version,escape(t.anchor.evidence_id()),escape(&anchor_label(&t.anchor)),escape(&serde_json::to_string(&t.anchor)?));
     }
     out.push_str("</table><h2>Entity register</h2>");
     for e in &view.entities {
