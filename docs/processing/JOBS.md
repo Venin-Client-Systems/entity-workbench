@@ -107,3 +107,13 @@ suite remains the broader regression check.
 No complete-release gate is changed by this implementation.
 
 Retained PNG/JPEG word regions are a separate opt-in operation: see [retained image-region jobs](IMAGE-REGIONS.md). Existing image/PDF text jobs retain their previous output and raster-discard policy. The new path uses workspace storage schema 4, small canonical references and verified filesystem derivative objects.
+
+Coordinator shutdown cancels active work, joins every executor, and explicitly
+unlocks the workspace ownership file before returning. The unlock is performed
+once, under the same shutdown serialization as the joins. This matters on Unix:
+closing one descriptor can leave its lock held by a fork-inherited descriptor.
+The regression test holds a real inherited descriptor across shutdown and checks
+that the replacement coordinator can acquire ownership without a retry. A
+separate case ensures repeated shutdown cannot release the replacement owner's
+lock. See the [Rust file-lock contract](https://doc.rust-lang.org/std/fs/struct.File.html#method.lock)
+and [Apple flock documentation](https://developer.apple.com/library/archive/documentation/System/Conceptual/ManPages_iPhoneOS/man2/flock.2.html).

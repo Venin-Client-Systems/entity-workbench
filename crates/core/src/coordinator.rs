@@ -40,7 +40,7 @@ struct Shared {
 pub struct JobCoordinator {
     shared: Arc<Shared>,
     workers: Mutex<Vec<JoinHandle<()>>>,
-    _ownership: File,
+    ownership: Mutex<Option<File>>,
 }
 
 impl JobCoordinator {
@@ -93,7 +93,7 @@ impl JobCoordinator {
         let mut coordinator = Self {
             shared,
             workers: Mutex::new(Vec::new()),
-            _ownership: ownership,
+            ownership: Mutex::new(Some(ownership)),
         };
         for slot in 0..concurrency {
             let shared = coordinator.shared.clone();
@@ -180,6 +180,20 @@ impl JobCoordinator {
         let mut failed = false;
         for worker in workers.drain(..) {
             failed |= worker.join().is_err();
+        }
+        // Unlock explicitly: closing our descriptor alone may leave a Unix flock
+        // held by a descriptor inherited by an unrelated concurrent fork. Keep
+        // the worker registry locked until ownership is released, so concurrent
+        // shutdown calls cannot release it while this call is still joining.
+        let mut ownership = self
+            .ownership
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if let Some(file) = ownership.as_ref() {
+            file.unlock()?;
+            // A repeated shutdown must never unlock again after another
+            // coordinator has acquired its own handle to the ownership file.
+            *ownership = None;
         }
         if failed {
             return Err(Error::Interrupted(
@@ -569,3 +583,7 @@ mod pdf_tests;
 #[cfg(test)]
 #[path = "coordinator_region_tests.rs"]
 mod region_tests;
+
+#[cfg(test)]
+#[path = "coordinator_ownership_tests.rs"]
+mod ownership_tests;
