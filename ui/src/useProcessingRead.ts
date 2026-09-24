@@ -22,7 +22,8 @@ export function useProcessingRead<T>(
         if (key !== null)
           args[
             action === "inspect_extraction" ||
-            action === "inspect_image_extraction"
+            action === "inspect_image_extraction" ||
+            action === "inspect_pdf_extraction"
               ? "extraction_id"
               : "job_id"
           ] = key;

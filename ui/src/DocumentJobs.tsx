@@ -5,6 +5,7 @@ import type { Evidence } from "./types";
 import {
   activeJob,
   jobLabel,
+  processingMethodLabel,
   processingStates,
   type ProcessingJob,
   type ProcessingJobPage,
@@ -13,6 +14,7 @@ import {
 import { useProcessingRead } from "./useProcessingRead";
 import { ProcessingJobReview } from "./ProcessingJobReview";
 import "./processing.css";
+import "./pdf-processing.css";
 
 export function DocumentJobs({
   evidence,
@@ -30,6 +32,8 @@ export function DocumentJobs({
   const [method, setMethod] =
     useState<ProcessingInput["operation"]>("parse_document");
   const [filter, setFilter] = useState("all");
+  const [pageNumber, setPageNumber] = useState("");
+  const [dpi, setDpi] = useState("144");
   const [queueing, setQueueing] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -55,15 +59,28 @@ export function DocumentJobs({
   const name = (job: ProcessingJob) =>
     evidence.find((item) => item.id === job.input.evidence_id)?.name ??
     job.input.evidence_id;
-  const pendingKey = `${method}:${input}`;
+  const isPdf = method === "pdf_page_ocr";
+  const validPdfOptions =
+    /^\d+$/.test(pageNumber) &&
+    Number(pageNumber) >= 1 &&
+    Number(pageNumber) <= 1000 &&
+    /^\d+$/.test(dpi) &&
+    Number(dpi) >= 72 &&
+    Number(dpi) <= 300;
+  const pendingKey = isPdf
+    ? `${method}:${input}:${Number(pageNumber)}:${Number(dpi)}`
+    : `${method}:${input}`;
   const sameActiveJob = jobs.some(
     (job) =>
       job.input.evidence_id === input &&
       job.input.operation === method &&
+      (job.input.operation !== "pdf_page_ocr" ||
+        (job.input.page_number === Number(pageNumber) &&
+          job.input.dpi === Number(dpi))) &&
       activeJob(job),
   );
   const queue = async () => {
-    if (!input || queueing) return;
+    if (!input || queueing || (isPdf && !validPdfOptions)) return;
     setQueueing(true);
     setError("");
     setNotice("");
@@ -71,10 +88,14 @@ export function DocumentJobs({
     requestKeys.set(pendingKey, requestKey);
     try {
       const job = await command<ProcessingJob>({
-        action:
-          method === "image_ocr" ? "queue_image_ocr" : "queue_document_parse",
+        action: isPdf
+          ? "queue_pdf_page_ocr"
+          : method === "image_ocr"
+            ? "queue_image_ocr"
+            : "queue_document_parse",
         evidence_id: input,
         request_key: requestKey,
+        ...(isPdf ? { page_number: Number(pageNumber), dpi: Number(dpi) } : {}),
       });
       requestKeys.delete(pendingKey);
       if (mounted.current) {
@@ -82,7 +103,7 @@ export function DocumentJobs({
         if (mounted.current) {
           setSelected(job.id);
           setNotice(
-            `${method === "image_ocr" ? "Image OCR" : "Document"} job acknowledged: ${jobLabel(job).toLowerCase()}.`,
+            `${isPdf ? "PDF page OCR" : method === "image_ocr" ? "Image OCR" : "Document"} job acknowledged: ${jobLabel(job).toLowerCase()}.`,
           );
         }
       }
@@ -92,6 +113,31 @@ export function DocumentJobs({
       if (mounted.current) setQueueing(false);
     }
   };
+  const queueButton = (
+    <button
+      className="button primary"
+      disabled={
+        busy ||
+        queueing ||
+        read.loading ||
+        !!read.error ||
+        !input ||
+        (isPdf && !validPdfOptions) ||
+        (!requestKeys.has(pendingKey) && sameActiveJob)
+      }
+      onClick={() => void queue()}
+    >
+      {queueing
+        ? "Queueing…"
+        : requestKeys.has(pendingKey)
+          ? "Recover queue acknowledgement"
+          : isPdf
+            ? "Queue PDF page OCR"
+            : method === "image_ocr"
+              ? "Queue image OCR"
+              : "Queue document"}
+    </button>
+  );
   return (
     <>
       <section className="panel processing-panel" aria-label="Document jobs">
@@ -103,11 +149,11 @@ export function DocumentJobs({
           <span className="processing-local">LOCAL INPUTS</span>
         </div>
         <p className="muted">
-          Queue a retained original for bounded parsing or image OCR.
-          Derivatives remain unreviewed; source anchors and accepted
-          observations are separate work.
+          Queue a retained original for bounded parsing, image OCR or one
+          selected PDF page. Derivatives remain unreviewed; source anchors and
+          accepted observations are separate work.
         </p>
-        <div className="processing-queue">
+        <div className={`processing-queue${isPdf ? " pdf-queue" : ""}`}>
           <label>
             Processing method
             <select
@@ -119,6 +165,7 @@ export function DocumentJobs({
             >
               <option value="parse_document">Document parsing</option>
               <option value="image_ocr">Image OCR · English (PNG/JPEG)</option>
+              <option value="pdf_page_ocr">PDF page OCR · English</option>
             </select>
           </label>
           <label>
@@ -137,26 +184,49 @@ export function DocumentJobs({
               ))}
             </select>
           </label>
-          <button
-            className="button primary"
-            disabled={
-              busy ||
-              queueing ||
-              read.loading ||
-              !!read.error ||
-              !input ||
-              (!requestKeys.has(pendingKey) && sameActiveJob)
-            }
-            onClick={() => void queue()}
-          >
-            {queueing
-              ? "Queueing…"
-              : requestKeys.has(pendingKey)
-                ? "Recover queue acknowledgement"
-                : method === "image_ocr"
-                  ? "Queue image OCR"
-                  : "Queue document"}
-          </button>
+          {isPdf ? (
+            <>
+              <div className="pdf-queue-options">
+                <label>
+                  Page number (1-based)
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    step="1"
+                    value={pageNumber}
+                    placeholder="Choose page"
+                    disabled={queueing}
+                    aria-describedby="pdf-queue-limits"
+                    onChange={(event) => setPageNumber(event.target.value)}
+                  />
+                </label>
+                <label>
+                  Resolution (DPI)
+                  <input
+                    type="number"
+                    min="72"
+                    max="300"
+                    step="1"
+                    value={dpi}
+                    disabled={queueing}
+                    aria-describedby="pdf-queue-limits"
+                    onChange={(event) => setDpi(event.target.value)}
+                  />
+                </label>
+                {queueButton}
+              </div>
+              <p className="context-note" id="pdf-queue-limits">
+                Choose one page from 1–1,000 and an integer resolution from
+                72–300 DPI. The document page count is checked during rendering.
+                No automatic page expansion. Scan-focused subset only: fonts,
+                forms and advanced graphics may be rejected. English OCR remains
+                unreviewed.
+              </p>
+            </>
+          ) : (
+            queueButton
+          )}
         </div>
         {method === "image_ocr" && (
           <p className="context-note">
@@ -166,8 +236,8 @@ export function DocumentJobs({
         )}
         {sameActiveJob && (
           <p className="muted">
-            This original already has a queued or running job for this method in
-            the displayed history.
+            This original already has a queued or running job for this method
+            {isPdf ? ", page and resolution" : ""} in the displayed history.
           </p>
         )}
         {import.meta.env.DEV && !isTauri() && (
@@ -225,11 +295,7 @@ export function DocumentJobs({
             <li key={job.id}>
               <div className="processing-job-name">
                 <strong>{name(job)}</strong>
-                <small>
-                  {job.input.operation === "image_ocr"
-                    ? "Image OCR · English"
-                    : "Document parsing"}
-                </small>
+                <small>{processingMethodLabel(job.input)}</small>
                 <small className="processing-id">{job.id}</small>
               </div>
               <div>

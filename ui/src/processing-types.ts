@@ -1,4 +1,4 @@
-/** Rust processing-job.v1/v2 and extraction.v1 contracts. Mutations remain canonical commands. */
+/** Rust processing-job.v1/v2/v3 and extraction contracts. Mutations remain canonical commands. */
 export type ProcessingState =
   | "queued"
   | "running"
@@ -9,11 +9,13 @@ export type ProcessingState =
   | "cancelled"
   | "completed";
 export type ProcessingInput = {
-  operation: "parse_document" | "image_ocr";
   evidence_id: string;
   sha256: string;
   bytes: number;
-};
+} & (
+  | { operation: "parse_document" | "image_ocr" }
+  | { operation: "pdf_page_ocr"; page_number: number; dpi: number }
+);
 export type ProcessingFailure =
   | "interrupted"
   | "input_unavailable"
@@ -23,6 +25,8 @@ export type ProcessingFailure =
   | "unsupported_format"
   | "document_failed"
   | "image_decode_failed"
+  | "encrypted_document"
+  | "pdf_render_failed"
   | "cancelled_by_analyst"
   | "cleanup_failed"
   | "worker_exit_unverified"
@@ -99,6 +103,12 @@ export const jobLabel = (job: ProcessingJob) =>
     : processingStates[job.state];
 export const activeJob = (job: ProcessingJob) =>
   job.state === "queued" || job.state === "running";
+export const processingMethodLabel = (input: ProcessingInput) =>
+  input.operation === "pdf_page_ocr"
+    ? `PDF page OCR · page ${input.page_number} · ${input.dpi} DPI · English`
+    : input.operation === "image_ocr"
+      ? "Image OCR · English"
+      : "Document parsing";
 export const retryableJob = (job: ProcessingJob) =>
   job.failure !== "worker_exit_unverified" &&
   job.failure !== "recovery_required" &&

@@ -3,10 +3,12 @@ import { command } from "./api";
 import { Dialog } from "./Dialog";
 import { ExtractionReview } from "./ExtractionReview";
 import { ImageExtractionReview } from "./ImageExtractionReview";
+import { PdfExtractionReview } from "./PdfExtractionReview";
 import {
   activeJob,
   cancellationNotice,
   jobLabel,
+  processingMethodLabel,
   retryableJob,
   type ProcessingJob,
 } from "./processing-types";
@@ -166,11 +168,7 @@ export function ProcessingJobReview({
               </dl>
               <dl className="processing-facts">
                 <dt>Processing method</dt>
-                <dd>
-                  {job.input.operation === "image_ocr"
-                    ? "Image OCR · English"
-                    : "Document parsing"}
-                </dd>
+                <dd>{processingMethodLabel(job.input)}</dd>
                 <dt>Original SHA-256</dt>
                 <dd>
                   <code>{job.input.sha256}</code>
@@ -335,7 +333,17 @@ export function ProcessingJobReview({
         </Dialog>
       )}
       {extraction &&
-        (job?.input.operation === "image_ocr" ? (
+        (job?.input.operation === "pdf_page_ocr" ? (
+          <PdfExtractionReview
+            key={extraction}
+            extractionId={extraction}
+            sourceName={
+              evidence.find((item) => item.id === job.input.evidence_id)
+                ?.name ?? "Retained original"
+            }
+            onClose={() => setExtraction(null)}
+          />
+        ) : job?.input.operation === "image_ocr" ? (
           <ImageExtractionReview
             key={extraction}
             extractionId={extraction}

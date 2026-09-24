@@ -49,7 +49,7 @@ export function Dialog({
         if (event.key !== "Tab" || event.defaultPrevented) return;
         const items = [
           ...event.currentTarget.querySelectorAll<HTMLElement>(
-            "button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]",
+            "button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),summary,a[href],[tabindex]",
           ),
         ].filter(
           (item) => item.tabIndex >= 0 && item.getClientRects().length > 0,

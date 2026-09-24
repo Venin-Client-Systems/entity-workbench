@@ -1,0 +1,9 @@
+{
+  "scope": "dialog[aria-label=\"PDF page OCR review\"]",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21aa"
+  ],
+  "violations": []
+}
