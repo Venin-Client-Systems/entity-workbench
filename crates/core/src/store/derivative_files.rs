@@ -50,27 +50,47 @@ fn ordinary(metadata: &fs::Metadata, reference: &DerivativeRef) -> Result<()> {
         )?;
         require(metadata.nlink() == 1, "Hard-linked derivative rejected")?;
     }
+    #[cfg(windows)]
+    require(
+        metadata.permissions().readonly(),
+        "Derivative is not read-only",
+    )?;
     Ok(())
 }
 pub(super) fn read(root: &Path, reference: &DerivativeRef) -> Result<Vec<u8>> {
+    read_checked(root, reference, |_| Ok(()), |_| Ok(()))
+}
+fn read_checked(
+    root: &Path,
+    reference: &DerivativeRef,
+    before_open: impl FnOnce(&Path) -> Result<()>,
+    after_open: impl FnOnce(&Path) -> Result<()>,
+) -> Result<Vec<u8>> {
     validate_ref(reference)?;
     let path = root.join("derivatives/objects").join(&reference.sha256);
     reject_link_ancestors(&path)?;
-    ordinary(&fs::symlink_metadata(&path)?, reference)?;
+    let before = fs::symlink_metadata(&path)?;
+    ordinary(&before, reference)?;
+    before_open(&path)?;
     let mut options = OpenOptions::new();
     options.read(true);
     #[cfg(unix)]
     {
         use std::os::unix::fs::OpenOptionsExt;
-        options.custom_flags(libc::O_NOFOLLOW);
+        options.custom_flags(libc::O_NOFOLLOW | libc::O_NONBLOCK | libc::O_CLOEXEC);
     }
     #[cfg(windows)]
     {
         use std::os::windows::fs::OpenOptionsExt;
-        options.custom_flags(0x00200000); // FILE_FLAG_OPEN_REPARSE_POINT.
+        options.custom_flags(0x00200000).share_mode(0x00000001); // Reparse-point handle; read sharing only.
     }
     let mut file = options.open(&path)?;
-    ordinary(&file.metadata()?, reference)?;
+    let opened = file.metadata()?;
+    ordinary(&opened, reference)?;
+    super::file_identity::unchanged(&before, &opened)?;
+    #[cfg(windows)]
+    let identity = super::file_identity::windows_handle(&file, 1)?;
+    after_open(&path)?;
     let mut bytes = Vec::new();
     (&mut file)
         .take(reference.bytes + 1)
@@ -79,8 +99,25 @@ pub(super) fn read(root: &Path, reference: &DerivativeRef) -> Result<Vec<u8>> {
         bytes.len() as u64 == reference.bytes && hash(&bytes) == reference.sha256,
         "Derivative checksum mismatch",
     )?;
-    ordinary(&file.metadata()?, reference)?;
+    let finished = file.metadata()?;
+    ordinary(&finished, reference)?;
+    super::file_identity::unchanged(&opened, &finished)?;
     reject_link_ancestors(&path)?;
+    let named = fs::symlink_metadata(&path)?;
+    ordinary(&named, reference)?;
+    super::file_identity::unchanged(&opened, &named)?;
+    #[cfg(windows)]
+    {
+        require(
+            identity == super::file_identity::windows_handle(&file, 1)?,
+            "Derivative handle changed during read",
+        )?;
+        let named_handle = options.open(&path)?;
+        require(
+            identity == super::file_identity::windows_handle(&named_handle, 1)?,
+            "Derivative named identity changed during read",
+        )?;
+    }
     Ok(bytes)
 }
 
@@ -174,3 +211,6 @@ pub(super) fn verify_catalog(conn: &Connection, reference: &DerivativeRef) -> Re
         "Derivative catalog length conflicts with reference",
     )
 }
+
+#[cfg(test)]
+mod tests;

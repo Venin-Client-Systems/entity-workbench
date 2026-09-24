@@ -13,8 +13,6 @@ use std::{
     thread::{self, JoinHandle},
     time::{Duration, Instant},
 };
-#[cfg(windows)]
-mod windows_identity;
 const TTL: Duration = Duration::from_secs(120);
 const COMPLETED_LIMIT: usize = 8;
 struct Stage {
@@ -260,7 +258,7 @@ impl NativeExports {
         if target_links == 2 {
             let staged = ordinary(&pending, Some(2))?;
             let published = ordinary(&target, Some(2))?;
-            same_file(&staged, &published)?;
+            super::file_identity::unchanged(&staged, &published)?;
             #[cfg(windows)]
             {
                 let mut options = OpenOptions::new();
@@ -269,8 +267,8 @@ impl NativeExports {
                 let first = options.open(&pending)?;
                 let second = options.open(&target)?;
                 require(
-                    windows_identity::identity(&first, 2)?
-                        == windows_identity::identity(&second, 2)?,
+                    super::file_identity::windows_handle(&first, 2)?
+                        == super::file_identity::windows_handle(&second, 2)?,
                     "Published export is not the staged file",
                 )?;
             }
@@ -461,34 +459,6 @@ fn private_open(options: &mut OpenOptions) {
         options.custom_flags(0x00200000).share_mode(0x00000001);
     }
 }
-fn same_file(before: &fs::Metadata, after: &fs::Metadata) -> Result<()> {
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::MetadataExt;
-        require(
-            before.dev() == after.dev()
-                && before.ino() == after.ino()
-                && before.ctime() == after.ctime()
-                && before.ctime_nsec() == after.ctime_nsec()
-                && before.nlink() == after.nlink(),
-            "Export file identity or metadata changed during read",
-        )?;
-    }
-    #[cfg(windows)]
-    {
-        use std::os::windows::fs::MetadataExt;
-        require(
-            before.creation_time() == after.creation_time()
-                && before.last_write_time() == after.last_write_time()
-                && before.file_attributes() == after.file_attributes(),
-            "Export file metadata changed during read",
-        )?;
-    }
-    require(
-        before.len() == after.len() && before.modified()? == after.modified()?,
-        "Export changed during read",
-    )
-}
 fn verify(path: &Path, artifact: &ExportArtifact, links: u64) -> Result<()> {
     verify_checked(path, artifact, links, |_| Ok(()), |_| Ok(()))
 }
@@ -511,9 +481,9 @@ fn verify_checked(
     let mut file = options.open(path)?;
     let opened = file.metadata()?;
     check_metadata(&opened, Some(links))?;
-    same_file(&before, &opened)?;
+    super::file_identity::unchanged(&before, &opened)?;
     #[cfg(windows)]
-    let identity = windows_identity::identity(&file, links)?;
+    let identity = super::file_identity::windows_handle(&file, links)?;
     after_open(path)?;
     let mut digest = Sha256::new();
     let mut total = 0u64;
@@ -533,18 +503,18 @@ fn verify_checked(
     )?;
     let finished = file.metadata()?;
     check_metadata(&finished, Some(links))?;
-    same_file(&opened, &finished)?;
+    super::file_identity::unchanged(&opened, &finished)?;
     let named = ordinary(path, Some(links))?;
-    same_file(&opened, &named)?;
+    super::file_identity::unchanged(&opened, &named)?;
     #[cfg(windows)]
     {
         require(
-            identity == windows_identity::identity(&file, links)?,
+            identity == super::file_identity::windows_handle(&file, links)?,
             "Export handle identity changed during read",
         )?;
         let named_handle = options.open(path)?;
         require(
-            identity == windows_identity::identity(&named_handle, links)?,
+            identity == super::file_identity::windows_handle(&named_handle, links)?,
             "Export named identity changed during read",
         )?;
     }

@@ -17,6 +17,7 @@ mod derivative_files;
 mod desktop_summary;
 mod evidence;
 use evidence::{all_evidence, find_evidence, get_evidence};
+mod file_identity;
 mod identity;
 mod originals;
 use originals::read_original;
