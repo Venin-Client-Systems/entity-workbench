@@ -798,7 +798,10 @@ function App() {
           busy={busy}
           run={run}
           onSource={setEvidence}
-          close={() => setSelected(null)}
+          close={() => {
+            // A late mutation may close only the review that submitted it.
+            setSelected((current) => current === selected ? null : current);
+          }}
         />
       )}
       {statementFile && w && (

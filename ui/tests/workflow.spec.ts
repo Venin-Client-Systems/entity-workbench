@@ -135,6 +135,8 @@ test("synthetic investigation flows through the real Rust workspace", async ({
   await page
     .getByRole("button", { name: "Save correction for review" })
     .click();
+  // Reopening is a new action after the submitted review has completed.
+  await expect(review).not.toBeVisible();
   await page.getByRole("button", { name: "Harbour Cafe OCR review" }).click();
   await expect(page.getByLabel("Corrected amount")).toHaveValue("-18.00");
   await page
