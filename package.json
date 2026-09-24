@@ -10,7 +10,8 @@
     "desktop": "cd desktop && tauri dev",
     "desktop:build": "cd desktop && tauri build --no-bundle",
     "test:ui": "playwright test",
-    "check": "npm run build && cargo test -p workbench-core && python3 scripts/release_gate.py"
+    "check": "npm run build && cargo test -p workbench-core && python3 scripts/release_gate.py",
+    "pretest:ui": "cargo build -p workbench-core --bin ew-dev --locked"
   },
   "dependencies": {
     "@tauri-apps/api": "2.11.1",
