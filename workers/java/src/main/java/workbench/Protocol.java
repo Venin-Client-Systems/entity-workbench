@@ -18,6 +18,15 @@ final class Protocol {
     }
     static Path input(String value) throws IOException {
         Path path = relative(value);
+        // Fixed Windows file-IPC recipes assign exactly one immutable input.
+        // The property is a coordinator argument, never part of worker JSON.
+        // With no property, the existing macOS relative-path contract is unchanged.
+        String assigned = System.getProperty("workbench.assignedInput");
+        if (assigned != null) {
+            if (!value.equals("input.json")) throw new IOException("Unassigned input name");
+            path = Path.of(assigned);
+            if (!path.isAbsolute()) throw new IOException("Assigned input must be absolute");
+        }
         if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(path) || Files.size(path) > 16 * 1024 * 1024) throw new IOException("Invalid input file");
         return path;
     }

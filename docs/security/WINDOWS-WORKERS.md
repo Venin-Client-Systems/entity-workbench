@@ -257,3 +257,8 @@ Raw workflow metadata/logs, the downloaded artifact and its individual sanitized
 This is the first complete **development probe** pass after fifteen retained failed runs. It does not pass Windows 11 clean installation, signing, full bundled-runtime compatibility, application integration, crash recovery, broader network/race coverage or independent security acceptance. The application still does not invoke this launcher. The integration merge adds the isolated crate, workspace membership and dedicated workflow while preserving the current root's core engines and workflows; no parked adapter recipe is applied.
 
 Local integration checks on **2026-09-25** passed all 13 host-executable Windows-crate tests, host and Windows-target strict Clippy, workspace formatting, dedicated workflow lint and diff checks. These used the existing build cache with one build job; no native macOS engine probe or benchmark was run. The merge had no conflicts. The staged public files were checked against the private exclusion list before the signed integration commit. These local checks supplement the recorded native run and do not establish a fresh Windows result for the final commit.
+
+
+### Engine-only parser and Lucene candidate
+
+The separate [Windows Java recipe candidate](WINDOWS-JAVA-WORKERS.md) extends the development workflow with fixed parser/index/search file IPC, separate complete runtime inventories and a bounded read-only Lucene snapshot handoff. The preceding foundation results do not establish those new engine operations. They remain unverified pending their own actual hosted run, and all application Windows engine routes remain disabled.

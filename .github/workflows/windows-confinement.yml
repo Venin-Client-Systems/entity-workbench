@@ -7,6 +7,11 @@ on:
       - 'Cargo.lock'
       - '.github/workflows/windows-confinement.yml'
       - 'docs/security/WINDOWS-WORKERS.md'
+      - 'docs/security/WINDOWS-JAVA-WORKERS.md'
+      - 'workers/java/**'
+      - 'fixtures/parser/**'
+      - 'scripts/stage_windows_engines.py'
+      - 'scripts/tests/test_windows_engine_staging.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -30,6 +35,14 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           New-Item -ItemType Directory -Force artifacts/windows-confinement | Out-Null
+          @{
+            schema_version = 1
+            source_commit = (git rev-parse HEAD).Trim()
+            complete_release = $false
+            passed = $false
+            failure = 'Java engine probe has not completed'
+            tests = @{ phase = 'not_started' }
+          } | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 artifacts/windows-confinement/java-engines-report.json
           $os = Get-CimInstance Win32_OperatingSystem
           $jdk = $env:JAVA_HOME_21_X64
           if (-not $jdk -or -not (Test-Path "$jdk/bin/java.exe")) {
@@ -73,6 +86,35 @@ jobs:
           } | ConvertTo-Json | Set-Content -Encoding utf8 artifacts/windows-confinement/probe-identity.json
           & $binary --report artifacts/windows-confinement/report.json "$env:JAVA_HOME_21_X64"
           if ($LASTEXITCODE -ne 0) { throw 'Native confinement probe failed; retain report and keep Windows gate blocked.' }
+      - name: Build the existing pinned Java workers and file IPC tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:JAVA_HOME = $env:JAVA_HOME_21_X64
+          & mvn -B --no-transfer-progress -f workers/java/pom.xml package
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned Java worker build/tests failed.' }
+      - name: Stage distinct local Java parser and search runtimes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python -m unittest discover -s scripts/tests -p test_windows_engine_staging.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Windows runtime staging contract tests failed.' }
+          & python scripts/stage_windows_engines.py --java "$env:JAVA_HOME_21_X64" --worker-target workers/java/target --destination runtime/windows-java-development
+          if ($LASTEXITCODE -ne 0) { throw 'Windows Java staging failed.' }
+          Copy-Item runtime/windows-java-development/parser/manifest.json artifacts/windows-confinement/parser-runtime.json
+          Copy-Item runtime/windows-java-development/search/manifest.json artifacts/windows-confinement/search-runtime.json
+      - run: cargo build -p workbench-windows-worker --bin ew-windows-java-probe --locked
+      - name: Run real parser and separate Lucene recipes with Java boundary controls
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $binary = 'target/debug/ew-windows-java-probe.exe'
+          @{
+            source_commit = (git rev-parse HEAD).Trim()
+            binary_sha256 = (Get-FileHash $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json | Set-Content -Encoding utf8 artifacts/windows-confinement/java-probe-identity.json
+          & $binary --report artifacts/windows-confinement/java-engines-report.json runtime/windows-java-development
+          if ($LASTEXITCODE -ne 0) { throw 'Windows Java engine recipes failed; preserve evidence and keep adapters disabled.' }
       - name: Retain sanitized evidence on success or failure
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
