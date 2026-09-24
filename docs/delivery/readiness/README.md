@@ -1,8 +1,8 @@
 # Release access and decision readiness
 
-[EW-08 / issue #12](https://github.com/Venin-Client-Systems/entity-workbench/issues/12) remains open. As assessed on **24 September 2026**, the record contains **8 unknown and 3 unverified requirements; none is confirmed or known missing**. This work establishes the readiness register and its evidence rules. It does not establish signing access, resource reservations or release approval.
+[EW-08 / issue #12](https://github.com/Venin-Client-Systems/entity-workbench/issues/12) remains open. As assessed on **24 September 2026**, the record contains **4 missing, 4 unknown and 3 unverified requirements; none is confirmed**. This work establishes the readiness register and its evidence rules. It does not establish signing access, resource reservations or release approval.
 
-The [versioned register](register.v1.json) records each requirement, responsible role, dates, required evidence and next action. The roles are proposed responsibilities awaiting assignment, not claims that somebody has accepted them. The [initial audit](audit-2026-09-24.md) records repository configuration and a narrow local environment check against source revision `67e84c6`.
+The [versioned register](register.v1.json) records each requirement, responsible role, dates, required evidence and next action. The roles are proposed responsibilities awaiting assignment, not claims that somebody has accepted them. The [initial audit](audit-2026-09-24.md) records repository configuration and a narrow local environment check against source revision `67e84c6`. A subsequent [owner availability update](owner-availability-2026-09-24.md) confirms a single human contributor with only the current development Mac: no Windows 11 x64 or Intel Mac test environment and no independent maintainer/security reviewer are available. Signing access remains unknown. The Mac is not yet confirmed as a clean test environment or reserved benchmark host.
 
 | Requirement | Current status | Responsible role to confirm | Needed by | Later checkpoint |
 |---|---|---|---|---|
@@ -10,15 +10,15 @@ The [versioned register](register.v1.json) records each requirement, responsible
 | Windows signing access | Unknown | Release signing custodian | 6 Oct | Signing rehearsal: 20 Oct |
 | Mac signing/notarization rehearsal | Unknown | Release engineer | 20 Oct | Exact candidate: 15 Dec |
 | Windows signing rehearsal | Unknown | Release engineer | 20 Oct | Exact candidate: 15 Dec |
-| Clean Windows 11 x64 environment | Unknown | Platform test operator | 30 Sep | Downloaded-artifact offline test: 15 Dec |
+| Clean Windows 11 x64 environment | Missing | Platform test operator | 30 Sep | Downloaded-artifact offline test: 15 Dec |
 | Clean Apple Silicon environment | Unverified | Platform test operator | 30 Sep | Downloaded-artifact offline test: 15 Dec |
-| Clean Intel Mac environment | Unknown | Platform test operator | 30 Sep | Downloaded-artifact offline test: 15 Dec |
+| Clean Intel Mac environment | Missing | Platform test operator | 30 Sep | Downloaded-artifact offline test: 15 Dec |
 | 16 GB benchmark environment | Unverified | Performance test operator | 6 Oct | Required workload measurement: 15 Dec |
 | Supported minimum OS/build matrix | Unverified | Product owner and platform maintainer | 6 Oct | Every advertised boundary tested: 15 Dec |
-| Maintainer review capacity | Unknown | Release maintainer | 6 Oct | Candidate acceptance review: 15 Dec |
-| Security review capacity | Unknown | Security reviewer | 6 Oct | Candidate security acceptance: 15 Dec |
+| Maintainer review capacity | Missing | Release maintainer | 6 Oct | Candidate acceptance review: 15 Dec |
+| Security review capacity | Missing | Security reviewer | 6 Oct | Candidate security acceptance: 15 Dec |
 
-All dates are 2026 programme calendar dates. The 30 September environment target gives time to run and repair confinement probes before Sprint 1 ends on 6 October. These intermediate dates are agent scheduling choices within the approved programme. They are not commitments from an unassigned operator. Signing rehearsals are due by Sprint 2 exit; final downloaded-artifact testing is due by Sprint 6 exit. The 16–23 December buffer remains for repairs, retesting and final sign-off.
+All dates are 2026 programme calendar dates. The 30 September environment target gives time to run and repair confinement probes before Sprint 1 ends on 6 October. These intermediate dates are agent scheduling choices within the approved programme. They are not commitments from an unassigned operator. The confirmed resource gaps are delivery dependencies; listing dates does not resolve them, establish additional staffing or authorize self-review. Signing rehearsals are due by Sprint 2 exit; final downloaded-artifact testing is due by Sprint 6 exit. The 16–23 December buffer remains for repairs, retesting and final sign-off.
 
 ## What the statuses mean
 
