@@ -45,24 +45,11 @@ impl Default for TransactionAnalysisRequest {
 }
 impl TransactionAnalysisRequest {
     pub fn validate(&self) -> Result<()> {
-        for date in [&self.date_from, &self.date_to].into_iter().flatten() {
-            analytics::date(date)?;
-        }
-        require(
-            !matches!((&self.date_from, &self.date_to), (Some(a), Some(b)) if a > b),
-            "Analysis start date must not follow end date",
-        )?;
-        require(
-            self.account
-                .as_ref()
-                .is_none_or(|v| !v.trim().is_empty() && v.len() <= 4000),
-            "Analysis account must be nonempty and bounded",
-        )?;
-        require(
-            self.currency
-                .as_ref()
-                .is_none_or(|v| v.len() == 3 && v.bytes().all(|c| c.is_ascii_uppercase())),
-            "Analysis currency must be three uppercase letters",
+        validate_scope(
+            self.date_from.as_deref(),
+            self.date_to.as_deref(),
+            self.account.as_deref(),
+            self.currency.as_deref(),
         )?;
         require(
             (3..=12).contains(&self.minimum_occurrences),
@@ -83,6 +70,29 @@ impl TransactionAnalysisRequest {
             && self.account.as_ref().is_none_or(|v| t.account == *v)
             && self.currency.as_ref().is_none_or(|v| t.currency == *v)
     }
+}
+/// Shared borrowed scope validation; callers can reject large values before cloning.
+pub(crate) fn validate_scope(
+    date_from: Option<&str>,
+    date_to: Option<&str>,
+    account: Option<&str>,
+    currency: Option<&str>,
+) -> Result<()> {
+    for date in [date_from, date_to].into_iter().flatten() {
+        analytics::date(date)?;
+    }
+    require(
+        !matches!((date_from, date_to), (Some(a), Some(b)) if a > b),
+        "Analysis start date must not follow end date",
+    )?;
+    require(
+        account.is_none_or(|v| v.len() <= 4000 && !v.trim().is_empty()),
+        "Analysis account must be nonempty and bounded",
+    )?;
+    require(
+        currency.is_none_or(|v| v.len() == 3 && v.bytes().all(|c| c.is_ascii_uppercase())),
+        "Analysis currency must be three uppercase letters",
+    )
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]

@@ -21,6 +21,7 @@ mod report_snapshots;
 mod statements;
 mod transaction_analysis;
 mod transaction_comparison;
+mod transaction_page;
 #[cfg(test)]
 mod view_tests;
 
@@ -290,6 +291,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, presentation: bool) -> Result<Value> {
         match command {
+            Command::PageTransactions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_transactions(&request, expected_revision)?,
+                )?)
+            }
             Command::InspectReportSnapshot {
                 report_id,
                 expected_sha256,

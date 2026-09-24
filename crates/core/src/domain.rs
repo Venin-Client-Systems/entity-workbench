@@ -390,6 +390,10 @@ pub struct WorkspaceView<R = ReportSnapshot> {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    PageTransactions {
+        request: crate::transaction_page::TransactionPageRequest,
+        expected_revision: u64,
+    },
     InspectReportSnapshot {
         report_id: String,
         expected_sha256: String,

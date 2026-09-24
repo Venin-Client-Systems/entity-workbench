@@ -69,6 +69,20 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
         let schemas = [
             (
+                "transaction-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_page::TransactionPageRequest
+                ))?,
+            ),
+            (
+                "transaction-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_page::TransactionPage
+                ))?,
+            ),
+            (
                 "workspace-presentation",
                 1,
                 serde_json::to_value(schemars::schema_for!(WorkspaceView<ReportMetadata>))?,
@@ -80,7 +94,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                11,
+                12,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (
@@ -207,7 +221,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":19}));
+        return Ok(serde_json::json!({"schemas":schemas.len()}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();
