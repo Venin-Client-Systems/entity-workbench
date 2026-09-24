@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
 import { FindingReviewHistory } from "./FindingReviewHistory";
@@ -202,6 +202,47 @@ function FindingEditor({
   );
   const [refreshing, setRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState("");
+  const refreshButton = useRef<HTMLButtonElement>(null);
+  const refreshFocus = useRef<{
+    opener: HTMLButtonElement;
+    moved: boolean;
+  } | null>(null);
+  useEffect(() => {
+    const rememberFocusMove = (event: FocusEvent) => {
+      const pending = refreshFocus.current;
+      if (
+        pending &&
+        event.target !== pending.opener &&
+        event.target !== document.body &&
+        event.target !== document.documentElement
+      )
+        pending.moved = true;
+    };
+    document.addEventListener("focusin", rememberFocusMove);
+    return () => {
+      document.removeEventListener("focusin", rememberFocusMove);
+      refreshFocus.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    const pending = refreshFocus.current;
+    if (busy || refreshing || !pending) return;
+    // Both React state transitions must have re-enabled the fieldset/button.
+    const frame = requestAnimationFrame(() => {
+      if (refreshFocus.current !== pending) return;
+      refreshFocus.current = null;
+      const active = document.activeElement;
+      if (
+        !pending.moved &&
+        pending.opener.isConnected &&
+        (active === pending.opener ||
+          active === document.body ||
+          active === document.documentElement)
+      )
+        pending.opener.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [busy, refreshing]);
   const choose = (id: string, role: CitationRole) => {
     setSupporting((old) => [
       ...old.filter((x) => x !== id),
@@ -332,10 +373,16 @@ function FindingEditor({
               </p>
             )}
             <button
+              ref={refreshButton}
               type="button"
               className="button"
               disabled={busy || refreshing}
               onClick={async () => {
+                if (refreshButton.current)
+                  refreshFocus.current = {
+                    opener: refreshButton.current,
+                    moved: false,
+                  };
                 setRefreshing(true);
                 setRefreshError("");
                 try {

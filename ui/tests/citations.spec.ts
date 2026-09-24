@@ -362,6 +362,113 @@ test("concurrent revision and refresh preserve editor fields and roles without r
   expect(core({ action: "view" }).workspace.findings[0]).toEqual(w.findings[0]);
 });
 
+for (const focusCase of ["restore", "moved", "moved_then_blurred"]) {
+  test(`delayed real workspace refresh preserves the draft and focus: ${focusCase}`, async ({
+    page,
+  }) => {
+    const w = addFinding(fixture());
+    await start(page);
+    await page.locator(`[id="finding-${w.findings[0].id}"]`).click();
+    await page
+      .getByRole("button", { name: "Edit finding", exact: true })
+      .click();
+    await expect(selected(page).getByRole("combobox")).toHaveCount(4);
+    await page
+      .getByLabel("Assessment", { exact: true })
+      .fill("Unsaved refresh assessment");
+    await page
+      .getByLabel("Finding change reason")
+      .fill("Unsaved refresh reason");
+    await selected(page)
+      .getByRole("combobox")
+      .first()
+      .selectOption("contradicting");
+    const roles = await selected(page)
+      .getByRole("combobox")
+      .evaluateAll((nodes) =>
+        nodes.map((node) => ({
+          label: node.getAttribute("aria-label"),
+          role: (node as HTMLSelectElement).value,
+        })),
+      );
+    let release!: () => void, received!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const ready = new Promise<void>((resolve) => {
+      received = resolve;
+    });
+    await page.route("**/api/workbench", async (route) => {
+      if (route.request().postDataJSON().action !== "view")
+        return route.continue();
+      const response = await route.fetch();
+      received();
+      await gate;
+      await route.fulfill({ response });
+    });
+    const refresh = page.getByRole("button", {
+      name: "Refresh workspace",
+      exact: true,
+    });
+    await refresh.focus();
+    await page.keyboard.press("Enter");
+    await ready;
+    await expect(
+      page.getByRole("button", { name: "Refreshing workspace…", exact: true }),
+    ).toBeDisabled();
+    const status = selected(page).getByRole("status");
+    if (focusCase !== "restore") {
+      await status.focus();
+      if (focusCase === "moved_then_blurred")
+        await status.evaluate((node) => node.blur());
+    }
+    // Chromium also drops focus when disabling the button; the native WebKit
+    // failure followed the same body/HTML focus path during a real read.
+    else
+      await expect
+        .poll(() =>
+          page.evaluate(
+            () =>
+              document.activeElement === document.body ||
+              document.activeElement === document.documentElement,
+          ),
+        )
+        .toBe(true);
+    release();
+    await expect(refresh).toBeEnabled();
+    if (focusCase === "moved_then_blurred") {
+      // Let the same completion animation frame run before checking that
+      // restoration remembers the earlier deliberate focus movement.
+      await page.evaluate(
+        () =>
+          new Promise<void>((resolve) =>
+            requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+          ),
+      );
+      await expect(refresh).not.toBeFocused();
+    } else await expect(focusCase === "moved" ? status : refresh).toBeFocused();
+    await expect(page.getByLabel("Assessment", { exact: true })).toHaveValue(
+      "Unsaved refresh assessment",
+    );
+    await expect(page.getByLabel("Finding change reason")).toHaveValue(
+      "Unsaved refresh reason",
+    );
+    expect(
+      await selected(page)
+        .getByRole("combobox")
+        .evaluateAll((nodes) =>
+          nodes.map((node) => ({
+            label: node.getAttribute("aria-label"),
+            role: (node as HTMLSelectElement).value,
+          })),
+        ),
+    ).toEqual(roles);
+    expect(core({ action: "view" }).workspace.findings[0]).toEqual(
+      w.findings[0],
+    );
+  });
+}
+
 test("late canonical selection cannot restore an obsolete A to B to A review", async ({
   page,
 }) => {

@@ -1,14 +1,14 @@
 {
   "algorithm": "sha256",
   "files": {
-    "ui/src/AssessmentWorkbench.tsx": "a33fbe388510c8f69fdc7f4f71fd97f541b3c82148cd15e9a573eaa213b6fc7b",
+    "ui/src/AssessmentWorkbench.tsx": "625aa093f8031114b85b6147b76f849c58047e6174efbaaa06c5ee05591830d9",
     "ui/src/CitationPicker.tsx": "6ec370ee01484bcad30cce7c9ff63fda87e2c719c159a5d3501722a399a5e8b6",
     "ui/src/CitationRow.tsx": "190b36f54b75bb52c00868603e509846e534aea1d2bd831b4c09e5a993f91969",
     "ui/src/citation-types.ts": "43f5f76d1cc6ba90b95da04dfb1d22ed6ccee0c765f54ffa7513c4fd87ec9a5a",
     "ui/src/citation-read-lane.ts": "afa7103db32e41dba44ecb2961e7396eae72650bf0832d8fe2eec86eacde9a87",
     "ui/src/citation-picker.css": "09b9a72a730fbb1bb065ae7ba1c4582c40133b4ba38f7317da153dc0dcbdea47",
-    "ui/tests/citations.spec.ts": "935d038c0114994567628897aa48eb3897aa881bb845426e55c7f292a973fe74",
-    "docs/design/CITATION-PICKER.md": "f54d591144935880c0da22231e1b6483948e2ca29b8640f7fbdef80be5f6f7ad",
+    "ui/tests/citations.spec.ts": "56b3371282fb8c3fa576eceedfcfce228e4652d42d2b1c205a013dbec8cb3bb6",
+    "docs/design/CITATION-PICKER.md": "7d476d4a68f0b62e092f2855c960e8c16a0d2f9f46b9e6ee23e512fb621f00f0",
     "docs/design/review/citation-picker/citations-1440.png": "ade5e644d947f7cd98d183ce43875c5306abea54b400f4e48ec990370f0dbbda",
     "docs/design/review/citation-picker/citations-720.png": "de471250631a639523d284b1137dbd879a6f4f05376287b2a5c3e71a4ab73138",
     "docs/design/review/citation-picker/citations-page-1440.png": "56ab8b91e9f009a05638eda756c274c2de3852b41b344f7307f2954a60ba84b7",
@@ -16,6 +16,8 @@
     "docs/design/review/citation-picker/citations-unavailable.png": "c72ca6fa3f0543d3540199fea859438fe1b780f34985dc40915d22dd0cc042a8",
     "docs/design/review/citation-picker/citations-stale.png": "83142166e9790232420a82211a2751297eae0e720bf6ac630750c469d6c18b10",
     "docs/design/review/citation-picker/accessibility.json": "9ef3c9d1d9f224331a5dda7becb967103efbc2cc7d319ca3bae75942d7ce6651",
-    "docs/design/review/citation-picker/verification.json": "61d56e663b563e98993d72aedb8c1a9f3f8f3c651864d618e5b650a5a7d6f53e"
+    "docs/design/review/citation-picker/verification.json": "e9f1828a025168a9e8da020b071590e57fec1c52e151b7cac602e1042d175b18",
+    "docs/design/DESKTOP-SUMMARY-CUTOVER.md": "4bf25772515839ab936cae8e00e2ff2757408c43763f31b1562fa6abb65e9f37",
+    "docs/design/review/citation-picker/refresh-focus-verification.json": "201a467ceb17e24f2d684cab825b6e0252f8dc5ca88e5235b12cfebd84863372"
   }
 }

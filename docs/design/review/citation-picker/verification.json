@@ -61,5 +61,7 @@
     "compact-second.log": "c2ad1424a6d32b4ba6865a9d4fd5fb5b5e344792c52846183bfd0e292057fe39",
     "new-tests-second.log": "9fe196454d42b6a802a92175486ce45c3c09f63b38cf67bf7988c3275302679a",
     "full-suite-first.log": "91512ed22cfc4e70e251e9ad8932f8eef94d75f518a0bf238d203e2ee930c208"
-  }
+  },
+  "source_commit": "ec163589d0def6694490de63eeb8a858d3c5d03e",
+  "follow_up": "refresh-focus-verification.json"
 }
