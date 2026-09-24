@@ -11,7 +11,11 @@ flowchart LR
   Broker -->|Pinned public IP + verified TLS| Web[Selected public websites]
   Rust -->|Derived text only| Search[Separate Java Lucene process]
   Search --> Index[Rebuildable revision-labelled index]
-  Rust -. gated .-> Parser[Disposable Java parsing process]
+  Rust -->|Assigned original| Parser[Disposable Java parsing process]
+  Rust -->|Assigned original and page| Decode[Separate Java image or PDF worker]
+  Decode -->|Validated raster| Rust
+  Rust -->|Assigned raster| OCR[Separate app-local OCR process]
+  OCR -->|Unreviewed result| Rust
   Rust -. gated .-> Analysis[Packaged Python analysis process]
   Analysis -.-> Parquet[Rebuildable Arrow / Parquet / DuckDB]
 ```
@@ -24,6 +28,6 @@ The current schema uses typed JSON records in a constrained SQLite table, with e
 
 Local Lucene indexes are disposable, contain derived text and identify their source workspace revision. The Rust supervisor validates returned IDs and revision before showing results. The native application selects the runtime from bundled resources; the UI cannot choose an executable or classpath.
 
-Workers receive one versioned JSON request and files in a job area. The parser and search adapter are separate Java entry points. The app enables only the macOS experimental search supervisor; other worker integration remains gated. A developer executing a worker directly is running an engine test, not proving isolation.
+Java workers receive one bounded versioned JSON request and files in a job area; OCR uses fixed arguments and assigned input/output names. Parser, search, image decoder, PDF renderer and OCR have separate process recipes. The Mac development app enables these through experimental confinement. Durable document/image/PDF jobs share a two-worker executor, reserved attempt identities, validated publication, manual retry and cancellation; unverified process termination suspends further work. Existing text and PDF/image results are immutable SQLite derivatives. The opt-in word-region engine remains separate from canonical job integration. Signed helpers and installed-platform isolation remain release gates. Running an adapter directly is an engine test, not evidence of confinement.
 
 The UI never renders collected HTML. React escapes source text. Graph labels and map popups use text APIs. The application CSP denies remote scripts, frames, objects and external webview connections. The Rust broker is the only application HTTP path. MapLibre's worker is bundled locally and remote tile requests are refused.

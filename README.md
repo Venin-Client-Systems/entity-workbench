@@ -2,7 +2,7 @@
 
 An independently branded desktop investigation workbench. Preserve sources, review observations, distinguish identities and produce cited findings with an inspectable history.
 
-**Status: active development, not an approved investigative release.** The current macOS development application supports local text/CSV/TSV evidence, reusable statement mappings and preview, transaction review, general entity/observation authoring, reviewed identity comparison and merge/reversal, graph and coordinate views, direct website collection, local Lucene search and HTML assessment snapshots. The complete release gates have **not** passed. See [implementation status](docs/STATUS.md) and the [security review entry point](SECURITY.md).
+**Status: active development, not an approved investigative release.** The current macOS development application supports local text/CSV/TSV evidence, reusable statement mappings and preview, transaction review, general entity/observation authoring, reviewed identity comparison and merge/reversal, graph and coordinate views, direct website collection, local Lucene search, exact transaction patterns/period comparisons and HTML assessment snapshots. App-local development runtimes support durable document/image processing and explicit selected-page scan PDF OCR with immutable provenance review. The complete release gates have **not** passed. See [implementation status](docs/STATUS.md) and the [security review entry point](SECURITY.md).
 
 The [three-month delivery programme](docs/delivery/THREE-MONTH-PLAN.md) runs from 23 September to a conditional 23 December 2026 target. Follow [GitHub programme #4](https://github.com/Venin-Client-Systems/entity-workbench/issues/4), the [dependency-linked issue index](docs/delivery/ISSUES.md) and the [runtime inventory contract](packaging/README.md).
 
@@ -24,7 +24,7 @@ npm run desktop
 
 For the browser-based synthetic UI harness, run `npm run dev` and open `http://127.0.0.1:1420`. This development-only loopback bridge executes the real Rust core against `artifacts/synthetic-ui-workspace`. It refuses direct web collection and cross-origin requests. It is not included in production UI assets or the desktop runtime.
 
-For the macOS development bundle with app-local Java and Lucene:
+For the base macOS development bundle with app-local Java and Lucene:
 
 ```sh
 python3 scripts/bootstrap_maven.py
@@ -36,6 +36,8 @@ python3 scripts/stage_macos_engines.py
 cd desktop
 ../node_modules/.bin/tauri build --bundles app
 ```
+
+The base commands above do not stage every currently implemented adapter. See the explicit local staging and native-test instructions for [document processing](docs/processing/JOBS.md), [image decoding/OCR](docs/security/IMAGE-WORKERS.md), [PDF rendering](docs/security/PDF-RENDER-WORKERS.md) and [English OCR](docs/security/OCR-WORKERS.md). Missing components fail visibly; there are no first-launch downloads.
 
 These bootstrap scripts run only on the developer's machine. They are not first-run dependency installers. The current macOS prototype uses a restricted Seatbelt profile with Apple's private `dyld-support.sb` bootstrap rules. Signed helper validation and the supported OS matrix remain release requirements.
 
@@ -68,7 +70,7 @@ Required: `account`, `date`, `description`, `amount`, `currency`. Optional: `pos
 
 - React/TypeScript and Tauri provide the desktop interface.
 - Rust owns the SQLite workspace, evidence store, validation, decisions, calculations and HTTP broker.
-- Java document parsing and Java Lucene search have separate entry points and process roles. Document parsing is not enabled in the application while its full isolation gate remains open.
+- Java parsing, Lucene search, image decoding and PDF rendering run in separate process roles. The Mac development app uses bounded experimental confinement and an app-local English OCR runtime; signed helpers and installed-platform security acceptance remain open.
 - Python adapters demonstrate DuckDB/Parquet totals, NetworkX paths and spaCy phrase candidates. Splink remains blocked until a calibrated model is supplied; no untrained probability is presented as an identity decision.
 - Cytoscape, ECharts and MapLibre present relationships, totals and local coordinates. There are no external map tiles.
 

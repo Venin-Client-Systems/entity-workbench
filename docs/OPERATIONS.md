@@ -19,7 +19,7 @@ If backup verification or the migration fails, opening fails and the migration t
 - Release policy consistency: `python3 scripts/release_gate.py --check-policy`.
 - Actual release gate: `python3 scripts/release_gate.py` (currently fails by design).
 
-The developer bootstraps obtain upstream components with checksums. Normal app launch does not execute them. The staged macOS bundle currently includes Java and Lucene only; Python, OCR, Chromium, Spatial and regional data are not complete release components yet.
+The developer bootstraps obtain upstream components with checksums. Normal app launch does not execute them. The combined Mac development staging now includes Java, separate parser/Lucene/image/PDF adapters and app-local English Tesseract. Individual staging commands are documented with each worker; running only the base README commands does not produce that full development inventory. Python, Chromium, Spatial and regional data remain outside the complete app bundle. None of the three release inventories is qualified.
 
 A supported release must provide a signed Windows installer and signed/notarized macOS packages, complete checksums, upstream licence/notice files, SBOMs and tests against the actual downloadable binaries on clean offline machines. No signing credential is stored in this repository. Development app bundles must remain labelled development.
 
@@ -29,6 +29,6 @@ There are no background update checks. A future supported update is an explicit 
 
 ## Current lifecycle limits
 
-Originals, decisions and report snapshots are retained; no automatic evidence deletion is implemented. Rebuildable index/cache directories may be removed only while the app is closed. Failed jobs and partial originals remain inspectable. Full durable job resume and scratch garbage collection remain work items; do not describe an interrupted collection as complete.
+Originals, decisions and report snapshots are retained; no automatic evidence deletion is implemented. Rebuildable index/cache directories may be removed only while the app is closed. Failed jobs and partial originals remain inspectable. Document/image/PDF jobs retain queued requests, attempts and immutable derivatives. Verified normal shutdown and manual retry are distinct from orphan recovery: an unverified worker exit suspends processing instead of assuming termination. Supervisor-crash process recovery, collection resume and scratch garbage collection remain work items; do not describe an interrupted collection as complete.
 
 Source verification pins Rust 1.90.0 in CI, matching the locally verified compiler. Updating that pin requires rerunning the supported source-build matrix; it does not change the end-user requirement to install no developer tools.
