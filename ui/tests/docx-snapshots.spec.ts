@@ -357,6 +357,168 @@ test("stale creation and corrupt catalogue metadata are explicit failures", asyn
   await expect(panel(page)).not.toContainText("No DOCX snapshots recorded.");
 });
 
+test("typed later-revision absence permits only an explicit new capture and retains the acknowledged request", async ({
+  page,
+}) => {
+  fixture();
+  const requests: any[] = [];
+  page.on("request", (request) => {
+    if (
+      request.url().endsWith("/api/workbench") &&
+      request.postDataJSON().action === "save_docx_snapshot"
+    )
+      requests.push(request.postDataJSON());
+  });
+  await open(page);
+  const newer = addSource();
+  await panel(page)
+    .getByRole("button", { name: "Capture DOCX snapshot", exact: true })
+    .click();
+  await expect(panel(page)).toContainText("Capture completion is unconfirmed:");
+  await panel(page)
+    .getByRole("button", { name: "Check DOCX capture outcome" })
+    .click();
+  await expect(panel(page)).toContainText(
+    `No snapshot is recorded for this request at workspace revision ${newer.revision}`,
+  );
+  await expect(
+    panel(page).getByRole("button", { name: "Start a new DOCX snapshot" }),
+  ).toBeEnabled();
+  expect(requests).toHaveLength(1);
+  expect(catalogue().total_count).toBe(0);
+  await panel(page)
+    .getByRole("button", { name: "Start a new DOCX snapshot" })
+    .click();
+  await expect(panel(page)).toContainText("Snapshot captured:");
+  expect(requests).toHaveLength(2);
+  expect(requests[1].request_id).not.toBe(requests[0].request_id);
+  expect(requests[1].expected_revision).toBe(newer.revision);
+  expect(catalogue().total_count).toBe(1);
+  await panel(page)
+    .getByText(/Recent acknowledged capture outcomes/)
+    .click();
+  await expect(panel(page)).toContainText(requests[0].request_id);
+  await expect(panel(page)).toContainText(
+    "A new capture was explicitly requested.",
+  );
+});
+
+test("typed absence at the same revision never enables a replacement and retries the original request", async ({
+  page,
+}) => {
+  fixture();
+  const requests: any[] = [];
+  await page.route("**/api/workbench", async (route) => {
+    const input = route.request().postDataJSON();
+    if (input.action !== "save_docx_snapshot") return route.continue();
+    requests.push(input);
+    if (requests.length === 1)
+      return route.fulfill({
+        status: 503,
+        json: { error: "Synthetic request delivery failure" },
+      });
+    await route.continue();
+  });
+  await open(page);
+  await panel(page)
+    .getByRole("button", { name: "Capture DOCX snapshot", exact: true })
+    .click();
+  await expect(panel(page)).toContainText("Capture completion is unconfirmed:");
+  await panel(page)
+    .getByRole("button", { name: "Check DOCX capture outcome" })
+    .click();
+  await expect(panel(page)).toContainText(
+    "A previously sent capture may still publish at this revision.",
+  );
+  await expect(
+    panel(page).getByRole("button", { name: "Start a new DOCX snapshot" }),
+  ).toHaveCount(0);
+  await panel(page)
+    .getByRole("button", { name: "Retry same DOCX capture" })
+    .click();
+  await expect(panel(page)).toContainText("Snapshot captured:");
+  expect(requests).toHaveLength(2);
+  expect(requests[0]).toEqual(requests[1]);
+  expect(catalogue().total_count).toBe(1);
+});
+
+test("verified outcome lookup recovers a saved acknowledgement through navigation without another capture", async ({
+  page,
+}) => {
+  fixture();
+  const held = gate(),
+    received = gate();
+  let writes = 0;
+  await page.route("**/api/workbench", async (route) => {
+    const input = route.request().postDataJSON();
+    if (input.action === "save_docx_snapshot") {
+      writes++;
+      await route.fetch();
+      return route.fulfill({
+        status: 503,
+        json: { error: "Synthetic lost capture acknowledgement" },
+      });
+    }
+    if (input.action !== "resolve_docx_capture") return route.continue();
+    const response = await route.fetch();
+    received.release();
+    await held.wait;
+    await route.fulfill({ response });
+  });
+  await open(page);
+  await panel(page)
+    .getByRole("button", { name: "Capture DOCX snapshot", exact: true })
+    .click();
+  await expect(panel(page)).toContainText("Capture completion is unconfirmed:");
+  const saved = catalogue().rows[0],
+    revision = view().revision;
+  await panel(page)
+    .getByRole("button", { name: "Check DOCX capture outcome" })
+    .click();
+  await received.wait;
+  await navigate(page, "Overview");
+  held.release();
+  await navigate(page, "Assessment");
+  await expect(panel(page)).toContainText(`Snapshot captured: ${saved.id}`);
+  expect(writes).toBe(1);
+  expect(view().revision).toBe(revision);
+});
+
+test("corrupt saved artifact blocks typed recovery and never becomes permission for a replacement", async ({
+  page,
+}) => {
+  fixture();
+  await page.route("**/api/workbench", async (route) => {
+    if (route.request().postDataJSON().action !== "save_docx_snapshot")
+      return route.continue();
+    await route.fetch();
+    await route.fulfill({
+      status: 503,
+      json: { error: "Synthetic lost capture acknowledgement" },
+    });
+  });
+  await open(page);
+  await panel(page)
+    .getByRole("button", { name: "Capture DOCX snapshot", exact: true })
+    .click();
+  await expect(panel(page)).toContainText("Capture completion is unconfirmed:");
+  const saved = catalogue().rows[0];
+  const path = resolve(root, "derivatives/objects", saved.document.sha256);
+  chmodSync(path, 0o600);
+  writeFileSync(path, "Synthetic corrupt frozen document");
+  await panel(page)
+    .getByRole("button", { name: "Check DOCX capture outcome" })
+    .click();
+  await expect(panel(page).getByRole("alert")).not.toContainText(
+    "Synthetic lost capture acknowledgement",
+  );
+  await expect(panel(page)).toContainText("Capture completion is unconfirmed:");
+  await expect(
+    panel(page).getByRole("button", { name: "Start a new DOCX snapshot" }),
+  ).toHaveCount(0);
+  expect(catalogue().total_count).toBe(1);
+});
+
 type Call = { command: string; args: Record<string, any> };
 async function nativeBridge(
   page: Page,

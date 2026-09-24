@@ -106,6 +106,13 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         // Extraction v1 is immutable history. New parse publications use extraction v2.
         let schemas = [
             (
+                "docx-capture-resolution",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxCaptureResolution
+                ))?,
+            ),
+            (
                 "docx-snapshot",
                 1,
                 serde_json::to_value(schemars::schema_for!(
@@ -327,7 +334,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                21,
+                22,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (

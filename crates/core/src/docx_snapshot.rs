@@ -56,6 +56,27 @@ pub struct DocxSnapshotInspection {
     pub document: report_document::ReportDocument,
 }
 
+/// Explicit request recovery, separate from the metadata-only catalogue.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct DocxCaptureResolution {
+    pub schema_version: u32,
+    pub request_id: String,
+    pub captured_revision: u64,
+    pub workspace_revision: u64,
+    pub outcome: DocxCaptureOutcome,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
+#[serde(tag = "state", rename_all = "snake_case", deny_unknown_fields)]
+pub enum DocxCaptureOutcome {
+    Saved {
+        snapshot: Box<DocxSnapshotRecord>,
+    },
+    /// Absence at this read snapshot. At the same revision, a previously sent
+    /// capture may still publish; only a strictly later revision precludes it.
+    NotRecorded,
+}
+
 pub const MAX_DOCX_CATALOGUE_ROWS: u32 = 50;
 pub const MAX_DOCX_CATALOGUE_BYTES: u64 = 256 * 1024;
 pub const MAX_DOCX_CURSOR_BYTES: usize = 2048;

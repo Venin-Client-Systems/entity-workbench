@@ -321,6 +321,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, mode: ResponseMode) -> Result<Value> {
         match command {
+            Command::ResolveDocxCapture {
+                request_id,
+                captured_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.resolve_docx_capture(&request_id, captured_revision)?,
+                )?);
+            }
             Command::SaveDocxSnapshot {
                 request_id,
                 expected_revision,

@@ -60,14 +60,18 @@ export function DocxSnapshots({
         <h2>Editable DOCX snapshots</h2>
         <button
           className="button primary"
-          disabled={busy || saved.phase === "creating"}
+          disabled={
+            busy || saved.phase === "creating" || saved.phase === "resolving"
+          }
           onClick={() => void capture.capture(revision, refresh)}
         >
           {saved.phase === "creating"
             ? "Capturing DOCX snapshot…"
-            : saved.phase === "uncertain"
-              ? "Retry same DOCX capture"
-              : "Capture DOCX snapshot"}
+            : saved.phase === "resolving"
+              ? "Checking capture outcome…"
+              : saved.phase === "uncertain"
+                ? "Retry same DOCX capture"
+                : "Capture DOCX snapshot"}
         </button>
       </div>
       <p className="context-note">
@@ -84,9 +88,11 @@ export function DocxSnapshots({
       )}
       {saved.phase === "uncertain" && (
         <div>
-          <p className="alert error" role="alert">
-            Capture completion is unconfirmed: {saved.error}
-          </p>
+          {saved.error && (
+            <p className="alert error" role="alert">
+              Capture completion is unconfirmed: {saved.error}
+            </p>
+          )}
           <p>
             Retry retains request <code>{saved.request!.id}</code> and captured
             revision {saved.request!.revision}. Refresh does not create a new
@@ -94,7 +100,61 @@ export function DocxSnapshots({
             current revision. Request recovery is retained only while this
             application remains open.
           </p>
+          <button
+            className="button"
+            disabled={busy}
+            onClick={() => void capture.resolve(revision, refresh)}
+          >
+            Check DOCX capture outcome
+          </button>
+          {saved.resolution?.outcome.state === "not_recorded" && (
+            <div>
+              <p role="status">
+                No snapshot is recorded for this request at workspace revision{" "}
+                {saved.resolution.workspace_revision}.
+              </p>
+              {saved.resolution.workspace_revision ===
+              saved.request!.revision ? (
+                <p>
+                  A previously sent capture may still publish at this revision.
+                  Retry the same request; a replacement is not authorized.
+                </p>
+              ) : (
+                <>
+                  <p>
+                    The workspace has advanced beyond the retained capture
+                    revision. That old request can no longer publish. Starting a
+                    new capture acknowledges this outcome and uses a new request
+                    at the visible revision.
+                  </p>
+                  <button
+                    className="button"
+                    disabled={
+                      busy || revision < saved.resolution.workspace_revision
+                    }
+                    onClick={() => void capture.startNew(revision, refresh)}
+                  >
+                    Start a new DOCX snapshot
+                  </button>
+                  {revision < saved.resolution.workspace_revision && (
+                    <p>Refresh the workspace before starting a new capture.</p>
+                  )}
+                </>
+              )}
+              {saved.refreshFailed && (
+                <p className="alert error" role="alert">
+                  The outcome is retained, but workspace refresh failed.
+                </p>
+              )}
+            </div>
+          )}
         </div>
+      )}
+      {saved.phase === "resolving" && (
+        <p role="status">
+          Checking the retained request and its frozen artifacts. Navigation
+          preserves this lookup.
+        </p>
       )}
       {saved.phase === "saved" && saved.snapshot && (
         <p className="alert" role="status">
@@ -103,6 +163,23 @@ export function DocxSnapshots({
           {saved.refreshFailed &&
             " Workspace refresh failed; the snapshot is saved. Refresh the catalogue separately."}
         </p>
+      )}
+      {saved.acknowledged.length > 0 && (
+        <details>
+          <summary>
+            Recent acknowledged capture outcomes ({saved.acknowledged.length},
+            up to 20)
+          </summary>
+          <ul>
+            {saved.acknowledged.map((item) => (
+              <li key={item.request.id}>
+                Request <code>{item.request.id}</code> for source revision{" "}
+                {item.request.revision}: no record at revision{" "}
+                {item.resolvedRevision}. A new capture was explicitly requested.
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
       <button
         className="button"

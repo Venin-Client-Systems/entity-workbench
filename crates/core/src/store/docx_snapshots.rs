@@ -72,6 +72,51 @@ fn reference(kind: ReportArtifactKind, bytes: &[u8]) -> Result<ReportArtifactRef
     Ok(reference)
 }
 impl Workspace {
+    /// Recover one uncertain caller identity without scanning the catalogue or
+    /// regenerating current content. Corrupt/unavailable records are errors.
+    pub fn resolve_docx_capture(
+        &self,
+        request_id: &str,
+        captured_revision: u64,
+    ) -> Result<DocxCaptureResolution> {
+        self.resolve_docx_capture_checked(request_id, captured_revision, || Ok(()))
+    }
+    fn resolve_docx_capture_checked(
+        &self,
+        request_id: &str,
+        captured_revision: u64,
+        after_revision: impl FnOnce() -> Result<()>,
+    ) -> Result<DocxCaptureResolution> {
+        key(request_id)?;
+        let transaction = self.conn.unchecked_transaction()?;
+        let revision = self.revision()?;
+        if revision < captured_revision {
+            return Err(Error::Conflict(
+                "Workspace revision precedes the retained DOCX request".into(),
+            ));
+        }
+        after_revision()?;
+        let outcome = if let Some(record) = lookup(&transaction, request_id)? {
+            require(
+                record.workspace_revision == captured_revision,
+                "DOCX request identity belongs to another source revision",
+            )?;
+            self.verify_docx_snapshot(&record)?;
+            DocxCaptureOutcome::Saved {
+                snapshot: Box::new(record),
+            }
+        } else {
+            DocxCaptureOutcome::NotRecorded
+        };
+        transaction.commit()?;
+        Ok(DocxCaptureResolution {
+            schema_version: 1,
+            request_id: request_id.into(),
+            captured_revision,
+            workspace_revision: revision,
+            outcome,
+        })
+    }
     /// The caller retains one UUID through retries. This operation never modifies an existing snapshot.
     pub fn save_docx_snapshot(
         &mut self,

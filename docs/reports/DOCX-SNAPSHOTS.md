@@ -155,3 +155,35 @@ no-clobber commit and lost-acknowledgement recommit behavior remain. Saving a DO
 copy does not create a new canonical report or advance its revision. The frontend
 must check its active selection/lifetime between preparation and commit. Desktop
 DOCX controls, native UI proof and Word editing proof remain separate work.
+
+## Typed uncertain-request recovery
+
+Command format 22 adds `resolve_docx_capture { request_id, captured_revision }`.
+It returns the standalone format-1 `DocxCaptureResolution` directly in all
+response modes, without default workspace arrays or another publication. Earlier
+command and artifact schema files remain unchanged.
+
+The envelope binds the request UUID, captured revision and one pinned current
+workspace revision. Its `outcome` is either `saved { snapshot }` or `not_recorded`.
+Saved requires the existing exact frozen-document/DOCX/source verification; it
+never regenerates from current analytical data. Invalid metadata, a conflicting
+source revision or unavailable/corrupt artifacts is an error, never absence.
+This explicit lookup may perform the same bounded rendering/verification work as
+inspection, unlike the metadata-only catalogue.
+
+Absence is only at the read snapshot. At the captured revision an earlier request
+can still publish, so absence cannot authorize replacing that request. A strictly
+later current revision prevents that original request from passing publication's
+exact revision guard. Callers may offer a distinct analyst action to acknowledge
+the absent old request and start a new capture; the lookup itself never writes.
+A current revision below the retained captured revision is rejected. Canonical
+restore writes a new empty target rather than replacing a live workspace; callers
+must not transfer in-memory request state between different workspaces or treat
+revision rollback as new-capture permission.
+
+Tests exercise all direct response modes, a real concurrent WAL writer after the
+read revision is pinned, a previously sent same-revision capture publishing after
+an absent lookup, rejection of that old publication after another write, corrupt
+and mismatched records, and same/older-revision restored copies. UI recovery uses
+these typed outcomes and retains the acknowledged old request when the analyst
+explicitly starts a new capture.

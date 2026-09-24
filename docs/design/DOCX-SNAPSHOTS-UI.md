@@ -30,12 +30,22 @@ retains exactly the same UUID and captured revision through navigation and
 remounting. Retry cannot silently replace either value. This state is held only
 for the current application lifetime; reload/restart recovery is not implemented.
 
-The current transport exposes untyped error messages. Consequently this first
-UI slice conservatively treats a definitive source-revision rejection like an
-uncertain acknowledgement. It offers same-request retry and does not infer
-permission to start a replacement capture from error wording. A typed lookup
-and analyst-authorized recovery flow is a follow-up; this error flow is not
-claimed complete.
+Creation errors initially retain the same request, without inferring publication
+from message text. **Check DOCX capture outcome** makes a typed, explicit lookup.
+A saved outcome verifies the frozen artifacts and sources and recovers the
+canonical record; unavailable or corrupt data remains an error. Absence at the
+same source revision cannot rule out an earlier request still publishing, so only
+the same request can be retried. Absence at a strictly later revision proves that
+the old request cannot pass its publication revision guard. Only then does the UI
+offer **Start a new DOCX snapshot** as a separate analyst action, after refreshing
+to at least that visible revision. It retains up to 20 acknowledged old outcomes
+in the open application. No lookup automatically creates a replacement.
+
+Recovery is scoped to this application's fixed workspace. A response older than
+the visible revision at lookup start is rejected. Restoring a backup uses a new,
+empty target; there is no live workspace-switching UI or persistent recovery
+ticket store. Same-revision restored absence does not authorize replacement, and
+a workspace older than the captured revision is rejected.
 
 Native saving sends only the snapshot ID and both expected artifact digests.
 Rust loads and verifies the retained document and DOCX, prepares a private
@@ -64,3 +74,12 @@ overflow and its axe scan reported no violations. Desktop, compact and native
 save-receipt images were inspected locally. These checks establish browser
 behaviour; the DOCX Figma comparison and actual native application checks remain
 separate evidence.
+
+The typed-recovery follow-up adds four real-core browser workflows: explicit
+replacement after verified later-revision absence, same-revision refusal,
+saved-outcome recovery through navigation without a second write, and corruption
+remaining unavailable. The combined DOCX/assessment/native-export set passes
+21 cases. Five canonical recovery tests include actual concurrent publication and
+restored copies; the full ordinary core suite passes 377 tests with 22 native
+engine tests still ignored in this source-only run. These counts describe this
+isolated checkout, not independent release approval.

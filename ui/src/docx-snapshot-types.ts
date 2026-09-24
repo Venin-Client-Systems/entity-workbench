@@ -23,6 +23,40 @@ export type DocxSnapshotPage = {
   rows: DocxSnapshot[];
   next_cursor: string | null;
 };
+export type DocxCaptureResolution = {
+  schema_version: 1;
+  request_id: string;
+  captured_revision: number;
+  workspace_revision: number;
+  outcome:
+    { state: "saved"; snapshot: DocxSnapshot } | { state: "not_recorded" };
+};
+export function validateDocxResolution(
+  value: DocxCaptureResolution,
+  id: string,
+  captured: number,
+  minimumRevision: number,
+): void {
+  if (
+    !value ||
+    value.schema_version !== 1 ||
+    value.request_id !== id ||
+    value.captured_revision !== captured ||
+    !wholeNumber(value.workspace_revision) ||
+    value.workspace_revision < captured ||
+    value.workspace_revision < minimumRevision ||
+    (value.outcome?.state !== "not_recorded" &&
+      value.outcome?.state !== "saved") ||
+    (value.outcome.state === "saved" &&
+      (!isDocxSnapshot(value.outcome.snapshot) ||
+        value.outcome.snapshot.id !== id ||
+        value.outcome.snapshot.workspace_revision !== captured ||
+        value.workspace_revision <= captured))
+  )
+    throw new Error(
+      "DOCX recovery response did not match this request and visible workspace revision.",
+    );
+}
 export const docxUuid = (value: unknown): value is string =>
   typeof value === "string" &&
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(value);

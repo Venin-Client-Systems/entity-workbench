@@ -394,6 +394,10 @@ pub enum Command {
         request_id: String,
         expected_revision: u64,
     },
+    ResolveDocxCapture {
+        request_id: String,
+        captured_revision: u64,
+    },
     PageDocxSnapshots {
         request: crate::docx_snapshot::DocxSnapshotPageRequest,
         expected_revision: u64,

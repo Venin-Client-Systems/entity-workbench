@@ -70,6 +70,169 @@ fn no_publication(workspace: &Workspace, revision: u64) {
 }
 
 #[test]
+fn recovery_direct_commands_verify_saved_identity_without_another_write_or_refresh() {
+    type Dispatch = fn(&mut Workspace, Command) -> Result<Value>;
+    for dispatch in [
+        Workspace::dispatch as Dispatch,
+        Workspace::dispatch_presentation,
+        Workspace::dispatch_summary,
+    ] {
+        let (_temp, mut workspace) = workspace();
+        let revision = workspace.revision().unwrap();
+        let request = id();
+        let command = Command::ResolveDocxCapture {
+            request_id: request.clone(),
+            captured_revision: revision,
+        };
+        let absent: DocxCaptureResolution =
+            serde_json::from_value(dispatch(&mut workspace, command.clone()).unwrap()).unwrap();
+        assert_eq!(absent.workspace_revision, revision);
+        assert_eq!(absent.outcome, DocxCaptureOutcome::NotRecorded);
+        let record = workspace.save_docx_snapshot(&request, revision).unwrap();
+        workspace
+            .import("later.txt", b"Synthetic later source")
+            .unwrap();
+        let current = workspace.revision().unwrap();
+        let response = dispatch(&mut workspace, command).unwrap();
+        assert!(response.get("workspace").is_none());
+        let result: DocxCaptureResolution = serde_json::from_value(response).unwrap();
+        assert_eq!(result.request_id, request);
+        assert_eq!(result.captured_revision, revision);
+        assert_eq!(result.workspace_revision, current);
+        assert_eq!(
+            result.outcome,
+            DocxCaptureOutcome::Saved {
+                snapshot: Box::new(record)
+            }
+        );
+        assert_eq!(workspace.revision().unwrap(), current);
+        assert_eq!(workspace.docx_records().unwrap().len(), 1);
+    }
+}
+
+#[test]
+fn recovery_absence_at_same_revision_cannot_preclude_an_already_sent_capture() {
+    let (_temp, mut workspace) = workspace();
+    let request = id();
+    let revision = workspace.revision().unwrap();
+    workspace
+        .save_docx_snapshot_checked(&request, revision, |root| {
+            let other = Workspace::open(root)?;
+            let result = other.resolve_docx_capture(&request, revision)?;
+            assert_eq!(result.outcome, DocxCaptureOutcome::NotRecorded);
+            assert_eq!(result.workspace_revision, revision);
+            Ok(())
+        })
+        .unwrap();
+    assert!(matches!(
+        workspace
+            .resolve_docx_capture(&request, revision)
+            .unwrap()
+            .outcome,
+        DocxCaptureOutcome::Saved { .. }
+    ));
+    let next = id();
+    let next_revision = workspace.revision().unwrap();
+    let result = workspace.save_docx_snapshot_checked(&next, next_revision, |root| {
+        let mut other = Workspace::open(root)?;
+        other.import(
+            "changed.txt",
+            b"Synthetic later revision rules out old publication",
+        )?;
+        let result = other.resolve_docx_capture(&next, next_revision)?;
+        assert_eq!(result.outcome, DocxCaptureOutcome::NotRecorded);
+        assert!(result.workspace_revision > next_revision);
+        Ok(())
+    });
+    assert!(matches!(result, Err(Error::Conflict(_))));
+    assert!(matches!(
+        workspace.save_docx_snapshot(&next, next_revision),
+        Err(Error::Conflict(_))
+    ));
+    assert_eq!(workspace.docx_records().unwrap().len(), 1);
+}
+
+#[test]
+fn recovery_pins_revision_and_lookup_while_an_actual_writer_publishes() {
+    let (_temp, workspace) = workspace();
+    let mut writer = Workspace::open(&workspace.root).unwrap();
+    workspace
+        .conn
+        .pragma_update(None, "journal_mode", "WAL")
+        .unwrap();
+    writer
+        .conn
+        .pragma_update(None, "journal_mode", "WAL")
+        .unwrap();
+    let request = id();
+    let revision = workspace.revision().unwrap();
+    let result = workspace
+        .resolve_docx_capture_checked(&request, revision, || {
+            writer.save_docx_snapshot(&request, revision)?;
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(result.workspace_revision, revision);
+    assert_eq!(result.outcome, DocxCaptureOutcome::NotRecorded);
+    let result = workspace.resolve_docx_capture(&request, revision).unwrap();
+    assert_eq!(result.workspace_revision, revision + 1);
+    assert!(matches!(result.outcome, DocxCaptureOutcome::Saved { .. }));
+}
+
+#[test]
+fn recovery_never_labels_corrupt_conflicting_or_future_identity_as_absent() {
+    let (_temp, mut workspace) = workspace();
+    let record = save(&mut workspace);
+    let revision = workspace.revision().unwrap();
+    for request in [
+        "".to_owned(),
+        "a".repeat(100_000),
+        format!("{{{}}}", record.id),
+    ] {
+        assert!(workspace.resolve_docx_capture(&request, revision).is_err());
+    }
+    assert!(workspace
+        .resolve_docx_capture(&record.id, revision)
+        .is_err());
+    assert!(matches!(
+        workspace.resolve_docx_capture(&id(), revision + 1),
+        Err(Error::Conflict(_))
+    ));
+    let path = object(&workspace, &record.docx.sha256);
+    overwrite(&path, b"Synthetic corrupt frozen DOCX");
+    assert!(workspace
+        .resolve_docx_capture(&record.id, record.workspace_revision)
+        .is_err());
+    put(&workspace.conn, KIND, &record.id, &json!({})).unwrap();
+    assert!(workspace
+        .resolve_docx_capture(&record.id, record.workspace_revision)
+        .is_err());
+}
+
+#[test]
+fn recovery_restored_copies_do_not_authorize_replacement_at_same_or_earlier_revision() {
+    let (temp, mut workspace) = workspace();
+    let initial_revision = workspace.revision().unwrap();
+    let backup = workspace.backup().unwrap();
+    workspace
+        .import("after-backup.txt", b"Synthetic content after backup")
+        .unwrap();
+    let request = id();
+    let later_revision = workspace.revision().unwrap();
+    let restored = Workspace::restore(&backup, &temp.path().join("restored-recovery")).unwrap();
+    assert!(matches!(
+        restored.resolve_docx_capture(&request, later_revision),
+        Err(Error::Conflict(_))
+    ));
+    let result = restored
+        .resolve_docx_capture(&request, initial_revision)
+        .unwrap();
+    assert_eq!(result.workspace_revision, initial_revision);
+    assert_eq!(result.outcome, DocxCaptureOutcome::NotRecorded);
+    assert_eq!(workspace.revision().unwrap(), later_revision);
+}
+
+#[test]
 fn frozen_money_sources_and_legacy_html_survive_corrections_replay_and_restore() {
     let (temp, mut workspace) = workspace();
     workspace.save_report().unwrap();
