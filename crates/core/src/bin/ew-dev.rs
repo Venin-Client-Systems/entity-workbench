@@ -10,7 +10,35 @@ use workbench_core::{
     statements::{StatementMapping, StatementPreview, StatementSample},
     store::Workspace,
 };
+#[cfg(debug_assertions)]
+fn raster_binary() -> workbench_core::Result<()> {
+    use std::io::Write;
+    let args: Vec<String> = std::env::args().collect();
+    workbench_core::require(
+        args.len() == 4,
+        "Binary reader requires one workspace and extraction identity",
+    )?;
+    let key = &args[3];
+    workbench_core::require(
+        key.len() == 64
+            && key
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+        "Invalid extraction identity",
+    )?;
+    let bytes = Workspace::open(&args[2])?.read_image_region_raster(key)?;
+    std::io::stdout().lock().write_all(&bytes)?;
+    Ok(())
+}
 fn main() {
+    #[cfg(debug_assertions)]
+    if std::env::args().nth(1).as_deref() == Some("read-image-region-raster") {
+        if raster_binary().is_err() {
+            eprintln!("Retained raster could not be verified or read");
+            std::process::exit(1);
+        }
+        return;
+    }
     let result = run();
     match result {
         Ok(value) => println!("{}", value),
@@ -22,6 +50,15 @@ fn main() {
 }
 fn run() -> workbench_core::Result<serde_json::Value> {
     let arg = std::env::args().nth(1).unwrap_or_default();
+    #[cfg(debug_assertions)]
+    if arg == "seed-image-region-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_image_region_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
     #[cfg(debug_assertions)]
     if arg == "seed-collection-review" {
         let path = std::env::args().nth(2).ok_or_else(|| {

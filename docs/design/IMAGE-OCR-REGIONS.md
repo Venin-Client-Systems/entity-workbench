@@ -4,8 +4,9 @@ This design adds an explicit, opt-in image OCR method that retains a local
 grayscale raster, exact TSV and immutable recognition result. Analysts can
 inspect a word alongside its raster box. Selection is read-only: it does not
 accept an observation, create an original-document anchor, correct OCR text or
-set analyst confidence. This increment contains design materials only; it does
-not implement or verify the application interface.
+set analyst confidence. The development interface implements these controls with real canonical
+reads and synthetic browser verification. Native transport and supported-platform
+execution retain separate verification steps.
 
 ## Editable frames and observation limits
 
@@ -32,8 +33,9 @@ The committed SVG sources preserve all three designs independently of that
 connection. The [checksum manifest](review/image-ocr-regions/checksums.json)
 records exactly which native exports exist and leaves the third unverified.
 
-These are design review specimens. No application screenshot, accessibility
-pass, owner acceptance or completed feature is implied. The final states PNG
+These Figma frames are design review specimens. Application comparison
+artifacts and scoped accessibility results are recorded separately below;
+neither establishes owner acceptance or complete release approval. The final states PNG
 and remote save should be verified when the design connection is restored,
 without creating duplicate frames.
 
@@ -59,11 +61,26 @@ timestamp and typed digest/length references; the result carries decoder and
 optional recognition data. Successful and no-text recognition retain raster,
 TSV and result. Decoder rejection retains the typed result only.
 
-At this handoff the core owner has implemented a Rust-only verified raster
-reader. A bounded display IPC adapter still needs integration. The interface
-must receive verified bytes tied to the inspected extraction, never a path,
-`file://` URL, arbitrary file reader or worker-provided network URL. The design
-does not itself create that transport contract.
+The display adapter calls the full-chain verified raster reader through a
+read-only coordinator accessor. Native `image_region_raster(extraction_id)`
+returns a Tauri binary response; its only input is a canonical extraction
+digest. The development-only same-origin route calls the same workspace
+reader through a fixed debug CLI branch. Neither accepts a frontend file path,
+`file://` URL, arbitrary file reader or worker-provided network URL.
+
+The browser accepts at most 12,000,032 response bytes, requires canonical P5
+headers, dimensions of 1–8192 and at most 12 million pixels, verifies the exact
+pixel count, and checks SHA-256 against the inspected immutable record before
+allocating RGBA pixels. WebCrypto absence fails explicitly. RGBA storage is
+bounded to 48 million bytes; this is not a whole-process memory claim.
+
+The development bridge permits only loopback same-origin POSTs with a bounded
+extraction-only JSON body. It buffers bounded child output and returns binary
+bytes only after successful process closure. Timeout, output/stderr overflow
+and client disconnection stop the child; closure is observed before any
+response is published. Errors are generic, bounded and excluded from binary
+stdout. The helper accepts no extra CLI arguments and is absent from release
+builds.
 
 ## Raster, list and selection
 
@@ -123,11 +140,15 @@ limitations and creation time. Long identifiers wrap without truncating their
 copyable values. Decoder and recognition are distinct worker results. The
 engine's region hierarchy is preserved; it is not a reviewed source anchor.
 
-## Implementation verification required
+## Implementation verification
 
-The browser suite must use real Rust inspection/queue commands and canonical
-synthetic fixtures. Fixed state specimens must say no worker ran; actual
-confined decoder/OCR execution remains separate native evidence.
+The browser suite uses actual Rust inspection/queue commands and the fixed
+debug-only `seed-image-region-review` helper. The helper requires an empty
+workspace and uses canonical import, queue, claim, finish, cancellation and
+retry methods. Its twelve jobs and eight derivatives are explicit synthetic
+state specimens; no worker runs. Actual confined decoder/OCR execution remains
+separate native evidence. The box coordinates and recognition in these
+specimens test interface binding, not OCR fidelity to the displayed raster.
 
 Required checks include exact original/raster/TSV/result bindings; leading-zero
 and script-like text; selected-box geometry at fit and 100%; complete word
@@ -143,3 +164,64 @@ rendered application comparisons against these Figma frames are required
 before an implemented UI handoff. Native WebKit/WebView2 behavior, real browser
 zoom, screen-reader use and supported-platform packaging remain distinct
 verification obligations.
+
+
+The production UI build passed, with the existing large-bundle warning. All
+59 browser workflows passed: the 50 previous workflows and nine region cases.
+Those nine cover actual binary byte equality and malformed P5/digest refusal;
+separate provenance; inert text and Copy; fit/100% box hit testing and unchanged
+revision; complete paginated word counts; compact keyboard/focus/overflow;
+whitespace-only and decoder rejection states; actual missing raster and altered
+TSV refusal; late binary completion after closing; lost queue acknowledgement
+across navigation and terminal state; canonical cancel/retry; same-origin input
+refusal; and explicit failure without WebCrypto. No external requests were
+observed in the recognized-result workflow.
+
+The first targeted run passed seven of eight tests. The delayed-response test
+ended before its intercepted real response finished, causing Playwright to
+report an already-handled route during teardown. The test now awaits that
+actual fulfillment before checking the new inspector; the next eight tests
+passed. Adding the WebCrypto case produced nine passes, followed by the full
+59-test pass. Visual inspection then verified the four-column desktop metrics,
+selected-row highlight and list-scroll reset included in the final full run.
+
+After that browser pass, peer review added a narrow development-bridge guard:
+already-aborted requests or destroyed responses are refused before child
+creation. No browser rerun is attributed to that subsequent guard.
+
+Two focused Rust tests passed for canonical seed publication and the
+coordinator's read-only binary accessor, including revision preservation and
+shutdown refusal. Strict debug and release core Clippy passed. The first full core test run
+exposed an existing coordinator restart ownership-lock failure: 106 passed,
+one failed and 21 native tests ignored. Its exact failure excerpt is retained
+in [core-initial-failure.txt](review/image-ocr-regions/core-initial-failure.txt).
+The coordinator owner reproduced inherited-lock contention with an actual
+fork and repaired explicit release after joined shutdown in `199e34ec`. That
+repair was integrated locally as `a8d7db8`. The final ordinary core suite
+passed 176 tests (110 unit and 66 integration); all 21 native tests remained
+ignored. The earlier failed run remains visible and is not relabelled.
+
+The retained comparisons include the [desktop viewport](review/image-ocr-regions/recognized-desktop.png),
+[complete desktop inspector](review/image-ocr-regions/recognized-full.png),
+[selected-word/text details](review/image-ocr-regions/recognized-details.png),
+and [compact expanded inspector](review/image-ocr-regions/many-compact.png).
+Alternate captures show [no text](review/image-ocr-regions/empty.png),
+[unsupported input](review/image-ocr-regions/unsupported.png),
+[decode failure](review/image-ocr-regions/failed.png),
+[resource exhaustion](review/image-ocr-regions/quota.png), and
+[unavailable storage](review/image-ocr-regions/unavailable.png).
+
+The application retains the existing 920px modal width, adapts the desktop
+frame's side-by-side sections, and stacks them in compact windows. Ordinary
+checks use 1440×1000 and 720×900 viewports, plus 720×500 containment. Complete
+captures use 1440×2600 and 720×3800 to expose scrollable contents without changing
+application styles. These dimensions do not simulate browser zoom. Both scoped
+[desktop](review/image-ocr-regions/accessibility-desktop.json) and
+[compact](review/image-ocr-regions/accessibility-compact.json) axe checks report
+zero WCAG 2 A/AA and 2.1 AA violations.
+
+A full native Tauri binary-transport run, native WebKit/WebView2 behavior,
+platform memory measurements, manual screen-reader review, restored Figma
+remote sync and the final states-frame export remain separate verification
+work. No accepted word anchors, OCR accuracy claim or complete release pass is
+established by this increment.

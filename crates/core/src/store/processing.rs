@@ -1144,3 +1144,7 @@ mod pdf_tests;
 #[cfg(test)]
 #[path = "processing_region_tests.rs"]
 mod region_tests;
+
+#[cfg(debug_assertions)]
+#[path = "processing_region_demo.rs"]
+mod region_demo;

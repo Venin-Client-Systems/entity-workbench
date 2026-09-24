@@ -18,6 +18,28 @@ async fn workbench(
     .await
     .map_err(|_| "Workspace task interrupted".to_string())?
 }
+#[tauri::command]
+async fn image_region_raster(
+    extraction_id: String,
+    state: tauri::State<'_, Arc<JobCoordinator>>,
+) -> Result<tauri::ipc::Response, String> {
+    if extraction_id.len() != 64
+        || !extraction_id
+            .bytes()
+            .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+    {
+        return Err("Invalid extraction identity".into());
+    }
+    let coordinator = state.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        coordinator
+            .read_image_region_raster(&extraction_id)
+            .map(tauri::ipc::Response::new)
+            .map_err(|_| "Retained raster could not be verified or read".to_owned())
+    })
+    .await
+    .map_err(|_| "Raster read interrupted".to_owned())?
+}
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
@@ -37,7 +59,7 @@ fn main() {
                 .build()?;
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![workbench])
+        .invoke_handler(tauri::generate_handler![workbench, image_region_raster])
         .build(tauri::generate_context!())
         .expect("Unable to launch Entity Workbench")
         .run(|app, event| {

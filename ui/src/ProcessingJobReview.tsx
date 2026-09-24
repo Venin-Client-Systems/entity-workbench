@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
 import { ExtractionReview } from "./ExtractionReview";
+import { ImageRegionReview } from "./ImageRegionReview";
 import { ImageExtractionReview } from "./ImageExtractionReview";
 import { PdfExtractionReview } from "./PdfExtractionReview";
 import {
@@ -333,7 +334,17 @@ export function ProcessingJobReview({
         </Dialog>
       )}
       {extraction &&
-        (job?.input.operation === "pdf_page_ocr" ? (
+        (job?.input.operation === "image_ocr_regions" ? (
+          <ImageRegionReview
+            key={extraction}
+            extractionId={extraction}
+            sourceName={
+              evidence.find((item) => item.id === job.input.evidence_id)
+                ?.name ?? "Retained original"
+            }
+            onClose={() => setExtraction(null)}
+          />
+        ) : job?.input.operation === "pdf_page_ocr" ? (
           <PdfExtractionReview
             key={extraction}
             extractionId={extraction}

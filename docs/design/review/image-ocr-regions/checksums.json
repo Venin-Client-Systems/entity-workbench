@@ -1,6 +1,6 @@
 {
   "format_version": 1,
-  "scope": "design-only; illustrative synthetic data; no application verification",
+  "scope": "editable design and real-core synthetic browser comparison; no native execution or accuracy claim",
   "observed_date": "2026-09-25",
   "figma_file": "O50ISV0LGG8nKDcFORNMbO",
   "native_export_method": "Figma Copy as PNG; 2x",
@@ -80,6 +80,68 @@
           "sha256": "1c34aed29712b2100192ce42e293486de27fa5a06da145967cbf4d67563d69ea"
         }
       ]
+    }
+  ],
+  "application_artifacts": [
+    {
+      "path": "recognized-desktop.png",
+      "bytes": 87156,
+      "sha256": "e4c5fc59a9b8c2c025ad02edc04673c407c00f2759bd3b434a84bf9be886b998"
+    },
+    {
+      "path": "recognized-full.png",
+      "bytes": 175033,
+      "sha256": "9b7532c64c8ec6dae61bb61a68aa1a0205681c208cefa772a57c81651bece121"
+    },
+    {
+      "path": "recognized-details.png",
+      "bytes": 90248,
+      "sha256": "c13dab206e5d5ad61729224fffecd8568740d33e5e7005637eea722cc10082f4"
+    },
+    {
+      "path": "many-compact.png",
+      "bytes": 304551,
+      "sha256": "d50fb15159c799dddf742031c4b56412cf2c1a829ca00b6a54f086df239365ee"
+    },
+    {
+      "path": "empty.png",
+      "bytes": 117141,
+      "sha256": "3d6228721674909a5cd17902f348f1355cc5276114af1a2420a255dd78931bf2"
+    },
+    {
+      "path": "unsupported.png",
+      "bytes": 83452,
+      "sha256": "2973f6f0034ce6202a885e444be2908ee5456eeb7e6476ab72a1ef229ac85372"
+    },
+    {
+      "path": "failed.png",
+      "bytes": 81290,
+      "sha256": "688dc11f0a11c3b2f7c674e42c84b46f4923a366de5196e333088609b7196be9"
+    },
+    {
+      "path": "quota.png",
+      "bytes": 83195,
+      "sha256": "f9662034ef18d1bd5c6ade291feb240b869e7745195f6e4f959bfb7ba8eeca68"
+    },
+    {
+      "path": "unavailable.png",
+      "bytes": 35037,
+      "sha256": "5dd712ffda28441151c8d7616fa2b81c4cc3d031b85758e3177f6081f4ecdf2f"
+    },
+    {
+      "path": "accessibility-desktop.json",
+      "bytes": 56,
+      "sha256": "a8b7037a8ef0367cb219b6488afbd7eed4fca19de5ffb6c24f360dd1213c271a"
+    },
+    {
+      "path": "accessibility-compact.json",
+      "bytes": 56,
+      "sha256": "a8b7037a8ef0367cb219b6488afbd7eed4fca19de5ffb6c24f360dd1213c271a"
+    },
+    {
+      "path": "core-initial-failure.txt",
+      "bytes": 951,
+      "sha256": "47f044ecea7ff01732c206cf739912bce76bb5700744b1fe6613a6e6b7d9bdeb"
     }
   ]
 }

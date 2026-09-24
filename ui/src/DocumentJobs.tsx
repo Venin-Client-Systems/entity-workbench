@@ -90,9 +90,11 @@ export function DocumentJobs({
       const job = await command<ProcessingJob>({
         action: isPdf
           ? "queue_pdf_page_ocr"
-          : method === "image_ocr"
-            ? "queue_image_ocr"
-            : "queue_document_parse",
+          : method === "image_ocr_regions"
+            ? "queue_image_ocr_regions"
+            : method === "image_ocr"
+              ? "queue_image_ocr"
+              : "queue_document_parse",
         evidence_id: input,
         request_key: requestKey,
         ...(isPdf ? { page_number: Number(pageNumber), dpi: Number(dpi) } : {}),
@@ -103,7 +105,7 @@ export function DocumentJobs({
         if (mounted.current) {
           setSelected(job.id);
           setNotice(
-            `${isPdf ? "PDF page OCR" : method === "image_ocr" ? "Image OCR" : "Document"} job acknowledged: ${jobLabel(job).toLowerCase()}.`,
+            `${isPdf ? "PDF page OCR" : method === "image_ocr_regions" ? "Image word-region OCR" : method === "image_ocr" ? "Image OCR" : "Document"} job acknowledged: ${jobLabel(job).toLowerCase()}.`,
           );
         }
       }
@@ -133,9 +135,11 @@ export function DocumentJobs({
           ? "Recover queue acknowledgement"
           : isPdf
             ? "Queue PDF page OCR"
-            : method === "image_ocr"
-              ? "Queue image OCR"
-              : "Queue document"}
+            : method === "image_ocr_regions"
+              ? "Queue word-region OCR"
+              : method === "image_ocr"
+                ? "Queue image OCR"
+                : "Queue document"}
     </button>
   );
   return (
@@ -165,6 +169,9 @@ export function DocumentJobs({
             >
               <option value="parse_document">Document parsing</option>
               <option value="image_ocr">Image OCR · English (PNG/JPEG)</option>
+              <option value="image_ocr_regions">
+                Image OCR + word regions · English
+              </option>
               <option value="pdf_page_ocr">PDF page OCR · English</option>
             </select>
           </label>
@@ -228,6 +235,15 @@ export function DocumentJobs({
             queueButton
           )}
         </div>
+        {method === "image_ocr_regions" && (
+          <p className="context-note">
+            This method retains the canonical grayscale raster, TSV and
+            immutable recognition result locally. It adds unreviewed word boxes
+            for one PNG/JPEG image. Existing text-only image OCR remains
+            separate. Encoded pixels are used; EXIF orientation is not applied.
+            No accepted source anchor is created.
+          </p>
+        )}
         {method === "image_ocr" && (
           <p className="context-note">
             English OCR supports one PNG or JPEG image. PDF pages, other image

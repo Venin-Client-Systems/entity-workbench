@@ -157,6 +157,22 @@ impl JobCoordinator {
         Ok(result)
     }
 
+    /// Read only: full canonical original/raster/TSV/result verification precedes binary display.
+    pub fn read_image_region_raster(&self, extraction_id: &str) -> Result<Vec<u8>> {
+        if self.shared.stopping.load(Ordering::Acquire) {
+            return Err(Error::Blocked("Workspace coordinator is stopping".into()));
+        }
+        let workspace = self
+            .shared
+            .workspace
+            .lock()
+            .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+        if self.shared.stopping.load(Ordering::Acquire) {
+            return Err(Error::Blocked("Workspace coordinator is stopping".into()));
+        }
+        workspace.read_image_region_raster(extraction_id)
+    }
+
     /// Must be called by the desktop exit callback: its runtime may exit without running Drop.
     /// Safe to call repeatedly or concurrently. Return only after every executor has joined.
     pub fn shutdown(&self) -> Result<()> {
@@ -347,6 +363,67 @@ mod tests {
         )
         .unwrap()
     }
+    #[test]
+    #[cfg(debug_assertions)]
+    fn raster_accessor_verifies_bytes_without_mutation_and_refuses_shutdown() {
+        let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let mut workspace = Workspace::open(temp.path()).unwrap();
+        workspace.seed_image_region_review().unwrap();
+        let key = workspace
+            .processing_jobs()
+            .unwrap()
+            .jobs
+            .into_iter()
+            .flat_map(|job| job.result_ids)
+            .find(|key| workspace.read_image_region_raster(key).is_ok())
+            .unwrap();
+        let expected = workspace.read_image_region_raster(&key).unwrap();
+        let coordinator = JobCoordinator::start(workspace, 1).unwrap();
+        until(|| {
+            let page: crate::processing::ProcessingJobPage = serde_json::from_value(
+                coordinator
+                    .dispatch(Command::ListProcessingJobs {})
+                    .unwrap(),
+            )
+            .unwrap();
+            page.jobs.iter().all(|job| {
+                !matches!(
+                    job.state,
+                    ProcessingState::Queued | ProcessingState::Running
+                )
+            })
+        });
+        let revision = coordinator
+            .shared
+            .workspace
+            .lock()
+            .unwrap()
+            .revision()
+            .unwrap();
+        assert_eq!(
+            coordinator.read_image_region_raster(&key).unwrap(),
+            expected
+        );
+        assert!(coordinator
+            .read_image_region_raster("../workspace.db")
+            .is_err());
+        assert_eq!(
+            coordinator
+                .shared
+                .workspace
+                .lock()
+                .unwrap()
+                .revision()
+                .unwrap(),
+            revision
+        );
+        coordinator.shutdown().unwrap();
+        assert!(matches!(
+            coordinator.read_image_region_raster(&key),
+            Err(Error::Blocked(_))
+        ));
+    }
+
     #[test]
     fn responsive_cancellation_stops_execution_before_terminal_state_and_suppresses_success() {
         let dir = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();

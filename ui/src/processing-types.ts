@@ -1,4 +1,4 @@
-/** Rust processing-job.v1/v2/v3 and extraction contracts. Mutations remain canonical commands. */
+/** Rust processing-job.v1/v2/v3/v4 and extraction contracts. Mutations remain canonical commands. */
 export type ProcessingState =
   | "queued"
   | "running"
@@ -13,7 +13,7 @@ export type ProcessingInput = {
   sha256: string;
   bytes: number;
 } & (
-  | { operation: "parse_document" | "image_ocr" }
+  | { operation: "parse_document" | "image_ocr" | "image_ocr_regions" }
   | { operation: "pdf_page_ocr"; page_number: number; dpi: number }
 );
 export type ProcessingFailure =
@@ -30,7 +30,8 @@ export type ProcessingFailure =
   | "cancelled_by_analyst"
   | "cleanup_failed"
   | "worker_exit_unverified"
-  | "recovery_required";
+  | "recovery_required"
+  | "derivative_unavailable";
 export type ProcessingJob = {
   schema_version: number;
   id: string;
@@ -106,9 +107,11 @@ export const activeJob = (job: ProcessingJob) =>
 export const processingMethodLabel = (input: ProcessingInput) =>
   input.operation === "pdf_page_ocr"
     ? `PDF page OCR · page ${input.page_number} · ${input.dpi} DPI · English`
-    : input.operation === "image_ocr"
-      ? "Image OCR · English"
-      : "Document parsing";
+    : input.operation === "image_ocr_regions"
+      ? "Image OCR + word regions · English"
+      : input.operation === "image_ocr"
+        ? "Image OCR · English"
+        : "Document parsing";
 export const retryableJob = (job: ProcessingJob) =>
   job.failure !== "worker_exit_unverified" &&
   job.failure !== "recovery_required" &&
