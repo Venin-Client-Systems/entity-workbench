@@ -81,5 +81,7 @@ jobs:
           key: browser-${{ runner.os }}-${{ runner.arch }}-rust-1.90-${{ hashFiles('Cargo.lock') }}
       - run: npm ci
       - run: cargo build -p workbench-core --bin ew-dev --locked
+      - name: Check literal search against the JavaScript runtime
+        run: node scripts/test_transaction_search_case.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ui

@@ -43,3 +43,10 @@ browser workflows; that run's compiled binary predates the final shared digest
 check, which will be rebuilt in the next combined campaign. Nine earlier targeted
 workflows also passed. The interface layout and historical schemas are unchanged.
 This increment passes no complete-release gate.
+
+
+The subsequent combined search integration rebuilt the bridge with the final
+shared digest check and passed all 70 real-core browser workflows, 222 ordinary
+core tests and strict Clippy. No native or installation claim is inferred from
+that browser campaign. See the combined source identity in
+[verification](../VERIFICATION.md).
