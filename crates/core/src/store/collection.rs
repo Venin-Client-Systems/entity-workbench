@@ -303,16 +303,10 @@ impl Workspace {
                         continue;
                     }
                     let evidence: Evidence = get(&self.conn, "evidence", key)?;
-                    self.verify_original(&evidence)?;
+                    let bytes = read_original(&self.root, &evidence)?;
                     let relative = format!("originals/{key}.bin");
                     let path = staging.join(&relative);
-                    fs::copy(self.root.join("originals").join(key), &path)?;
-                    require(
-                        fs::metadata(&path)?.len() == evidence.bytes
-                            && hash(&fs::read(&path)?) == evidence.sha256,
-                        "Exported original changed during copy",
-                    )?;
-                    private_file(&path, 0o400)?;
+                    originals::write_verified_copy(&path, &evidence, &bytes)?;
                     files.push(json!({"evidence_id":key,"path":relative,"sha256":evidence.sha256,"bytes":evidence.bytes}));
                 }
             }

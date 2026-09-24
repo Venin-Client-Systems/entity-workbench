@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T19:01:51.326104+00:00",
+  "base_commit": "06acbb8",
+  "scope": "Bounded verified original buffers consumed by processing, backup/restore and collection bundle copies",
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "ordinary_core": {
+      "passed": 307,
+      "library_passed": 233,
+      "integration_passed": 74,
+      "failed": 0,
+      "specialized_ignored": 22
+    },
+    "strict_clippy_debug": "passed",
+    "strict_clippy_release": "passed",
+    "historical_schemas_unchanged": 73,
+    "dependencies_public_commands_and_native_export_transport": "unchanged"
+  },
+  "regression_coverage": [
+    "Replacement after source buffer verification does not change copied bytes",
+    "Bad and oversized buffers, existing names, linked destinations and empty bodies",
+    "Exact processing bytes plus altered/linked input refusal",
+    "Evidence lookup A cannot be retargeted to valid body/original B",
+    "Backup destination exclusion and corrupt/linked source refusal",
+    "Corrupt backup cannot publish restored workspace database",
+    "Collection export DB failure cleans current attempt and preserves prior export"
+  ],
+  "limits": [
+    "No native Windows execution; inherited Windows sharing regression awaits platform verification",
+    "Other metadata readers lacking explicit lookup-key equality were reported separately; not modified",
+    "Worker caches, derivative objects and manifests are distinct data classes, not a claim that all application file reads are covered",
+    "No UI, public schema, complete-release or packaging claim"
+  ],
+  "file_sha256": {
+    "crates/core/src/store/collection.rs": "b1ef732d532eea47177822681aecc540ed4b05eb7471b6fde528b28633a94dcf",
+    "crates/core/src/store/collection_tests.rs": "3a99d9254d0db1971a57b37cb7cac9a3fa1627330d0dd14fbf23fbb7de84bceb",
+    "crates/core/src/store/originals.rs": "36128f3e653b7a2fed39e96eebaa4fc8126f48a757ddcc85900563017fef0d65",
+    "crates/core/src/store/processing.rs": "f2109a8534f0f98fe93a559b9bd8df0cbb94cbe36e0c7f11b5baaf7c05156265",
+    "crates/core/src/store/recovery.rs": "83a38a46dbd72756706c4baa3de327f6881a3c1b7d10be892490d66ef68822fa",
+    "docs/security/VERIFIED-ORIGINALS.md": "a7bc596a3eb01fd163700d4e005ed00968a5e2cd03bc5706a2cbbc1e7cc09f45"
+  },
+  "local_ignored_log_sha256": {
+    "clippy-debug-final.log": "0887b8126018cc0b3795562a393e0597151a4d1e85630f5e71f1f4ea63ed2e95",
+    "clippy-debug.log": "403251ea96f08f52a8f43d075d87c15ca98d2137a916b4f670325ad2775b384f",
+    "clippy-release.log": "9d66725380ea7e286ad62fe8f054e925f5711f19fda0f2cc7bb54ece4610e07c",
+    "core-final.log": "01b5e4284e25b04ca868bb036ba5d823244f0c5bc8c7f735b43417737d73dd08",
+    "library-first.log": "1b988047051397a2c2d74d1c24ed3a30bafe148d357a5bdf03d5040b6897c3f4"
+  }
+}

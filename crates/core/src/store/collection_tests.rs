@@ -410,3 +410,59 @@ fn changed_original_directory_and_dangling_export_link_fail_closed() {
     assert!(w.export_collection(&key).is_err());
     assert!(!temp.path().join("absent").exists());
 }
+
+#[test]
+fn copied_originals_are_removed_when_collection_export_publication_rolls_back() {
+    let (_temp, mut w) = workspace();
+    let key = finish(
+        &mut w,
+        scripted(&[("/start", 200, "text/plain", b"Exact export specimen", true)]),
+    );
+    let previous = w.export_collection(&key).unwrap();
+    let path = w.root.join(previous["path"].as_str().unwrap());
+    let before = fs::read(&path).unwrap();
+    let revision = w.revision().unwrap();
+    w.conn.execute_batch("CREATE TRIGGER fail_export BEFORE INSERT ON records WHEN NEW.kind='collection_export' BEGIN SELECT RAISE(ABORT,'synthetic export publication failure'); END;").unwrap();
+    assert!(w.export_collection(&key).is_err());
+    assert_eq!(w.revision().unwrap(), revision);
+    assert_eq!(fs::read_dir(w.root.join("exports")).unwrap().count(), 1);
+    assert_eq!(fs::read(path).unwrap(), before);
+    let manifest: Value = serde_json::from_slice(&before).unwrap();
+    let original = manifest["originals"][0]["path"].as_str().unwrap();
+    let directory = w
+        .root
+        .join(previous["path"].as_str().unwrap())
+        .parent()
+        .unwrap()
+        .to_owned();
+    assert_eq!(
+        fs::read(directory.join(original)).unwrap(),
+        b"Exact export specimen"
+    );
+}
+
+#[test]
+fn collection_export_refuses_corrupt_original_without_new_files_or_records() {
+    let (_temp, mut w) = workspace();
+    let key = finish(
+        &mut w,
+        scripted(&[("/start", 200, "text/plain", b"Original export data", true)]),
+    );
+    let original = w.root.join("originals").join(hash(b"Original export data"));
+    fs::remove_file(&original).unwrap();
+    fs::write(&original, b"Replaced export data").unwrap();
+    let revision = w.revision().unwrap();
+    assert!(w.export_collection(&key).is_err());
+    assert_eq!(w.revision().unwrap(), revision);
+    assert_eq!(fs::read_dir(w.root.join("exports")).unwrap().count(), 0);
+    assert_eq!(
+        w.conn
+            .query_row::<u64, _, _>(
+                "SELECT count(*) FROM records WHERE kind='collection_export'",
+                [],
+                |r| r.get(0)
+            )
+            .unwrap(),
+        0
+    );
+}

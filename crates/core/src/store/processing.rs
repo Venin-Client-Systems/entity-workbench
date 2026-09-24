@@ -384,19 +384,14 @@ impl Workspace {
         let (evidence_id, sha256, bytes) = input.source();
         let evidence: Evidence = get(&self.conn, "evidence", evidence_id)?;
         require(
-            evidence.sha256 == sha256
+            evidence.id == evidence_id
+                && evidence.sha256 == sha256
                 && evidence.bytes == bytes
                 && bytes <= policy::MAX_IMPORT_BYTES as u64,
             "Job input no longer matches the retained evidence",
         )?;
-        self.verify_original(&evidence)?;
-        // Check the bytes actually passed to the worker too, not only an earlier filesystem read.
-        let content = fs::read(self.root.join("originals").join(sha256))?;
-        require(
-            content.len() as u64 == bytes && hash(&content) == sha256,
-            "Job input changed while reading",
-        )?;
-        Ok(content)
+        // Consume the single bounded buffer whose identity and digest were verified.
+        read_original(&self.root, &evidence)
     }
 
     pub(crate) fn claim_processing_job(&mut self) -> Result<Option<PreparedProcessingJob>> {
@@ -822,6 +817,75 @@ mod tests {
             assert_eq!(retry.is_ok(), attempt < 3);
         }
     }
+    #[test]
+    fn prepared_processing_bytes_are_exact_and_altered_source_never_launches() {
+        let (_temp, mut w, key) = fixture();
+        let job = queue(&mut w, &key);
+        let prepared = w.claim_processing_job().unwrap().unwrap();
+        assert_eq!(prepared.bytes, b"Synthetic source only.");
+        assert_eq!(hash(&prepared.bytes), key);
+        w.finish_document_job(
+            &prepared.ticket,
+            Err(Error::Validation("synthetic failure".into())),
+        )
+        .unwrap();
+        let next = queue(&mut w, &key);
+        let path = w.root.join("originals").join(&key);
+        fs::remove_file(&path).unwrap();
+        fs::write(&path, b"Changed source bytes.").unwrap();
+        assert!(w.claim_processing_job().unwrap().is_none());
+        let blocked = w.processing_job(&next.id).unwrap();
+        assert_eq!(blocked.state, ProcessingState::Blocked);
+        assert_eq!(blocked.failure, Some(ProcessingFailure::InputUnavailable));
+        assert!(blocked.lease.is_none());
+        assert!(blocked.result_ids.is_empty());
+        assert!(w.processing_job(&job.id).unwrap().result_ids.is_empty());
+    }
+    #[test]
+    fn processing_input_refuses_evidence_key_retargeted_to_valid_other_original() {
+        let (_temp, mut w, key) = fixture();
+        let other = w
+            .import("other.txt", b"Different synthetic source")
+            .unwrap();
+        let other_evidence: Evidence = get(&w.conn, "evidence", &other).unwrap();
+        let fake = ProcessingInput::ParseDocument {
+            evidence_id: key.clone(),
+            sha256: other.clone(),
+            bytes: other_evidence.bytes,
+        };
+        w.conn
+            .execute(
+                "UPDATE records SET body=? WHERE kind='evidence' AND id=?",
+                params![serde_json::to_string(&other_evidence).unwrap(), key],
+            )
+            .unwrap();
+        let revision = w.revision().unwrap();
+        assert!(w.verify_processing_input(&fake).is_err());
+        assert_eq!(w.revision().unwrap(), revision);
+        assert_eq!(
+            read_original(&w.root, &other_evidence).unwrap(),
+            b"Different synthetic source"
+        );
+    }
+    #[cfg(unix)]
+    #[test]
+    fn processing_claim_refuses_linked_original_even_when_target_bytes_match() {
+        use std::os::unix::fs::symlink;
+        let (temp, mut w, key) = fixture();
+        let job = queue(&mut w, &key);
+        let path = w.root.join("originals").join(&key);
+        let outside = temp.path().join("outside");
+        fs::write(&outside, b"Synthetic source only.").unwrap();
+        fs::remove_file(&path).unwrap();
+        symlink(&outside, &path).unwrap();
+        assert!(w.claim_processing_job().unwrap().is_none());
+        assert_eq!(
+            w.processing_job(&job.id).unwrap().failure,
+            Some(ProcessingFailure::InputUnavailable)
+        );
+        assert_eq!(fs::read(&outside).unwrap(), b"Synthetic source only.");
+    }
+
     #[test]
     fn recovery_requires_exclusive_ownership_and_does_not_republish() {
         let (dir, mut workspace, evidence) = fixture();

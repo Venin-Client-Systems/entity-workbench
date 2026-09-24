@@ -54,6 +54,13 @@ fn read_checked(
     evidence: &Evidence,
     after_open: impl FnOnce(&Path) -> Result<()>,
 ) -> Result<Vec<u8>> {
+    read_path_checked(
+        &root.join("originals").join(&evidence.sha256),
+        evidence,
+        after_open,
+    )
+}
+fn validate_reference(evidence: &Evidence) -> Result<()> {
     require(
         evidence.id == evidence.sha256
             && evidence.sha256.len() == 64
@@ -68,9 +75,16 @@ fn read_checked(
         evidence.bytes <= policy::MAX_IMPORT_BYTES as u64,
         "Original exceeds import policy size bound",
     )?;
-    let path = root.join("originals").join(&evidence.sha256);
-    reject_link_ancestors(&path)?;
-    let before = fs::symlink_metadata(&path)?;
+    Ok(())
+}
+fn read_path_checked(
+    path: &Path,
+    evidence: &Evidence,
+    after_open: impl FnOnce(&Path) -> Result<()>,
+) -> Result<Vec<u8>> {
+    validate_reference(evidence)?;
+    reject_link_ancestors(path)?;
+    let before = fs::symlink_metadata(path)?;
     ordinary(&before, evidence)?;
     let mut options = OpenOptions::new();
     options.read(true);
@@ -86,11 +100,11 @@ fn read_checked(
         options.custom_flags(0x00200000).share_mode(0x00000001);
         // FILE_FLAG_OPEN_REPARSE_POINT, FILE_SHARE_READ only: no write/delete sharing.
     }
-    let mut file = options.open(&path)?;
+    let mut file = options.open(path)?;
     let opened = file.metadata()?;
     ordinary(&opened, evidence)?;
     same_file(&before, &opened)?;
-    after_open(&path)?;
+    after_open(path)?;
     let mut bytes = Vec::new();
     (&mut file)
         .take(evidence.bytes + 1)
@@ -102,11 +116,46 @@ fn read_checked(
     let finished = file.metadata()?;
     ordinary(&finished, evidence)?;
     same_file(&opened, &finished)?;
-    reject_link_ancestors(&path)?;
-    let named = fs::symlink_metadata(&path)?;
+    reject_link_ancestors(path)?;
+    let named = fs::symlink_metadata(path)?;
     ordinary(&named, evidence)?;
     same_file(&opened, &named)?;
     Ok(bytes)
+}
+
+/// Copy only the already verified bounded buffer. Destinations are internal
+/// backup/export paths, never frontend-supplied paths; existing names are refused.
+pub(super) fn write_verified_copy(path: &Path, evidence: &Evidence, bytes: &[u8]) -> Result<()> {
+    validate_reference(evidence)?;
+    require(
+        bytes.len() as u64 == evidence.bytes && hash(bytes) == evidence.sha256,
+        "Copy buffer differs from verified original",
+    )?;
+    reject_link_ancestors(path)?;
+    let mut options = OpenOptions::new();
+    options.write(true).create_new(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        options.mode(0o600);
+    }
+    let mut file = options.open(path)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(fs::Permissions::from_mode(0o600))?;
+    }
+    file.write_all(bytes)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        file.set_permissions(fs::Permissions::from_mode(0o400))?;
+    }
+    file.sync_all()?;
+    // Close the writing handle before the Windows read denies write sharing.
+    drop(file);
+    read_path_checked(path, evidence, |_| Ok(()))?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -195,5 +244,64 @@ mod tests {
             )
         });
         assert_eq!(result.unwrap(), b"original");
+    }
+    #[test]
+    fn verified_buffer_copy_survives_source_replacement_without_reopening_it() {
+        let (temp, w, evidence) = specimen();
+        let bytes = read_original(&w.root, &evidence).unwrap();
+        let source = w.root.join("originals").join(&evidence.sha256);
+        fs::remove_file(&source).unwrap();
+        fs::write(&source, b"replaced").unwrap();
+        assert!(read_original(&w.root, &evidence).is_err());
+        let target = temp.path().join("retained-original.bin");
+        write_verified_copy(&target, &evidence, &bytes).unwrap();
+        assert_eq!(
+            read_path_checked(&target, &evidence, |_| Ok(())).unwrap(),
+            b"original"
+        );
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            assert_eq!(
+                fs::metadata(&target).unwrap().permissions().mode() & 0o777,
+                0o400
+            );
+        }
+        assert_eq!(fs::read(&source).unwrap(), b"replaced");
+    }
+    #[test]
+    fn copy_rejects_bad_buffers_and_existing_names_and_accepts_empty_original() {
+        let (temp, _w, evidence) = specimen();
+        let target = temp.path().join("copy.bin");
+        assert!(write_verified_copy(&target, &evidence, b"replaced").is_err());
+        assert!(!target.exists());
+        let mut oversized = evidence.clone();
+        oversized.bytes = policy::MAX_IMPORT_BYTES as u64 + 1;
+        assert!(write_verified_copy(&target, &oversized, b"original").is_err());
+        assert!(!target.exists());
+        fs::write(&target, b"preserve existing").unwrap();
+        assert!(write_verified_copy(&target, &evidence, b"original").is_err());
+        assert_eq!(fs::read(&target).unwrap(), b"preserve existing");
+        let empty_target = temp.path().join("empty.bin");
+        let mut empty = evidence;
+        empty.id = hash(b"");
+        empty.sha256 = empty.id.clone();
+        empty.bytes = 0;
+        write_verified_copy(&empty_target, &empty, b"").unwrap();
+        assert!(read_path_checked(&empty_target, &empty, |_| Ok(()))
+            .unwrap()
+            .is_empty());
+    }
+    #[cfg(unix)]
+    #[test]
+    fn copy_refuses_linked_destination_and_preserves_external_file() {
+        use std::os::unix::fs::symlink;
+        let (temp, _w, evidence) = specimen();
+        let outside = temp.path().join("outside");
+        fs::write(&outside, b"external sentinel").unwrap();
+        let target = temp.path().join("linked.bin");
+        symlink(&outside, &target).unwrap();
+        assert!(write_verified_copy(&target, &evidence, b"original").is_err());
+        assert_eq!(fs::read(&outside).unwrap(), b"external sentinel");
     }
 }

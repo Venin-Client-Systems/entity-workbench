@@ -210,28 +210,14 @@ fn copy_sources(
 ) -> Result<()> {
     private_dir(&destination.join("originals"))?;
     for e in evidence {
-        verify_original(source, e)?;
+        let bytes = read_original(source, e)?;
         let target = destination.join("originals").join(&e.sha256);
         reject_link_ancestors(&target)?;
         require(
             !target.exists(),
             "Backup original destination already exists",
         )?;
-        let input = fs::File::open(source.join("originals").join(&e.sha256))?;
-        let mut input = input.take(e.bytes.saturating_add(1));
-        let mut output = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&target)?;
-        private_file(&target, 0o600)?;
-        require(
-            std::io::copy(&mut input, &mut output)? == e.bytes,
-            "Original changed size during backup or restore",
-        )?;
-        private_file(&target, 0o400)?;
-        output.sync_all()?;
-        drop(output);
-        verify_original(destination, e)?;
+        originals::write_verified_copy(&target, e, &bytes)?;
     }
     for reference in derivatives {
         let bytes = derivative_files::read(source, reference)?;
@@ -345,5 +331,66 @@ mod tests {
                 b"Synthetic original"
             );
         }
+    }
+    #[test]
+    fn copy_sources_preserves_existing_destination_and_rejects_corrupt_source() {
+        let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let mut w = Workspace::open(temp.path().join("source")).unwrap();
+        let key = w
+            .import("synthetic.txt", b"Original copy specimen")
+            .unwrap();
+        let e: Evidence = get(&w.conn, "evidence", &key).unwrap();
+        let destination = temp.path().join("destination");
+        private_dir(&destination.join("originals")).unwrap();
+        let target = destination.join("originals").join(&key);
+        fs::write(&target, b"preserve existing").unwrap();
+        assert!(copy_sources(&w.root, &destination, std::slice::from_ref(&e), &[]).is_err());
+        assert_eq!(fs::read(&target).unwrap(), b"preserve existing");
+        fs::remove_file(&target).unwrap();
+        let original = w.root.join("originals").join(&key);
+        fs::remove_file(&original).unwrap();
+        fs::write(&original, b"Altered copy specimen!").unwrap();
+        assert!(copy_sources(&w.root, &destination, &[e], &[]).is_err());
+        assert!(!target.exists());
+    }
+    #[test]
+    fn corrupt_backup_original_cannot_publish_restored_database() {
+        let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let mut w = Workspace::open(temp.path().join("source")).unwrap();
+        let key = w
+            .import("synthetic.txt", b"Original backup specimen")
+            .unwrap();
+        let backup = w.backup().unwrap();
+        let original = backup.join("originals").join(&key);
+        fs::remove_file(&original).unwrap();
+        fs::write(&original, b"Altered! backup specimen").unwrap();
+        let destination = temp.path().join("restore");
+        assert!(Workspace::restore(&backup, &destination).is_err());
+        assert!(!destination.join("workspace.db").exists());
+        assert!(!destination.exists());
+        assert_eq!(
+            fs::read(w.root.join("originals").join(&key)).unwrap(),
+            b"Original backup specimen"
+        );
+    }
+    #[cfg(unix)]
+    #[test]
+    fn linked_backup_source_is_refused_before_any_original_copy() {
+        use std::os::unix::fs::symlink;
+        let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let mut w = Workspace::open(temp.path().join("source")).unwrap();
+        let key = w
+            .import("synthetic.txt", b"Linked backup specimen")
+            .unwrap();
+        let e: Evidence = get(&w.conn, "evidence", &key).unwrap();
+        let outside = temp.path().join("outside");
+        fs::write(&outside, b"Linked backup specimen").unwrap();
+        let original = w.root.join("originals").join(&key);
+        fs::remove_file(&original).unwrap();
+        symlink(&outside, &original).unwrap();
+        let destination = temp.path().join("copy");
+        assert!(copy_sources(&w.root, &destination, &[e], &[]).is_err());
+        assert!(!destination.join("originals").join(key).exists());
+        assert_eq!(fs::read(&outside).unwrap(), b"Linked backup specimen");
     }
 }
