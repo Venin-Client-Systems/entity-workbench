@@ -3,6 +3,7 @@
 //! Object assignment are verified. No errors retry without the AppContainer.
 use crate::{quote_argument, validate, Error, Output, Request, Result};
 use std::{
+    collections::BTreeMap,
     ffi::{c_void, OsStr, OsString},
     fs::{self, OpenOptions},
     io::Read,
@@ -21,8 +22,8 @@ use windows_sys::Win32::{
     Security::{Authorization::*, Isolation::*, *},
     Storage::FileSystem::*,
     System::{
-        Com::CoTaskMemFree, JobObjects::*, SystemServices::MAXIMUM_ALLOWED, Threading::*,
-        WindowsProgramming::PROCESS_CREATION_CHILD_PROCESS_RESTRICTED,
+        Com::CoTaskMemFree, Environment::*, JobObjects::*, SystemServices::MAXIMUM_ALLOWED,
+        Threading::*, WindowsProgramming::PROCESS_CREATION_CHILD_PROCESS_RESTRICTED,
     },
 };
 
@@ -106,6 +107,113 @@ fn token_info(token: HANDLE, class: TOKEN_INFORMATION_CLASS) -> Result<Vec<usize
         "GetTokenInformation",
     )?;
     Ok(value)
+}
+
+struct Environment(*mut c_void);
+impl Drop for Environment {
+    fn drop(&mut self) {
+        // The allocation comes only from successful CreateEnvironmentBlock.
+        unsafe { DestroyEnvironmentBlock(self.0) };
+    }
+}
+
+fn os_environment() -> Result<Vec<OsString>> {
+    let mut handle = null_mut();
+    api(
+        unsafe {
+            OpenProcessToken(
+                GetCurrentProcess(),
+                TOKEN_QUERY | TOKEN_DUPLICATE,
+                &mut handle,
+            )
+        },
+        "OpenEnvironmentToken",
+    )?;
+    let token = Handle(handle);
+    let mut value = null_mut();
+    api(
+        unsafe { CreateEnvironmentBlock(&mut value, token.0, 0) },
+        "CreateEnvironmentBlock",
+    )?;
+    let environment = Environment(value);
+    blocked(!environment.0.is_null(), "missing OS environment block")?;
+    let source = environment.0.cast::<u16>();
+    let mut entries = Vec::new();
+    let mut start = 0;
+    // The OS owns a valid double-NUL-terminated UTF-16 allocation until Drop.
+    // Read one unit at a time, stopping at its terminator; never form a slice
+    // past that terminator. Bounds restrict work, not the OS allocation size.
+    for index in 0..524288 {
+        if unsafe { *source.add(index) } == 0 {
+            if index == start {
+                return Ok(entries);
+            }
+            blocked(entries.len() < 512, "OS environment exceeds entry bound")?;
+            entries.push(OsString::from_wide(unsafe {
+                std::slice::from_raw_parts(source.add(start), index - start)
+            }));
+            start = index + 1;
+        }
+    }
+    Err(Error::Blocked("OS environment exceeds size bound"))
+}
+
+fn worker_environment(entries: &[OsString], scratch: &Path) -> Result<Vec<u16>> {
+    // AppContainer setup uses OS profile paths and remaps local/temp variables.
+    // Retain only these
+    // OS-produced paths, never arbitrary persistent/user/process variables.
+    // CreateEnvironmentBlock's bInherit=FALSE also excludes caller overrides.
+    const REQUIRED: [&str; 5] = [
+        "APPDATA",
+        "LOCALAPPDATA",
+        "SYSTEMDRIVE",
+        "SYSTEMROOT",
+        "USERPROFILE",
+    ];
+    let mut selected = BTreeMap::new();
+    for entry in entries {
+        let units: Vec<_> = entry.encode_wide().collect();
+        let Some(separator) = units.iter().position(|&unit| unit == u16::from(b'=')) else {
+            continue;
+        };
+        let Ok(key) = String::from_utf16(&units[..separator]) else {
+            continue;
+        };
+        let key = key.to_ascii_uppercase();
+        if REQUIRED.contains(&key.as_str()) {
+            let value = &units[separator + 1..];
+            blocked(
+                !value.is_empty() && !value.contains(&0),
+                "invalid required OS environment value",
+            )?;
+            blocked(
+                selected.insert(key, OsString::from_wide(value)).is_none(),
+                "duplicate required OS environment key",
+            )?;
+        }
+    }
+    blocked(
+        REQUIRED.iter().all(|key| selected.contains_key(*key)),
+        "required OS profile environment is unavailable",
+    )?;
+    selected.insert("WINDIR".into(), selected["SYSTEMROOT"].clone());
+    selected.insert("TEMP".into(), scratch.as_os_str().to_owned());
+    selected.insert("TMP".into(), scratch.as_os_str().to_owned());
+    let mut environment = Vec::new();
+    // All names are ASCII uppercase, so BTreeMap orders them according to the
+    // case-insensitive Unicode ordering required by CreateProcessW.
+    for (key, value) in selected {
+        let mut entry = OsString::from(key);
+        entry.push("=");
+        entry.push(value);
+        environment.extend(wide(entry)?);
+        blocked(
+            environment.len() < 32767,
+            "worker environment exceeds bound",
+        )?;
+    }
+    environment.push(0);
+    Ok(environment)
 }
 fn sid_string(sid: PSID) -> Result<String> {
     let mut value = null_mut();
@@ -699,18 +807,7 @@ pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
             "command line exceeds bound",
         )?;
         let mut command = wide(command)?;
-        let windows =
-            std::env::var_os("SystemRoot").ok_or(Error::Blocked("OS SystemRoot is unavailable"))?;
-        let mut environment = Vec::new();
-        for (key, value) in [
-            ("SystemRoot", windows.clone()),
-            ("TEMP", scratch.as_os_str().to_owned()),
-            ("TMP", scratch.as_os_str().to_owned()),
-            ("WINDIR", windows),
-        ] {
-            environment.extend(wide(format!("{key}={}", value.to_string_lossy()))?);
-        }
-        environment.push(0);
+        let environment = worker_environment(&os_environment()?, &scratch)?;
         let capabilities = SECURITY_CAPABILITIES {
             AppContainerSid: profile.sid,
             Capabilities: null_mut(),
@@ -842,6 +939,73 @@ pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn synthetic_environment() -> Vec<OsString> {
+        [
+            "UserProfile=Q:\\synthetic-profile",
+            "SystemRoot=Q:\\Windows",
+            "SystemDrive=Q:",
+            "LocalAppData=Q:\\synthetic-local",
+            "AppData=Q:\\synthetic-roaming",
+            "EW_SYNTHETIC_SECRET=must-not-cross",
+            "PATH=Q:\\untrusted-tools",
+            "JAVA_TOOL_OPTIONS=must-not-cross",
+            "TEMP=Q:\\wrong-temp",
+        ]
+        .map(OsString::from)
+        .to_vec()
+    }
+
+    #[test]
+    fn environment_has_required_sorted_paths_and_excludes_caller_options() {
+        let block = worker_environment(&synthetic_environment(), Path::new("Q:\\scratch")).unwrap();
+        let text = String::from_utf16(&block).unwrap();
+        assert_eq!(
+            text,
+            concat!(
+                "APPDATA=Q:\\synthetic-roaming\0",
+                "LOCALAPPDATA=Q:\\synthetic-local\0",
+                "SYSTEMDRIVE=Q:\0",
+                "SYSTEMROOT=Q:\\Windows\0",
+                "TEMP=Q:\\scratch\0",
+                "TMP=Q:\\scratch\0",
+                "USERPROFILE=Q:\\synthetic-profile\0",
+                "WINDIR=Q:\\Windows\0\0",
+            )
+        );
+    }
+
+    #[test]
+    fn environment_rejects_missing_duplicate_empty_and_injected_required_values() {
+        let entries = synthetic_environment();
+        assert!(worker_environment(&entries[1..], Path::new("Q:\\scratch")).is_err());
+        let mut duplicate = entries.clone();
+        duplicate.push(OsString::from("SYSTEMROOT=Q:\\duplicate"));
+        assert!(worker_environment(&duplicate, Path::new("Q:\\scratch")).is_err());
+        for entry in ["APPDATA=", "APPDATA=bad\0injected"] {
+            let mut invalid = entries.clone();
+            invalid[4] = OsString::from(entry);
+            assert!(worker_environment(&invalid, Path::new("Q:\\scratch")).is_err());
+        }
+        assert!(worker_environment(&entries, Path::new("bad\0scratch")).is_err());
+    }
+
+    #[test]
+    fn environment_preserves_native_utf16_without_lossy_conversion() {
+        let scratch = OsString::from_wide(&[b'Q' as u16, b':' as u16, b'\\' as u16, 0xd800]);
+        let block = worker_environment(&synthetic_environment(), Path::new(&scratch)).unwrap();
+        assert_eq!(block.iter().filter(|&&unit| unit == 0xd800).count(), 2);
+        assert!(!block.contains(&0xfffd));
+    }
+
+    #[test]
+    fn os_built_environment_supports_the_strict_worker_allowlist() {
+        // Does not mutate or print the host environment. The real confined
+        // harness separately requires its caller-only sentinel to be absent.
+        let tree = tempfile::tempdir().unwrap();
+        let environment = worker_environment(&os_environment().unwrap(), tree.path()).unwrap();
+        assert!(environment.ends_with(&[0, 0]));
+    }
 
     fn dacl_snapshot(path: &Path) -> Vec<u8> {
         let name = wide(path).unwrap();
