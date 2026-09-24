@@ -30,6 +30,8 @@ pub enum Error {
     Database(#[from] rusqlite::Error),
     #[error("Worker cleanup failed: {0}")]
     Cleanup(String),
+    #[error("Worker termination could not be verified: {0}")]
+    TerminationUnverified(String),
     #[error("Filesystem: {0}")]
     Io(#[from] std::io::Error),
     #[error("Invalid JSON: {0}")]

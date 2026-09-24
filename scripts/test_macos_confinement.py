@@ -47,6 +47,7 @@ def main():
     result = subprocess.run(command, cwd=ROOT, env=environment, capture_output=True, text=True, timeout=180)
     cases = dict(re.findall(r"test engines::supervision::tests::(\w+) \.\.\. (ok|FAILED|ignored)", result.stdout))
     expected = {
+        "unverified_termination_overrides_cancellation_and_retains_private_scratch",
         "result_rejects_links_and_oversize_and_special_files",
         "index_rejects_links_and_tree_budget_overruns",
         "profile_has_distinct_read_and_write_access",
