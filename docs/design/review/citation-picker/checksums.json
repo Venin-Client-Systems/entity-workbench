@@ -1,0 +1,21 @@
+{
+  "algorithm": "sha256",
+  "files": {
+    "ui/src/AssessmentWorkbench.tsx": "a33fbe388510c8f69fdc7f4f71fd97f541b3c82148cd15e9a573eaa213b6fc7b",
+    "ui/src/CitationPicker.tsx": "6ec370ee01484bcad30cce7c9ff63fda87e2c719c159a5d3501722a399a5e8b6",
+    "ui/src/CitationRow.tsx": "190b36f54b75bb52c00868603e509846e534aea1d2bd831b4c09e5a993f91969",
+    "ui/src/citation-types.ts": "43f5f76d1cc6ba90b95da04dfb1d22ed6ccee0c765f54ffa7513c4fd87ec9a5a",
+    "ui/src/citation-read-lane.ts": "afa7103db32e41dba44ecb2961e7396eae72650bf0832d8fe2eec86eacde9a87",
+    "ui/src/citation-picker.css": "09b9a72a730fbb1bb065ae7ba1c4582c40133b4ba38f7317da153dc0dcbdea47",
+    "ui/tests/citations.spec.ts": "935d038c0114994567628897aa48eb3897aa881bb845426e55c7f292a973fe74",
+    "docs/design/CITATION-PICKER.md": "f54d591144935880c0da22231e1b6483948e2ca29b8640f7fbdef80be5f6f7ad",
+    "docs/design/review/citation-picker/citations-1440.png": "ade5e644d947f7cd98d183ce43875c5306abea54b400f4e48ec990370f0dbbda",
+    "docs/design/review/citation-picker/citations-720.png": "de471250631a639523d284b1137dbd879a6f4f05376287b2a5c3e71a4ab73138",
+    "docs/design/review/citation-picker/citations-page-1440.png": "56ab8b91e9f009a05638eda756c274c2de3852b41b344f7307f2954a60ba84b7",
+    "docs/design/review/citation-picker/citations-page-720.png": "c2a320f77ca36fccd23d84c073312c7309d73ed92d5be13f17a852d01be20a86",
+    "docs/design/review/citation-picker/citations-unavailable.png": "c72ca6fa3f0543d3540199fea859438fe1b780f34985dc40915d22dd0cc042a8",
+    "docs/design/review/citation-picker/citations-stale.png": "83142166e9790232420a82211a2751297eae0e720bf6ac630750c469d6c18b10",
+    "docs/design/review/citation-picker/accessibility.json": "9ef3c9d1d9f224331a5dda7becb967103efbc2cc7d319ca3bae75942d7ce6651",
+    "docs/design/review/citation-picker/verification.json": "61d56e663b563e98993d72aedb8c1a9f3f8f3c651864d618e5b650a5a7d6f53e"
+  }
+}

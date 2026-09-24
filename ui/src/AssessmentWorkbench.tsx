@@ -2,6 +2,13 @@ import { useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
 import { FindingReviewHistory } from "./FindingReviewHistory";
+import { CitationRow } from "./CitationRow";
+import {
+  CitationPicker,
+  SelectionStatus,
+  useCitationSelections,
+} from "./CitationPicker";
+import type { CitationRole } from "./citation-types";
 import type { Anchor, Evidence, Finding, Hypothesis, Workspace } from "./types";
 
 type Props = {
@@ -12,72 +19,6 @@ type Props = {
   onSource: (evidence: Evidence, anchor?: Anchor) => void;
   download: (content: string, name: string, type: string) => Promise<void>;
 };
-type Citation = {
-  id: string;
-  label: string;
-  detail: string;
-  source?: Evidence;
-  anchor?: Anchor;
-};
-function citations(w: Workspace): Citation[] {
-  return [
-    ...w.observations.map((o) => ({
-      id: o.id,
-      label: `${w.entities.find((e) => e.id === o.entity_id)?.name ?? o.entity_id} · ${o.field}: ${o.value}`,
-      detail: `Observation · ${o.review}`,
-      source: w.evidence.find((e) => e.id === o.anchor.evidence_id),
-      anchor: o.anchor,
-    })),
-    ...w.transactions.map((t) => ({
-      id: t.id,
-      label: `${t.description} · ${t.amount} ${t.currency}`,
-      detail: `Transaction · ${t.date} · account ${t.account} · ${t.review}`,
-      source: w.evidence.find((e) => e.id === t.anchor.evidence_id),
-      anchor: t.anchor,
-    })),
-    ...w.evidence.map((e) => ({
-      id: e.id,
-      label: e.name,
-      detail: `Whole source · ${e.extraction_status}`,
-      source: e,
-    })),
-  ];
-}
-function CitationRow({
-  item,
-  onSource,
-  children,
-}: {
-  item: Citation;
-  onSource: Props["onSource"];
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="citation-row">
-      <div>
-        <strong>{item.label}</strong>
-        <p>
-          {item.detail}
-          {item.anchor
-            ? ` · ${item.source?.name ?? "Missing source"} · ${item.anchor.kind === "text" ? `lines ${item.anchor.line_start}–${item.anchor.line_end}` : `row ${item.anchor.row ?? "?"}, ${item.anchor.column ?? item.anchor.kind}`}`
-            : ""}
-        </p>
-      </div>
-      <div className="citation-controls">
-        {item.source && (
-          <button
-            type="button"
-            className="button"
-            onClick={() => onSource(item.source!, item.anchor)}
-          >
-            Inspect source
-          </button>
-        )}
-        {children}
-      </div>
-    </div>
-  );
-}
 function ErrorMessage({ error }: { error: string }) {
   return error ? (
     <p className="alert error" role="alert">
@@ -251,11 +192,17 @@ function FindingEditor({
     item?.contradicting_ids ?? [],
   );
   const [questions, setQuestions] = useState(item?.hypothesis_ids ?? []);
-  const [query, setQuery] = useState("");
   const [reason, setReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
-  const all = citations(workspace);
-  const choose = (id: string, role: string) => {
+  const stale = revision !== workspace.revision;
+  const selected = useCitationSelections(
+    [...supporting, ...contradicting],
+    revision,
+    stale,
+  );
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState("");
+  const choose = (id: string, role: CitationRole) => {
     setSupporting((old) => [
       ...old.filter((x) => x !== id),
       ...(role === "supporting" ? [id] : []),
@@ -265,38 +212,6 @@ function FindingEditor({
       ...(role === "contradicting" ? [id] : []),
     ]);
   };
-  const selected = all.filter(
-    (c) => supporting.includes(c.id) || contradicting.includes(c.id),
-  );
-  const matches = all.filter(
-    (c) =>
-      !selected.includes(c) &&
-      `${c.label} ${c.detail} ${c.source?.name ?? ""}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-  );
-  const row = (c: Citation) => (
-    <CitationRow key={c.id} item={c} onSource={onSource}>
-      <label className="citation-role">
-        Citation role
-        <select
-          aria-label={`Citation role for ${c.label}`}
-          value={
-            supporting.includes(c.id)
-              ? "supporting"
-              : contradicting.includes(c.id)
-                ? "contradicting"
-                : "none"
-          }
-          onChange={(e) => choose(c.id, e.target.value)}
-        >
-          <option value="none">Not cited</option>
-          <option value="supporting">Supporting</option>
-          <option value="contradicting">Contradictory</option>
-        </select>
-      </label>
-    </CitationRow>
-  );
   return (
     <Dialog
       label={item ? "Edit finding" : "Add finding"}
@@ -326,6 +241,7 @@ function FindingEditor({
         <form
           onSubmit={async (e) => {
             e.preventDefault();
+            if (stale || !selected.ready) return;
             setSubmitted(true);
             const finding = {
               title,
@@ -397,36 +313,46 @@ function FindingEditor({
                 </p>
               )}
             </fieldset>
-            <h3>Selected citations · {selected.length}</h3>
-            <div role="region" aria-label="Selected citations">
-              {selected.map(row)}
-              {!selected.length && (
-                <p className="muted">
-                  Choose at least one supporting or contradictory record.
-                </p>
-              )}
-            </div>
-            <label>
-              Find evidence to cite
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </label>
-            <div
-              className="citation-picker"
-              role="region"
-              aria-label="Available citations"
+            <CitationPicker
+              supporting={supporting}
+              contradicting={contradicting}
+              selection={selected}
+              revision={revision}
+              stale={stale}
+              busy={busy || refreshing}
+              evidence={workspace.evidence}
+              choose={choose}
+              onSource={onSource}
+            />
+            {stale && (
+              <p className="alert" role="status">
+                The workspace changed while this editor was open. Draft text,
+                selected IDs and roles are preserved. Close and reopen before
+                saving; this draft has not adopted a newer revision.
+              </p>
+            )}
+            <button
+              type="button"
+              className="button"
+              disabled={busy || refreshing}
+              onClick={async () => {
+                setRefreshing(true);
+                setRefreshError("");
+                try {
+                  if (!(await run({ action: "view" })))
+                    setRefreshError(
+                      "Workspace refresh failed. Draft revision is unchanged.",
+                    );
+                } catch (cause) {
+                  setRefreshError(String(cause));
+                } finally {
+                  setRefreshing(false);
+                }
+              }}
             >
-              {matches.slice(0, 50).map(row)}
-              {!matches.length && <p>No matching uncited records.</p>}
-            </div>
-            <p className="muted">
-              Showing {Math.min(50, matches.length)} of {matches.length}{" "}
-              matching uncited records. Whole-source citations do not accept
-              extracted records or establish source independence.
-            </p>
+              {refreshing ? "Refreshing workspace…" : "Refresh workspace"}
+            </button>
+            <ErrorMessage error={refreshError} />
             {item && (
               <label>
                 Finding change reason
@@ -440,7 +366,11 @@ function FindingEditor({
             )}
             {submitted && <ErrorMessage error={error} />}
             <div className="actions">
-              <button type="submit" className="button primary">
+              <button
+                type="submit"
+                className="button primary"
+                disabled={stale || refreshing || !selected.ready}
+              >
                 Save finding
               </button>
               <span className="muted">
@@ -467,18 +397,20 @@ function FindingReview({
   const [reason, setReason] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const stale = revision !== workspace.revision;
-  const all = citations(workspace);
-  const find = (id: string) =>
-    all.find((c) => c.id === id) ?? {
-      id,
-      label: `Unresolved citation ${id}`,
-      detail: "Review required",
-    };
-  const groups = new Set(
-    [...item.supporting_ids, ...item.contradicting_ids]
-      .map((id) => find(id).source?.origin_group)
-      .filter(Boolean),
+  const selected = useCitationSelections(
+    [...item.supporting_ids, ...item.contradicting_ids],
+    revision,
+    stale,
   );
+  const find = (id: string) => selected.rows.find((row) => row.id === id);
+  const groups = new Set(
+    selected.rows.map((row) => row.source.origin_group).filter(Boolean),
+  );
+  const unknownGroups = new Set(
+    selected.rows
+      .filter((row) => !row.source.origin_group)
+      .map((row) => row.source.id),
+  ).size;
   return (
     <Dialog label="Finding review" wide preventClose={busy} onClose={close}>
       <button
@@ -508,6 +440,7 @@ function FindingReview({
         {!item.hypothesis_ids.length && (
           <p className="muted">No questions linked.</p>
         )}
+        <SelectionStatus state={selected} stale={stale} />
         {(
           [
             ["Supporting evidence", item.supporting_ids],
@@ -516,16 +449,33 @@ function FindingReview({
         ).map(([label, ids]) => (
           <section aria-label={label} key={label}>
             <h4>{label}</h4>
-            {ids.map((id) => (
-              <CitationRow key={id} item={find(id)} onSource={onSource} />
-            ))}
+            {ids.map((id) => {
+              const citation = find(id);
+              return citation ? (
+                <CitationRow
+                  key={id}
+                  item={citation}
+                  evidence={workspace.evidence}
+                  onSource={onSource}
+                  disabled={busy || stale}
+                />
+              ) : (
+                <p key={id}>
+                  Citation {id} · details unavailable; role retained.
+                </p>
+              );
+            })}
             {!ids.length && <p className="muted">None cited.</p>}
           </section>
         ))}
-        <p className="muted">
-          {groups.size} source-origin groups among these citations. Shared
-          origin is visible; independence requires review.
-        </p>
+        {selected.ready && (
+          <p className="muted">
+            {groups.size} source-origin groups among these citations. Shared
+            origin is visible; independence requires review.
+            {unknownGroups > 0 &&
+              ` ${unknownGroups} cited sources have no recorded origin group; this is not a complete group count.`}
+          </p>
+        )}
         {stale && (
           <p className="alert" role="status">
             The workspace changed while this review was open. The draft reason
@@ -537,6 +487,7 @@ function FindingReview({
           <form
             onSubmit={async (e) => {
               e.preventDefault();
+              if (stale || !selected.ready) return;
               setSubmitted(true);
               if (
                 await run({
@@ -561,7 +512,11 @@ function FindingReview({
               </label>
               {submitted && <ErrorMessage error={error} />}
               <div className="inline-actions">
-                <button type="submit" className="button primary">
+                <button
+                  type="submit"
+                  className="button primary"
+                  disabled={!selected.ready}
+                >
                   Mark finding reviewed
                 </button>
                 <button type="button" className="button" onClick={edit}>
