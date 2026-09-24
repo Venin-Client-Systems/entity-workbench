@@ -1,7 +1,7 @@
 //! Probe-only observations, collected after acknowledged process-tree termination.
 use super::*;
 use crate::java::diagnostics::{
-    fallback_name, fatal_header, FailureDiagnostics, FatalHeader, TreeCounts,
+    fallback_name, fatal_header, thread_sample, FailureDiagnostics, FatalHeader, TreeCounts,
 };
 
 fn tree_counts(root: &Path) -> Option<TreeCounts> {
@@ -75,6 +75,9 @@ pub(super) fn capture_control(scratch: &Path) -> FailureDiagnostics {
         scratch: tree_counts(scratch),
         profile: None,
         fatal_header: read_fatal_header(scratch),
+        thread_sample: read_output_bounded(&scratch.join("java-sample.json"), 512)
+            .ok()
+            .and_then(|bytes| thread_sample(&bytes)),
         worker_checkpoint: read_output_bounded(&scratch.join("java-checkpoint.json"), 64)
             .ok()
             .and_then(|bytes| serde_json::from_slice(&bytes).ok()),
@@ -122,6 +125,22 @@ mod tests {
         fs::remove_file(scratch.join("java-checkpoint.json")).unwrap();
         fs::write(scratch.join("java-checkpoint.json"), vec![b' '; 65]).unwrap();
         assert!(capture(&scratch, &profile).worker_checkpoint.is_none());
+    }
+    #[test]
+    fn thread_sample_file_rejects_links_and_oversize_after_quiescence() {
+        let root = tempfile::tempdir().unwrap();
+        let scratch = root.path().join("scratch");
+        fs::create_dir(&scratch).unwrap();
+        let source = root.path().join("source");
+        let bytes=br#"{"state":"RUNNABLE","frame_count":1,"font_provider":true,"font_directory_walk":false,"font_decode":false,"pdf_text":true,"class_loading":false,"file_io":false}"#;
+        fs::write(&source, bytes).unwrap();
+        fs::hard_link(&source, scratch.join("java-sample.json")).unwrap();
+        assert!(capture_control(&scratch).thread_sample.is_none());
+        fs::remove_file(scratch.join("java-sample.json")).unwrap();
+        fs::write(scratch.join("java-sample.json"), bytes).unwrap();
+        assert!(capture_control(&scratch).thread_sample.is_some());
+        fs::write(scratch.join("java-sample.json"), vec![b' '; 513]).unwrap();
+        assert!(capture_control(&scratch).thread_sample.is_none());
     }
     #[test]
     fn fallback_diagnostic_requires_one_regular_bounded_numeric_log() {

@@ -9,6 +9,7 @@ pub(crate) struct FailureDiagnostics {
     pub profile: Option<TreeCounts>,
     pub fatal_header: Option<FatalHeader>,
     pub worker_checkpoint: Option<JavaCheckpoint>,
+    pub thread_sample: Option<ThreadSample>,
 }
 #[derive(Debug, Deserialize, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -25,6 +26,35 @@ pub(crate) enum JavaCheckpoint {
     PdfStripperReady,
     PdfTextStarted,
     PdfTextFinished,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct ThreadSample {
+    state: SampleState,
+    frame_count: u8,
+    font_provider: bool,
+    font_directory_walk: bool,
+    font_decode: bool,
+    pdf_text: bool,
+    class_loading: bool,
+    file_io: bool,
+}
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+enum SampleState {
+    New,
+    Runnable,
+    Blocked,
+    Waiting,
+    TimedWaiting,
+    Terminated,
+}
+pub(crate) fn thread_sample(bytes: &[u8]) -> Option<ThreadSample> {
+    if bytes.len() > 512 {
+        return None;
+    }
+    let sample: ThreadSample = serde_json::from_slice(bytes).ok()?;
+    (sample.frame_count <= 64).then_some(sample)
 }
 #[derive(Debug, Default, Serialize)]
 pub(crate) struct TreeCounts {
@@ -289,6 +319,35 @@ mod tests {
                 value
             );
         }
+    }
+    #[test]
+    fn thread_samples_are_closed_bounded_and_not_arbitrary_stack_output() {
+        let value = serde_json::json!({"state":"RUNNABLE","frame_count":64,
+            "font_provider":true,"font_directory_walk":false,"font_decode":true,
+            "pdf_text":true,"class_loading":false,"file_io":false});
+        let bytes = serde_json::to_vec(&value).unwrap();
+        assert!(thread_sample(&bytes).is_some());
+        for (key, invalid) in [
+            ("state", serde_json::json!("private-state")),
+            ("frame_count", serde_json::json!(65)),
+            ("frame_count", serde_json::json!(-1)),
+            ("font_provider", serde_json::json!("true")),
+            ("raw_stack", serde_json::json!("private")),
+        ] {
+            let mut bad = value.clone();
+            bad[key] = invalid;
+            assert!(thread_sample(&serde_json::to_vec(&bad).unwrap()).is_none());
+        }
+        let mut duplicate = bytes.clone();
+        duplicate.pop();
+        duplicate.extend(br#", "frame_count":1}"#);
+        assert!(thread_sample(&duplicate).is_none());
+        let mut trailing = bytes.clone();
+        trailing.extend(b" {}");
+        assert!(thread_sample(&trailing).is_none());
+        assert!(thread_sample(&vec![b' '; 513]).is_none());
+        assert!(thread_sample(b"{}").is_none());
+        assert!(thread_sample(b"\xff").is_none());
     }
     #[test]
     fn java_checkpoint_is_a_closed_diagnostic_hint() {

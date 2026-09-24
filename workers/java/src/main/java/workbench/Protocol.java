@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+import java.lang.management.ManagementFactory;
 
 /** Engine adapters accept only a bounded single request. OS isolation is mandatory. */
 final class Protocol {
@@ -17,6 +18,54 @@ final class Protocol {
                 "pdf_stripper_ready", "pdf_text_started", "pdf_text_finished").contains(value))
             throw new IOException("Invalid fixed checkpoint");
         Files.writeString(Path.of("java-checkpoint.json"), "\"" + value + "\"");
+    }
+    /** One bounded observation of this invocation's main thread, only in probes. */
+    static void startSample() {
+        if (!Boolean.getBoolean("workbench.probe")) return;
+        long mainThread=Thread.currentThread().threadId();
+        Thread sampler=new Thread(()-> {
+            try {
+                Thread.sleep(20_000);
+                var info=ManagementFactory.getThreadMXBean().getThreadInfo(mainThread,64);
+                if(info==null)return;
+                byte[] bytes=sampleBytes(info.getThreadState(),info.getStackTrace());
+                Files.write(Path.of("java-sample.json"),bytes,StandardOpenOption.CREATE_NEW);
+            } catch(Exception unavailable) { /* missing is unknown; never publish raw diagnostics */ }
+        },"workbench-probe-sampler");
+        try {
+            sampler.setDaemon(true);
+            sampler.start();
+        } catch(RuntimeException unavailable) { /* keep original operation */ }
+    }
+    static byte[] sampleBytes(Thread.State state,StackTraceElement[] frames)throws IOException {
+        if(frames.length>64)throw new IOException("Sample frame bound exceeded");
+        Map<String,Object> result=new LinkedHashMap<>();
+        result.put("state",state.name());result.put("frame_count",frames.length);
+        for(String category:List.of("font_provider","font_directory_walk","font_decode","pdf_text","class_loading","file_io"))result.put(category,false);
+        for(StackTraceElement frame:frames) {
+            // Never read/serialize method names, source files, line numbers,
+            // classloader/module strings, thread names/IDs or exception text.
+            String type=frame.getClassName();
+            String category=switch(type) {
+                case "org.apache.pdfbox.pdmodel.font.FileSystemFontProvider" -> "font_provider";
+                case "org.apache.fontbox.util.autodetect.FontFileFinder",
+                     "org.apache.fontbox.util.autodetect.WindowsFontDirFinder" -> "font_directory_walk";
+                case "org.apache.fontbox.ttf.FontHeaders", "org.apache.fontbox.ttf.TTFParser",
+                     "org.apache.fontbox.ttf.OTFParser", "org.apache.fontbox.ttf.OpenTypeFont",
+                     "org.apache.fontbox.ttf.TrueTypeFont", "org.apache.fontbox.ttf.TrueTypeCollection",
+                     "org.apache.fontbox.type1.Type1Font" -> "font_decode";
+                case "org.apache.pdfbox.text.PDFTextStripper", "org.apache.pdfbox.contentstream.PDFStreamEngine",
+                     "org.apache.pdfbox.text.LegacyPDFStreamEngine" -> "pdf_text";
+                case "java.lang.ClassLoader", "jdk.internal.loader.BuiltinClassLoader" -> "class_loading";
+                case "java.io.FileInputStream", "java.io.RandomAccessFile",
+                     "sun.nio.ch.FileDispatcherImpl", "sun.nio.ch.FileChannelImpl" -> "file_io";
+                default -> null;
+            };
+            if(category!=null)result.put(category,true);
+        }
+        byte[] bytes=JSON.writeValueAsBytes(result);
+        if(bytes.length>512)throw new IOException("Sample output bound exceeded");
+        return bytes;
     }
     static JsonNode read() throws IOException {
         byte[] bytes = System.in.readNBytes(1_048_577);

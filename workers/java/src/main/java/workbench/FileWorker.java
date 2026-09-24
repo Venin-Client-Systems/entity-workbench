@@ -15,6 +15,7 @@ public final class FileWorker {
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         System.setErr(new PrintStream(OutputStream.nullOutputStream()));
         try {
+            Protocol.startSample();
             Protocol.checkpoint("file_worker_entered");
             if (args.length != 2 || !(args[0].equals("parse") || args[0].equals("index") || args[0].equals("search")))
                 throw new IOException("Unsupported fixed recipe");
