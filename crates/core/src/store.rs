@@ -311,6 +311,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, mode: ResponseMode) -> Result<Value> {
         match command {
+            Command::ExportTransactions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.export_transactions(&request, expected_revision)?,
+                )?);
+            }
             Command::PageTransferCandidates {
                 request,
                 expected_revision,

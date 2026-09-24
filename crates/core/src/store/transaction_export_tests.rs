@@ -270,3 +270,40 @@ fn export_is_a_single_snapshot_during_a_real_concurrent_correction() {
     assert_ne!(current.query_sha256, export.query_sha256);
     assert_ne!(current.sha256, export.sha256);
 }
+
+#[test]
+fn public_export_is_identical_in_all_response_modes_and_rejects_oversized_filters() {
+    let (_temp, mut w) = workspace();
+    let revision = w.revision().unwrap();
+    let before = serde_json::to_value(w.view().unwrap()).unwrap();
+    let command = Command::ExportTransactions {
+        request: request(),
+        expected_revision: revision,
+    };
+    let value = w.dispatch(command.clone()).unwrap();
+    assert_eq!(value, w.dispatch_presentation(command.clone()).unwrap());
+    assert_eq!(value, w.dispatch_summary(command).unwrap());
+    assert!(value.get("workspace").is_none());
+    let export: TransactionExport = serde_json::from_value(value).unwrap();
+    assert_eq!(export.row_count, 305);
+    assert_eq!(hash(export.json.as_bytes()), export.sha256);
+    for dimension in 0..4 {
+        let mut bad = request();
+        let large = Some("x".repeat(1_048_576));
+        match dimension {
+            0 => bad.filter.account = large,
+            1 => bad.filter.currency = large,
+            2 => bad.filter.date_from = large,
+            _ => bad.filter.date_to = large,
+        }
+        let error = bad.filter.validate().unwrap_err().to_string();
+        assert_eq!(bad.validate().unwrap_err().to_string(), error);
+        assert!(w
+            .dispatch_summary(Command::ExportTransactions {
+                request: bad,
+                expected_revision: revision
+            })
+            .is_err());
+    }
+    assert_eq!(serde_json::to_value(w.view().unwrap()).unwrap(), before);
+}

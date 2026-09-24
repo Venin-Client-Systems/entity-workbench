@@ -22,6 +22,21 @@ pub struct TransactionPageFilter {
     pub review: Option<ReviewState>,
 }
 impl TransactionPageFilter {
+    /// Validate borrowed filter strings before any adapter copies them.
+    pub fn validate(&self) -> Result<()> {
+        crate::transaction_analysis::validate_scope(
+            self.date_from.as_deref(),
+            self.date_to.as_deref(),
+            self.account.as_deref(),
+            self.currency.as_deref(),
+        )?;
+        require(
+            self.account
+                .as_ref()
+                .is_none_or(|value| !value.chars().any(char::is_control)),
+            "Page account cannot contain control characters",
+        )
+    }
     pub(crate) fn scope(&self) -> TransactionAnalysisRequest {
         TransactionAnalysisRequest {
             date_from: self.date_from.clone(),
@@ -66,19 +81,7 @@ impl Default for TransactionPageRequest {
 }
 impl TransactionPageRequest {
     pub fn validate(&self) -> Result<()> {
-        crate::transaction_analysis::validate_scope(
-            self.filter.date_from.as_deref(),
-            self.filter.date_to.as_deref(),
-            self.filter.account.as_deref(),
-            self.filter.currency.as_deref(),
-        )?;
-        require(
-            self.filter
-                .account
-                .as_ref()
-                .is_none_or(|value| !value.chars().any(char::is_control)),
-            "Page account cannot contain control characters",
-        )?;
+        self.filter.validate()?;
         validate_window(self.page_size, self.cursor.as_deref())
     }
 }

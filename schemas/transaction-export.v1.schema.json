@@ -1,0 +1,164 @@
+{
+  "$defs": {
+    "LiteralMatching": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/LiteralSearchAlgorithm"
+        },
+        "unicode_version": {
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "unicode_version"
+      ],
+      "type": "object"
+    },
+    "LiteralSearchAlgorithm": {
+      "enum": [
+        "unicode_default_lowercase_literal_v1"
+      ],
+      "type": "string"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "TransactionExportRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "filter": {
+          "$ref": "#/$defs/TransactionPageFilter"
+        },
+        "order": {
+          "$ref": "#/$defs/TransactionPageOrder"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query",
+        "filter",
+        "order"
+      ],
+      "type": "object"
+    },
+    "TransactionPageFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReviewState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TransactionPageOrder": {
+      "enum": [
+        "date_ascending",
+        "date_descending"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bytes": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "json": {
+      "description": "Complete pretty-printed array of exact canonical transactions, including all review states selected by the request.",
+      "type": "string"
+    },
+    "matching": {
+      "$ref": "#/$defs/LiteralMatching"
+    },
+    "query_sha256": {
+      "description": "Export identity, distinct from a page's page-size-bound query identity.",
+      "type": "string"
+    },
+    "request": {
+      "$ref": "#/$defs/TransactionExportRequest"
+    },
+    "row_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sha256": {
+      "type": "string"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "workspace_revision",
+    "request",
+    "matching",
+    "query_sha256",
+    "row_count",
+    "bytes",
+    "sha256",
+    "json"
+  ],
+  "title": "TransactionExport",
+  "type": "object"
+}

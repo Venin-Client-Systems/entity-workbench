@@ -20,12 +20,7 @@ impl TransactionExportRequest {
             self.query.len() <= MAX_SEARCH_QUERY_BYTES,
             "Transaction export query exceeds 1024 UTF-8 bytes",
         )?;
-        TransactionPageRequest {
-            filter: self.filter.clone(),
-            order: self.order,
-            ..Default::default()
-        }
-        .validate()
+        self.filter.validate()
     }
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
