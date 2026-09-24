@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { AssessmentWorkbench } from "./AssessmentWorkbench";
+import { CollectionHistory } from "./CollectionReview";
 import { Dialog } from "./Dialog";
 import { ReviewSurface } from "./ReviewSurface";
 import { EntityWorkbench } from "./EntityWorkbench";
@@ -832,28 +833,11 @@ function App() {
                       </div>
                     )}
                   </section>
-                  <section className="panel">
-                    <h2>Collection history</h2>
-                    {w.jobs.length === 0 ? (
-                      <p className="muted">
-                        No collection jobs have run. Local indexing requires
-                        collected or imported sources.
-                      </p>
-                    ) : (
-                      w.jobs.map((j) => (
-                        <article className="list-card" key={j.id}>
-                          <span className="pill">
-                            {j.state.replaceAll("_", " ")}
-                          </span>
-                          <h3>{j.queries.join(", ")}</h3>
-                          <p>{j.detail}</p>
-                          <small>
-                            {j.requests_used} / {j.max_requests} requests
-                          </small>
-                        </article>
-                      ))
-                    )}
-                  </section>
+                  <CollectionHistory
+                    workspace={w}
+                    busy={busy}
+                    onRefresh={() => run({ action: "view" })}
+                  />
                   <div className="alert">
                     Search coverage is limited to the local corpus. Broad
                     open-web coverage has not been demonstrated; no third-party

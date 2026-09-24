@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "content": "Synthetic collection review design and Rust-backed browser evidence",
+  "figma_frames": [
+    "27:528",
+    "27:606"
+  ],
+  "files": [
+    {
+      "file": "accessibility-compact.json",
+      "sha256": "cfd5b194a79ec0d4a9aea33bdeb5bea30b4fee001e38f3bec80b7f3d97a6ae0a",
+      "bytes": 38
+    },
+    {
+      "file": "accessibility-desktop.json",
+      "sha256": "cfd5b194a79ec0d4a9aea33bdeb5bea30b4fee001e38f3bec80b7f3d97a6ae0a",
+      "bytes": 38
+    },
+    {
+      "file": "collection-export-saved.png",
+      "sha256": "61f3eed616608400944daffef4843a45a2ed0ccf385226565e12163d585121df",
+      "bytes": 34639,
+      "dimensions": [
+        852,
+        309
+      ]
+    },
+    {
+      "file": "collection-partial.png",
+      "sha256": "b55e199ed9dc43d7a0044fa49be586c1ab3747db02dbd17ce9e86e99002032c2",
+      "bytes": 102799,
+      "dimensions": [
+        920,
+        900
+      ]
+    },
+    {
+      "file": "collection-review-compact.png",
+      "sha256": "cf52449608024e3d763fc8a78265abbac1be9970c0721ddf374b4d931e3f0a73",
+      "bytes": 63555,
+      "dimensions": [
+        680,
+        810
+      ]
+    },
+    {
+      "file": "collection-review-desktop.png",
+      "sha256": "1804d4d73763076a29cc34a2e43d4d95a0bfa88dd6b08bdc6df28e8eb68b6c87",
+      "bytes": 104658,
+      "dimensions": [
+        920,
+        900
+      ]
+    },
+    {
+      "file": "collection-review-full-surface.png",
+      "sha256": "81eacae79ddcd0ce582f5405ca6591ff68f8a91c0c6762523114f824847b70a4",
+      "bytes": 197018,
+      "dimensions": [
+        920,
+        1636
+      ]
+    },
+    {
+      "file": "collection-unavailable.png",
+      "sha256": "c4b1d1933cf228457bcad8ae1551a67bc8c652dfbaa2aa550d2a205756e93d3d",
+      "bytes": 45432,
+      "dimensions": [
+        920,
+        492
+      ]
+    },
+    {
+      "file": "figma-collection-exceptions.png",
+      "sha256": "b700a3bd161a3a7e02d6c41e71528321ca1d729ab8c7c1f4274c677840475ab4",
+      "bytes": 57693,
+      "dimensions": [
+        920,
+        630
+      ]
+    },
+    {
+      "file": "figma-collection-review.png",
+      "sha256": "1b9464a1d96d9522f4e64b67ccf6b52519151be36840b1307168c560b14f2084",
+      "bytes": 96039,
+      "dimensions": [
+        920,
+        1100
+      ]
+    }
+  ]
+}

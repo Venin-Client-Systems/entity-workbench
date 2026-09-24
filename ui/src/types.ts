@@ -1,3 +1,4 @@
+import type { CollectionJob } from "./collection-types";
 import type {
   StatementProfile,
   StatementImportRecord,
@@ -146,15 +147,7 @@ export type Workspace = {
     longitude: number | null;
     review: ReviewState;
   }[];
-  jobs: {
-    id: string;
-    queries: string[];
-    adapters: string[];
-    state: string;
-    requests_used: number;
-    max_requests: number;
-    detail: string;
-  }[];
+  jobs: CollectionJob[];
   merges: {
     id: string;
     source: string;
