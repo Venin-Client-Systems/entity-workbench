@@ -16,7 +16,7 @@ use uuid::Uuid;
 pub(crate) const INDEX_BYTES: usize = 24 * 1024 * 1024;
 pub(crate) const INDEX_FILE_BYTES: usize = 8 * 1024 * 1024;
 pub(crate) const INDEX_MEMBERS: usize = 128;
-const PARSE_BYTES: u64 = 2 * 1024 * 1024;
+pub(crate) const PARSE_BYTES: u64 = 2 * 1024 * 1024;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -242,7 +242,11 @@ impl Prepared<'_> {
         runtime::verify(path, self.job.role())
     }
 }
-fn prepare<'a>(root: &Path, scratch_parent: &Path, job: &'a Job) -> Result<Prepared<'a>> {
+pub(crate) fn prepare<'a>(
+    root: &Path,
+    scratch_parent: &Path,
+    job: &'a Job,
+) -> Result<Prepared<'a>> {
     // Substitution can produce verbatim Windows paths. Appended separators must
     // already be backslashes; Win32 does not normalize '/' after a \\?\ prefix.
     let mut arguments = vec![

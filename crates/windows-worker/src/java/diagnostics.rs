@@ -1,5 +1,6 @@
 //! Fixed diagnostic fields only; worker-controlled raw logs never enter receipts.
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 
 #[derive(Debug, Default, Serialize)]
 pub(crate) struct FailureDiagnostics {
@@ -36,6 +37,7 @@ pub(crate) struct FatalHeader {
     pub out_of_memory: bool,
     pub source_component: Option<&'static str>,
     pub source_line: Option<u32>,
+    pub source_basename_sha256: Option<String>,
 }
 pub(crate) fn fallback_name(name: &str) -> bool {
     name.strip_prefix("hs_err_pid")
@@ -44,9 +46,41 @@ pub(crate) fn fallback_name(name: &str) -> bool {
             !digits.is_empty() && digits.len() <= 10 && digits.bytes().all(|b| b.is_ascii_digit())
         })
 }
+// HotSpot's product build prints a basename and line. Reject paths instead of
+// hashing them: a fingerprint must never encode arbitrary source path material.
+fn source_location(content: &str) -> Option<(&str, u32)> {
+    let location = content.strip_prefix("Internal Error (")?.split_once(')')?.0;
+    if location.len() > 104 {
+        return None;
+    }
+    let (basename, line) = location.split_once(':')?;
+    if basename.is_empty()
+        || basename.len() > 96
+        || !basename.as_bytes()[0].is_ascii_alphabetic()
+        || !basename
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'.')
+        || basename.contains("..")
+        || !(basename.ends_with(".cpp")
+            || basename.ends_with(".hpp")
+            || basename.ends_with(".c")
+            || basename.ends_with(".h"))
+        || line.is_empty()
+        || line.len() > 6
+        || !line.bytes().all(|byte| byte.is_ascii_digit())
+    {
+        return None;
+    }
+    let line = line.parse().ok()?;
+    (line > 0).then_some((basename, line))
+}
+
 pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
     // Only the first 32 lines of an already bounded file are inspected. Emit
     // neither the source text, addresses, PID, thread IDs, paths nor environment.
+    if bytes.len() > 256 * 1024 {
+        return None;
+    }
     let text = std::str::from_utf8(bytes).ok()?;
     let lines: Vec<_> = text.lines().take(32).collect();
     if !lines.contains(&"# A fatal error has been detected by the Java Runtime Environment:")
@@ -64,8 +98,10 @@ pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
             || content.starts_with("Native memory allocation (")
             || content
                 == "There is insufficient memory for the Java Runtime Environment to continue.";
-        if content.starts_with("Internal Error (") || content.starts_with("Out of Memory Error (") {
-            for component in [
+        if let Some((basename, line)) = source_location(content) {
+            header.source_basename_sha256 = Some(format!("{:x}", Sha256::digest(basename)));
+            header.source_line = Some(line);
+            header.source_component = [
                 "os_windows.cpp",
                 "os_windows_x86.cpp",
                 "perfMemory_windows.cpp",
@@ -81,16 +117,9 @@ pub(crate) fn fatal_header(bytes: &[u8]) -> Option<FatalHeader> {
                 "classFileParser.cpp",
                 "exceptions.cpp",
                 "debug.cpp",
-            ] {
-                if let Some((_, suffix)) = content.split_once(&format!("{component}:")) {
-                    header.source_component = Some(component);
-                    if let Some((line, _)) = suffix.split_once(')') {
-                        if line.len() <= 6 && line.bytes().all(|b| b.is_ascii_digit()) {
-                            header.source_line = line.parse().ok();
-                        }
-                    }
-                }
-            }
+            ]
+            .into_iter()
+            .find(|component| *component == basename);
         }
         if content.starts_with("EXCEPTION_") || content.starts_with("Internal Error (0x") {
             if let Some((_, code)) = line.split_once("(0x") {
@@ -168,7 +197,7 @@ mod tests {
     }
     #[test]
     fn internal_and_memory_hints_keep_only_fixed_categories_and_source_line() {
-        let text = b"# A fatal error has been detected by the Java Runtime Environment:\n# Internal Error (PRIVATE/os_windows.cpp:123), pid=PRIVATE\n# arbitrary private reason\n";
+        let text = b"# A fatal error has been detected by the Java Runtime Environment:\n# Internal Error (os_windows.cpp:123), pid=PRIVATE\n# arbitrary private reason\n";
         let header = fatal_header(text).unwrap();
         assert!(header.internal_error);
         assert!(!header.out_of_memory);
@@ -182,6 +211,60 @@ mod tests {
         assert_eq!(header.source_line, None);
         let text = b"# A fatal error has been detected by the Java Runtime Environment:\n# Internal Error (0xc0000008), pid=PRIVATE\n";
         assert_eq!(fatal_header(text).unwrap().exception_code, Some(0xc0000008));
+    }
+    #[test]
+    fn source_fingerprint_accepts_only_bounded_internal_error_basenames() {
+        let prefix = "# A fatal error has been detected by the Java Runtime Environment:\n# ";
+        let header = fatal_header(
+            format!("{prefix}Internal Error (classLoaderData.hpp:314), pid=PRIVATE").as_bytes(),
+        )
+        .unwrap();
+        assert_eq!(header.source_line, Some(314));
+        assert_eq!(
+            header.source_basename_sha256,
+            Some(format!("{:x}", Sha256::digest(b"classLoaderData.hpp")))
+        );
+        assert_eq!(header.source_component, None);
+        let json = serde_json::to_string(&header).unwrap();
+        assert!(!json.contains("classLoaderData"));
+        assert!(!json.contains("PRIVATE"));
+        for location in [
+            "private/classLoaderData.hpp:314",
+            r"private\classLoaderData.hpp:314",
+            "C:classLoaderData.hpp:314",
+            "../file.cpp:1",
+            "file.cpp:0",
+            "file.cpp:-1",
+            "file.cpp:1x",
+            "file.cpp:1000000",
+            "file.cpp:",
+            "file.cpp:1:2",
+            "file..cpp:1",
+            ".cpp:1",
+            "file.txt:1",
+            "fi le.cpp:1",
+            "file.cpp:１",
+            "file.cpp:1\0",
+            "file.cpp:1\n",
+            "file.cpp:1(no-close",
+        ] {
+            let value =
+                fatal_header(format!("{prefix}Internal Error ({location})").as_bytes()).unwrap();
+            assert_eq!(
+                value.source_basename_sha256, None,
+                "accepted invalid synthetic location"
+            );
+            assert_eq!(value.source_line, None);
+        }
+        let location = format!("{}.cpp:1", "a".repeat(97));
+        let value =
+            fatal_header(format!("{prefix}Internal Error ({location})").as_bytes()).unwrap();
+        assert_eq!(value.source_basename_sha256, None);
+        let oversized = format!(
+            "{prefix}Internal Error (file.cpp:1){}",
+            " ".repeat(256 * 1024)
+        );
+        assert!(fatal_header(oversized.as_bytes()).is_none());
     }
     #[test]
     fn java_checkpoint_is_a_closed_diagnostic_hint() {

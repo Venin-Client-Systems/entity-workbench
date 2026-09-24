@@ -65,10 +65,15 @@ fn read_fatal_header(scratch: &Path) -> Option<FatalHeader> {
         .and_then(|bytes| fatal_header(&bytes))
 }
 pub(super) fn capture(scratch: &Path, profile: &Path) -> FailureDiagnostics {
+    let mut result = capture_control(scratch);
+    result.profile = tree_counts(profile);
+    result
+}
+pub(super) fn capture_control(scratch: &Path) -> FailureDiagnostics {
     FailureDiagnostics {
         captured_after_termination: true,
         scratch: tree_counts(scratch),
-        profile: tree_counts(profile),
+        profile: None,
         fatal_header: read_fatal_header(scratch),
         worker_checkpoint: read_output_bounded(&scratch.join("java-checkpoint.json"), 64)
             .ok()

@@ -274,6 +274,26 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
     fs::write(private.join("workspace.txt"), b"synthetic private sentinel")?;
     fs::write(private.join("original.txt"), fixture("notice.txt"))?;
     crate::protect_private_tree(&private)?;
+    phase(report, "file_worker_positive_control");
+    let mut control_diagnostics = diagnostics::FailureDiagnostics::default();
+    let control = crate::windows::file_worker_control(&parser, &controls, &mut control_diagnostics);
+    report.insert(
+        "file_worker_positive_control".into(),
+        json!({
+            "passed":control.is_ok(),
+            "failure":control.as_ref().err().map(ToString::to_string),
+            "output_sha256":control.as_ref().ok().map(|output| &output.output_sha256),
+            "diagnostics":control_diagnostics,
+            "scope":"synthetic FileWorker, no AppContainer; unchanged recipe and resource bounds"
+        }),
+    );
+    // Preserve a normal control failure alongside the first confined outcome.
+    // An unacknowledged termination/cleanup failure stops all further launches.
+    if matches!(&control, Err(Error::Cleanup { .. })) {
+        return control.map(|_| ());
+    }
+    empty(&controls)?;
+    let mut control_failure = control.err();
     let mut documents = Vec::new();
     for name in [
         "notice.txt",
@@ -286,7 +306,21 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         phase(report, &format!("parse_{name}"));
         let bytes = fixture(name);
         let job = Job::parse(bytes.to_vec())?;
-        let output = execute_recorded(&parser, &jobs, &job, report)?;
+        let outcome = execute_recorded(&parser, &jobs, &job, report);
+        if name == "notice.txt" {
+            report.insert(
+                "first_confined_parse".into(),
+                json!({
+                    "passed":outcome.is_ok(),
+                    "failure":outcome.as_ref().err().map(ToString::to_string),
+                    "output_sha256":outcome.as_ref().ok().map(|output| &output.output_sha256)
+                }),
+            );
+        }
+        let output = outcome?;
+        if let Some(failure) = control_failure.take() {
+            return Err(failure);
+        }
         let result: Value = decode(&output.bytes)?;
         match name {
             "notice.txt" | "notice.pdf" | "notice.docx" => {

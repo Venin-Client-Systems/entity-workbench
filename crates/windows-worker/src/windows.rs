@@ -2,7 +2,9 @@
 //! The created process remains suspended until zero capabilities, identity and Job
 //! Object assignment are verified. No errors retry without the AppContainer.
 use crate::{quote_argument, validate, Error, Output, ProbeDiagnostics, Request, Result};
+mod java_control;
 mod java_diagnostics;
+pub(crate) use java_control::file_worker_control;
 use std::{
     collections::BTreeMap,
     ffi::{c_void, OsStr, OsString},
