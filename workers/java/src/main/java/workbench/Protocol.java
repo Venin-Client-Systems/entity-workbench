@@ -7,7 +7,7 @@ import java.util.*;
 
 /** Engine adapters accept only a bounded single request. OS isolation is mandatory. */
 final class Protocol {
-    static final ObjectMapper JSON = new ObjectMapper().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    static final ObjectMapper JSON = new ObjectMapper().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
     static JsonNode read() throws IOException {
         byte[] bytes = System.in.readNBytes(1_048_577);
         if (bytes.length > 1_048_576) throw new IOException("Request too large");

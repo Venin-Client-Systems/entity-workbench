@@ -39,7 +39,7 @@ public final class HostileProbe {
         result.put("input_read",allowed(()->Files.readString(Path.of("input.json"))));
         result.put("input_write",allowed(()->Files.writeString(Path.of("input.json"),"modified")));
         result.put("scratch_write",allowed(()->Files.writeString(Path.of("scratch/allowed.txt"),"permitted")));
-        result.put("index_write",allowed(()->Files.writeString(Path.of(System.getProperty("workbench.index"),"probe.txt"),"modified")));
+        result.put("index_write",allowed(()->Files.writeString(Path.of(args.length>5 ? args[5] : System.getProperty("workbench.index"),"probe.txt"),"modified")));
         result.put("sibling_job_read",allowed(()->Files.readString(Path.of(args[4]))));
         result.put("child_process",allowed(()->{
             Process process=new ProcessBuilder(Path.of(System.getProperty("java.home"),"bin/java").toString(),"-version").start();

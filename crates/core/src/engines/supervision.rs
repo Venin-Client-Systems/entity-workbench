@@ -81,15 +81,23 @@ pub(super) fn finish_job<T>(job: tempfile::TempDir, result: Result<T>) -> Result
                 Ok(_) => "worker completed".into(),
                 Err(error) => error.to_string(),
             };
-            Err(Error::Blocked(format!(
+            Err(Error::Validation(format!(
                 "Worker scratch cleanup failed; result rejected ({preceding}; cleanup: {cleanup})"
             )))
         }
     }
 }
 
+fn enforce_limit(allowed: bool, message: &str) -> Result<()> {
+    if allowed {
+        Ok(())
+    } else {
+        Err(Error::QuotaExhausted(message.into()))
+    }
+}
+
 fn check_tree(path: &Path, depth: usize, count: &mut usize, bytes: &mut u64) -> Result<()> {
-    require(depth <= 2, "Worker output nesting limit exceeded")?;
+    enforce_limit(depth <= 2, "Worker output nesting limit exceeded")?;
     for entry in fs::read_dir(path)? {
         let entry = entry?;
         let metadata = match fs::symlink_metadata(entry.path()) {
@@ -100,7 +108,7 @@ fn check_tree(path: &Path, depth: usize, count: &mut usize, bytes: &mut u64) -> 
             Err(error) => return Err(error.into()),
         };
         *count += 1;
-        require(*count <= TREE_FILES, "Worker file-count limit exceeded")?;
+        enforce_limit(*count <= TREE_FILES, "Worker file-count limit exceeded")?;
         require(!metadata.file_type().is_symlink(), "Worker link rejected")?;
         if metadata.is_dir() {
             check_tree(&entry.path(), depth + 1, count, bytes)?;
@@ -111,8 +119,8 @@ fn check_tree(path: &Path, depth: usize, count: &mut usize, bytes: &mut u64) -> 
             )?;
             *bytes = bytes
                 .checked_add(metadata.len())
-                .ok_or_else(|| Error::Validation("Worker output size overflow".into()))?;
-            require(
+                .ok_or_else(|| Error::QuotaExhausted("Worker output size overflow".into()))?;
+            enforce_limit(
                 metadata.len() <= FILE_BYTES && *bytes <= TREE_BYTES,
                 "Worker disk budget exceeded",
             )?;
@@ -132,6 +140,7 @@ fn quote(path: &Path) -> Result<String> {
     Ok(serde_json::to_string(value)?)
 }
 
+#[cfg(test)]
 fn profile(
     java: &Path,
     runtime: &Path,
@@ -139,21 +148,34 @@ fn profile(
     index: &Path,
     writable_index: bool,
 ) -> Result<String> {
+    worker_profile(java, runtime, job, "search", Some((index, writable_index)))
+}
+
+fn worker_profile(
+    java: &Path,
+    runtime: &Path,
+    job: &Path,
+    component: &str,
+    index: Option<(&Path, bool)>,
+) -> Result<String> {
     // The explicit deny of process-fork is intentional: Java threads work without it.
     // sandbox-exec is an experimental development mechanism, not our release helper.
     let mut result = format!(
-        "(version 1)\n(deny default)\n(import \"dyld-support.sb\")\n(deny process-fork)\n(allow sysctl-read)\n(allow file-read-metadata)\n(allow process-exec (literal {}))\n(allow file-read* file-map-executable (subpath {}) (subpath {}) (subpath \"/usr/lib\") (subpath \"/System/Library\"))\n(allow file-read* (literal \"/dev/random\") (literal \"/dev/urandom\") (literal \"/dev/null\") (literal {}) (literal {}) (subpath {}) (subpath {}))\n(allow file-write* (literal {}) (subpath {}))\n",
-        quote(java)?, quote(&runtime.join("java"))?, quote(&runtime.join("search"))?,
+        "(version 1)\n(deny default)\n(import \"dyld-support.sb\")\n(deny process-fork)\n(allow sysctl-read)\n(allow file-read-metadata)\n(allow process-exec (literal {}))\n(allow file-read* file-map-executable (subpath {}) (subpath {}) (subpath \"/usr/lib\") (subpath \"/System/Library\"))\n(allow file-read* (literal \"/dev/random\") (literal \"/dev/urandom\") (literal \"/dev/null\") (literal {}) (literal {}) (subpath {}))\n(allow file-write* (literal {}) (subpath {}))\n",
+        quote(java)?, quote(&runtime.join("java"))?, quote(&runtime.join(component))?,
         quote(&job.join("input.json"))?, quote(&job.join("request.json"))?,
-        quote(&job.join("scratch"))?, quote(index)?,
+        quote(&job.join("scratch"))?,
         quote(&job.join("result.json"))?, quote(&job.join("scratch"))?,
     );
     result.push_str(&format!("(allow file-read* (literal {}))\n", quote(job)?));
-    if writable_index {
-        result.push_str(&format!(
-            "(allow file-write* (subpath {}))\n",
-            quote(index)?
-        ));
+    if let Some((index, writable)) = index {
+        result.push_str(&format!("(allow file-read* (subpath {}))\n", quote(index)?));
+        if writable {
+            result.push_str(&format!(
+                "(allow file-write* (subpath {}))\n",
+                quote(index)?
+            ));
+        }
     }
     Ok(result)
 }
@@ -238,13 +260,27 @@ impl Drop for ProcessGroup {
         let _ = self.child.wait();
     }
 }
+#[cfg(test)]
 fn wait(child: Child, job: &Path, index: &Path, timeout: Duration) -> Result<ExitStatus> {
+    wait_assigned(child, job, Some(index), timeout, None)
+}
+
+fn wait_assigned(
+    child: Child,
+    job: &Path,
+    index: Option<&Path>,
+    timeout: Duration,
+    cancellation: Option<&super::CancellationToken>,
+) -> Result<ExitStatus> {
     let mut group = ProcessGroup {
         child,
         reaped: false,
     };
     let started = Instant::now();
     loop {
+        if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
+            return Err(Error::Blocked("Local Java worker cancelled".into()));
+        }
         // WNOWAIT preserves the leader PID until group termination, avoiding a
         // signal to a recycled PID after std::Child::try_wait has reaped it.
         let mut info: libc::siginfo_t = unsafe { std::mem::zeroed() };
@@ -269,12 +305,16 @@ fn wait(child: Child, job: &Path, index: &Path, timeout: Duration) -> Result<Exi
             return Ok(status);
         }
         if started.elapsed() >= timeout {
-            return Err(Error::Blocked("Local search worker timed out".into()));
+            return Err(Error::QuotaExhausted(
+                "Local Java worker wall-time limit exhausted".into(),
+            ));
         }
         let mut count = 0;
         let mut bytes = 0;
         check_tree(job, 0, &mut count, &mut bytes)?;
-        check_tree(index, 0, &mut count, &mut bytes)?;
+        if let Some(index) = index {
+            check_tree(index, 0, &mut count, &mut bytes)?;
+        }
         std::thread::sleep(Duration::from_millis(20));
     }
 }
@@ -288,24 +328,81 @@ pub(super) fn run_java(
     args: &[String],
     timeout: Duration,
 ) -> Result<()> {
+    run_assigned_java(
+        runtime,
+        job,
+        JavaAssignment {
+            component: "search",
+            index: Some((index, writable_index)),
+            class,
+        },
+        args,
+        timeout,
+        None,
+    )
+}
+
+pub(super) fn run_parser_java(
+    runtime: &Path,
+    job: &Path,
+    class: &str,
+    args: &[String],
+    timeout: Duration,
+    cancellation: &super::CancellationToken,
+) -> Result<()> {
+    run_assigned_java(
+        runtime,
+        job,
+        JavaAssignment {
+            component: "parser",
+            index: None,
+            class,
+        },
+        args,
+        timeout,
+        Some(cancellation),
+    )
+}
+struct JavaAssignment<'a> {
+    component: &'static str,
+    index: Option<(&'a Path, bool)>,
+    class: &'a str,
+}
+fn run_assigned_java(
+    runtime: &Path,
+    job: &Path,
+    assignment: JavaAssignment<'_>,
+    args: &[String],
+    timeout: Duration,
+    cancellation: Option<&super::CancellationToken>,
+) -> Result<()> {
     let runtime = runtime
         .canonicalize()
         .map_err(|_| Error::Blocked("Packaged Java runtime is unavailable".into()))?;
     let java = runtime.join("java/bin/java");
-    require(
-        java.is_file() && runtime.join("search/workers-0.1.0.jar").is_file(),
-        "Packaged Java or worker JAR is missing",
-    )?;
+    if !java.is_file()
+        || !runtime
+            .join(assignment.component)
+            .join("workers-0.1.0.jar")
+            .is_file()
+    {
+        return Err(Error::Blocked(
+            "Packaged Java or worker JAR is missing".into(),
+        ));
+    }
     fs::create_dir(job.join("scratch"))?;
     let profile_path = job.join("worker.sb");
     super::write_new(
         &profile_path,
-        profile(&java, &runtime, job, index, writable_index)?.as_bytes(),
+        worker_profile(&java, &runtime, job, assignment.component, assignment.index)?.as_bytes(),
     )?;
     let classpath = format!(
         "{}:{}",
-        runtime.join("search/workers-0.1.0.jar").display(),
-        runtime.join("search/lib/*").display()
+        runtime
+            .join(assignment.component)
+            .join("workers-0.1.0.jar")
+            .display(),
+        runtime.join(assignment.component).join("lib/*").display()
     );
     let mut command = Command::new("/usr/bin/sandbox-exec");
     command
@@ -322,8 +419,12 @@ pub(super) fn run_java(
             job.join("scratch").display()
         ))
         .arg(format!("-Duser.home={}", job.join("scratch").display()))
-        .arg(format!("-Dworkbench.index={}", index.display()))
-        .args(["-cp", &classpath, class])
+        .args(
+            assignment
+                .index
+                .map(|(index, _)| format!("-Dworkbench.index={}", index.display())),
+        )
+        .args(["-cp", &classpath, assignment.class])
         .args(args)
         .current_dir(job)
         .env_clear()
@@ -334,16 +435,27 @@ pub(super) fn run_java(
         .stdout(Stdio::null())
         .stderr(Stdio::null());
     configure_process(&mut command)?;
-    let status = wait(command.spawn()?, job, index, timeout)?;
+    if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
+        return Err(Error::Blocked("Local Java worker cancelled".into()));
+    }
+    let status = wait_assigned(
+        command.spawn()?,
+        job,
+        assignment.index.map(|(path, _)| path),
+        timeout,
+        cancellation,
+    )?;
     require(
         status.success(),
-        "Local search worker failed; no result was accepted",
+        "Local Java worker failed; no result was accepted",
     )?;
     // Always inspect final files too: fast workers can exit between polls.
     let mut count = 0;
     let mut bytes = 0;
     check_tree(job, 0, &mut count, &mut bytes)?;
-    check_tree(index, 0, &mut count, &mut bytes)?;
+    if let Some((index, _)) = assignment.index {
+        check_tree(index, 0, &mut count, &mut bytes)?;
+    }
     Ok(())
 }
 
@@ -354,12 +466,16 @@ pub(super) fn read_result(path: &Path, limit: u64) -> Result<Vec<u8>> {
         .open(path)?;
     let metadata = file.metadata()?;
     require(
-        metadata.is_file() && metadata.nlink() == 1 && metadata.len() <= limit,
+        metadata.is_file() && metadata.nlink() == 1,
         "Worker returned an invalid result file",
+    )?;
+    enforce_limit(
+        metadata.len() <= limit,
+        "Worker result exceeded its byte limit",
     )?;
     let mut bytes = Vec::new();
     (&mut file).take(limit + 1).read_to_end(&mut bytes)?;
-    require(
+    enforce_limit(
         bytes.len() as u64 <= limit,
         "Worker result exceeded its limit",
     )?;
