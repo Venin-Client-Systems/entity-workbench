@@ -295,12 +295,20 @@ fn set_acl(
         // MAXIMUM_ALLOWED is deliberate: SetSecurityInfo documents that this
         // prevents automatic child-ACE propagation. Otherwise repairing a
         // parent DACL could mutate an outside file via a worker-created hardlink.
+        // This handle performs security/metadata operations only. Do not request
+        // synchronous file I/O, which additionally requires SYNCHRONIZE even
+        // when an object's owner retains only READ_CONTROL and WRITE_DAC.
         let directory = OpenOptions::new()
             .access_mode(MAXIMUM_ALLOWED)
             .share_mode(0)
-            .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS)
-            .open(path)?;
-        let metadata = directory.metadata()?;
+            .custom_flags(
+                FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+            )
+            .open(path)
+            .map_err(|error| io_operation("OpenCleanupDirectory", error))?;
+        let metadata = directory
+            .metadata()
+            .map_err(|error| io_operation("InspectCleanupDirectory", error))?;
         blocked(
             metadata.is_dir() && metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT == 0,
             "repair target is not an ordinary directory",
@@ -667,6 +675,15 @@ fn verify_token(process: HANDLE, sid: PSID) -> Result<()> {
 fn clean(path: &Path, owner: &str) -> Result<()> {
     clean_entry(path, owner, 0, &mut 0)
 }
+fn io_operation(operation: &'static str, error: std::io::Error) -> Error {
+    match error.raw_os_error() {
+        Some(code) => Error::Api {
+            operation,
+            code: code as u32,
+        },
+        None => Error::Io(error.kind()),
+    }
+}
 fn clean_entry(path: &Path, owner: &str, depth: usize, entries: &mut usize) -> Result<()> {
     // Cleanup must remain bounded even when the worker deliberately exceeds
     // inspection limits. Stop and retain recovery state instead of stack growth.
@@ -678,7 +695,7 @@ fn clean_entry(path: &Path, owner: &str, depth: usize, entries: &mut usize) -> R
     let metadata = match fs::symlink_metadata(path) {
         Ok(m) => m,
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => return Ok(()),
-        Err(e) => return Err(e.into()),
+        Err(e) => return Err(io_operation("InspectCleanupEntry", e)),
     };
     // A junction is removed itself. Never walk/chmod a worker-created reparse target.
     if metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
@@ -691,7 +708,9 @@ fn clean_entry(path: &Path, owner: &str, depth: usize, entries: &mut usize) -> R
     }
     if metadata.is_dir() {
         set_acl(path, owner, None, true)?;
-        for entry in fs::read_dir(path)? {
+        for entry in
+            fs::read_dir(path).map_err(|error| io_operation("ListCleanupDirectory", error))?
+        {
             clean_entry(&entry?.path(), owner, depth + 1, entries)?;
         }
         fs::remove_dir(path)?;
