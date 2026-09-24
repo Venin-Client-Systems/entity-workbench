@@ -136,7 +136,9 @@ fn quote_argument(value: &str) -> String {
 #[cfg(windows)]
 mod windows;
 #[cfg(windows)]
-pub use windows::{protect_private_tree, run, run_probe};
+pub use windows::{
+    host_injected_tree_probe, protect_private_tree, run, run_probe, HostInjectedTreeReceipt,
+};
 #[cfg(not(windows))]
 pub fn run(request: &Request, _cancelled: impl Fn() -> bool) -> Result<Output> {
     validate(request)?;

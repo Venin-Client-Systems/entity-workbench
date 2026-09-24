@@ -1,4 +1,5 @@
 //! Synthetic worker-owned directory lockout. No launcher permissions are changed.
+use super::rewrite_outcome::{RewriteObservation, RewriteOutcome};
 use std::{
     ffi::{c_void, OsStr},
     fs::{File, OpenOptions},
@@ -23,8 +24,7 @@ use windows_sys::Win32::{
         Threading::{GetCurrentProcess, OpenProcessToken},
     },
 };
-use workbench_windows_worker::{Error, ProbeCheckpoint, Result};
-type AnyResult<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+use workbench_windows_worker::{Error, Result};
 
 struct Descriptor(*mut c_void);
 impl Drop for Descriptor {
@@ -254,92 +254,164 @@ fn read_low_label(file: &File) -> Result<bool> {
     }
     descriptor_has_low_label(&Descriptor(raw))
 }
-fn verify_low_label(file: &File) -> Result<()> {
-    if !read_low_label(file)? {
-        return Err(Error::Blocked(
-            "synthetic directory lacks low no-write-up label",
-        ));
+fn capture_dacl(file: &File) -> Result<Descriptor> {
+    let mut raw = null_mut();
+    let code = unsafe {
+        GetSecurityInfo(
+            file.as_raw_handle(),
+            SE_FILE_OBJECT,
+            DACL_SECURITY_INFORMATION,
+            null_mut(),
+            null_mut(),
+            null_mut(),
+            null_mut(),
+            &mut raw,
+        )
+    };
+    if code != 0 {
+        return Err(Error::Api {
+            operation: "RewriteCaptureDacl",
+            code,
+        });
+    }
+    Ok(Descriptor(raw))
+}
+fn dacl_signature(descriptor: &Descriptor) -> Result<(bool, Vec<Vec<u8>>)> {
+    let (mut present, mut defaulted, mut control, mut revision) = (0, 0, 0, 0);
+    let mut dacl = null_mut();
+    native(
+        unsafe { GetSecurityDescriptorDacl(descriptor.0, &mut present, &mut dacl, &mut defaulted) },
+        "RewriteDacl",
+    )?;
+    native(
+        unsafe { GetSecurityDescriptorControl(descriptor.0, &mut control, &mut revision) },
+        "RewriteDaclControl",
+    )?;
+    if present == 0
+        || dacl.is_null()
+        || unsafe { IsValidAcl(dacl) } == 0
+        || unsafe { (*dacl).AceCount } > 32
+    {
+        return Err(Error::Blocked("invalid bounded rewrite DACL"));
+    }
+    let mut entries = Vec::new();
+    for index in 0..unsafe { (*dacl).AceCount } as u32 {
+        let mut raw = null_mut();
+        native(unsafe { GetAce(dacl, index, &mut raw) }, "RewriteDaclAce")?;
+        let length = unsafe { (*raw.cast::<ACE_HEADER>()).AceSize } as usize;
+        entries.push(unsafe { std::slice::from_raw_parts(raw.cast::<u8>(), length) }.to_vec());
+    }
+    Ok((control & SE_DACL_PROTECTED != 0, entries))
+}
+fn restore_dacl(file: &File, original: &Descriptor) -> Result<()> {
+    let (mut present, mut defaulted, mut control, mut revision) = (0, 0, 0, 0);
+    let mut dacl = null_mut();
+    native(
+        unsafe { GetSecurityDescriptorDacl(original.0, &mut present, &mut dacl, &mut defaulted) },
+        "RewriteRestoreDacl",
+    )?;
+    native(
+        unsafe { GetSecurityDescriptorControl(original.0, &mut control, &mut revision) },
+        "RewriteRestoreControl",
+    )?;
+    if present == 0 || dacl.is_null() {
+        return Err(Error::Blocked("rewrite null restore DACL forbidden"));
+    }
+    let protection = if control & SE_DACL_PROTECTED != 0 {
+        PROTECTED_DACL_SECURITY_INFORMATION
+    } else {
+        UNPROTECTED_DACL_SECURITY_INFORMATION
+    };
+    let code = unsafe {
+        SetSecurityInfo(
+            file.as_raw_handle(),
+            SE_FILE_OBJECT,
+            DACL_SECURITY_INFORMATION | protection,
+            null_mut(),
+            null_mut(),
+            dacl,
+            null(),
+        )
+    };
+    if code != 0 {
+        return Err(Error::Api {
+            operation: "RewriteRestore",
+            code,
+        });
     }
     Ok(())
 }
-
-fn checked<T>(
-    result: Result<T>,
-    failed: fn(u32) -> ProbeCheckpoint,
-    checkpoint: &impl Fn(ProbeCheckpoint) -> AnyResult<()>,
-) -> AnyResult<T> {
-    match result {
-        Ok(value) => Ok(value),
-        Err(error) => {
-            let code = match &error {
-                Error::Api { code, .. } => *code,
-                Error::Io(kind) if *kind == std::io::ErrorKind::PermissionDenied => {
-                    ERROR_ACCESS_DENIED
-                }
-                _ => ERROR_INVALID_DATA,
-            };
-            checkpoint(failed(code))?;
-            Err(error.into())
-        }
-    }
-}
-/// The returned handle retains security/attribute rights for fixture inspection
-/// and unit-test restoration. The confined caller drops it before returning.
-/// All native pointer arguments borrow live, aligned OS allocations. A failed
-/// CreateDirectory never opens or changes an existing path.
-pub fn create(
-    path: &Path,
-    checkpoint: impl Fn(ProbeCheckpoint) -> AnyResult<()>,
-) -> AnyResult<File> {
-    let empty = checked(
-        descriptor("D:P"),
-        |code| ProbeCheckpoint::RestrictedDescriptorFailed { code },
-        &checkpoint,
-    )?;
-    checkpoint(ProbeCheckpoint::RestrictedDescriptorReady)?;
+/// Same hostile attempt for baseline and AppContainer. The baseline must really
+/// apply an empty DACL and restore through its held security handle. A confined
+/// denial has an exact API context/code; no generic process error is converted.
+pub fn rewrite_attempt(path: &Path) -> Result<RewriteObservation> {
     let name = wide(path.as_os_str());
-    checkpoint(ProbeCheckpoint::RestrictedDirectoryCreate)?;
-    checked(
-        native(
-            unsafe { CreateDirectoryW(name.as_ptr(), null()) },
-            "CreateRestrictedDirectory",
-        ),
-        |code| ProbeCheckpoint::RestrictedDirectoryCreateFailed { code },
-        &checkpoint,
+    native(
+        unsafe { CreateDirectoryW(name.as_ptr(), null()) },
+        "RewriteCreateDirectory",
     )?;
-    checkpoint(ProbeCheckpoint::RestrictedDirectoryCreated)?;
-    let directory = checked(
-        open_dacl_handle(path),
-        |code| ProbeCheckpoint::RestrictedOpenFailed { code },
-        &checkpoint,
-    )?;
-    let metadata = directory.metadata()?;
+    let reader = OpenOptions::new()
+        .access_mode(READ_CONTROL | FILE_READ_ATTRIBUTES)
+        .share_mode(FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE)
+        .custom_flags(
+            FILE_FLAG_OPEN_REPARSE_POINT | FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+        )
+        .open(path)?;
+    let metadata = reader.metadata()?;
     if !metadata.is_dir() || metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0 {
-        return Err(Error::Blocked("invalid synthetic directory handle").into());
+        return Err(Error::Blocked(
+            "rewrite target is not an ordinary owned directory",
+        ));
     }
-    checked(
-        verify_low_label(&directory),
-        |code| ProbeCheckpoint::RestrictedLabelVerifyFailed { code },
-        &checkpoint,
-    )?;
-    checkpoint(ProbeCheckpoint::RestrictedDaclSet)?;
-    checked(
-        assign_dacl(&directory, &empty),
-        |code| ProbeCheckpoint::RestrictedDaclSetFailed { code },
-        &checkpoint,
-    )?;
-    checked(
-        verify_empty(&directory),
-        |code| ProbeCheckpoint::RestrictedDaclVerifyFailed { code },
-        &checkpoint,
-    )?;
-    checked(
-        verify_low_label(&directory),
-        |code| ProbeCheckpoint::RestrictedLabelVerifyFailed { code },
-        &checkpoint,
-    )?;
-    checkpoint(ProbeCheckpoint::RestrictedDaclVerified)?;
-    Ok(directory)
+    let before = capture_dacl(&reader)?;
+    let signature = dacl_signature(&before)?;
+    let low_label = read_low_label(&reader)?;
+    let outcome = match open_dacl_handle(path) {
+        Err(Error::Api {
+            operation: "RestrictedOpenDirectory",
+            code: ERROR_ACCESS_DENIED,
+        }) => RewriteOutcome::WriteDacOpenDenied {
+            code: ERROR_ACCESS_DENIED,
+        },
+        Err(error) => return Err(error),
+        Ok(writer) => {
+            let exercise = (|| -> Result<()> {
+                assign_dacl(&writer, &descriptor("D:P")?)?;
+                verify_empty(&writer)?;
+                if !matches!(std::fs::read_dir(path), Err(error) if error.kind() == std::io::ErrorKind::PermissionDenied)
+                {
+                    return Err(Error::Blocked(
+                        "empty-DACL positive control remained inspectable",
+                    ));
+                }
+                Ok(())
+            })();
+            // Always attempt restoration, even if verification failed. No result
+            // qualifies if either operation or restoration failed.
+            restore_dacl(&writer, &before)?;
+            exercise?;
+            RewriteOutcome::AppliedAndRestored {
+                empty_dacl_verified: true,
+                inspection_denied: true,
+            }
+        }
+    };
+    let dacl_unchanged = dacl_signature(&capture_dacl(&reader)?)? == signature;
+    let directory_readable = match std::fs::read_dir(path) {
+        Ok(mut entries) => entries.next().is_none(),
+        Err(_) => false,
+    };
+    let payload = path.join("rewrite-sentinel.txt");
+    let roundtrip = std::fs::write(&payload, b"synthetic rewrite probe")
+        .and_then(|()| std::fs::read(&payload))
+        .is_ok_and(|bytes| bytes == b"synthetic rewrite probe");
+    Ok(RewriteObservation {
+        outcome,
+        low_label,
+        dacl_unchanged,
+        directory_readable,
+        roundtrip,
+    })
 }
 
 fn open_dacl_handle(path: &Path) -> Result<File> {
@@ -732,72 +804,13 @@ mod tests {
         assert!(!denied.passed());
     }
     #[test]
-    fn created_child_locks_out_new_inspection_but_retains_security_handle() {
+    fn unconfined_rewrite_control_applies_denies_inspection_and_restores() {
         let tree = tempfile::tempdir().unwrap();
-        let parent = tree.path().join("low-parent");
-        let descriptor = creation_descriptor(true).unwrap();
-        let (mut present, mut defaulted) = (0, 0);
-        let mut sacl = null_mut();
-        native(
-            unsafe {
-                GetSecurityDescriptorSacl(descriptor.0, &mut present, &mut sacl, &mut defaulted)
-            },
-            "UnitParentLabel",
-        )
-        .unwrap();
-        assert!(present != 0 && !sacl.is_null());
-        let mut raw = null_mut();
-        native(unsafe { GetAce(sacl, 0, &mut raw) }, "UnitParentLabelAce").unwrap();
-        unsafe {
-            (*raw.cast::<ACE_HEADER>()).AceFlags =
-                (OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE) as u8
-        };
-        // The unconfined positive control deliberately permits DACL changes on
-        // its own child. It is not the production AppContainer scratch ACL.
-        let mut dacl = null_mut();
-        native(
-            unsafe {
-                GetSecurityDescriptorDacl(descriptor.0, &mut present, &mut dacl, &mut defaulted)
-            },
-            "UnitParentDacl",
-        )
-        .unwrap();
-        assert!(present != 0 && !dacl.is_null());
-        for index in 0..unsafe { (*dacl).AceCount } as u32 {
-            let mut ace = null_mut();
-            native(
-                unsafe { GetAce(dacl, index, &mut ace) },
-                "UnitParentDaclAce",
-            )
-            .unwrap();
-            unsafe {
-                (*ace.cast::<ACE_HEADER>()).AceFlags =
-                    (OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE) as u8
-            };
-        }
-        let name = wide(parent.as_os_str());
-        let attributes = SECURITY_ATTRIBUTES {
-            nLength: size_of::<SECURITY_ATTRIBUTES>() as u32,
-            lpSecurityDescriptor: descriptor.0,
-            bInheritHandle: 0,
-        };
-        native(
-            unsafe { CreateDirectoryW(name.as_ptr(), &attributes) },
-            "UnitLowParentCreate",
-        )
-        .unwrap();
-        let path = parent.join("restricted");
-        let file = create(&path, |_| Ok(())).unwrap();
-        verify_empty(&file).unwrap();
-        verify_low_label(&file).unwrap();
-        assert_eq!(
-            std::fs::read_dir(&path).unwrap_err().kind(),
-            std::io::ErrorKind::PermissionDenied
+        let observation = rewrite_attempt(&tree.path().join("rewrite")).unwrap();
+        assert!(
+            observation.positive_control(),
+            "typed rewrite control failed: {observation:?}"
         );
-        // Restore only this owned empty fixture through its pre-lockout handle.
-        assign_dacl(&file, &creation_descriptor(true).unwrap()).unwrap();
-        drop(file);
-        std::fs::remove_dir(&path).unwrap();
     }
     #[test]
     fn fixture_descriptor_changes_only_the_mandatory_label() {
@@ -831,7 +844,7 @@ mod tests {
     fn fixture_refuses_existing_directory_without_locking_it() {
         let tree = tempfile::tempdir().unwrap();
         std::fs::write(tree.path().join("sentinel"), b"unchanged").unwrap();
-        assert!(create(tree.path(), |_| Ok(())).is_err());
+        assert!(rewrite_attempt(tree.path()).is_err());
         assert_eq!(
             std::fs::read(tree.path().join("sentinel")).unwrap(),
             b"unchanged"

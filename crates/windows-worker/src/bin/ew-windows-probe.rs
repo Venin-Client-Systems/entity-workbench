@@ -6,11 +6,15 @@ mod handle_probe;
 #[path = "ew-windows-probe/restricted_probe.rs"]
 mod restricted_probe;
 #[cfg(any(windows, test))]
+#[path = "ew-windows-probe/rewrite_outcome.rs"]
+mod rewrite_outcome;
+#[cfg(any(windows, test))]
 #[path = "ew-windows-probe/udp_probe.rs"]
 mod udp_probe;
 #[cfg(windows)]
 mod native {
     use super::handle_probe::{accept_handle_outcome, HandleObservation};
+    use super::rewrite_outcome::{accept_denied_rewrite, RewriteObservation};
     use super::udp_probe::{accept_delivery_denial, exchange, Listener, Markers, UdpObservation};
     use serde::{Deserialize, Serialize};
     use std::{
@@ -208,13 +212,9 @@ mod native {
                 checkpoint(ProbeCheckpoint::Completed)?;
                 return Ok(());
             }
-            "restricted-directory" => {
-                drop(super::restricted_probe::create(
-                    Path::new("restricted"),
-                    checkpoint,
-                )?);
-                checkpoint(ProbeCheckpoint::RestrictedResultWrite)?;
-                fs::write("result.json", b"{}")?;
+            "directory-rewrite" => {
+                let observation = super::restricted_probe::rewrite_attempt(Path::new("rewrite"))?;
+                fs::write("result.json", serde_json::to_vec(&observation)?)?;
                 checkpoint(ProbeCheckpoint::Completed)?;
                 return Ok(());
             }
@@ -678,6 +678,54 @@ mod native {
                 confined_creation.passed(),
                 "confined directory creation controls failed",
             )?;
+            report.insert(
+                "phase".into(),
+                serde_json::json!("worker_dacl_rewrite_prevention"),
+            );
+            input.mode = "directory-rewrite".into();
+            fs::write(&input_path, serde_json::to_vec(&input)?)?;
+            baseline(&executable, &input_path, &controls)?;
+            let rewrite_control: RewriteObservation =
+                serde_json::from_slice(&fs::read(controls.join("result.json"))?)?;
+            report.insert(
+                "directory_rewrite_baseline".into(),
+                serde_json::to_value(&rewrite_control)?,
+            );
+            require(
+                rewrite_control.positive_control(),
+                "actual empty-DACL rewrite control failed",
+            )?;
+            request.input = serde_json::to_vec(&input)?;
+            let rewrite_result = run(&request, || false);
+            report.insert(
+                "directory_rewrite_worker_error".into(),
+                serde_json::json!(rewrite_result.as_ref().err().map(ToString::to_string)),
+            );
+            // Retain a closed, sanitized observation even when its predicates
+            // fail qualification; arbitrary/malformed worker bytes stay private.
+            if let Ok(output) = &rewrite_result {
+                if let Ok(observation) = serde_json::from_slice::<RewriteObservation>(&output.bytes)
+                {
+                    report.insert(
+                        "directory_rewrite_confined".into(),
+                        serde_json::to_value(observation)?,
+                    );
+                }
+            }
+            accept_denied_rewrite(&rewrite_control, rewrite_result)?;
+            require(
+                fs::read_dir(&jobs)?.next().is_none(),
+                "scratch survived denied rewrite",
+            )?;
+            report.insert(
+                "phase".into(),
+                serde_json::json!("host_injected_empty_dacl"),
+            );
+            let injected = workbench_windows_worker::host_injected_tree_probe()?;
+            report.insert(
+                "host_injected_empty_dacl".into(),
+                serde_json::to_value(injected)?,
+            );
             for mode in [
                 "timeout",
                 "disk",
@@ -686,7 +734,6 @@ mod native {
                 "cancel",
                 "output-large",
                 "output-hardlink",
-                "restricted-directory",
                 "named-stream",
             ] {
                 report.insert("phase".into(), serde_json::json!(mode));
@@ -711,10 +758,6 @@ mod native {
                         | ("output-hardlink", Error::Blocked("invalid output file"))
                         | ("memory", Error::Exit(_))
                         | ("named-stream", Error::Blocked("named data stream rejected"))
-                        | (
-                            "restricted-directory",
-                            Error::Io(std::io::ErrorKind::PermissionDenied)
-                        )
                 );
                 report.insert(mode.into(), serde_json::json!({"rejected":true,"expected_failure":correct,"diagnostic":error.to_string(),"checkpoints":diagnostics}));
                 require(correct, "hostile mode failed for an unexpected reason")?;
