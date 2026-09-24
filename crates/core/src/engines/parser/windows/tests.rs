@@ -57,6 +57,18 @@ fn output_must_match_both_request_identities_original_and_raw_digest() {
             "{field}"
         );
     }
+    // Decode the actual bytes: generic JSON maps would hide these equivalent keys.
+    let mut duplicate = output(&job, original);
+    let raw = String::from_utf8(duplicate.bytes).unwrap().replace(
+        "\"metadata\":{}",
+        r#""metadata":{"Title":["first"],"\u0054itle":["last"]}"#,
+    );
+    duplicate.bytes = raw.into_bytes();
+    duplicate.output_sha256 = format!("{:x}", Sha256::digest(&duplicate.bytes));
+    assert!(matches!(
+        accept(&job, original, duplicate),
+        Err(Error::InvalidWorkerResult(_))
+    ));
     for suffix in [br#", "protocol_version":1}"#.as_slice(), b"}{}"] {
         let mut altered = output(&job, original);
         altered.bytes.pop();
