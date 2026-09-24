@@ -19,6 +19,12 @@ pub(crate) enum JavaCheckpoint {
     ParserSelected,
     SearchSelected,
     WorkerReturned,
+    PdfLoadStarted,
+    PdfLoaded,
+    PdfStripperStarted,
+    PdfStripperReady,
+    PdfTextStarted,
+    PdfTextFinished,
 }
 #[derive(Debug, Default, Serialize)]
 pub(crate) struct TreeCounts {
@@ -265,6 +271,24 @@ mod tests {
             " ".repeat(256 * 1024)
         );
         assert!(fatal_header(oversized.as_bytes()).is_none());
+    }
+    #[test]
+    fn pdf_checkpoint_hints_are_fixed_and_fit_the_existing_read_bound() {
+        for value in [
+            JavaCheckpoint::PdfLoadStarted,
+            JavaCheckpoint::PdfLoaded,
+            JavaCheckpoint::PdfStripperStarted,
+            JavaCheckpoint::PdfStripperReady,
+            JavaCheckpoint::PdfTextStarted,
+            JavaCheckpoint::PdfTextFinished,
+        ] {
+            let bytes = serde_json::to_vec(&value).unwrap();
+            assert!(bytes.len() <= 64);
+            assert_eq!(
+                serde_json::from_slice::<JavaCheckpoint>(&bytes).unwrap(),
+                value
+            );
+        }
     }
     #[test]
     fn java_checkpoint_is_a_closed_diagnostic_hint() {

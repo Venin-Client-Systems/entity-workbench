@@ -51,6 +51,35 @@ fn execute_recorded(
     }
     outcome
 }
+fn control_recorded(
+    parser: &Path,
+    controls: &Path,
+    pdf: bool,
+    report: &mut Report,
+) -> Result<JavaOutput> {
+    let mut diagnostics = diagnostics::FailureDiagnostics::default();
+    let document = if pdf {
+        crate::windows::ControlDocument::Pdf
+    } else {
+        crate::windows::ControlDocument::Text
+    };
+    let control = crate::windows::file_worker_control(parser, controls, document, &mut diagnostics);
+    report.insert(
+        if pdf {
+            "pdf_file_worker_positive_control"
+        } else {
+            "file_worker_positive_control"
+        }
+        .into(),
+        json!({
+            "passed":control.is_ok(), "failure":control.as_ref().err().map(ToString::to_string),
+            "output_sha256":control.as_ref().ok().map(|output| &output.output_sha256),
+            "diagnostics":diagnostics,
+            "scope":"synthetic FileWorker, no AppContainer; unchanged recipe and resource bounds"
+        }),
+    );
+    control
+}
 fn absolute(root: &Path) -> Result<std::path::PathBuf> {
     bounded(
         !root
@@ -275,18 +304,7 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
     fs::write(private.join("original.txt"), fixture("notice.txt"))?;
     crate::protect_private_tree(&private)?;
     phase(report, "file_worker_positive_control");
-    let mut control_diagnostics = diagnostics::FailureDiagnostics::default();
-    let control = crate::windows::file_worker_control(&parser, &controls, &mut control_diagnostics);
-    report.insert(
-        "file_worker_positive_control".into(),
-        json!({
-            "passed":control.is_ok(),
-            "failure":control.as_ref().err().map(ToString::to_string),
-            "output_sha256":control.as_ref().ok().map(|output| &output.output_sha256),
-            "diagnostics":control_diagnostics,
-            "scope":"synthetic FileWorker, no AppContainer; unchanged recipe and resource bounds"
-        }),
-    );
+    let control = control_recorded(&parser, &controls, false, report);
     // Preserve a normal control failure alongside the first confined outcome.
     // An unacknowledged termination/cleanup failure stops all further launches.
     if matches!(&control, Err(Error::Cleanup { .. })) {
@@ -303,13 +321,27 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         "traversal.zip",
         "unsupported.bin",
     ] {
+        if name == "notice.pdf" {
+            phase(report, "pdf_file_worker_positive_control");
+            let control = control_recorded(&parser, &controls, true, report);
+            if matches!(&control, Err(Error::Cleanup { .. })) {
+                return control.map(|_| ());
+            }
+            empty(&controls)?;
+            control_failure = control.err();
+        }
         phase(report, &format!("parse_{name}"));
         let bytes = fixture(name);
         let job = Job::parse(bytes.to_vec())?;
         let outcome = execute_recorded(&parser, &jobs, &job, report);
-        if name == "notice.txt" {
+        if name == "notice.txt" || name == "notice.pdf" {
             report.insert(
-                "first_confined_parse".into(),
+                if name == "notice.txt" {
+                    "first_confined_parse"
+                } else {
+                    "confined_pdf_parse"
+                }
+                .into(),
                 json!({
                     "passed":outcome.is_ok(),
                     "failure":outcome.as_ref().err().map(ToString::to_string),

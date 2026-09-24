@@ -8,6 +8,16 @@ import java.util.*;
 /** Engine adapters accept only a bounded single request. OS isolation is mandatory. */
 final class Protocol {
     static final ObjectMapper JSON = new ObjectMapper().enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS).enable(com.fasterxml.jackson.core.JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+    /** Fixed probe hints only; absent property leaves normal adapters unchanged. */
+    static void checkpoint(String value) throws IOException {
+        if (!Boolean.getBoolean("workbench.probe")) return;
+        if (!Set.of("file_worker_entered", "metadata_read", "request_decoded",
+                "parser_selected", "search_selected", "worker_returned",
+                "pdf_load_started", "pdf_loaded", "pdf_stripper_started",
+                "pdf_stripper_ready", "pdf_text_started", "pdf_text_finished").contains(value))
+            throw new IOException("Invalid fixed checkpoint");
+        Files.writeString(Path.of("java-checkpoint.json"), "\"" + value + "\"");
+    }
     static JsonNode read() throws IOException {
         byte[] bytes = System.in.readNBytes(1_048_577);
         if (bytes.length > 1_048_576) throw new IOException("Request too large");

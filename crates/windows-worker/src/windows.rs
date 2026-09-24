@@ -5,7 +5,7 @@ use crate::{quote_argument, validate, Error, Output, ProbeDiagnostics, Request, 
 mod java_control;
 mod java_diagnostics;
 mod java_paths;
-pub(crate) use java_control::file_worker_control;
+pub(crate) use java_control::{file_worker_control, ControlDocument};
 use std::{
     collections::BTreeMap,
     ffi::{c_void, OsStr, OsString},

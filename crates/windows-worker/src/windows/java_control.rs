@@ -1,22 +1,39 @@
 //! Synthetic FileWorker startup control only. Never a production retry/fallback.
-//! Only the compiled notice fixture is permitted. This deliberately has no
+//! Only the compiled notice text/PDF fixtures are permitted. This deliberately has no
 //! AppContainer token/ACL grant, but preserves the reviewed recipe, environment,
 //! detached/no-inherited-handle launch and Job Object/time/handle/disk limits.
 use super::*;
 use crate::java::{self, diagnostics::FailureDiagnostics, JavaOutput, Job};
 
+#[derive(Clone, Copy)]
+pub(crate) enum ControlDocument {
+    Text,
+    Pdf,
+}
+
 pub(crate) fn file_worker_control(
     runtime: &Path,
     parent: &Path,
+    document: ControlDocument,
     diagnostics: &mut FailureDiagnostics,
 ) -> Result<JavaOutput> {
-    let job = Job::parse(
-        include_bytes!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/../../fixtures/parser/notice.txt"
-        ))
-        .to_vec(),
-    )?;
+    let (fixture, status): (&[u8], &str) = match document {
+        ControlDocument::Text => (
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../fixtures/parser/notice.txt"
+            )),
+            "complete",
+        ),
+        ControlDocument::Pdf => (
+            include_bytes!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../fixtures/parser/notice.pdf"
+            )),
+            "partial",
+        ),
+    };
+    let job = Job::parse(fixture.to_vec())?;
     let mut prepared = java::prepare(runtime, parent, &job)?;
     prepared
         .request
@@ -178,7 +195,7 @@ pub(crate) fn file_worker_control(
             let reply: serde_json::Value = serde_json::from_slice(&output.bytes)
                 .map_err(|_| Error::Blocked("control parser schema rejected"))?;
             blocked(
-                reply["status"] == "complete"
+                reply["status"] == status
                     && reply["text"].as_str().is_some_and(|text| {
                         text.contains("Rowan Ellis")
                             && text.contains("Fictional Harbour Cooperative")
