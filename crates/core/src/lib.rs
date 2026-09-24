@@ -23,6 +23,8 @@ pub enum Error {
     Network(String),
     #[error("Database: {0}")]
     Database(#[from] rusqlite::Error),
+    #[error("Worker cleanup failed: {0}")]
+    Cleanup(String),
     #[error("Filesystem: {0}")]
     Io(#[from] std::io::Error),
     #[error("Invalid JSON: {0}")]

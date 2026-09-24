@@ -81,7 +81,7 @@ pub(super) fn finish_job<T>(job: tempfile::TempDir, result: Result<T>) -> Result
                 Ok(_) => "worker completed".into(),
                 Err(error) => error.to_string(),
             };
-            Err(Error::Validation(format!(
+            Err(Error::Cleanup(format!(
                 "Worker scratch cleanup failed; result rejected ({preceding}; cleanup: {cleanup})"
             )))
         }
