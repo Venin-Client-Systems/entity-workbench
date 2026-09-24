@@ -10,6 +10,7 @@ pub mod desktop_summary;
 pub mod domain;
 pub mod engines;
 pub mod literal_search;
+pub mod local_export;
 pub mod policy;
 pub mod processing;
 pub mod report;

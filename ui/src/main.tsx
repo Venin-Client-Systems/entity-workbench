@@ -159,7 +159,7 @@ function App() {
   const download = async (content: string, name: string, type: string) => {
     setNotice("");
     const saved = await downloadExport(content, name, type);
-    if (saved) setNotice(`Saved to Downloads: ${saved}`);
+    if (saved) setNotice(`Saved export: ${saved}`);
   };
   const w = data?.workspace,
     a = data?.analysis;

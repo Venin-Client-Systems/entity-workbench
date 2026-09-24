@@ -18,6 +18,7 @@ mod desktop_summary;
 mod identity;
 mod originals;
 use originals::read_original;
+pub(crate) mod local_exports;
 mod presentation;
 mod processing;
 mod processing_regions;

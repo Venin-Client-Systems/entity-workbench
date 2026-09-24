@@ -10,6 +10,7 @@ import {
 import { BalanceLabel, useTransactionBalances } from "./TransactionBalances";
 import { emptyFilter, type LedgerScope } from "./transaction-ledger-types";
 import { readTransactionExport } from "./transaction-export";
+import { nativeExportsAvailable, prepareNativeTransactions, commitNativeExport, discardNativeExport, type PreparedNativeExport } from "./native-export";
 import "./transaction-ledger.css";
 
 export function TransactionLedger({
@@ -139,7 +140,32 @@ export function TransactionLedger({
     setExporting(true);
     setExportError("");
     setNotice("");
+    let prepared: PreparedNativeExport | undefined;
+    let committed = false;
     try {
+      if (nativeExportsAvailable()) {
+        prepared = await prepareNativeTransactions(
+          snapshot.scope,
+          snapshot.revision,
+          snapshot.count,
+          snapshot.matching,
+        );
+        if (
+          !lifetime.current ||
+          latest.current.revision !== snapshot.revision ||
+          latest.current.scope !== snapshot.scope
+        )
+          throw new Error(
+            "Ledger changed while preparing export. Apply and export the current scope again.",
+          );
+        const saved = await commitNativeExport(prepared);
+        committed = true;
+        if (lifetime.current)
+          setNotice(
+            `Saved ${snapshot.count} matching rows at revision ${snapshot.revision}: ${saved.location}`,
+          );
+        return;
+      }
       const value = await readTransactionExport(
         snapshot.scope,
         snapshot.revision,
@@ -162,6 +188,17 @@ export function TransactionLedger({
     } catch (cause) {
       if (lifetime.current) setExportError(String(cause));
     } finally {
+      if (prepared && !committed) {
+        try {
+          await discardNativeExport(prepared.ticket);
+        } catch (cause) {
+          if (lifetime.current)
+            setExportError(
+              (old) =>
+                `${old} Staging cleanup was not confirmed: ${String(cause)}`,
+            );
+        }
+      }
       activeExport.current = false;
       if (lifetime.current) setExporting(false);
     }

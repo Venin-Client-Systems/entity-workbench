@@ -30,3 +30,6 @@ libc = "0.2"
 
 [dev-dependencies]
 rusqlite = { version = "0.37", features = ["hooks"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "=0.61.2", features = ["Win32_Storage_FileSystem"] }

@@ -1,0 +1,86 @@
+//! Native-only typed export lifecycle. These receipts never contain exported document bytes.
+use crate::{literal_search::LiteralMatching, transaction_export::TransactionExportRequest};
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum NativeExportRequest {
+    Transactions {
+        request: TransactionExportRequest,
+        expected_revision: u64,
+        expected_row_count: u64,
+        expected_matching: LiteralMatching,
+    },
+    HtmlReport {
+        report_id: String,
+        expected_sha256: String,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
+pub enum ExportArtifact {
+    Transactions {
+        workspace_revision: u64,
+        request: TransactionExportRequest,
+        matching: LiteralMatching,
+        query_sha256: String,
+        row_count: u64,
+        bytes: u64,
+        sha256: String,
+    },
+    HtmlReport {
+        report_id: String,
+        workspace_revision: u64,
+        bytes: u64,
+        sha256: String,
+    },
+}
+impl ExportArtifact {
+    pub fn bytes(&self) -> u64 {
+        match self {
+            Self::Transactions { bytes, .. } | Self::HtmlReport { bytes, .. } => *bytes,
+        }
+    }
+    pub fn sha256(&self) -> &str {
+        match self {
+            Self::Transactions { sha256, .. } | Self::HtmlReport { sha256, .. } => sha256,
+        }
+    }
+    pub(crate) fn filename(&self) -> String {
+        match self {
+            Self::Transactions {
+                workspace_revision,
+                sha256,
+                ..
+            } => format!("transactions-r{workspace_revision}-{sha256}.json"),
+            Self::HtmlReport {
+                report_id, sha256, ..
+            } => format!("assessment-{report_id}-{sha256}.html"),
+        }
+    }
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PreparedExport {
+    pub schema_version: u32,
+    pub ticket: String,
+    pub expires_after_seconds: u64,
+    pub artifact: ExportArtifact,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SavedExportReceipt {
+    pub schema_version: u32,
+    pub ticket: String,
+    pub artifact: ExportArtifact,
+    pub filename: String,
+    /// Display-only local location. Callers cannot supply it to a writer or opener.
+    pub location: String,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "state", rename_all = "snake_case", deny_unknown_fields)]
+pub enum DiscardedExport {
+    Discarded,
+    Saved { receipt: Box<SavedExportReceipt> },
+}

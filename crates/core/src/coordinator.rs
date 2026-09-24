@@ -38,6 +38,7 @@ struct Shared {
 
 /// One coordinator per workspace, one or two disposable worker processes at a time.
 pub struct JobCoordinator {
+    exports: crate::store::local_exports::NativeExports,
     shared: Arc<Shared>,
     workers: Mutex<Vec<JoinHandle<()>>>,
     ownership: Mutex<Option<File>>,
@@ -83,6 +84,7 @@ impl JobCoordinator {
         )?;
         let ownership = workspace.lock_processing()?;
         workspace.recover_processing_jobs()?;
+        let exports = workspace.start_native_exports()?;
         let shared = Arc::new(Shared {
             workspace: Mutex::new(workspace),
             active: Mutex::new(BTreeMap::new()),
@@ -91,6 +93,7 @@ impl JobCoordinator {
             executor,
         });
         let mut coordinator = Self {
+            exports,
             shared,
             workers: Mutex::new(Vec::new()),
             ownership: Mutex::new(Some(ownership)),
@@ -161,6 +164,38 @@ impl JobCoordinator {
         Ok(result)
     }
 
+    /// Export registry is always acquired before the workspace; commit/cleanup never acquire it.
+    pub fn prepare_native_export(
+        &self,
+        request: crate::local_export::NativeExportRequest,
+    ) -> Result<crate::local_export::PreparedExport> {
+        self.exports.prepare(|| {
+            let workspace = self
+                .shared
+                .workspace
+                .lock()
+                .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+            if self.shared.stopping.load(Ordering::Acquire) {
+                return Err(Error::Blocked("Workspace coordinator is stopping".into()));
+            }
+            workspace.native_export_content(request)
+        })
+    }
+    pub fn commit_native_export(
+        &self,
+        ticket: &str,
+        sha256: &str,
+        bytes: u64,
+    ) -> Result<crate::local_export::SavedExportReceipt> {
+        self.exports.commit(ticket, sha256, bytes)
+    }
+    pub fn discard_native_export(
+        &self,
+        ticket: &str,
+    ) -> Result<crate::local_export::DiscardedExport> {
+        self.exports.discard(ticket)
+    }
+
     /// Read only: full canonical original/raster/TSV/result verification precedes binary display.
     pub fn read_image_region_raster(&self, extraction_id: &str) -> Result<Vec<u8>> {
         if self.shared.stopping.load(Ordering::Acquire) {
@@ -193,6 +228,7 @@ impl JobCoordinator {
         }
         drop(active);
         self.shared.wake.notify_all();
+        let export_cleanup = self.exports.shutdown();
         let mut workers = self
             .workers
             .lock()
@@ -215,6 +251,7 @@ impl JobCoordinator {
             // coordinator has acquired its own handle to the ownership file.
             *ownership = None;
         }
+        export_cleanup?;
         if failed {
             return Err(Error::Interrupted(
                 "A processing executor stopped unexpectedly".into(),

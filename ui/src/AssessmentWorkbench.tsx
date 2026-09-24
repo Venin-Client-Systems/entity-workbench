@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { command } from "./api";
+import { nativeExportsAvailable, prepareNativeReport, commitNativeExport, discardNativeExport, type PreparedNativeExport } from "./native-export";
 import { Dialog } from "./Dialog";
 import { FindingReviewHistory } from "./FindingReviewHistory";
 import { CitationRow } from "./CitationRow";
@@ -32,33 +33,89 @@ const lines = (value: string) =>
     .map((v) => v.trim())
     .filter(Boolean);
 
-function ReportExport({ report, download }: {
+function ReportExport({
+  report,
+  download,
+}: {
   report: Workspace["reports"][number];
   download: Props["download"];
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const lifetime = useRef(true);
+  useEffect(() => {
+    lifetime.current = true;
+    return () => {
+      lifetime.current = false;
+    };
+  }, []);
+  const active = useRef(false);
+  const [notice, setNotice] = useState("");
   async function exportReport() {
+    if (active.current) return;
+    active.current = true;
+    let prepared: PreparedNativeExport | undefined;
+    let committed = false;
     setLoading(true);
     setError("");
+    setNotice("");
     try {
-      const snapshot = await command<{ id: string; sha256: string; html: string }>({
-        action: "inspect_report_snapshot", report_id: report.id,
+      if (nativeExportsAvailable()) {
+        prepared = await prepareNativeReport(report);
+        if (!lifetime.current)
+          throw new Error("Report view closed while preparing export.");
+        const saved = await commitNativeExport(prepared);
+        committed = true;
+        if (lifetime.current)
+          setNotice(`Saved immutable report: ${saved.location}`);
+        return;
+      }
+      const snapshot = await command<{
+        id: string;
+        sha256: string;
+        html: string;
+      }>({
+        action: "inspect_report_snapshot",
+        report_id: report.id,
         expected_sha256: report.sha256,
       });
-      await download(snapshot.html, `assessment-${snapshot.id}.html`, "text/html");
+      await download(
+        snapshot.html,
+        `assessment-${snapshot.id}.html`,
+        "text/html",
+      );
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error));
+      if (lifetime.current)
+        setError(error instanceof Error ? error.message : String(error));
     } finally {
-      setLoading(false);
+      if (prepared && !committed) {
+        try {
+          await discardNativeExport(prepared.ticket);
+        } catch (cause) {
+          if (lifetime.current)
+            setError(
+              (old) =>
+                `${old} Staging cleanup was not confirmed: ${String(cause)}`,
+            );
+        }
+      }
+      active.current = false;
+      if (lifetime.current) setLoading(false);
     }
   }
-  return <>
-    <button className="button" disabled={loading} onClick={exportReport}>
-      {loading ? "Loading report…" : "Export self-contained HTML"}
-    </button>
-    <ErrorMessage error={error} />
-  </>;
+  return (
+    <>
+      <button className="button" disabled={loading} onClick={exportReport}>
+        {loading ? "Loading report…" : "Export self-contained HTML"}
+      </button>
+      <ErrorMessage error={error} />
+      {notice && (
+        <p className="alert" role="status">
+          {notice}
+        </p>
+      )}
+    </>
+  );
 }
 
 function QuestionEditor({
