@@ -276,6 +276,16 @@ pub struct ReportSnapshot {
     pub sha256: String,
     pub html: String,
 }
+/// Lightweight catalogue entry. Report bytes are retrieved and verified explicitly.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ReportMetadata {
+    pub id: String,
+    pub workspace_revision: u64,
+    pub created_at: String,
+    pub sha256: String,
+    pub html_bytes: u64,
+}
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct MergeDecision {
@@ -352,7 +362,8 @@ pub struct SourceExcerpt {
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub struct WorkspaceView {
+#[schemars(rename = "WorkspaceView")]
+pub struct WorkspaceView<R = ReportSnapshot> {
     pub schema_version: u32,
     pub revision: u64,
     pub entities: Vec<Entity>,
@@ -370,7 +381,7 @@ pub struct WorkspaceView {
     pub merges: Vec<MergeDecision>,
     #[serde(default)]
     pub identity_decisions: Vec<IdentityDecision>,
-    pub reports: Vec<ReportSnapshot>,
+    pub reports: Vec<R>,
     #[serde(default)]
     pub statement_profiles: Vec<crate::statements::StatementProfile>,
     #[serde(default)]
@@ -379,6 +390,10 @@ pub struct WorkspaceView {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    InspectReportSnapshot {
+        report_id: String,
+        expected_sha256: String,
+    },
     CompareTransactionPeriods {
         request: crate::transaction_comparison::TransactionComparisonRequest,
         expected_revision: u64,

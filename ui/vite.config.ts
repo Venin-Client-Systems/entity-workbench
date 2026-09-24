@@ -46,7 +46,7 @@ export default defineConfig({
             }
             const child = spawn(
               resolve("target/debug/ew-dev"),
-              [resolve("artifacts/synthetic-ui-workspace")],
+              [resolve("artifacts/synthetic-ui-workspace"), "--presentation"],
               { stdio: ["pipe", "pipe", "pipe"] },
             );
             let output = "";

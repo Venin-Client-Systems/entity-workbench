@@ -168,7 +168,7 @@ export type Workspace = {
     workspace_revision: number;
     created_at: string;
     sha256: string;
-    html: string;
+    html_bytes: number;
   }[];
   decisions: {
     id: string;

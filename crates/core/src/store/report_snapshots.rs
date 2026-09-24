@@ -3,7 +3,9 @@ use super::*;
 
 impl Workspace {
     pub fn save_report(&mut self) -> Result<String> {
-        let view = self.view()?;
+        // A new report does not cite prior report HTML. Load its canonical sources
+        // in one snapshot without allocating every previous exported document.
+        let view = self.view_with_reports(|_| Ok(Vec::<ReportSnapshot>::new()))?;
         for evidence in &view.evidence {
             self.verify_original(evidence)?;
         }

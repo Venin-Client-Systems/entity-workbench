@@ -136,3 +136,14 @@ fn failed_view_releases_its_snapshot_before_later_canonical_work() {
         .unwrap();
     assert_eq!(writer.revision().unwrap(), 1);
 }
+
+#[test]
+fn presentation_excludes_a_committed_concurrent_revision() {
+    let (_temp, reader, state) = workspace(true);
+    let before = reader.revision().unwrap();
+    let view = reader.presentation().unwrap();
+    assert!(state.lock().unwrap().committed);
+    assert_eq!(view.revision, before);
+    assert_eq!(view.evidence.len(), 1);
+    assert_eq!(reader.revision().unwrap(), before + 1);
+}

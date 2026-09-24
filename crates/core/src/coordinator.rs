@@ -109,6 +109,18 @@ impl JobCoordinator {
     }
 
     pub fn dispatch(&self, command: Command) -> Result<Value> {
+        self.dispatch_with(command, Workspace::dispatch)
+    }
+
+    pub fn dispatch_presentation(&self, command: Command) -> Result<Value> {
+        self.dispatch_with(command, Workspace::dispatch_presentation)
+    }
+
+    fn dispatch_with(
+        &self,
+        command: Command,
+        dispatch: impl FnOnce(&mut Workspace, Command) -> Result<Value>,
+    ) -> Result<Value> {
         if self.shared.stopping.load(Ordering::Acquire) {
             return Err(Error::Blocked("Workspace coordinator is stopping".into()));
         }
@@ -124,7 +136,7 @@ impl JobCoordinator {
         if self.shared.stopping.load(Ordering::Acquire) {
             return Err(Error::Blocked("Workspace coordinator is stopping".into()));
         }
-        let result = workspace.dispatch(command)?;
+        let result = dispatch(&mut workspace, command)?;
         // Same lock order as claim: workspace then active. No cancellation can fall between them.
         if let Some(key) = cancel {
             if let Some(token) = self
