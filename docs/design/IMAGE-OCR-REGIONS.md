@@ -225,3 +225,8 @@ platform memory measurements, manual screen-reader review, restored Figma
 remote sync and the final states-frame export remain separate verification
 work. No accepted word anchors, OCR accuracy claim or complete release pass is
 established by this increment.
+
+
+### Combined native verification
+
+Root integration `3536859` passed all 60 real-core browser workflows, including the final disconnect guard. The native Mac app built at clean `0b4125e` then ran actual decoder/OCR workers and displayed the verified binary raster with seven recognized words. Exact box selection, fit/100% viewing, text-copy acknowledgement and normal quit/restart retention were observed. See [the integrated verification record](../VERIFICATION.md#native-image-region-review-integration--25-september-2026). This closes the current Mac development binary-transport gap only; Figma remote sync, the third frame export and cross-platform release acceptance remain open.
