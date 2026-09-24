@@ -9,7 +9,8 @@
       "kind": "inspection",
       "record": "docs/delivery/readiness/audit-2026-09-24.md",
       "sha256": "865741fa47d242ba69a0afb4d682351b60e2ad4ea1057b2e54c7b0d953447a7f",
-      "recorded_on": "2026-09-24"
+      "recorded_on": "2026-09-24",
+      "valid_until": null
     }
   },
   "requirements": [

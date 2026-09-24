@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import stat
 
 ROOT = Path(__file__).resolve().parents[1]
 REGISTER = Path('docs/delivery/readiness/register.v1.json')
@@ -38,6 +39,20 @@ def day(value):
     return date.fromisoformat(value)
 
 
+def ordinary_metadata(path, directory=False):
+    """Reject links and Windows junction/reparse points without following them."""
+    metadata = path.lstat()
+    linked = stat.S_ISLNK(metadata.st_mode) or bool(
+        getattr(metadata, 'st_file_attributes', 0) &
+        getattr(stat, 'FILE_ATTRIBUTE_REPARSE_POINT', 0x400))
+    require(not linked, 'evidence links and reparse points are not accepted')
+    if directory:
+        require(stat.S_ISDIR(metadata.st_mode), 'evidence parent must be a directory')
+    else:
+        require(stat.S_ISREG(metadata.st_mode), 'evidence must be an ordinary file')
+    return metadata
+
+
 def validate(record, root=ROOT, as_of=None):
     """Check consistency, evidence bytes and dates; human attestations remain reviewed claims."""
     as_of = as_of or date.today()
@@ -48,22 +63,30 @@ def validate(record, root=ROOT, as_of=None):
     assessed = day(record['assessed_on'])
     start, end = day(record['programme_start']), day(record['programme_end'])
     require(start < end and start <= assessed <= as_of, 'invalid assessment window')
+    root = Path(root)
+    ordinary_metadata(root, directory=True)
     evidence = record['evidence']
     require(isinstance(evidence, dict) and evidence, 'evidence records are required')
     for key, item in evidence.items():
         require(text(key) and item['kind'] in KINDS, 'invalid evidence kind')
-        require(day(item['recorded_on']) <= assessed, 'invalid evidence date')
+        recorded = day(item['recorded_on'])
+        require(recorded <= assessed, 'invalid evidence date')
+        if item['kind'] == 'confirmation':
+            require(recorded <= day(item['valid_until']) <= end,
+                    'confirmation validity must end within the programme')
+        else:
+            require(item['valid_until'] is None, 'only confirmation evidence has a validity date')
         relative = item['record']
         require(isinstance(relative, str) and relative.startswith('docs/delivery/readiness/'),
                 'evidence must be a public readiness document')
         require('\\' not in relative and all(part not in {'', '.', '..'}
                 for part in relative.split('/')), 'unsafe evidence path')
         path = root
-        for part in relative.split('/'):
+        parts = relative.split('/')
+        for index, part in enumerate(parts):
             path = path / part
-            require(not path.is_symlink(), 'evidence links are not accepted')
-        require(path.is_file() and path.stat().st_size <= 1024 * 1024,
-                'evidence must be a bounded local file')
+            metadata = ordinary_metadata(path, directory=index < len(parts) - 1)
+        require(metadata.st_size <= 1024 * 1024, 'evidence must be a bounded local file')
         require(re.fullmatch(r'[0-9a-f]{64}', item['sha256']), 'invalid evidence checksum')
         require(hashlib.sha256(path.read_bytes()).hexdigest() == item['sha256'],
                 'evidence checksum mismatch')
@@ -74,7 +97,7 @@ def validate(record, root=ROOT, as_of=None):
     require(len(ids) == len(REQUIREMENTS) and set(ids) == REQUIREMENTS,
             'requirements missing, duplicated or unknown')
     counts = dict.fromkeys(sorted(STATUSES), 0)
-    unresolved, overdue = [], []
+    unresolved, overdue, stale = [], [], []
     for item in items:
         key, status = item['id'], item['status']
         require(status in STATUSES, f'{key}: invalid status')
@@ -110,14 +133,26 @@ def validate(record, root=ROOT, as_of=None):
                 require(assigned == 'confirmed', f'{key}: confirmed access needs a responsible role')
         else:
             require(not confirmation, f'{key}: unresolved status cannot claim confirmation')
+        expired = False
+        if status == 'confirmed':
+            # A confirmation cannot carry readiness past a required checkpoint.
+            # Evidence recorded on/after that checkpoint can renew it to programme end.
+            expires = min(day(evidence[ref]['valid_until']) for ref in confirmation)
+            if any(day(evidence[ref]['recorded_on']) < later for ref in confirmation):
+                expires = min(expires, later)
+            expired = as_of > min(expires, end)
+            if expired:
+                stale.append(key)
+                overdue.append(key)
         counts[status] += 1
-        if status != 'confirmed':
+        if status != 'confirmed' or expired:
             unresolved.append(key)
-            if due < as_of:
+            if status != 'confirmed' and due < as_of:
                 overdue.append(key)
     return {'schema_version': 1, 'record_valid': True, 'assessed_on': str(assessed),
             'checked_as_of': str(as_of), 'ready': not unresolved, 'counts': counts,
-            'unresolved': unresolved, 'overdue': overdue}
+            'unresolved': unresolved, 'overdue': overdue, 'stale_confirmations': stale,
+            'programme_expired': as_of > end}
 
 
 def reject_duplicate_keys(pairs):
@@ -131,17 +166,21 @@ def reject_duplicate_keys(pairs):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--require-ready', action='store_true',
-                        help='also fail while any access or decision remains unconfirmed')
+                        help='also fail while any access or decision is unconfirmed or stale')
     parser.add_argument('--as-of', type=day, default=date.today(),
                         help='evaluate overdue items at YYYY-MM-DD (default: local date)')
     args = parser.parse_args()
     try:
         path = ROOT / REGISTER
-        require(path.stat().st_size <= 1024 * 1024, 'register exceeds size bound')
+        ordinary_metadata(ROOT, directory=True)
+        for parent in reversed(path.relative_to(ROOT).parents[:-1]):
+            ordinary_metadata(ROOT / parent, directory=True)
+        require(ordinary_metadata(path).st_size <= 1024 * 1024, 'register exceeds size bound')
         record = json.loads(path.read_text(), object_pairs_hook=reject_duplicate_keys)
-        result = validate(record, as_of=args.as_of)
+        result = validate(record, root=ROOT, as_of=args.as_of)
     except (ValueError, TypeError, KeyError, OSError) as exc:
-        print(json.dumps({'record_valid': False, 'ready': False, 'error': str(exc)}))
+        message = str(exc) if isinstance(exc, InvalidRecord) else 'Unreadable or malformed readiness record'
+        print(json.dumps({'record_valid': False, 'ready': False, 'error': message}))
         return 1
     print(json.dumps(result, indent=2))
     return 1 if args.require_ready and not result['ready'] else 0
