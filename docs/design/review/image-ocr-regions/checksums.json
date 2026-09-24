@@ -1,0 +1,85 @@
+{
+  "format_version": 1,
+  "scope": "design-only; illustrative synthetic data; no application verification",
+  "observed_date": "2026-09-25",
+  "figma_file": "O50ISV0LGG8nKDcFORNMbO",
+  "native_export_method": "Figma Copy as PNG; 2x",
+  "states_export_status": "not obtained; connection/control failure after native canvas review",
+  "frames": [
+    {
+      "frame_id": "45:1199",
+      "url": "https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=45-1199",
+      "name": "desktop",
+      "frame_dimensions": [
+        1120,
+        1270
+      ],
+      "native_editable_layers_observed": true,
+      "native_export_verified": true,
+      "remote_sync": "unconfirmed_after_connection_issue",
+      "files": [
+        {
+          "path": "source-desktop.svg",
+          "bytes": 12066,
+          "sha256": "7bfa5502b5a49895d56e2a90b18e31253b3f468475cc0b6a3c48cfd90fd050c4"
+        },
+        {
+          "path": "figma-desktop.png",
+          "bytes": 254467,
+          "sha256": "9b1a98321f66e4fffbc536e22e4632f64c8dc11cc1e64893dd31be5917833976",
+          "pixel_dimensions": [
+            2240,
+            2540
+          ]
+        }
+      ]
+    },
+    {
+      "frame_id": "45:1310",
+      "url": "https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=45-1310",
+      "name": "compact",
+      "frame_dimensions": [
+        640,
+        1480
+      ],
+      "native_editable_layers_observed": true,
+      "native_export_verified": true,
+      "remote_sync": "unconfirmed_after_connection_issue",
+      "files": [
+        {
+          "path": "source-compact.svg",
+          "bytes": 9542,
+          "sha256": "cdfd3c4c0ad8ce69a6a0546c8e2d728d9b81fcc6b5be869b0e2f7fbe1d0b20b3"
+        },
+        {
+          "path": "figma-compact.png",
+          "bytes": 202173,
+          "sha256": "7d5452ac9efc9a3f3df6b13d70740d24ee8c083fff808c466171601e98045e91",
+          "pixel_dimensions": [
+            1280,
+            2960
+          ]
+        }
+      ]
+    },
+    {
+      "frame_id": "45:1399",
+      "url": "https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=45-1399",
+      "name": "states",
+      "frame_dimensions": [
+        1120,
+        1200
+      ],
+      "native_editable_layers_observed": true,
+      "native_export_verified": false,
+      "remote_sync": "unconfirmed_after_connection_issue",
+      "files": [
+        {
+          "path": "source-states.svg",
+          "bytes": 6609,
+          "sha256": "1c34aed29712b2100192ce42e293486de27fa5a06da145967cbf4d67563d69ea"
+        }
+      ]
+    }
+  ]
+}
