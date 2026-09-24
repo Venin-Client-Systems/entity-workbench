@@ -2,6 +2,8 @@
 pub mod analytics;
 pub mod citation_catalogue;
 pub mod collection;
+pub(crate) mod collection_jobs;
+pub(crate) mod collection_machine;
 pub mod collection_receipt;
 pub mod coordinator;
 pub mod desktop_summary;

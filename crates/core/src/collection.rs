@@ -15,7 +15,7 @@ use std::{
     time::{Duration, Instant},
 };
 use url::Url;
-const PAGE_BYTES: usize = 2 * 1024 * 1024;
+pub(crate) const PAGE_BYTES: usize = 2 * 1024 * 1024;
 const AGENT: &str = "EntityWorkbench";
 #[derive(Debug)]
 pub struct Page {
@@ -193,7 +193,7 @@ impl Transport for Broker {
 }
 // Only parsed media type and a policy-validated redirect target are retained;
 // cookies, authentication headers and unsafe Location values never enter receipts.
-fn media_type(raw: &str) -> Option<String> {
+pub(crate) fn media_type(raw: &str) -> Option<String> {
     let value = raw.split(';').next()?.trim().to_ascii_lowercase();
     (!value.is_empty()
         && value.len() <= 128
@@ -307,6 +307,27 @@ impl Trace {
         self.requests.push(request);
         (Some(sequence), result)
     }
+}
+
+/// Shared interpretation only. A complete response remains evidence even when no
+/// searchable derivative or usable robots policy can be produced.
+pub(crate) fn static_page(raw: &[u8], content_type: &str, url: &Url) -> Option<(String, Vec<Url>)> {
+    let text = std::str::from_utf8(raw).ok()?;
+    match media_type(content_type).as_deref() {
+        Some("text/html") => Some(extract_html(text, url)),
+        Some("text/plain") => Some((text.to_owned(), Vec::new())),
+        _ => None,
+    }
+}
+
+pub(crate) fn robots_allowed(policy: &str, url: &str) -> bool {
+    robotstxt::DefaultMatcher::default().one_agent_allowed_by_robots(policy, AGENT, url)
+}
+
+pub(crate) fn robots_has_crawl_delay(policy: &str) -> bool {
+    policy
+        .lines()
+        .any(|line| line.trim().to_ascii_lowercase().starts_with("crawl-delay:"))
 }
 
 /// Memory-safe static text/link extraction. Never executes or renders source markup.
@@ -479,21 +500,14 @@ fn collect_with_transport(
         let Some(policy) = robots.get(&host).and_then(Option::as_ref) else {
             continue;
         };
-        if !robotstxt::DefaultMatcher::default().one_agent_allowed_by_robots(
-            policy,
-            AGENT,
-            url.as_str(),
-        ) {
+        if !robots_allowed(policy, url.as_str()) {
             outcome.blocked = true;
             notes.push(format!("Robots policy denied {}", url.path()));
             continue;
         }
         // A crawl-delay extension is treated conservatively until per-host scheduling
         // is implemented. No directive is silently ignored to increase throughput.
-        if policy
-            .lines()
-            .any(|l| l.trim().to_ascii_lowercase().starts_with("crawl-delay:"))
-        {
+        if robots_has_crawl_delay(policy) {
             outcome.blocked = true;
             notes.push(format!(
                 "Crawl-delay policy requires manual scheduling for {host}"
@@ -566,11 +580,8 @@ fn collect_with_transport(
                     ));
                     continue;
                 };
-                let (text, links) = if media_type(&r.content_type).as_deref() == Some("text/html") {
-                    extract_html(raw, &url)
-                } else {
-                    (raw.to_owned(), vec![])
-                };
+                let (text, links) = static_page(raw.as_bytes(), &r.content_type, &url)
+                    .expect("media type and UTF-8 were checked above");
                 if hop < hops {
                     for link in links {
                         if queue.len() < 500

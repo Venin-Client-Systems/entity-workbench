@@ -12,9 +12,12 @@ use uuid::Uuid;
 mod assessment;
 mod citation_catalogue;
 mod collection;
+mod collection_jobs;
 mod derivative_files;
 mod desktop_summary;
 mod identity;
+mod originals;
+use originals::read_original;
 mod presentation;
 mod processing;
 mod processing_regions;
@@ -990,25 +993,7 @@ fn validate_import_input(name: &str, bytes: &[u8]) -> Result<()> {
 }
 
 fn verify_original(root: &Path, e: &Evidence) -> Result<()> {
-    require(
-        e.id == e.sha256,
-        "Canonical evidence identity does not match its original digest",
-    )?;
-    require(
-        e.sha256.len() == 64 && e.sha256.bytes().all(|b| b.is_ascii_hexdigit()),
-        "Invalid evidence digest",
-    )?;
-    let path = root.join("originals").join(&e.sha256);
-    reject_link_ancestors(&path)?;
-    let meta = fs::symlink_metadata(&path)?;
-    require(
-        meta.is_file() && !is_link(&meta) && meta.len() == e.bytes,
-        "Missing or altered original evidence",
-    )?;
-    require(
-        hash(&fs::read(path)?) == e.sha256,
-        "Original evidence checksum mismatch",
-    )
+    read_original(root, e).map(|_| ())
 }
 
 fn retain_original(root: &Path, evidence: &Evidence, bytes: &[u8]) -> Result<()> {
