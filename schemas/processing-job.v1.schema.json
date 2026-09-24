@@ -10,7 +10,9 @@
         "unsupported_format",
         "document_failed",
         "cancelled_by_analyst",
-        "cleanup_failed"
+        "cleanup_failed",
+        "worker_exit_unverified",
+        "recovery_required"
       ],
       "type": "string"
     },

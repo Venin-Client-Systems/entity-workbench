@@ -34,6 +34,14 @@ fn pending_count(conn: &Connection) -> Result<usize> {
     Ok(conn.query_row("SELECT count(*) FROM records WHERE kind='processing_job' AND json_extract(body,'$.state') IN ('queued','running')", [], |row| row.get(0))?)
 }
 
+fn require_verified_worker_exit(conn: &Connection) -> Result<()> {
+    let unverified: bool = conn.query_row("SELECT EXISTS(SELECT 1 FROM records WHERE kind='processing_job' AND json_extract(body,'$.failure')='worker_exit_unverified')", [], |row| row.get(0))?;
+    if unverified {
+        return Err(Error::Blocked("Document execution is suspended because a previous worker's exit is unverified; verified process recovery is required".into()));
+    }
+    Ok(())
+}
+
 impl Workspace {
     pub fn queue_document_parse(
         &mut self,
@@ -70,6 +78,7 @@ impl Workspace {
             return Ok(job);
         }
         self.verify_original(&evidence)?;
+        require_verified_worker_exit(&self.conn)?;
         require(
             evidence.bytes <= policy::MAX_IMPORT_BYTES as u64,
             "Document exceeds the import limit",
@@ -97,6 +106,7 @@ impl Workspace {
             lease: None,
         };
         self.change(Some(expected), "processing.queue", false, |conn| {
+            require_verified_worker_exit(conn)?;
             require(pending_count(conn)? < MAX_PENDING, "Document queue is full")?;
             put(conn, "processing_request", request_key, &job.id)?;
             put(conn, "processing_job", &job.id, &job)
@@ -175,6 +185,7 @@ impl Workspace {
         why: &str,
     ) -> Result<ProcessingJob> {
         reason(why)?;
+        require_verified_worker_exit(&self.conn)?;
         let expected = self.revision()?;
         let mut job = self.processing_job(job_id)?;
         attempt(&job, expected_attempt)?;
@@ -201,6 +212,7 @@ impl Workspace {
         job.lease = None;
         job.detail = "Queued by analyst for another local attempt".into();
         self.change(Some(expected), "processing.retry", false, |conn| {
+            require_verified_worker_exit(conn)?;
             require(pending_count(conn)? < MAX_PENDING, "Document queue is full")?;
             record_decision(conn, job_id, ReviewState::Deferred, why)?;
             put(conn, "processing_job", job_id, &job)
@@ -232,6 +244,7 @@ impl Workspace {
     }
 
     pub(crate) fn claim_document_job(&mut self) -> Result<Option<PreparedDocumentJob>> {
+        require_verified_worker_exit(&self.conn)?;
         let expected = self.revision()?;
         let body: Option<String> = self.conn.query_row("SELECT body FROM records WHERE kind='processing_job' AND json_extract(body,'$.state')='queued' ORDER BY sequence LIMIT 1", [], |row| row.get(0)).optional()?;
         let Some(body) = body else {
@@ -264,6 +277,7 @@ impl Workspace {
         job.updated_at = now();
         job.detail = "Local document worker is running".into();
         self.change(Some(expected), "processing.claim", false, |conn| {
+            require_verified_worker_exit(conn)?;
             put(conn, "processing_job", &job.id, &job)
         })?;
         Ok(Some(PreparedDocumentJob {
@@ -356,7 +370,9 @@ impl Workspace {
             ));
         }
         let mut extraction = None;
-        if job.cancellation_requested && matches!(result, Err(Error::Cleanup(_))) {
+        if matches!(result, Err(Error::TerminationUnverified(_))) {
+            terminal(&mut job, ProcessingState::Failed, Some(ProcessingFailure::WorkerExitUnverified), "Worker exit could not be confirmed. Assignment files are retained and further document execution is suspended; no result was published");
+        } else if job.cancellation_requested && matches!(result, Err(Error::Cleanup(_))) {
             terminal(&mut job, ProcessingState::Cancelled, Some(ProcessingFailure::CleanupFailed), "Worker stopped after cancellation; scratch cleanup failed and requires attention. No result was published");
         } else if matches!(result, Err(Error::Cleanup(_))) {
             terminal(
@@ -440,6 +456,14 @@ impl Workspace {
             }
         }
         self.change(Some(expected), "processing.finish", false, |conn| {
+            if job.failure == Some(ProcessingFailure::WorkerExitUnverified) {
+                for mut queued in all::<ProcessingJob>(conn, "processing_job")? {
+                    if queued.state == ProcessingState::Queued {
+                        terminal(&mut queued, ProcessingState::Blocked, Some(ProcessingFailure::RecoveryRequired), "An earlier worker's exit is unverified. Document execution is suspended until verified process recovery");
+                        put(conn, "processing_job", &queued.id, &queued)?;
+                    }
+                }
+            }
             if let Some(record) = &extraction {
                 put(conn, "extraction", &record.id, record)?;
             }
@@ -777,6 +801,52 @@ mod tests {
                 }
             );
             assert!(finished.result_ids.is_empty());
+        }
+    }
+
+    #[test]
+    fn unverified_exit_is_never_cancelled_and_suspends_further_execution() {
+        for cancelled in [false, true] {
+            let (dir, mut workspace, evidence) = fixture();
+            let job = queue(&mut workspace, &evidence);
+            let prepared = workspace.claim_document_job().unwrap().unwrap();
+            let pending = queue(&mut workspace, &evidence);
+            if cancelled {
+                workspace.cancel_processing_job(&job.id, 1).unwrap();
+            }
+            let finished = workspace
+                .finish_document_job(
+                    &prepared.ticket,
+                    Err(Error::TerminationUnverified(
+                        "Synthetic unknown exit".into(),
+                    )),
+                )
+                .unwrap();
+            assert_eq!(finished.state, ProcessingState::Failed);
+            assert_eq!(
+                finished.failure,
+                Some(ProcessingFailure::WorkerExitUnverified)
+            );
+            assert!(finished.result_ids.is_empty());
+            assert_eq!(
+                workspace.processing_job(&pending.id).unwrap().state,
+                ProcessingState::Blocked
+            );
+            assert_eq!(
+                workspace.processing_job(&pending.id).unwrap().failure,
+                Some(ProcessingFailure::RecoveryRequired)
+            );
+            assert!(workspace.queue_document_parse(&evidence, &id()).is_err());
+            assert!(workspace
+                .retry_processing_job(&job.id, 1, "Unsafe retry")
+                .is_err());
+            assert!(workspace.claim_document_job().is_err());
+            drop(workspace);
+            let mut reopened = Workspace::open(dir.path()).unwrap();
+            assert!(
+                reopened.claim_document_job().is_err(),
+                "Restart must not erase unknown process state"
+            );
         }
     }
 }

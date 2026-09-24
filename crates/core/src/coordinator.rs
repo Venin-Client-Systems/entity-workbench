@@ -208,7 +208,11 @@ fn work(shared: Arc<Shared>) {
                 return;
             };
             // Result values are bounded by the parser contract. Errors contain no worker output.
-            let completion = if matches!(result, Err(Error::Cleanup(_))) {
+            let completion = if matches!(result, Err(Error::TerminationUnverified(_))) {
+                Err(Error::TerminationUnverified(
+                    "Worker exit unverified".into(),
+                ))
+            } else if matches!(result, Err(Error::Cleanup(_))) {
                 Err(Error::Cleanup("Scratch cleanup failed".into()))
             } else if shared.stopping.load(Ordering::Acquire) {
                 Err(Error::Interrupted("Coordinator stopped".into()))

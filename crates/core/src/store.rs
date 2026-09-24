@@ -546,12 +546,7 @@ impl Workspace {
             .into(),
             origin_group: digest.clone(),
             imported_at: now(),
-            extraction_status: if is_text {
-                "complete"
-            } else {
-                "unsupported_in_development_build"
-            }
-            .into(),
+            extraction_status: if is_text { "complete" } else { "unprocessed" }.into(),
             text,
             acquisitions: existing.map(|e| e.acquisitions).unwrap_or_default(),
         };

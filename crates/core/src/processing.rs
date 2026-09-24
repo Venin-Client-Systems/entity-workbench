@@ -37,6 +37,8 @@ pub enum ProcessingFailure {
     DocumentFailed,
     CancelledByAnalyst,
     CleanupFailed,
+    WorkerExitUnverified,
+    RecoveryRequired,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
