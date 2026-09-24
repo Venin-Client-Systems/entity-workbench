@@ -246,6 +246,138 @@ fn runtime_inventory_binds_role_assets_and_every_file_and_directory() {
     assert!(runtime::verify(&root, Role::Search).is_err());
 }
 
+fn assert_runtime_unavailable<T>(result: Result<T>) {
+    assert!(matches!(
+        result,
+        Err(Error::Blocked("trusted Java runtime is unavailable"))
+    ));
+}
+
+#[test]
+fn trusted_runtime_absence_is_blocked_before_copy_and_during_copied_verification() {
+    let temporary = tempfile::tempdir().unwrap();
+    let parent = temporary.path().canonicalize().unwrap();
+    let root = parent.join("absent-runtime");
+    let scratch = parent.join("absent-scratch");
+    for present_directory in [false, true] {
+        if present_directory {
+            fs::create_dir(&root).unwrap();
+        }
+        for job in [Job::parse(b"synthetic".to_vec()).unwrap(), index()] {
+            assert_runtime_unavailable(execute(&root, &scratch, &job, || false));
+            let prepared = prepare(&root, &scratch, &job).unwrap();
+            // These are the same entrypoints used by copied-runtime verification
+            // and the fixed native control. This fixture never launches a worker.
+            assert_runtime_unavailable(prepared.verify_runtime_with_cancel(&root, &|| false));
+            assert_runtime_unavailable(prepared.verify_runtime(&root));
+            assert!(matches!(
+                prepared.verify_runtime_with_cancel(&root, &|| true),
+                Err(Error::Cancelled)
+            ));
+        }
+        assert!(!scratch.exists());
+    }
+}
+
+#[test]
+#[cfg(any(unix, windows))]
+fn trusted_runtime_access_failure_is_blocked_without_hiding_cancellation() {
+    let temporary = tempfile::tempdir().unwrap();
+    let root = temporary.path().canonicalize().unwrap();
+    fake_runtime(&root);
+    let manifest = root.join("manifest.json");
+    #[cfg(unix)]
+    let original_permissions = {
+        use std::os::unix::fs::PermissionsExt;
+        let original = fs::metadata(&manifest).unwrap().permissions();
+        fs::set_permissions(&manifest, fs::Permissions::from_mode(0o000)).unwrap();
+        original
+    };
+    #[cfg(windows)]
+    let exclusive = {
+        use std::os::windows::fs::OpenOptionsExt;
+        // The verifier must honor this real Windows sharing refusal. No ACL
+        // modification or privileged launch is needed for the fixture.
+        fs::OpenOptions::new()
+            .read(true)
+            .share_mode(0)
+            .open(&manifest)
+            .unwrap()
+    };
+    let job = index();
+    let prepared = prepare(&root, &root, &job).unwrap();
+    let raw_read = runtime::read_bounded(&manifest, 1024 * 1024);
+    let verification = prepared.verify_runtime_with_cancel(&root, &|| false);
+    let execution = execute(&root, &root, &job, || false);
+    let cancellation = prepared.verify_runtime_with_cancel(&root, &|| true);
+    #[cfg(unix)]
+    fs::set_permissions(&manifest, original_permissions).unwrap();
+    #[cfg(windows)]
+    drop(exclusive);
+    assert!(matches!(
+        raw_read,
+        Err(Error::Io(std::io::ErrorKind::PermissionDenied))
+    ));
+    assert_runtime_unavailable(verification);
+    assert_runtime_unavailable(execution);
+    assert!(matches!(cancellation, Err(Error::Cancelled)));
+    prepared.verify_runtime(&root).unwrap();
+}
+
+#[test]
+fn runtime_verification_does_not_reclassify_scratch_or_generic_io() {
+    let temporary = tempfile::tempdir().unwrap();
+    let root = temporary.path().canonicalize().unwrap();
+    fake_runtime(&root);
+    let scratch = root.join("absent-scratch");
+    assert!(matches!(
+        execute(&root, &scratch, &index(), || false),
+        Err(Error::Io(std::io::ErrorKind::NotFound))
+    ));
+    assert!(!scratch.exists());
+    assert!(matches!(
+        runtime::read_bounded(&root.join("absent-result.json"), 100),
+        Err(Error::Io(std::io::ErrorKind::NotFound))
+    ));
+    assert!(matches!(
+        Error::from(std::io::Error::from(std::io::ErrorKind::PermissionDenied)),
+        Error::Io(std::io::ErrorKind::PermissionDenied)
+    ));
+}
+
+#[test]
+fn copied_runtime_verification_failure_keeps_cleanup_and_termination_precedence() {
+    use crate::outcomes::{after_termination, finish_assignment};
+    let temporary = tempfile::tempdir().unwrap();
+    let parent = temporary.path().canonicalize().unwrap();
+    let absent = parent.join("absent-copied-runtime");
+    let job = index();
+    let prepared = prepare(&absent, &parent, &job).unwrap();
+    let verification = || prepared.verify_runtime_with_cancel(&absent, &|| false);
+    let cleanup = finish_assignment(true, verification(), || {
+        Err(Error::Io(std::io::ErrorKind::PermissionDenied))
+    });
+    assert!(matches!(
+        cleanup,
+        Err(Error::Cleanup { prior: Some(prior) })
+            if matches!(*prior, Error::Blocked("trusted Java runtime is unavailable"))
+    ));
+    let uncertain = after_termination(
+        verification(),
+        Err(Error::Api {
+            operation: "SyntheticTerminationFailure",
+            code: 5,
+        }),
+    );
+    let retained = finish_assignment(false, uncertain, || panic!("must retain assignment"));
+    assert!(matches!(
+        retained,
+        Err(Error::TerminationUnverified { cause, prior: Some(prior) })
+            if matches!(*cause, Error::Api { code: 5, .. })
+                && matches!(*prior, Error::Blocked("trusted Java runtime is unavailable"))
+    ));
+}
+
 #[test]
 fn index_input_is_bounded_before_copies_and_during_json_escaping() {
     let document = |id: &str, text: String| Document {

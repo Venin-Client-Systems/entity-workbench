@@ -124,6 +124,17 @@ pub(super) fn verify_with_cancel(
     expected: Role,
     cancelled: &impl Fn() -> bool,
 ) -> Result<()> {
+    // This boundary is used before copying and when verifying the copied
+    // inventory. Failure to read trusted runtime assets means the prerequisite
+    // is unavailable, not that an assigned worker failed. Shared filesystem
+    // helpers, runtime copying, scratch setup and execution retain their I/O
+    // outcomes; cancellation and all other typed outcomes pass through intact.
+    verify_inventory(root, expected, cancelled).map_err(|error| match error {
+        Error::Io(_) => Error::Blocked("trusted Java runtime is unavailable"),
+        other => other,
+    })
+}
+fn verify_inventory(root: &Path, expected: Role, cancelled: &impl Fn() -> bool) -> Result<()> {
     check_cancelled(cancelled)?;
     ordinary_ancestors(root)?;
     let manifest: Manifest =
