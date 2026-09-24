@@ -1,6 +1,13 @@
 import { test, expect, type Page } from "@playwright/test";
 import { execFileSync } from "node:child_process";
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { resolve } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
 import type { Workspace } from "../src/types";
@@ -462,7 +469,10 @@ test("an arriving workspace refresh disables an open stale source review and res
     })
     .click();
   const dialog = page.getByRole("dialog", { name: "Pattern source rows" });
-  await expect(dialog.locator(".patterns-source")).toHaveCount(3);
+  await expect(dialog.getByRole("alert")).toContainText(
+    "Source rows could not be verified",
+  );
+  await expect(dialog.locator(".patterns-source")).toHaveCount(0);
   const delivered = page.waitForResponse(
     (r) => r.request().postDataJSON()?.action === "view",
   );
@@ -476,4 +486,207 @@ test("an arriving workspace refresh disables an open stale source review and res
   await expect(
     panel.getByRole("button", { name: "Calculate reviewed patterns" }),
   ).toBeFocused();
+});
+
+test("source reads reject altered originals and retry exact canonical rows after restoration", async ({
+  page,
+}) => {
+  const panel = await calculate(page);
+  const original = resolve(root, "originals", workspace.evidence[0].sha256);
+  const bytes = readFileSync(original),
+    mode = statSync(original).mode;
+  chmodSync(original, 0o600);
+  try {
+    writeFileSync(original, "Synthetic altered retained original");
+    await panel
+      .getByRole("button", {
+        name: "Review cadence 0001 AUD ACME CLUB",
+        exact: true,
+      })
+      .click();
+    const dialog = page.getByRole("dialog", { name: "Pattern source rows" });
+    await expect(dialog.getByRole("alert")).toContainText(
+      "Source rows could not be verified",
+    );
+    await expect(dialog.locator(".patterns-source")).toHaveCount(0);
+    writeFileSync(original, bytes);
+    chmodSync(original, mode);
+    await dialog.getByRole("button", { name: "Retry source rows" }).click();
+    await expect(dialog.locator(".patterns-source")).toHaveCount(3);
+    await expect(dialog.getByRole("alert")).toHaveCount(0);
+    for (const row of workspace.transactions.slice(0, 3)) {
+      await expect(dialog.getByText(row.id, { exact: true })).toBeVisible();
+    }
+  } finally {
+    chmodSync(original, 0o600);
+    writeFileSync(original, bytes);
+    chmodSync(original, mode);
+  }
+});
+
+test("late source-page replies cannot replace a newer bounded canonical selection", async ({
+  page,
+}) => {
+  workspace = core({
+    action: "import",
+    name: "synthetic-source-pages.csv",
+    bytes: [
+      ...Buffer.from(
+        "account,date,description,amount,currency\n" +
+          Array.from(
+            { length: 27 },
+            (_, i) => `0003,2025-02-01,Synthetic page ${i},-1.00,AUD`,
+          ).join("\n"),
+      ),
+    ],
+  }).workspace;
+  const panel = await open(page);
+  await panel.getByLabel("Analysis account").selectOption("0003");
+  await panel
+    .getByRole("button", { name: "Calculate reviewed patterns" })
+    .click();
+  await expect(
+    panel.getByText("27 in scope / 47 workspace rows"),
+  ).toBeVisible();
+  let release: () => void = () => {},
+    started: () => void = () => {},
+    fulfilled: () => void = () => {};
+  const held = new Promise<void>((r) => (release = r));
+  const pending = new Promise<void>((r) => (started = r));
+  const delivered = new Promise<void>((r) => (fulfilled = r));
+  const requests: {
+    expected_revision: number;
+    request: { rows: { id: string; expected_version: number }[] };
+  }[] = [];
+  await page.route("**/api/workbench", async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.action !== "read_transaction_sources") return route.continue();
+    requests.push(body);
+    if (requests.length !== 1) return route.continue();
+    const response = await route.fetch();
+    started();
+    await held;
+    await route.fulfill({ response });
+    fulfilled();
+  });
+  try {
+    await panel.getByRole("button", { name: "Pending (27)" }).click();
+    await pending;
+    const dialog = page.getByRole("dialog", { name: "Pattern source rows" });
+    await expect(dialog.getByRole("status")).toHaveText(
+      "Verifying selected source rows…",
+    );
+    await dialog.getByRole("button", { name: "Next source rows" }).click();
+    await expect(dialog.locator(".patterns-source")).toHaveCount(2);
+    await expect(
+      dialog.getByText("Synthetic page 26", { exact: true }),
+    ).toBeVisible();
+    release();
+    await delivered;
+    await expect(dialog.locator(".patterns-source")).toHaveCount(2);
+    await expect(
+      dialog.getByText("Synthetic page 0", { exact: true }),
+    ).toHaveCount(0);
+    expect(requests.map((r) => r.request.rows.length)).toEqual([25, 2]);
+    const selected = workspace.transactions.filter((r) => r.account === "0003");
+    expect(requests.flatMap((r) => r.request.rows)).toEqual(
+      selected.map((r) => ({ id: r.id, expected_version: r.version })),
+    );
+    expect(
+      requests.every((r) => r.expected_revision === workspace.revision),
+    ).toBe(true);
+  } finally {
+    release();
+  }
+});
+
+test("returning to an earlier source page requires a new verification before enabling review", async ({
+  page,
+}) => {
+  workspace = core({
+    action: "import",
+    name: "synthetic-revisited-pages.csv",
+    bytes: [
+      ...Buffer.from(
+        "account,date,description,amount,currency\n" +
+          Array.from(
+            { length: 27 },
+            (_, i) => `0003,2025-02-01,Synthetic return ${i},-1.00,AUD`,
+          ).join("\n"),
+      ),
+    ],
+  }).workspace;
+  const panel = await open(page);
+  await panel.getByLabel("Analysis account").selectOption("0003");
+  await panel
+    .getByRole("button", { name: "Calculate reviewed patterns" })
+    .click();
+  await expect(
+    panel.getByText("27 in scope / 47 workspace rows"),
+  ).toBeVisible();
+  await panel.getByRole("button", { name: "Pending (27)" }).click();
+  const dialog = page.getByRole("dialog", { name: "Pattern source rows" });
+  await expect(dialog.locator(".patterns-source")).toHaveCount(25);
+  let count = 0,
+    releaseB: () => void = () => {},
+    releaseA: () => void = () => {};
+  let startedB: () => void = () => {},
+    startedA: () => void = () => {};
+  let finishedB: () => void = () => {},
+    finishedA: () => void = () => {};
+  const heldB = new Promise<void>((r) => (releaseB = r)),
+    heldA = new Promise<void>((r) => (releaseA = r));
+  const pendingB = new Promise<void>((r) => (startedB = r)),
+    pendingA = new Promise<void>((r) => (startedA = r));
+  const doneB = new Promise<void>((r) => (finishedB = r)),
+    doneA = new Promise<void>((r) => (finishedA = r));
+  await page.route("**/api/workbench", async (route) => {
+    if (route.request().postDataJSON()?.action !== "read_transaction_sources")
+      return route.continue();
+    const ticket = ++count;
+    const response = await route.fetch();
+    if (ticket === 1) {
+      startedB();
+      await heldB;
+    } else {
+      startedA();
+      await heldA;
+    }
+    await route.fulfill({ response });
+    if (ticket === 1) finishedB();
+    else finishedA();
+  });
+  try {
+    await dialog.getByRole("button", { name: "Next source rows" }).click();
+    await pendingB;
+    const target = workspace.transactions.find((r) => r.account === "0003")!;
+    workspace = core({
+      action: "correct_transaction",
+      id: target.id,
+      amount: "-2.00",
+      reason: "Synthetic concurrent source-page correction",
+      expected_revision: workspace.revision,
+    }).workspace;
+    await dialog.getByRole("button", { name: "Previous source rows" }).click();
+    await pendingA;
+    await expect(dialog.getByRole("status")).toHaveText(
+      "Verifying selected source rows…",
+    );
+    await expect(dialog.locator(".patterns-source")).toHaveCount(0);
+    await expect(
+      dialog.getByRole("button", { name: /Inspect source and review/ }),
+    ).toHaveCount(0);
+    releaseB();
+    await doneB;
+    await expect(dialog.locator(".patterns-source")).toHaveCount(0);
+    releaseA();
+    await doneA;
+    await expect(dialog.getByRole("alert")).toContainText(
+      "Transaction source revision changed",
+    );
+    await expect(dialog.locator(".patterns-source")).toHaveCount(0);
+  } finally {
+    releaseB();
+    releaseA();
+  }
 });

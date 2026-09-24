@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
-import { AnalysisSourceRow, Pager } from "./TransactionAnalysisSource";
+import { AnalysisSourceRows, Pager } from "./TransactionAnalysisSource";
 import type {
   ComparisonRequest,
   ComparisonResult,
@@ -73,10 +73,6 @@ export function TransactionComparison({
       draft.baseline.through !== result.request.baseline.through ||
       draft.comparison.from !== result.request.comparison.from ||
       draft.comparison.through !== result.request.comparison.through);
-  const transactions = useMemo(
-    () => new Map(workspace.transactions.map((row) => [row.id, row])),
-    [workspace.transactions],
-  );
   const annotations = useMemo(
     () =>
       new Map(
@@ -581,22 +577,17 @@ export function TransactionComparison({
                 <p className="eyebrow">
                   SOURCE ROWS / {drill.ids.length} TOTAL
                 </p>
-                {drill.ids
-                  .slice(sourcePage * 25, (sourcePage + 1) * 25)
-                  .map((id) => (
-                    <AnalysisSourceRow
-                      key={id}
-                      id={id}
-                      transaction={transactions.get(id)}
-                      expectedVersion={versions.get(id)}
-                      annotation={annotations.get(id)}
-                      onInspect={(row) => {
-                        handoff.current = true;
-                        setDrill(null);
-                        onInspect(row);
-                      }}
-                    />
-                  ))}
+                <AnalysisSourceRows
+                  ids={drill.ids.slice(sourcePage * 25, (sourcePage + 1) * 25)}
+                  versions={versions}
+                  annotations={annotations}
+                  revision={result.workspace_revision}
+                  onInspect={(row) => {
+                    handoff.current = true;
+                    setDrill(null);
+                    onInspect(row);
+                  }}
+                />
                 <Pager
                   page={sourcePage}
                   total={drill.ids.length}

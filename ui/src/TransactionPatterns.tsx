@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { command } from "./api";
 import { Dialog } from "./Dialog";
-import { AnalysisSourceRow, Pager } from "./TransactionAnalysisSource";
+import { AnalysisSourceRows, Pager } from "./TransactionAnalysisSource";
 import {
   defaultPatternRequest,
   type PatternRequest,
@@ -54,12 +54,12 @@ export function TransactionPatterns({
     Object.entries(draft).some(
       ([key, value]) => result.request[key as keyof PatternRequest] !== value,
     );
-  const transactions = useMemo(
-    () => new Map(workspace.transactions.map((row) => [row.id, row])),
-    [workspace.transactions],
-  );
   const annotations = useMemo(
     () => new Map(result?.rows.map((row) => [row.transaction_id, row])),
+    [result],
+  );
+  const versions = useMemo(
+    () => new Map(result?.rows.map((row) => [row.transaction_id, row.version])),
     [result],
   );
   const edit = <K extends keyof PatternRequest>(
@@ -645,24 +645,17 @@ export function TransactionPatterns({
                 <p className="eyebrow">
                   SOURCE ROWS / {drill.ids.length} TOTAL
                 </p>
-                {sourceIds.map((id) => {
-                  const t = transactions.get(id),
-                    a = annotations.get(id);
-                  return (
-                    <AnalysisSourceRow
-                      key={id}
-                      id={id}
-                      transaction={t}
-                      expectedVersion={a?.version}
-                      annotation={a}
-                      onInspect={(row) => {
-                        handoff.current = true;
-                        setDrill(null);
-                        onInspect(row);
-                      }}
-                    />
-                  );
-                })}
+                <AnalysisSourceRows
+                  ids={sourceIds}
+                  versions={versions}
+                  annotations={annotations}
+                  revision={result.workspace_revision}
+                  onInspect={(row) => {
+                    handoff.current = true;
+                    setDrill(null);
+                    onInspect(row);
+                  }}
+                />
                 <Pager
                   page={sourcePage}
                   total={drill.ids.length}

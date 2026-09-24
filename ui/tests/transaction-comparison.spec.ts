@@ -464,7 +464,10 @@ test("an arriving canonical refresh hides stale open source rows and restores th
     .getByRole("button", { name: "Included (3)" })
     .click();
   const dialog = page.getByRole("dialog", { name: "Comparison source rows" });
-  await expect(dialog.locator(".patterns-source")).toHaveCount(3);
+  await expect(dialog.getByRole("alert")).toContainText(
+    "Source rows could not be verified",
+  );
+  await expect(dialog.locator(".patterns-source")).toHaveCount(0);
   const delivered = page.waitForResponse(
     (response) => response.request().postDataJSON()?.action === "view",
   );

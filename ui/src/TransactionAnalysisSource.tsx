@@ -1,5 +1,145 @@
 import type { PatternRow } from "./transaction-analysis-types";
 import type { Transaction } from "./types";
+import { useEffect, useState } from "react";
+import { command } from "./api";
+
+/** Fetch only the visible source page, pinned to its originating analysis. */
+export function AnalysisSourceRows({
+  ids,
+  versions,
+  annotations,
+  revision,
+  onInspect,
+}: {
+  ids: string[];
+  versions: ReadonlyMap<string, number>;
+  annotations: ReadonlyMap<string, PatternRow>;
+  revision: number;
+  onInspect: (transaction: Transaction) => void;
+}) {
+  const keys = ids.map((id) => ({ id, expected_version: versions.get(id) }));
+  const valid =
+    keys.length > 0 &&
+    keys.length <= 25 &&
+    keys.every((key) => key.expected_version !== undefined);
+  // A stable primitive binds both asynchronous replies and visible state to the
+  // exact page, versions and revision, even before the next effect has run.
+  const selection = JSON.stringify({ rows: keys, revision });
+  return (
+    <SelectedSourcePage
+      key={selection}
+      selection={selection}
+      valid={valid}
+      versions={versions}
+      annotations={annotations}
+      onInspect={onInspect}
+    />
+  );
+}
+
+/** Remount on every selection change, including a return to an earlier page. */
+function SelectedSourcePage({
+  selection,
+  valid,
+  versions,
+  annotations,
+  onInspect,
+}: {
+  selection: string;
+  valid: boolean;
+  versions: ReadonlyMap<string, number>;
+  annotations: ReadonlyMap<string, PatternRow>;
+  onInspect: (transaction: Transaction) => void;
+}) {
+  const [attempt, setAttempt] = useState(0);
+  const [state, setState] = useState<{
+    selection: string;
+    attempt: number;
+    rows?: Transaction[];
+    error?: string;
+  } | null>(null);
+  useEffect(() => {
+    let active = true;
+    if (!valid) return;
+    const selected = JSON.parse(selection) as {
+      rows: { id: string; expected_version: number }[];
+      revision: number;
+    };
+    void command<{
+      schema_version: number;
+      workspace_revision: number;
+      rows: Transaction[];
+    }>({
+      action: "read_transaction_sources",
+      request: { rows: selected.rows },
+      expected_revision: selected.revision,
+    })
+      .then((value) => {
+        if (!active) return;
+        if (
+          value.schema_version !== 1 ||
+          value.workspace_revision !== selected.revision ||
+          !Array.isArray(value.rows) ||
+          value.rows.length !== selected.rows.length ||
+          value.rows.some(
+            (row, index) =>
+              row.id !== selected.rows[index].id ||
+              row.version !== selected.rows[index].expected_version,
+          )
+        )
+          throw new Error(
+            "Source response does not match the selected analysis rows.",
+          );
+        setState({ selection, attempt, rows: value.rows });
+      })
+      .catch((cause: unknown) => {
+        if (active) setState({ selection, attempt, error: String(cause) });
+      });
+    return () => {
+      active = false;
+    };
+  }, [selection, valid, attempt]);
+  const current =
+    state?.selection === selection && state.attempt === attempt ? state : null;
+  if (!valid)
+    return (
+      <p className="error" role="alert">
+        Source versions are unavailable. Close and recalculate.
+      </p>
+    );
+  if (current?.error)
+    return (
+      <div className="patterns-warning" role="alert">
+        <p>
+          Source rows could not be verified. Refresh the workspace and
+          recalculate if it changed.
+        </p>
+        <p>{current.error}</p>
+        <button
+          className="button"
+          onClick={() => setAttempt((value) => value + 1)}
+        >
+          Retry source rows
+        </button>
+      </div>
+    );
+  if (!current?.rows)
+    return <p role="status">Verifying selected source rows…</p>;
+  return (
+    <>
+      {current.rows.map((row) => (
+        <AnalysisSourceRow
+          key={row.id}
+          id={row.id}
+          transaction={row}
+          expectedVersion={versions.get(row.id)}
+          annotation={annotations.get(row.id)}
+          onInspect={onInspect}
+        />
+      ))}
+    </>
+  );
+}
 
 /** Shared presentation only: Rust supplies the revision-bound rules and source versions. */
 export function AnalysisSourceRow({

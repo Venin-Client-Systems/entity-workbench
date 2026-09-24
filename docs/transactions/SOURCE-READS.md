@@ -33,8 +33,8 @@ as recorded; this read does not accept extraction or establish recognition accur
 
 The budget bounds retained transaction bodies, not the complete serialized
 envelope or process memory. SQLite may read larger storage pages, and original
-verification also reads evidence metadata and source bytes. This is a foundation
-for migrating current source-review screens; the current interface still uses
+verification also reads evidence metadata and source bytes. Pattern and period-comparison source dialogs use this reader for each visible
+25-row page, supplying the recorded versions. The remaining interface still uses
 full transaction/review arrays and the default analysis still carries large ID
 and reconciliation vectors. This API alone does not improve default refresh size.
 
@@ -45,3 +45,33 @@ committing while the read snapshot remains pinned. At its initial integration,
 194 ordinary core tests and strict Clippy pass; 21 native/runtime tests are
 explicitly excluded. Independent bounded review found no actionable defect in
 this source-read scope. No release gate changes.
+
+
+## Analyst source-dialog integration
+
+Pattern and comparison drillthrough no longer resolve source rows from a full
+client-side transaction map. Loading, integrity failure and retry stay inside
+the existing designed source dialog. Every selection binds exact ordered IDs,
+versions and analysis revision. A new page remounts the reader, including a
+return to an earlier page; an earlier cached result cannot enable review while
+fresh verification is pending. Late results after navigation or closure are
+ignored. The successful response must match schema, revision, count, order and
+versions before any Inspect control is rendered.
+
+Three real-core browser regressions cover altered-original rejection and retry
+after restoration, exact 25/2-row requests with delayed replies, and a return to
+an earlier page while a real canonical correction invalidates its revision. Two
+existing delayed-refresh scenarios now expect the fresh source read to refuse
+an already-stale revision before the overall workspace refresh arrives. The
+original failing runs remain retained: those two expectations previously relied
+on the cached ledger, and one new test initially included unrelated account and
+currency namesakes in its expected cadence IDs. The fixture expectation was
+corrected without changing the actual source query or accepted result.
+
+Bounded peer review identified the return-to-earlier-page cache race before
+integration; the keyed-reader repair and its held-response regression address
+that exact sequence. The combined build passes 195 ordinary core tests (21 native
+cases excluded), strict Clippy, production UI build and all 63 real-core browser
+workflows. This increment preserves existing presentation layout and its editable
+pattern/comparison design. Ledger pagination and removal of default full arrays
+remain separate work.
