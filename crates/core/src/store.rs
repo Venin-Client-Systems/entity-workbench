@@ -23,6 +23,7 @@ mod report_snapshots;
 mod review_decision_page;
 mod statements;
 mod transaction_analysis;
+mod transaction_balance;
 mod transaction_comparison;
 mod transaction_facets;
 mod transaction_page;
@@ -308,6 +309,14 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, mode: ResponseMode) -> Result<Value> {
         match command {
+            Command::ReadTransactionBalances {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.read_transaction_balances(&request, expected_revision)?,
+                )?);
+            }
             Command::PageCitationCatalogue {
                 request,
                 expected_revision,
