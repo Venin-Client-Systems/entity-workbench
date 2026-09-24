@@ -106,6 +106,34 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         // extraction v1 retains its parse-only shape and is checked against its saved snapshot.
         let schemas = [
             (
+                "citation-catalogue-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationCatalogueRequest
+                ))?,
+            ),
+            (
+                "citation-catalogue-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationCataloguePage
+                ))?,
+            ),
+            (
+                "citation-selections-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationSelectionsRequest
+                ))?,
+            ),
+            (
+                "citation-selections",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationSelections
+                ))?,
+            ),
+            (
                 "transaction-search-request",
                 1,
                 serde_json::to_value(schemars::schema_for!(
@@ -187,7 +215,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                16,
+                17,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (

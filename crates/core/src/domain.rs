@@ -390,6 +390,14 @@ pub struct WorkspaceView<R = ReportSnapshot> {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    PageCitationCatalogue {
+        request: crate::citation_catalogue::CitationCatalogueRequest,
+        expected_revision: u64,
+    },
+    ReadCitationSelections {
+        request: crate::citation_catalogue::CitationSelectionsRequest,
+        expected_revision: u64,
+    },
     SearchTransactions {
         request: crate::transaction_search::TransactionSearchRequest,
         expected_revision: u64,

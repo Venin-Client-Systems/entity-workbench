@@ -296,6 +296,22 @@ impl Workspace {
     }
     fn dispatch_with_view(&mut self, command: Command, presentation: bool) -> Result<Value> {
         match command {
+            Command::PageCitationCatalogue {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_citation_catalogue(&request, expected_revision)?,
+                )?);
+            }
+            Command::ReadCitationSelections {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.read_citation_selections(&request, expected_revision)?,
+                )?);
+            }
             Command::SearchTransactions {
                 request,
                 expected_revision,
