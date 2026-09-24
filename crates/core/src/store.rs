@@ -25,6 +25,7 @@ mod statements;
 mod transaction_analysis;
 mod transaction_balance;
 mod transaction_comparison;
+mod transaction_export;
 mod transaction_facets;
 mod transaction_page;
 mod transaction_search;
