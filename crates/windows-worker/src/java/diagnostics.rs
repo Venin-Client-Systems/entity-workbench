@@ -35,6 +35,8 @@ pub(crate) enum JavaCheckpoint {
     SearchWriterStarted,
     SearchWriterReady,
     SearchIndexCommitted,
+    SearchRealpathStarted,
+    SearchRealpathReady,
 }
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -376,6 +378,8 @@ mod tests {
             JavaCheckpoint::SearchWriterStarted,
             JavaCheckpoint::SearchWriterReady,
             JavaCheckpoint::SearchIndexCommitted,
+            JavaCheckpoint::SearchRealpathStarted,
+            JavaCheckpoint::SearchRealpathReady,
         ] {
             let bytes = serde_json::to_vec(&value).unwrap();
             assert!(bytes.len() <= 64);

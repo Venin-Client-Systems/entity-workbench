@@ -24,6 +24,11 @@ public final class SearchWorker {
                 if(assignedIndex!=null)throw new IOException("Invalid assigned index");
             }
             Protocol.checkpoint("search_index_validated");
+            if(Boolean.getBoolean("workbench.probe")) {
+                Protocol.checkpoint("search_realpath_started");
+                index.toRealPath();
+                Protocol.checkpoint("search_realpath_ready");
+            }
             Protocol.checkpoint("search_directory_started");
             try(var directory=FSDirectory.open(index);var analyzer=new StandardAnalyzer()){
                 Protocol.checkpoint("search_directory_ready");

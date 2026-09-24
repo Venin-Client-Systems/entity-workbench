@@ -18,7 +18,8 @@ final class Protocol {
                 "pdf_stripper_ready", "pdf_text_started", "pdf_text_finished",
                 "search_request_validated", "search_index_validated", "search_directory_started",
                 "search_directory_ready", "search_manifest_read", "search_writer_started",
-                "search_writer_ready", "search_index_committed").contains(value))
+                "search_writer_ready", "search_index_committed",
+                "search_realpath_started", "search_realpath_ready").contains(value))
             throw new IOException("Invalid fixed checkpoint");
         Files.writeString(Path.of("java-checkpoint.json"), "\"" + value + "\"");
     }
