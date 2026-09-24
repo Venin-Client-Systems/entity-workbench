@@ -1,11 +1,31 @@
 //! Isolated development launcher; the desktop does not enable it until native evidence exists.
 use std::{path::PathBuf, time::Duration};
 pub mod java;
+mod outcomes;
+mod preparation;
+
+/// Only directly observed bounds are classified as resource exhaustion. An
+/// unexplained process exit is never inferred to be a memory/CPU limit.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResourceLimit {
+    WallTime,
+    TreeBytes,
+    TreeEntries,
+    TreeDepth,
+    Handles,
+    OutputBytes,
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("Windows worker blocked: {0}")]
     Blocked(&'static str),
+    #[error("Windows worker cancelled")]
+    Cancelled,
+    #[error("Windows worker resource limit exceeded: {0:?}")]
+    ResourceLimit(ResourceLimit),
+    #[error("Windows worker result rejected: {0}")]
+    InvalidResult(&'static str),
     #[error("Windows worker API {operation} failed (code {code})")]
     Api { operation: &'static str, code: u32 },
     #[error("Windows worker local I/O failed ({0:?})")]
@@ -14,6 +34,11 @@ pub enum Error {
     Exit(u32),
     #[error("Windows worker cleanup failed; result rejected; preceding error: {prior:?}")]
     Cleanup { prior: Option<Box<Error>> },
+    #[error("Windows worker termination unverified; assignment retained; cause: {cause}; preceding error: {prior:?}")]
+    TerminationUnverified {
+        cause: Box<Error>,
+        prior: Option<Box<Error>>,
+    },
 }
 impl From<std::io::Error> for Error {
     fn from(value: std::io::Error) -> Self {

@@ -1,10 +1,17 @@
 //! Win32 boundary: all pointers borrow live allocations; owned handles are RAII.
 //! The created process remains suspended until zero capabilities, identity and Job
 //! Object assignment are verified. No errors retry without the AppContainer.
-use crate::{quote_argument, validate, Error, Output, ProbeDiagnostics, Request, Result};
+use crate::{
+    outcomes::{
+        after_termination, check_cancelled, finish_assignment, limit, result_context, valid_result,
+    },
+    quote_argument, validate, Error, Output, ProbeDiagnostics, Request, ResourceLimit, Result,
+};
 mod java_control;
 mod java_diagnostics;
 mod java_paths;
+#[cfg(test)]
+mod outcome_tests;
 pub(crate) use java_control::{file_worker_control, ControlDocument};
 use std::{
     collections::BTreeMap,
@@ -425,6 +432,17 @@ fn pin_directory(path: &Path) -> Result<std::fs::File> {
     Ok(directory)
 }
 fn walk(root: &Path, limit: u64, file_limit: usize) -> Result<Vec<PathBuf>> {
+    walk_with_cancel(root, limit, file_limit, &|| false)
+}
+fn inspect_result_tree(root: &Path, limit: u64, file_limit: usize) -> Result<Vec<PathBuf>> {
+    walk(root, limit, file_limit).map_err(result_context)
+}
+fn walk_with_cancel(
+    root: &Path,
+    byte_limit: u64,
+    file_limit: usize,
+    cancelled: &impl Fn() -> bool,
+) -> Result<Vec<PathBuf>> {
     fn visit(
         path: &Path,
         depth: usize,
@@ -432,27 +450,39 @@ fn walk(root: &Path, limit: u64, file_limit: usize) -> Result<Vec<PathBuf>> {
         file_limit: usize,
         files: &mut Vec<PathBuf>,
         bytes: &mut u64,
+        cancelled: &impl Fn() -> bool,
     ) -> Result<()> {
-        blocked(depth <= 16, "tree nesting budget exceeded")?;
-        blocked(files.len() < file_limit, "tree entry budget exceeded")?;
+        check_cancelled(cancelled)?;
+        crate::outcomes::limit(depth <= 16, ResourceLimit::TreeDepth)?;
+        crate::outcomes::limit(files.len() < file_limit, ResourceLimit::TreeEntries)?;
         files.push(path.to_owned());
         let metadata = ordinary(path)?;
         reject_named_streams(path)?;
         if metadata.is_dir() {
             let _pinned = pin_directory(path)?;
             for entry in fs::read_dir(path)? {
-                visit(&entry?.path(), depth + 1, limit, file_limit, files, bytes)?;
+                visit(
+                    &entry?.path(),
+                    depth + 1,
+                    limit,
+                    file_limit,
+                    files,
+                    bytes,
+                    cancelled,
+                )?;
             }
         } else {
             *bytes = bytes
                 .checked_add(metadata.len())
-                .ok_or(Error::Blocked("tree size overflow"))?;
-            blocked(*bytes <= limit, "tree disk budget exceeded")?;
+                .ok_or(Error::ResourceLimit(ResourceLimit::TreeBytes))?;
+            crate::outcomes::limit(*bytes <= limit, ResourceLimit::TreeBytes)?;
         }
         Ok(())
     }
     let mut files = Vec::new();
-    visit(root, 0, limit, file_limit, &mut files, &mut 0)?;
+    visit(
+        root, 0, byte_limit, file_limit, &mut files, &mut 0, cancelled,
+    )?;
     Ok(files)
 }
 /// Test/setup utility: restrict synthetic private sentinels to owner and SYSTEM.
@@ -474,6 +504,9 @@ struct Profile {
 }
 impl Profile {
     fn create() -> Result<Self> {
+        Self::create_initialized(Self::locate_folder)
+    }
+    fn create_initialized(initialize: impl FnOnce(&mut Self) -> Result<()>) -> Result<Self> {
         let name = wide(format!("EntityWorkbench.{}", uuid::Uuid::new_v4().simple()))?;
         let mut sid = null_mut();
         hr(
@@ -496,17 +529,23 @@ impl Profile {
             closed: false,
             cleanup_allowed: true,
         };
-        let sid_text = wide(sid_string(sid)?)?;
+        if let Err(error) = initialize(&mut profile) {
+            return finish_assignment(true, Err(error), || profile.close());
+        }
+        Ok(profile)
+    }
+    fn locate_folder(&mut self) -> Result<()> {
+        let sid_text = wide(sid_string(self.sid)?)?;
         let mut folder = null_mut();
         hr(
             unsafe { GetAppContainerFolderPath(sid_text.as_ptr(), &mut folder) },
             "GetAppContainerFolderPath",
         )?;
-        profile.folder = PathBuf::from(unsafe { from_wide(folder) });
+        self.folder = PathBuf::from(unsafe { from_wide(folder) });
         unsafe {
             CoTaskMemFree(folder.cast());
         }
-        Ok(profile)
+        Ok(())
     }
     fn close(&mut self) -> Result<()> {
         if !self.closed {
@@ -908,21 +947,28 @@ fn read_output_bounded(path: &Path, limit: u64) -> Result<Vec<u8>> {
     let file = OpenOptions::new()
         .read(true)
         .custom_flags(FILE_FLAG_OPEN_REPARSE_POINT)
-        .open(path)?;
+        .open(path)
+        .map_err(|error| {
+            if error.kind() == std::io::ErrorKind::NotFound {
+                Error::InvalidResult("worker result absent")
+            } else {
+                error.into()
+            }
+        })?;
     let mut info: BY_HANDLE_FILE_INFORMATION = unsafe { zeroed() };
     api(
         unsafe { GetFileInformationByHandle(file.as_raw_handle(), &mut info) },
         "InspectOutput",
     )?;
-    blocked(
+    valid_result(
         info.dwFileAttributes & (FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DIRECTORY) == 0
             && info.nNumberOfLinks == 1,
         "invalid output file",
     )?;
-    blocked(file.metadata()?.len() <= limit, "result exceeds bound")?;
+    crate::outcomes::limit(file.metadata()?.len() <= limit, ResourceLimit::OutputBytes)?;
     let mut bytes = Vec::new();
     file.take(limit + 1).read_to_end(&mut bytes)?;
-    blocked(bytes.len() as u64 <= limit, "result grew beyond bound")?;
+    crate::outcomes::limit(bytes.len() as u64 <= limit, ResourceLimit::OutputBytes)?;
     Ok(bytes)
 }
 
@@ -992,9 +1038,9 @@ pub(crate) fn run_java_probe(
 
 fn collect_index(path: &Path) -> Result<Vec<crate::java::IndexFile>> {
     use sha2::{Digest, Sha256};
-    let _pinned = pin_directory(path)?;
+    let _pinned = pin_directory(path).map_err(result_context)?;
     let mut files = Vec::new();
-    for entry in walk(
+    for entry in inspect_result_tree(
         path,
         crate::java::INDEX_BYTES as u64,
         crate::java::INDEX_MEMBERS + 1,
@@ -1002,14 +1048,14 @@ fn collect_index(path: &Path) -> Result<Vec<crate::java::IndexFile>> {
         if entry == path {
             continue;
         }
-        blocked(
+        valid_result(
             entry.parent() == Some(path) && ordinary(&entry)?.is_file(),
             "index must contain only flat ordinary files",
         )?;
         let name = entry
             .file_name()
             .and_then(|name| name.to_str())
-            .ok_or(Error::Blocked("invalid index name"))?
+            .ok_or(Error::InvalidResult("invalid index name"))?
             .to_owned();
         let bytes = read_output_bounded(&entry, crate::java::INDEX_FILE_BYTES as u64)?;
         files.push(crate::java::IndexFile {
@@ -1031,23 +1077,29 @@ fn run_assigned<T>(
     accept: impl FnOnce(&Path) -> Result<T>,
 ) -> Result<T> {
     validate(request)?;
-    blocked(!cancelled(), "cancelled before launch")?;
+    check_cancelled(&cancelled)?;
     ordinary(&request.scratch_parent)?;
     let owner = user_sid()?;
-    let temporary = tempfile::Builder::new()
+    let root = tempfile::Builder::new()
         .prefix("ew-appcontainer-")
-        .tempdir_in(&request.scratch_parent)?;
-    let root = temporary.path().to_owned();
-    let mut profile = Profile::create()?;
+        .tempdir_in(&request.scratch_parent)?
+        .keep();
+    let mut profile = None;
     let mut quiescent = true;
     let result = (|| {
+        // Profile setup is fallible after creating resources. Both it and the
+        // owned temporary directory remain inside explicit completion ownership.
+        let profile = profile.insert(Profile::create()?);
         let sid = sid_string(profile.sid)?;
         acl(&root, &owner, Some((&sid, false)))?;
         let runtime = root.join("runtime");
         fs::create_dir(&runtime)?;
         ordinary(&request.runtime)?;
         let source = request.runtime.canonicalize()?;
-        for entry in walk(&source, 1024 * 1024 * 1024, 10000)? {
+        #[cfg(test)]
+        outcome_tests::observe(outcome_tests::Stage::Copy);
+        for entry in walk_with_cancel(&source, 1024 * 1024 * 1024, 10000, &cancelled)? {
+            check_cancelled(&cancelled)?;
             let relative = entry
                 .strip_prefix(&source)
                 .map_err(|_| Error::Blocked("runtime path escape"))?;
@@ -1058,13 +1110,14 @@ fn run_assigned<T>(
             if entry.is_dir() {
                 fs::create_dir_all(&destination)?;
             } else {
-                fs::copy(&entry, &destination)?;
+                crate::java::runtime::copy_asset(&entry, &destination, &cancelled)?;
             }
         }
         if let Some(prepared) = java {
-            prepared.verify_runtime(&runtime)?;
+            prepared.verify_runtime_with_cancel(&runtime, &cancelled)?;
         }
-        for entry in walk(&runtime, 1024 * 1024 * 1024, 10000)? {
+        for entry in walk_with_cancel(&runtime, 1024 * 1024 * 1024, 10000, &cancelled)? {
+            check_cancelled(&cancelled)?;
             acl(&entry, &owner, Some((&sid, false)))?;
         }
         let input = root.join("input.json");
@@ -1086,6 +1139,7 @@ fn run_assigned<T>(
                 fs::create_dir(&index_snapshot)?;
                 acl(&index_snapshot, &owner, Some((&sid, false)))?;
                 for file in &snapshot.files {
+                    check_cancelled(&cancelled)?;
                     let path = index_snapshot.join(&file.name);
                     fs::write(&path, &file.bytes)?;
                     acl(&path, &owner, Some((&sid, false)))?;
@@ -1157,6 +1211,9 @@ fn run_assigned<T>(
         let mut process: PROCESS_INFORMATION = unsafe { zeroed() };
         let executable = wide(path_text(&executable)?)?;
         let current_dir = wide(scratch_text)?;
+        #[cfg(test)]
+        outcome_tests::observe(outcome_tests::Stage::Create);
+        check_cancelled(&cancelled)?;
         // File IPC needs neither inherited handles nor an attached console.
         // CREATE_NO_WINDOW still requests a windowless console; DETACHED_PROCESS
         // avoids that startup dependency without permitting helper children.
@@ -1203,6 +1260,9 @@ fn run_assigned<T>(
         }
         let operation = (|| {
             verify_token(running.process.0, profile.sid)?;
+            #[cfg(test)]
+            outcome_tests::observe(outcome_tests::Stage::Resume);
+            check_cancelled(&cancelled)?;
             blocked(
                 unsafe { ResumeThread(thread.0) } != u32::MAX,
                 "worker resume failed",
@@ -1210,28 +1270,24 @@ fn run_assigned<T>(
             drop(thread);
             let start = Instant::now();
             loop {
-                if cancelled() {
-                    return Err(Error::Blocked("cancelled; worker job terminated"));
-                }
-                if start.elapsed() >= request.wall_time {
-                    return Err(Error::Blocked("worker wall-time exceeded"));
-                }
-                walk(&scratch, WRITABLE_LIMIT, 512)?;
-                walk(&profile.folder, WRITABLE_LIMIT, 512)?;
+                check_cancelled(&cancelled)?;
+                limit(start.elapsed() < request.wall_time, ResourceLimit::WallTime)?;
+                inspect_result_tree(&scratch, WRITABLE_LIMIT, 512)?;
+                inspect_result_tree(&profile.folder, WRITABLE_LIMIT, 512)?;
                 let mut handles = 0;
                 api(
                     unsafe { GetProcessHandleCount(running.process.0, &mut handles) },
                     "GetHandleCount",
                 )?;
-                blocked(handles <= HANDLE_LIMIT, "worker handle budget exceeded")?;
+                limit(handles <= HANDLE_LIMIT, ResourceLimit::Handles)?;
                 match unsafe { WaitForSingleObject(running.process.0, 20) } {
                     WAIT_OBJECT_0 => break,
                     WAIT_TIMEOUT => {}
                     _ => return Err(Error::Blocked("worker wait failed")),
                 }
             }
-            walk(&scratch, WRITABLE_LIMIT, 512)?;
-            walk(&profile.folder, WRITABLE_LIMIT, 512)?;
+            inspect_result_tree(&scratch, WRITABLE_LIMIT, 512)?;
+            inspect_result_tree(&profile.folder, WRITABLE_LIMIT, 512)?;
             let mut code = 0;
             api(
                 unsafe { GetExitCodeProcess(running.process.0, &mut code) },
@@ -1246,17 +1302,17 @@ fn run_assigned<T>(
                 return Err(Error::Exit(code));
             }
             if let Some(prepared) = java {
-                blocked(
+                valid_result(
                     read_output_bounded(&input, 16 * 1024 * 1024)? == request.input,
                     "assigned Java input changed",
                 )?;
-                blocked(
+                valid_result(
                     read_output_bounded(&metadata, 1024 * 1024)? == prepared.metadata,
                     "assigned Java request changed",
                 )?;
                 if let Some(snapshot) = prepared.snapshot() {
                     let actual = collect_index(&index_snapshot)?;
-                    blocked(
+                    valid_result(
                         actual.len() == snapshot.files.len()
                             && actual.iter().all(|a| {
                                 snapshot
@@ -1270,10 +1326,8 @@ fn run_assigned<T>(
             }
             accept(&scratch)
         })();
-        if running.stop().is_err() {
-            return Err(Error::Cleanup {
-                prior: operation.err().map(Box::new),
-            });
+        if let Err(cause) = running.stop() {
+            return after_termination(operation, Err(cause));
         }
         quiescent = true;
         if operation.is_err() {
@@ -1286,24 +1340,18 @@ fn run_assigned<T>(
         }
         operation
     })();
-    let path = temporary.keep();
     if !quiescent {
-        // Do not traverse/repair any worker-owned tree while a process could
-        // still be running. Job Drop requests kill, but an unacknowledged exit
-        // leaves the job and profile for explicit recovery; no result accepted.
-        profile.cleanup_allowed = false;
-        return Err(Error::Cleanup {
-            prior: result.err().map(Box::new),
-        });
+        // Never traverse a potentially live assignment. Drop can retry killing
+        // the job, but does not turn an unacknowledged exit into verified cleanup.
+        if let Some(profile) = profile.as_mut() {
+            profile.cleanup_allowed = false;
+        }
     }
-    let directory_cleanup = clean(&path, &owner);
-    let profile_cleanup = profile.close();
-    if directory_cleanup.is_err() || profile_cleanup.is_err() {
-        return Err(Error::Cleanup {
-            prior: result.err().map(Box::new),
-        });
-    }
-    result
+    finish_assignment(quiescent, result, || {
+        let directory_cleanup = clean(&root, &owner);
+        let profile_cleanup = profile.as_mut().map_or(Ok(()), Profile::close);
+        directory_cleanup.and(profile_cleanup)
+    })
 }
 
 fn read_probe_checkpoint(scratch: &Path) -> Option<crate::ProbeCheckpoint> {
@@ -1473,13 +1521,13 @@ mod tests {
         fs::hard_link(&output, &alias).unwrap();
         assert!(matches!(
             read_output(&output),
-            Err(Error::Blocked("invalid output file"))
+            Err(Error::InvalidResult("invalid output file"))
         ));
         fs::remove_file(alias).unwrap();
         fs::write(&output, vec![0; OUTPUT_LIMIT as usize + 1]).unwrap();
         assert!(matches!(
             read_output(&output),
-            Err(Error::Blocked("result exceeds bound"))
+            Err(Error::ResourceLimit(ResourceLimit::OutputBytes))
         ));
     }
 

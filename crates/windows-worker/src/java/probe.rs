@@ -318,7 +318,10 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
     );
     // Preserve a normal control failure alongside the first confined outcome.
     // An unacknowledged termination/cleanup failure stops all further launches.
-    if matches!(&control, Err(Error::Cleanup { .. })) {
+    if matches!(
+        &control,
+        Err(Error::Cleanup { .. } | Error::TerminationUnverified { .. })
+    ) {
         return control.map(|_| ());
     }
     empty(&controls)?;
@@ -343,7 +346,10 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         if let Some(document) = pdf_control {
             phase(report, &format!("control_{name}"));
             let control = control_recorded(&parser, &controls, document, report);
-            if matches!(&control, Err(Error::Cleanup { .. })) {
+            if matches!(
+                &control,
+                Err(Error::Cleanup { .. } | Error::TerminationUnverified { .. })
+            ) {
                 return control.map(|_| ());
             }
             empty(&controls)?;
@@ -433,7 +439,10 @@ pub fn development_probe(staged: &Path, report: &mut BTreeMap<String, Value>) ->
         crate::windows::ControlDocument::Index,
         report,
     );
-    if matches!(&control, Err(Error::Cleanup { .. })) {
+    if matches!(
+        &control,
+        Err(Error::Cleanup { .. } | Error::TerminationUnverified { .. })
+    ) {
         return control.map(|_| ());
     }
     empty(&controls)?;

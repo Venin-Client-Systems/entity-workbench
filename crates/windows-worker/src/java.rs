@@ -7,8 +7,11 @@ pub(crate) mod font_fixtures;
 pub(crate) mod paths;
 #[cfg(windows)]
 mod probe;
-mod runtime;
-use crate::{Error, Request, Result};
+pub(crate) mod runtime;
+use crate::{
+    outcomes::{check_cancelled, limit, valid_result},
+    Error, Request, ResourceLimit, Result,
+};
 #[cfg(windows)]
 pub use probe::development_probe;
 use serde::{Deserialize, Serialize};
@@ -250,6 +253,13 @@ impl Prepared<'_> {
     pub(crate) fn verify_runtime(&self, path: &Path) -> Result<()> {
         runtime::verify(path, self.job.role())
     }
+    pub(crate) fn verify_runtime_with_cancel(
+        &self,
+        path: &Path,
+        cancelled: &impl Fn() -> bool,
+    ) -> Result<()> {
+        runtime::verify_with_cancel(path, self.job.role(), cancelled)
+    }
 }
 pub(crate) fn prepare<'a>(
     root: &Path,
@@ -329,6 +339,7 @@ fn execute_diagnosed(
     cancelled: impl Fn() -> bool,
     diagnostics: Option<&mut diagnostics::FailureDiagnostics>,
 ) -> Result<JavaOutput> {
+    check_cancelled(&cancelled)?;
     let mut prepared = prepare(root, scratch_parent, job)?;
     if diagnostics.is_some() {
         prepared
@@ -341,12 +352,12 @@ fn execute_diagnosed(
         prepared.metadata.len() <= 1024 * 1024,
         "fixed metadata exceeds bound",
     )?;
-    runtime::verify(root, prepared.job.role())?;
+    runtime::verify_with_cancel(root, prepared.job.role(), &cancelled)?;
     runtime::ordinary_ancestors(scratch_parent)?;
     #[cfg(windows)]
     {
         let output = crate::windows::run_java(&prepared, &cancelled, diagnostics)?;
-        bounded(!cancelled(), "Windows Java job cancelled before acceptance")?;
+        check_cancelled(&cancelled)?;
         Ok(output)
     }
     #[cfg(not(windows))]
@@ -396,37 +407,37 @@ struct SearchReply {
     total: u64,
 }
 fn decode<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
-    serde_json::from_slice(bytes).map_err(|_| Error::Blocked("worker result schema rejected"))
+    serde_json::from_slice(bytes).map_err(|_| Error::InvalidResult("worker result schema rejected"))
 }
 pub(crate) fn validate_snapshot(snapshot: &IndexSnapshot) -> Result<()> {
-    bounded(
+    valid_result(
         snapshot.policy == DIRECTORY_POLICY,
         "index directory policy rejected",
     )?;
-    bounded(
+    valid_result(
         !snapshot.files.is_empty() && snapshot.files.len() <= INDEX_MEMBERS,
         "index member bound exceeded",
     )?;
     let mut seen = std::collections::BTreeSet::new();
     let mut bytes = 0usize;
     for file in &snapshot.files {
-        bounded(
+        valid_result(
             runtime::component(&file.name) && seen.insert(file.name.to_ascii_lowercase()),
             "index filename rejected",
         )?;
         bytes = bytes
             .checked_add(file.bytes.len())
-            .ok_or(Error::Blocked("index size overflow"))?;
-        bounded(
+            .ok_or(Error::InvalidResult("index size overflow"))?;
+        valid_result(
             file.bytes.len() <= INDEX_FILE_BYTES && bytes <= INDEX_BYTES,
             "index file/aggregate bound exceeded",
         )?;
-        bounded(
+        valid_result(
             format!("{:x}", Sha256::digest(&file.bytes)) == file.sha256,
             "index snapshot digest mismatch",
         )?;
     }
-    bounded(
+    valid_result(
         snapshot
             .files
             .iter()
@@ -435,27 +446,27 @@ pub(crate) fn validate_snapshot(snapshot: &IndexSnapshot) -> Result<()> {
     )
 }
 pub(crate) fn accept(job: &Job, bytes: Vec<u8>, files: Vec<IndexFile>) -> Result<JavaOutput> {
-    bounded(
+    limit(
         bytes.len() as u64
             <= if job.role() == Role::Parser {
                 PARSE_BYTES
             } else {
                 1024 * 1024
             },
-        "worker result exceeds recipe bound",
+        ResourceLimit::OutputBytes,
     )?;
     let index = match &job.operation {
         Operation::Parse => {
-            bounded(files.is_empty(), "unexpected parser derivative")?;
+            valid_result(files.is_empty(), "unexpected parser derivative")?;
             let result: ParseReply = decode(&bytes)?;
-            bounded(
+            valid_result(
                 result.protocol_version == 1
                     && result.job_id == job.id
                     && result.content_sha256 == format!("{:x}", Sha256::digest(&job.input))
                     && result.source_bytes == job.input.len() as u64,
                 "parser identity/content binding rejected",
             )?;
-            bounded(
+            valid_result(
                 matches!(
                     result.status.as_str(),
                     "complete" | "partial" | "unsupported" | "failed"
@@ -473,7 +484,7 @@ pub(crate) fn accept(job: &Job, bytes: Vec<u8>, files: Vec<IndexFile>) -> Result
                 "parser transport bounds rejected",
             )?;
             if job.input.starts_with(b"%PDF-") {
-                bounded(
+                valid_result(
                     result.parser == PDF_FONT_PARSER
                         && result.media_type == "application/pdf"
                         && matches!(result.status.as_str(), "partial" | "failed")
@@ -492,7 +503,7 @@ pub(crate) fn accept(job: &Job, bytes: Vec<u8>, files: Vec<IndexFile>) -> Result
             documents,
         } => {
             let result: IndexReply = decode(&bytes)?;
-            bounded(
+            valid_result(
                 result.workspace_revision == *revision
                     && result.indexed == documents.len() as u64
                     && result.directory_policy == DIRECTORY_POLICY,
@@ -508,10 +519,10 @@ pub(crate) fn accept(job: &Job, bytes: Vec<u8>, files: Vec<IndexFile>) -> Result
             Some(snapshot)
         }
         Operation::Search { snapshot } => {
-            bounded(files.is_empty(), "unexpected search derivative")?;
+            valid_result(files.is_empty(), "unexpected search derivative")?;
             let result: SearchReply = decode(&bytes)?;
             let mut ids = std::collections::BTreeSet::new();
-            bounded(
+            valid_result(
                 result.workspace_revision == snapshot.revision.to_string()
                     && result.directory_policy == DIRECTORY_POLICY
                     && result.hits.len() <= 100

@@ -1,6 +1,6 @@
 //! Complete development-runtime inventory. No worker-selected classpaths or assets.
 use super::Role;
-use crate::{Error, Result};
+use crate::{outcomes::check_cancelled, preparation::stream_exact, Error, Result};
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::{collections::BTreeMap, fs, io::Read, path::Path};
@@ -117,6 +117,14 @@ pub(super) fn read_bounded(path: &Path, maximum: u64) -> Result<Vec<u8>> {
     Ok(bytes)
 }
 pub(super) fn verify(root: &Path, expected: Role) -> Result<()> {
+    verify_with_cancel(root, expected, &|| false)
+}
+pub(super) fn verify_with_cancel(
+    root: &Path,
+    expected: Role,
+    cancelled: &impl Fn() -> bool,
+) -> Result<()> {
+    check_cancelled(cancelled)?;
     ordinary_ancestors(root)?;
     let manifest: Manifest =
         serde_json::from_slice(&read_bounded(&root.join("manifest.json"), 1024 * 1024)?)
@@ -182,10 +190,12 @@ pub(super) fn verify(root: &Path, expected: Role) -> Result<()> {
     let mut pending = vec![(root.to_path_buf(), 0)];
     let mut total = 0u64;
     while let Some((directory, depth)) = pending.pop() {
+        check_cancelled(cancelled)?;
         if depth > 16 {
             return Err(Error::Blocked("runtime depth exceeded"));
         }
         for entry in fs::read_dir(directory)? {
+            check_cancelled(cancelled)?;
             let entry = entry?;
             let path = entry.path();
             let name = path
@@ -224,27 +234,18 @@ pub(super) fn verify(root: &Path, expected: Role) -> Result<()> {
                     return Err(Error::Blocked("runtime size mismatch"));
                 }
                 let mut digest = Sha256::new();
-                let mut buffer = [0u8; 65536];
-                let mut bytes = 0u64;
-                loop {
-                    let count = source.read(&mut buffer)?;
-                    if count == 0 {
-                        break;
-                    }
-                    bytes += count as u64;
-                    if bytes > expected.bytes {
-                        return Err(Error::Blocked("runtime grew while hashing"));
-                    }
-                    digest.update(&buffer[..count]);
-                }
-                if bytes != expected.bytes || format!("{:x}", digest.finalize()) != expected.sha256
-                {
+                stream_exact(&mut source, expected.bytes, cancelled, |bytes| {
+                    digest.update(bytes);
+                    Ok(())
+                })?;
+                if format!("{:x}", digest.finalize()) != expected.sha256 {
                     return Err(Error::Blocked("runtime digest mismatch"));
                 }
                 actual_files.push(name);
             }
         }
     }
+    check_cancelled(cancelled)?;
     actual_files.sort();
     actual_directories.sort();
     if actual_files != manifest.files.keys().cloned().collect::<Vec<_>>()
@@ -253,4 +254,27 @@ pub(super) fn verify(root: &Path, expected: Role) -> Result<()> {
         return Err(Error::Blocked("runtime inventory is incomplete"));
     }
     Ok(())
+}
+
+#[cfg(windows)]
+pub(crate) fn copy_asset(
+    source: &Path,
+    destination: &Path,
+    cancelled: &impl Fn() -> bool,
+) -> Result<()> {
+    use std::io::Write;
+    check_cancelled(cancelled)?;
+    let mut source = file(source)?;
+    let expected = source.metadata()?.len();
+    if expected > 1024 * 1024 * 1024 {
+        return Err(Error::Blocked("runtime asset exceeds copy bound"));
+    }
+    let mut destination = fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(destination)?;
+    stream_exact(&mut source, expected, cancelled, |bytes| {
+        destination.write_all(bytes)?;
+        Ok(())
+    })
 }

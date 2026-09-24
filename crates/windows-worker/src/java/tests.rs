@@ -151,7 +151,7 @@ fn result_acknowledgements_cannot_publish_wrong_or_ambiguous_index() {
         br#"{"indexed":1,"indexed":1,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1"}"#,
         br#"{"indexed":1,"workspace_revision":7,"directory_policy":"lucene-10.5.1-bytebuffers-v1"} {}"#,
     ] {
-        assert!(accept(&index(), bytes.to_vec(), files()).is_err());
+        assert!(matches!(accept(&index(), bytes.to_vec(), files()), Err(Error::InvalidResult(_))));
     }
     assert!(accept(
         &index(),
@@ -292,8 +292,66 @@ fn parser_results_are_bound_to_assigned_job_and_original_bytes() {
             "content_sha256" => serde_json::json!("0".repeat(64)),
             _ => serde_json::json!(0),
         };
-        assert!(accept(&job, serde_json::to_vec(&altered).unwrap(), Vec::new()).is_err());
+        assert!(matches!(
+            accept(&job, serde_json::to_vec(&altered).unwrap(), Vec::new()),
+            Err(Error::InvalidResult(_))
+        ));
     }
+}
+
+#[test]
+fn pre_cancelled_java_execution_never_requires_runtime_or_scratch() {
+    let tree = tempfile::tempdir().unwrap();
+    let absent = tree.path().join("absent");
+    let job = Job::parse(b"synthetic".to_vec()).unwrap();
+    assert!(matches!(
+        execute(&absent, &absent, &job, || true),
+        Err(Error::Cancelled)
+    ));
+    assert!(!absent.exists());
+}
+
+#[test]
+fn runtime_inventory_cancellation_is_distinct_from_invalid_runtime() {
+    use std::cell::Cell;
+    let tree = tempfile::tempdir().unwrap();
+    let root = tree.path().canonicalize().unwrap();
+    fake_runtime(&root);
+    let job = index();
+    let prepared = prepare(&root, &root, &job).unwrap();
+    prepared
+        .verify_runtime_with_cancel(&root, &|| false)
+        .unwrap();
+    let checks = Cell::new(0);
+    let result = prepared.verify_runtime_with_cancel(&root, &|| {
+        checks.set(checks.get() + 1);
+        checks.get() >= 8
+    });
+    assert!(matches!(result, Err(Error::Cancelled)));
+    assert_eq!(checks.get(), 8);
+    prepared
+        .verify_runtime_with_cancel(&root, &|| false)
+        .unwrap();
+    fs::write(root.join("worker.jar"), b"altered").unwrap();
+    assert!(matches!(
+        prepared.verify_runtime_with_cancel(&root, &|| false),
+        Err(Error::Blocked(_))
+    ));
+}
+
+#[test]
+fn malformed_reply_and_output_quota_remain_different_outcomes() {
+    let job = Job::parse(b"synthetic".to_vec()).unwrap();
+    for bytes in [b"{".as_slice(), b"{} {}", b"{\"unknown\":true}"] {
+        assert!(matches!(
+            accept(&job, bytes.to_vec(), vec![]),
+            Err(Error::InvalidResult(_))
+        ));
+    }
+    assert!(matches!(
+        accept(&job, vec![0; PARSE_BYTES as usize + 1], vec![]),
+        Err(Error::ResourceLimit(ResourceLimit::OutputBytes))
+    ));
 }
 
 #[test]

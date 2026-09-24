@@ -750,14 +750,31 @@ mod native {
                 let error = result.err().ok_or("hostile mode unexpectedly succeeded")?;
                 let correct = matches!(
                     (mode, &error),
-                    ("timeout", Error::Blocked("worker wall-time exceeded"))
-                        | ("disk", Error::Blocked("tree disk budget exceeded"))
-                        | ("handles", Error::Blocked("worker handle budget exceeded"))
-                        | ("cancel", Error::Blocked("cancelled; worker job terminated"))
-                        | ("output-large", Error::Blocked("result exceeds bound"))
-                        | ("output-hardlink", Error::Blocked("invalid output file"))
+                    (
+                        "timeout",
+                        Error::ResourceLimit(workbench_windows_worker::ResourceLimit::WallTime)
+                    ) | (
+                        "disk",
+                        Error::ResourceLimit(workbench_windows_worker::ResourceLimit::TreeBytes)
+                    ) | (
+                        "handles",
+                        Error::ResourceLimit(workbench_windows_worker::ResourceLimit::Handles)
+                    ) | ("cancel", Error::Cancelled)
+                        | (
+                            "output-large",
+                            Error::ResourceLimit(
+                                workbench_windows_worker::ResourceLimit::OutputBytes
+                            )
+                        )
+                        | (
+                            "output-hardlink",
+                            Error::InvalidResult("invalid output file")
+                        )
                         | ("memory", Error::Exit(_))
-                        | ("named-stream", Error::Blocked("named data stream rejected"))
+                        | (
+                            "named-stream",
+                            Error::InvalidResult("named data stream rejected")
+                        )
                 );
                 report.insert(mode.into(), serde_json::json!({"rejected":true,"expected_failure":correct,"diagnostic":error.to_string(),"checkpoints":diagnostics}));
                 require(correct, "hostile mode failed for an unexpected reason")?;

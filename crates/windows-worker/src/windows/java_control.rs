@@ -73,13 +73,14 @@ pub(crate) fn file_worker_control(
     let runtime = runtime.canonicalize()?;
     prepared.request.runtime = runtime.clone();
     ordinary(parent)?;
-    let temporary = tempfile::Builder::new()
-        .prefix("file-worker-control-")
-        .tempdir_in(parent)?;
-    let root = temporary.path().canonicalize()?;
     let owner = user_sid()?;
+    let root = tempfile::Builder::new()
+        .prefix("file-worker-control-")
+        .tempdir_in(parent)?
+        .keep();
     let mut quiescent = true;
     let outcome = (|| {
+        let root = root.canonicalize()?;
         let input = root.join("input.json");
         let metadata = root.join("request.json");
         let scratch = root.join("scratch");
@@ -185,24 +186,24 @@ pub(crate) fn file_worker_control(
             drop(thread);
             let start = Instant::now();
             loop {
-                blocked(
+                limit(
                     start.elapsed() < prepared.request.wall_time,
-                    "control wall-time exceeded",
+                    ResourceLimit::WallTime,
                 )?;
-                walk(&scratch, WRITABLE_LIMIT, 512)?;
+                inspect_result_tree(&scratch, WRITABLE_LIMIT, 512)?;
                 let mut handles = 0;
                 api(
                     unsafe { GetProcessHandleCount(running.process.0, &mut handles) },
                     "ControlHandleCount",
                 )?;
-                blocked(handles <= HANDLE_LIMIT, "control handle budget exceeded")?;
+                limit(handles <= HANDLE_LIMIT, ResourceLimit::Handles)?;
                 match unsafe { WaitForSingleObject(running.process.0, 20) } {
                     WAIT_OBJECT_0 => break,
                     WAIT_TIMEOUT => {}
                     _ => return Err(Error::Blocked("control wait failed")),
                 }
             }
-            walk(&scratch, WRITABLE_LIMIT, 512)?;
+            inspect_result_tree(&scratch, WRITABLE_LIMIT, 512)?;
             let mut code = 0;
             api(
                 unsafe { GetExitCodeProcess(running.process.0, &mut code) },
@@ -264,10 +265,8 @@ pub(crate) fn file_worker_control(
             }
             Ok(output)
         })();
-        if running.stop().is_err() {
-            return Err(Error::Cleanup {
-                prior: result.err().map(Box::new),
-            });
+        if let Err(cause) = running.stop() {
+            return after_termination(result, Err(cause));
         }
         quiescent = true;
         // Both success and failure retain the final fixed checkpoint; no raw
@@ -275,11 +274,5 @@ pub(crate) fn file_worker_control(
         *diagnostics = java_diagnostics::capture_control(&scratch);
         result
     })();
-    let path = temporary.keep();
-    if !quiescent || clean(&path, &owner).is_err() {
-        return Err(Error::Cleanup {
-            prior: outcome.err().map(Box::new),
-        });
-    }
-    outcome
+    finish_assignment(quiescent, outcome, || clean(&root, &owner))
 }
