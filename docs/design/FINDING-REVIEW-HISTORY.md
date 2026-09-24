@@ -34,3 +34,8 @@ The first targeted run passed 7/8 and exposed Chromium dropping focus when the l
 These are scrolled views of the existing modal, not whole-document renders or a new editable Figma export. The final-page controls, separate decision reasons/times/IDs and scope counts were visually inspected at both widths, with no horizontal modal overflow. [The axe readout](review/finding-history/accessibility.json) records zero automated violations at both widths and retains incomplete checks for manual review. [Checksums](review/finding-history/checksums.json) bind the saved evidence and implementation files.
 
 Native platform interaction, manual screen-reader checks and a new editable Figma pagination state are outside this browser-only verification.
+
+
+## Subsequent native integration check
+
+Root's actual development Mac app at clean `04d056724c536da16e34b7f695d9ec8603168ddc` displayed all three existing synthetic finding decisions at revision 31. Exact IDs, reasons and timestamps matched the canonical records. Same-revision refresh retained an unsaved review draft; nested source inspection displayed the original CSV row 10 amount, and Escape restored both opener controls. The draft was not submitted. Normal quit left all 55 records byte-identical. Operator record SHA-256: `1c00051299c9a78de660d2deeb5b8c0b275044436b09fc7d1b2c1ac28d1f1e2d`. This adds native Tauri/WebKit interaction evidence for the three-row path; it does not extend the browser pagination/stale-writer scenarios into native or clean-installation claims. No new native Figma export was obtained.

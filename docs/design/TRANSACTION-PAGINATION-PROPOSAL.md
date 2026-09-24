@@ -232,3 +232,8 @@ pasted into native Figma frames, exported from Figma or visually approved.
 status. Native authoring, remote readback, exports and compact comparison
 remain outstanding; these sources must not be presented as completion of the
 required design-tool pass.
+
+
+## Implemented dependencies after this proposal
+
+The historical proposal above is retained as the migration rationale. Command v13 now implements [ordered source reads](../transactions/SOURCE-READS.md), used by pattern/comparison drillthrough. Command v14 and the [finding-history integration](FINDING-REVIEW-HISTORY.md) remove the finding panel's client dependency on the full decision array. Command v15 implements [whole-ledger facets](../transactions/FACETS.md), with selector UI migration still pending. The full-array default response, ledger search/page UI, citation resolution, transfer selection and compact analysis remain separate work. None of these backend increments is a new native Figma frame or a completed pagination design pass.
