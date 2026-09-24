@@ -2,6 +2,10 @@
 //! The created process remains suspended until zero capabilities, identity and Job
 //! Object assignment are verified. No errors retry without the AppContainer.
 use crate::{quote_argument, validate, Error, Output, ProbeDiagnostics, Request, Result};
+mod java_control;
+mod java_diagnostics;
+mod java_paths;
+pub(crate) use java_control::{file_worker_control, ControlDocument};
 use std::{
     collections::BTreeMap,
     ffi::{c_void, OsStr, OsString},
@@ -345,7 +349,7 @@ fn ordinary(path: &Path) -> Result<fs::Metadata> {
     )?;
     Ok(metadata)
 }
-fn reject_named_streams(path: &Path) -> Result<()> {
+pub(crate) fn reject_named_streams(path: &Path) -> Result<()> {
     // Query the opened entry itself. A path-based stream search could follow a
     // reparse point installed after inspection, even without delete sharing.
     let guard = OpenOptions::new()
@@ -925,7 +929,9 @@ fn read_output_bounded(path: &Path, limit: u64) -> Result<Vec<u8>> {
 /// Synchronous launcher. The coordinator passes `|| token.is_cancelled()` so no
 /// dependency on workbench-core or duplicate cancellation-token type is needed.
 pub fn run(request: &Request, cancelled: impl Fn() -> bool) -> Result<Output> {
-    run_assigned(request, cancelled, None)
+    run_assigned(request, cancelled, None, None, None, |scratch| {
+        read_output(&scratch.join("result.json")).map(|bytes| Output { bytes })
+    })
 }
 
 /// Same confinement policy as `run`. Only the synthetic harness requests hints.
@@ -935,14 +941,95 @@ pub fn run_probe(
     diagnostics: &mut ProbeDiagnostics,
 ) -> Result<Output> {
     *diagnostics = ProbeDiagnostics::default();
-    run_assigned(request, cancelled, Some(diagnostics))
+    run_assigned(
+        request,
+        cancelled,
+        Some(diagnostics),
+        None,
+        None,
+        |scratch| read_output(&scratch.join("result.json")).map(|bytes| Output { bytes }),
+    )
 }
 
-fn run_assigned(
+pub(crate) fn run_java(
+    prepared: &crate::java::Prepared<'_>,
+    cancelled: impl Fn() -> bool,
+    diagnostics: Option<&mut crate::java::diagnostics::FailureDiagnostics>,
+) -> Result<crate::java::JavaOutput> {
+    run_assigned(
+        &prepared.request,
+        cancelled,
+        None,
+        Some(prepared),
+        diagnostics,
+        |scratch| {
+            let bytes = read_output_bounded(&scratch.join("result.json"), prepared.output_limit())?;
+            let files = if prepared.build_index() {
+                collect_index(&scratch.join("index"))?
+            } else {
+                Vec::new()
+            };
+            crate::java::accept(prepared.job, bytes, files)
+        },
+    )
+}
+
+/// Same staged immutable files and process policy, with raw bytes returned only
+/// to this crate's synthetic development harness for its closed predicate check.
+pub(crate) fn run_java_probe(
+    prepared: &crate::java::Prepared<'_>,
+    diagnostics: &mut crate::java::diagnostics::FailureDiagnostics,
+) -> Result<Output> {
+    run_assigned(
+        &prepared.request,
+        || false,
+        None,
+        Some(prepared),
+        Some(diagnostics),
+        |scratch| read_output(&scratch.join("result.json")).map(|bytes| Output { bytes }),
+    )
+}
+
+fn collect_index(path: &Path) -> Result<Vec<crate::java::IndexFile>> {
+    use sha2::{Digest, Sha256};
+    let _pinned = pin_directory(path)?;
+    let mut files = Vec::new();
+    for entry in walk(
+        path,
+        crate::java::INDEX_BYTES as u64,
+        crate::java::INDEX_MEMBERS + 1,
+    )? {
+        if entry == path {
+            continue;
+        }
+        blocked(
+            entry.parent() == Some(path) && ordinary(&entry)?.is_file(),
+            "index must contain only flat ordinary files",
+        )?;
+        let name = entry
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or(Error::Blocked("invalid index name"))?
+            .to_owned();
+        let bytes = read_output_bounded(&entry, crate::java::INDEX_FILE_BYTES as u64)?;
+        files.push(crate::java::IndexFile {
+            name,
+            sha256: format!("{:x}", Sha256::digest(&bytes)),
+            bytes,
+        });
+    }
+    files.sort_by(|a, b| a.name.cmp(&b.name));
+    Ok(files)
+}
+
+fn run_assigned<T>(
     request: &Request,
     cancelled: impl Fn() -> bool,
     diagnostics: Option<&mut ProbeDiagnostics>,
-) -> Result<Output> {
+    java: Option<&crate::java::Prepared<'_>>,
+    java_failure: Option<&mut crate::java::diagnostics::FailureDiagnostics>,
+    accept: impl FnOnce(&Path) -> Result<T>,
+) -> Result<T> {
     validate(request)?;
     blocked(!cancelled(), "cancelled before launch")?;
     ordinary(&request.scratch_parent)?;
@@ -974,6 +1061,9 @@ fn run_assigned(
                 fs::copy(&entry, &destination)?;
             }
         }
+        if let Some(prepared) = java {
+            prepared.verify_runtime(&runtime)?;
+        }
         for entry in walk(&runtime, 1024 * 1024 * 1024, 10000)? {
             acl(&entry, &owner, Some((&sid, false)))?;
         }
@@ -983,20 +1073,52 @@ fn run_assigned(
         let scratch = root.join("scratch");
         fs::create_dir(&scratch)?;
         acl(&scratch, &owner, Some((&sid, true)))?;
+        let metadata = root.join("request.json");
+        let index_snapshot = root.join("index");
+        if let Some(prepared) = java {
+            fs::write(&metadata, &prepared.metadata)?;
+            acl(&metadata, &owner, Some((&sid, false)))?;
+            if prepared.build_index() {
+                fs::create_dir(scratch.join("index"))?;
+            }
+            if let Some(snapshot) = prepared.snapshot() {
+                crate::java::validate_snapshot(snapshot)?;
+                fs::create_dir(&index_snapshot)?;
+                acl(&index_snapshot, &owner, Some((&sid, false)))?;
+                for file in &snapshot.files {
+                    let path = index_snapshot.join(&file.name);
+                    fs::write(&path, &file.bytes)?;
+                    acl(&path, &owner, Some((&sid, false)))?;
+                }
+            }
+        }
         let executable = runtime.join(&request.executable);
         blocked(
             ordinary(&executable)?.is_file(),
             "missing staged executable",
         )?;
         let path_text = |path: &Path| {
-            path.to_str()
-                .map(str::to_owned)
-                .ok_or(Error::Blocked("invalid UTF-16 path"))
+            if java.is_some() {
+                java_paths::launch_text(path)
+            } else {
+                path.to_str()
+                    .map(str::to_owned)
+                    .ok_or(Error::Blocked("invalid UTF-16 path"))
+            }
         };
         let replacements = [
             ("$EW_INPUT", path_text(&input)?),
             ("$EW_SCRATCH", path_text(&scratch)?),
             ("$EW_RUNTIME", path_text(&runtime)?),
+            ("$EW_REQUEST", path_text(&metadata)?),
+            (
+                "$EW_INDEX",
+                if java.is_none() || java.is_some_and(|prepared| prepared.snapshot().is_some()) {
+                    path_text(&index_snapshot)?
+                } else {
+                    String::new()
+                },
+            ),
         ];
         let mut args = vec![path_text(&executable)?];
         args.extend(request.arguments.iter().map(|arg| {
@@ -1016,7 +1138,8 @@ fn run_assigned(
             "command line exceeds bound",
         )?;
         let mut command = wide(command)?;
-        let environment = worker_environment(&os_environment()?, &scratch)?;
+        let scratch_text = path_text(&scratch)?;
+        let environment = worker_environment(&os_environment()?, Path::new(&scratch_text))?;
         let capabilities = SECURITY_CAPABILITIES {
             AppContainerSid: profile.sid,
             Capabilities: null_mut(),
@@ -1032,8 +1155,8 @@ fn run_assigned(
         startup.lpAttributeList = attributes.ptr();
         let job = create_job(request.memory_bytes)?;
         let mut process: PROCESS_INFORMATION = unsafe { zeroed() };
-        let executable = wide(executable)?;
-        let current_dir = wide(&scratch)?;
+        let executable = wide(path_text(&executable)?)?;
+        let current_dir = wide(scratch_text)?;
         // File IPC needs neither inherited handles nor an attached console.
         // CREATE_NO_WINDOW still requests a windowless console; DETACHED_PROCESS
         // avoids that startup dependency without permitting helper children.
@@ -1122,7 +1245,30 @@ fn run_assigned(
             if code != 0 {
                 return Err(Error::Exit(code));
             }
-            read_output(&scratch.join("result.json")).map(|bytes| Output { bytes })
+            if let Some(prepared) = java {
+                blocked(
+                    read_output_bounded(&input, 16 * 1024 * 1024)? == request.input,
+                    "assigned Java input changed",
+                )?;
+                blocked(
+                    read_output_bounded(&metadata, 1024 * 1024)? == prepared.metadata,
+                    "assigned Java request changed",
+                )?;
+                if let Some(snapshot) = prepared.snapshot() {
+                    let actual = collect_index(&index_snapshot)?;
+                    blocked(
+                        actual.len() == snapshot.files.len()
+                            && actual.iter().all(|a| {
+                                snapshot
+                                    .files
+                                    .iter()
+                                    .any(|b| a.name == b.name && a.sha256 == b.sha256)
+                            }),
+                        "assigned search snapshot changed",
+                    )?;
+                }
+            }
+            accept(&scratch)
         })();
         if running.stop().is_err() {
             return Err(Error::Cleanup {
@@ -1130,6 +1276,14 @@ fn run_assigned(
             });
         }
         quiescent = true;
+        if operation.is_err() {
+            if let Some(diagnostics) = java_failure {
+                // Only the synthetic Java harness requests this. Do not inspect
+                // while termination is unacknowledged, or replace the failure
+                // with diagnostic success/failure. Cleanup still governs return.
+                *diagnostics = java_diagnostics::capture(&scratch, &profile.folder);
+            }
+        }
         operation
     })();
     let path = temporary.keep();
