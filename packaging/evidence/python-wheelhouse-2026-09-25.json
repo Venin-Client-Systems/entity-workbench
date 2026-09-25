@@ -1,0 +1,372 @@
+{
+  "actual_stage": {
+    "exit_code": 0,
+    "report": {
+      "archives": 58,
+      "complete_release": false,
+      "expanded_bytes": 319470877,
+      "failure": null,
+      "files": 339,
+      "installation_state": "archives-only",
+      "manifest_sha256": "171739e9a2d0ae7eb58cb52e29d0d5c35d5e97a4e694482cc91d9f29a4065ea0",
+      "package_code_executed": false,
+      "preceding_failure": null,
+      "runtime_components_satisfied": [],
+      "schema_version": 1,
+      "selection_sha256": "983ac846a79e4985218b3f2582445abeac18de90fc3108c06fcb29b60928580e",
+      "staged": true,
+      "unmet_checks": [
+        "archives-not-installed",
+        "native-loader-closure-unverified",
+        "runtime-imports-unverified",
+        "entry-points-and-pth-unreviewed",
+        "worker-confinement-unverified",
+        "canonical-worker-not-enabled",
+        "complete-notices-unverified",
+        "minimum-supported-os-not-established"
+      ]
+    },
+    "report_sha256": "4547d69d69ff076d3a764a755208fff99817f7954b2a4c84eb5dbe72de4482b7"
+  },
+  "complete_release": false,
+  "downloads": {
+    "all_verified_against_reviewed_plan": true,
+    "artifacts": 58,
+    "bytes": 94887529,
+    "input_code_executed": false,
+    "origin": "https://files.pythonhosted.org",
+    "receipt_sha256": "f00cdeb606e3b897230b230d108f3ae2ed358da0f2cbeaff70ee9b890f113948"
+  },
+  "independent_file_verification": {
+    "report": {
+      "archives": 58,
+      "bytes": 97089012,
+      "complete_release": false,
+      "files": 339,
+      "installation_state": "archives-only",
+      "manifest_sha256": "171739e9a2d0ae7eb58cb52e29d0d5c35d5e97a4e694482cc91d9f29a4065ea0",
+      "notice_files": 105,
+      "package_code_executed": false,
+      "primary_metadata_files": 174,
+      "runtime_components_satisfied": [],
+      "verified": true
+    },
+    "report_sha256": "5499efe5e28d3e8233f2fd0349ea43dbf5a633e30c6c740a3480ad624fc60ba6"
+  },
+  "issue": "EW-07/#11",
+  "limitations": [
+    "Executed implementation was uncommitted and is bound by file digests; this is not clean-commit release evidence.",
+    "Archives and review material only; no wheel installation, imports, entry-point processing or runnable engine activation.",
+    "Complete notice sufficiency, native loader closure, relocation, confinement, canonical integration and supported OS remain unverified.",
+    "Nested vendored metadata is preserved; only exact root metadata identifies the selected distribution.",
+    "RECORD is retained but is not used as an installation plan or proof of safe installation.",
+    "POSIX tests ran on the development Mac; actual Windows execution is not claimed."
+  ],
+  "recorded_date_utc": "2026-09-25",
+  "release_gate_evidence": false,
+  "schema_version": 1,
+  "scope": "Offline verification and retention of reviewed wheel archives only",
+  "selection": {
+    "closure_command": [
+      "uv",
+      "tree",
+      "--project",
+      "workers/python",
+      "--locked",
+      "--offline",
+      "--no-python-downloads",
+      "--no-dev",
+      "--python-platform",
+      "aarch64-apple-darwin",
+      "--python-version",
+      "3.13.15",
+      "--format",
+      "json"
+    ],
+    "closure_method": "Reachability through uv-resolved dependency edges; no marker evaluation implemented.",
+    "minimum_os_support_established": false,
+    "path": "packaging/plans/python-macos-arm64-wheels.v1.json",
+    "production_packages": [
+      {
+        "name": "altair",
+        "version": "6.3.0"
+      },
+      {
+        "name": "annotated-doc",
+        "version": "0.0.5"
+      },
+      {
+        "name": "annotated-types",
+        "version": "0.8.0"
+      },
+      {
+        "name": "attrs",
+        "version": "26.1.0"
+      },
+      {
+        "name": "blis",
+        "version": "1.3.3"
+      },
+      {
+        "name": "catalogue",
+        "version": "2.0.10"
+      },
+      {
+        "name": "certifi",
+        "version": "2026.7.22"
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.1"
+      },
+      {
+        "name": "click",
+        "version": "8.3.1"
+      },
+      {
+        "name": "cloudpathlib",
+        "version": "0.25.0"
+      },
+      {
+        "name": "confection",
+        "version": "0.1.5"
+      },
+      {
+        "name": "cymem",
+        "version": "2.0.13"
+      },
+      {
+        "name": "duckdb",
+        "version": "1.5.0"
+      },
+      {
+        "name": "idna",
+        "version": "3.20"
+      },
+      {
+        "name": "igraph",
+        "version": "1.0.0"
+      },
+      {
+        "name": "jinja2",
+        "version": "3.1.6"
+      },
+      {
+        "name": "jsonschema",
+        "version": "4.26.0"
+      },
+      {
+        "name": "jsonschema-specifications",
+        "version": "2025.9.1"
+      },
+      {
+        "name": "markdown-it-py",
+        "version": "4.2.0"
+      },
+      {
+        "name": "markupsafe",
+        "version": "3.0.3"
+      },
+      {
+        "name": "mdurl",
+        "version": "0.1.2"
+      },
+      {
+        "name": "murmurhash",
+        "version": "1.0.15"
+      },
+      {
+        "name": "narwhals",
+        "version": "2.26.0"
+      },
+      {
+        "name": "networkx",
+        "version": "3.6.1"
+      },
+      {
+        "name": "numpy",
+        "version": "2.5.3"
+      },
+      {
+        "name": "packaging",
+        "version": "26.3"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.6"
+      },
+      {
+        "name": "preshed",
+        "version": "3.0.13"
+      },
+      {
+        "name": "pyarrow",
+        "version": "23.0.1"
+      },
+      {
+        "name": "pydantic",
+        "version": "2.13.5"
+      },
+      {
+        "name": "pydantic-core",
+        "version": "2.46.5"
+      },
+      {
+        "name": "pygments",
+        "version": "2.21.0"
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0"
+      },
+      {
+        "name": "referencing",
+        "version": "0.37.0"
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2"
+      },
+      {
+        "name": "rich",
+        "version": "15.0.0"
+      },
+      {
+        "name": "rpds-py",
+        "version": "2026.6.3"
+      },
+      {
+        "name": "setuptools",
+        "version": "84.0.0"
+      },
+      {
+        "name": "shellingham",
+        "version": "1.5.4"
+      },
+      {
+        "name": "six",
+        "version": "1.17.0"
+      },
+      {
+        "name": "smart-open",
+        "version": "7.7.1"
+      },
+      {
+        "name": "spacy",
+        "version": "3.8.11"
+      },
+      {
+        "name": "spacy-legacy",
+        "version": "3.0.12"
+      },
+      {
+        "name": "spacy-loggers",
+        "version": "1.0.5"
+      },
+      {
+        "name": "splink",
+        "version": "4.0.12"
+      },
+      {
+        "name": "sqlglot",
+        "version": "30.18.0"
+      },
+      {
+        "name": "srsly",
+        "version": "2.5.3"
+      },
+      {
+        "name": "texttable",
+        "version": "1.7.0"
+      },
+      {
+        "name": "thinc",
+        "version": "8.3.11"
+      },
+      {
+        "name": "tqdm",
+        "version": "4.70.1"
+      },
+      {
+        "name": "typer",
+        "version": "0.27.2"
+      },
+      {
+        "name": "typer-slim",
+        "version": "0.24.0"
+      },
+      {
+        "name": "typing-extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "typing-inspection",
+        "version": "0.4.4"
+      },
+      {
+        "name": "urllib3",
+        "version": "2.8.0"
+      },
+      {
+        "name": "wasabi",
+        "version": "1.1.3"
+      },
+      {
+        "name": "weasel",
+        "version": "0.4.3"
+      },
+      {
+        "name": "wrapt",
+        "version": "2.4.1"
+      }
+    ],
+    "pyproject_sha256": "a6b11f5ca5d427d963be6f63dd62c4c40f602c14e3252447a04be109de0b5375",
+    "raw_local_tree_sha256": "af9b6b484e26413c27d4632f1657d8f319bc77fb78aaf4d503e031e365ec0ddf",
+    "resolver_version": "uv 0.11.32",
+    "sha256": "983ac846a79e4985218b3f2582445abeac18de90fc3108c06fcb29b60928580e",
+    "uv_lock_sha256": "5fe63f3b0597df585840b9e6757c87a76754b52aa1570cb401cb48113ac81eb4",
+    "wheel_selection_macos_context": "12.0"
+  },
+  "source": {
+    "base_commit": "98b395f116b9e238f7f60655a90f02c953e48049",
+    "executed_file_sha256": {
+      "packaging/PYTHON-WHEELHOUSE.md": "f08ec51cfcf71d92910dcb6b8a9be0196b09fc34f2952fac9789e07063c347a0",
+      "packaging/plans/python-macos-arm64-wheels.v1.json": "983ac846a79e4985218b3f2582445abeac18de90fc3108c06fcb29b60928580e",
+      "scripts/stage_python_runtime.py": "27e73847781debd137bb1b1052c502dae556d4f5827be8032690e243d7db808a",
+      "scripts/stage_python_wheelhouse.py": "4710287d53efa5e1f4af71419e7a2e6b8fd5cce6cdebd027f82e8fd141716d2b",
+      "scripts/tests/test_python_wheelhouse_staging.py": "4e3a9905926ecd3efe91cb4efaffd1c8a9630e1877a07c0872eb541cb4ef2705",
+      "scripts/verify_runtime_bundle.py": "0e72dd2766c432e23093267ce2e831829f2a1b883df1cc581d16aaf54d27f327"
+    },
+    "source_clean_when_run": false
+  },
+  "synthetic_tests": [
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.14.2",
+      "log_sha256": "1cf7bbb78e4ed88d3f20f650b4ec2df17a1f84520dbdfe557462a6c12b4cd045",
+      "optimized": false,
+      "tests": 19
+    },
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.14.2",
+      "log_sha256": "2081698322f31198065c2be9b003bd69cfeefa41e0490e2a6aa5f3cdcd11581e",
+      "optimized": true,
+      "tests": 19
+    },
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.13.11",
+      "log_sha256": "0e8f0e349fa60ac5c29a1039fd29df4209927c1a9ac3a236556e00360873c254",
+      "optimized": false,
+      "tests": 19
+    },
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.13.11",
+      "log_sha256": "a63866a9bebcb56211b00abdf245fc677da7e166b34385d5c458756d3d1c9ae3",
+      "optimized": true,
+      "tests": 19
+    }
+  ]
+}
