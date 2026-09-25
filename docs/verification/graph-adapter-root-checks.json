@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "source_commit": "bd3866cec12932cd723b36b471b50516324fc2ae",
+  "adapter_source_commit": "3b51bee1ccc9a03cc4466ae0c1ba1dcd08237af6",
+  "candidate_executed": false,
+  "metadata_file_count": 22,
+  "upstream_source_file_count": 2,
+  "all_exact_hashes_match": true,
+  "backend_info_entries": 0,
+  "only_backend_entry": "nx_loopback",
+  "static_receipt_sha256": "2d34983d5fb30f47e258740dc64302dec3733540c4d97d281b9eff7794924702",
+  "rust_graph_cases_passed": 16,
+  "stdlib_cases_passed": 13,
+  "logs": {
+    "rust": {
+      "bytes": 2202,
+      "sha256": "3d0896cde82ab4adae4d3e841c13f3ee91ae065879708f24e05a18e87c3fa036"
+    },
+    "python": {
+      "bytes": 2365,
+      "sha256": "81e6a0623e5b7bd4c171a87643c2340db92419e41f37c2ffd6379384877fa0fa"
+    }
+  }
+}
