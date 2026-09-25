@@ -84,8 +84,18 @@ fn inspection(
     state: Option<&LaneState>,
     id: &str,
 ) -> Result<CollectionRunInspection> {
-    let mut result = workspace.inspect_collection_run(id)?;
+    let result = workspace.inspect_collection_run(id)?;
     let available = availability(shared, workspace, lane, state)?;
+    decorate_inspection(shared, lane, state, result, available)
+}
+fn decorate_inspection(
+    shared: &Shared,
+    lane: Option<&CollectionLane>,
+    state: Option<&LaneState>,
+    mut result: CollectionRunInspection,
+    available: CollectionAvailability,
+) -> Result<CollectionRunInspection> {
+    let id = result.run.id.as_str();
     result.availability = available;
     let matching = matching_run(&result.run, lane);
     let current = state.filter(|s| {
@@ -146,6 +156,13 @@ impl JobCoordinator {
     ) -> Result<Value> {
         if let Command::PreviewCollection { input } = command {
             return Ok(serde_json::to_value(preview(input)?)?);
+        }
+        if let Command::CancelCollection {
+            job_id,
+            expected_generation,
+        } = command
+        {
+            return self.dispatch_prepared_collection_cancel(&job_id, expected_generation);
         }
         let mut workspace = self
             .shared
@@ -218,36 +235,6 @@ impl JobCoordinator {
                                 .id
                         }
                     }
-                    Command::CancelCollection {
-                        job_id,
-                        expected_generation,
-                    } => {
-                        let current =
-                            inspection(&self.shared, &workspace, lane, state.as_deref(), &job_id)?;
-                        crate::require(
-                            current.run.generation == expected_generation,
-                            "Collection generation changed",
-                        )?;
-                        // Repeated acknowledgement is safe only on this enabled v4 lane.
-                        crate::require(
-                            matching_run(&current.run, lane)
-                                && executable(available)
-                                && (current.controls.can_cancel
-                                    || current.run.cancellation_requested),
-                            "Collection cancellation is unavailable",
-                        )?;
-                        workspace.cancel_durable_collection(&job_id, expected_generation, now())?;
-                        if let Some(state) = state.as_deref() {
-                            if state.status.job_id.as_deref() == Some(&job_id)
-                                && state.status.generation == Some(expected_generation)
-                            {
-                                if let Some(token) = &state.active {
-                                    token.cancel();
-                                }
-                            }
-                        }
-                        job_id
-                    }
                     Command::ResumeCollection {
                         job_id,
                         expected_generation,
@@ -299,6 +286,93 @@ impl JobCoordinator {
             }
         }
     }
+    fn dispatch_prepared_collection_cancel(&self, job_id: &str, generation: u32) -> Result<Value> {
+        let lane = self
+            .shared
+            .collection
+            .as_deref()
+            .ok_or_else(|| Error::Blocked("Collection cancellation is unavailable".into()))?;
+        let capture = {
+            let workspace = self
+                .shared
+                .workspace
+                .lock()
+                .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+            let state = lane
+                .state
+                .lock()
+                .map_err(|_| Error::Blocked("Collection lane is unavailable".into()))?;
+            crate::require(
+                executable(availability(
+                    &self.shared,
+                    &workspace,
+                    Some(lane),
+                    Some(&state),
+                )?),
+                "Collection cancellation is unavailable",
+            )?;
+            workspace.capture_collection_cancellation(
+                job_id,
+                generation,
+                &self.shared.ownership,
+                lane.protocol,
+            )?
+        };
+        #[cfg(test)]
+        cancel_hooks::before_prepare();
+        // No workspace, lane lock or SQLite transaction survives into this replay.
+        let prepared = capture.prepare()?;
+        let mut workspace = self
+            .shared
+            .workspace
+            .lock()
+            .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+        let state = lane
+            .state
+            .lock()
+            .map_err(|_| Error::Blocked("Collection lane is unavailable".into()))?;
+        crate::require(
+            executable(availability(
+                &self.shared,
+                &workspace,
+                Some(lane),
+                Some(&state),
+            )?),
+            "Collection cancellation is unavailable",
+        )?;
+        let ready =
+            workspace.ready_collection_cancellation(prepared, &self.shared.ownership, now())?;
+        let available = availability(&self.shared, &workspace, Some(lane), Some(&state))?;
+        crate::require(
+            executable(available),
+            "Collection cancellation is unavailable",
+        )?;
+        let response = ready.inspection()?;
+        #[cfg(test)]
+        let response = cancel_hooks::acknowledgement(response);
+        let response =
+            decorate_inspection(&self.shared, Some(lane), Some(&state), response, available)?;
+        // All fallible response work precedes the canonical write. A successful
+        // write is followed only by current-token signalling, wakes and return.
+        let value = serde_json::to_value(response)?;
+        crate::require(
+            !self.shared.stopping.load(Ordering::Acquire),
+            "Collection coordinator is stopping",
+        )?;
+        workspace.commit_collection_cancellation(ready, &self.shared.ownership)?;
+        if state.status.job_id.as_deref() == Some(job_id)
+            && state.status.generation == Some(generation)
+        {
+            if let Some(token) = &state.active {
+                token.cancel();
+            }
+        }
+        drop(state);
+        drop(workspace);
+        lane.wake.notify_all();
+        self.shared.wake.notify_all();
+        Ok(value)
+    }
     #[cfg(test)]
     fn with_public_collection_executor(
         workspace: Workspace,
@@ -316,3 +390,29 @@ impl JobCoordinator {
 #[cfg(test)]
 #[path = "coordinator_collection_api_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+mod cancel_hooks {
+    use super::*;
+    use std::cell::RefCell;
+    type AckHook = dyn Fn(&mut CollectionRunInspection);
+    thread_local! {
+        pub(super) static PREPARE: RefCell<Option<Box<dyn Fn()>>> = RefCell::new(None);
+        pub(super) static ACK: RefCell<Option<Box<AckHook>>> = RefCell::new(None);
+    }
+    pub(super) fn before_prepare() {
+        PREPARE.with(|hook| {
+            if let Some(hook) = hook.borrow_mut().take() {
+                hook();
+            }
+        });
+    }
+    pub(super) fn acknowledgement(mut result: CollectionRunInspection) -> CollectionRunInspection {
+        ACK.with(|hook| {
+            if let Some(hook) = hook.borrow_mut().take() {
+                hook(&mut result);
+            }
+        });
+        result
+    }
+}

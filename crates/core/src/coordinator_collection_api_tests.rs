@@ -710,3 +710,234 @@ fn v4_shutdown_joins_paused_preparation_before_releasing_owner_and_retains_exact
     let next = reopened.collection_ownership().unwrap();
     next.release().unwrap();
 }
+
+struct CancellationFixture {
+    temp: tempfile::TempDir,
+    coordinator: Arc<JobCoordinator>,
+    job: String,
+    saw_committed_cancel: Arc<AtomicBool>,
+}
+impl CancellationFixture {
+    fn history() -> Self {
+        let (temp, w) = fixture();
+        let entered = Arc::new(AtomicBool::new(false));
+        let marker = entered.clone();
+        let saw_committed_cancel = Arc::new(AtomicBool::new(false));
+        let observed = saw_committed_cancel.clone();
+        let db = temp.path().join("case/workspace.db");
+        let c = Arc::new(JobCoordinator::with_public_collection_executor(
+            w, no_documents(), Arc::new(move |ticket, input, window, pacing, token| {
+                if ticket.sequence < 2 {
+                    let bytes = if ticket.sequence == 0 { response(0) } else {
+                        let body = b"<p>Retained HTML</p><a href='/next'>Next</a>";
+                        let mut bytes = format!("HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\n\r\n", body.len()).into_bytes();
+                        bytes.extend(body); bytes
+                    };
+                    return canonical_tls(ticket, input, window, pacing, token, bytes, false);
+                }
+                marker.store(true, Ordering::Release);
+                until(|| token.is_cancelled());
+                let conn = rusqlite::Connection::open(&db).unwrap();
+                let cancelled: bool = conn.query_row("SELECT json_extract(body,'$.checkpoint.cancellation_requested') FROM records WHERE kind='collection_run' AND id=?1", [&ticket.run.job_id], |row| row.get(0)).unwrap();
+                observed.store(cancelled, Ordering::Release);
+                Observation {
+                    outcome: Outcome::Stopped { reason: StopReason::Cancelled, head: None },
+                    phase: Phase::Dns, elapsed_milliseconds: 1, observed_wall_ms: now(),
+                    resolved: None, resolver_uncertainty: None, stop_observed: Some(StopReason::Cancelled), locally_quiescent: true,
+                }
+            }),
+        ).unwrap());
+        let job = queue(&c, &key()).run.id;
+        until(|| entered.load(Ordering::Acquire));
+        Self {
+            temp,
+            coordinator: c,
+            job,
+            saw_committed_cancel,
+        }
+    }
+    fn cancel(&self) -> Result<Value> {
+        self.coordinator.dispatch(Command::CancelCollection {
+            job_id: self.job.clone(),
+            expected_generation: 1,
+        })
+    }
+    fn token_cancelled(&self) -> bool {
+        self.coordinator
+            .shared
+            .collection
+            .as_ref()
+            .unwrap()
+            .state
+            .lock()
+            .unwrap()
+            .active
+            .as_ref()
+            .unwrap()
+            .is_cancelled()
+    }
+    fn revision(&self) -> u64 {
+        self.coordinator
+            .shared
+            .workspace
+            .lock()
+            .unwrap()
+            .revision()
+            .unwrap()
+    }
+}
+#[test]
+fn public_prepared_cancel_replays_once_outside_locks_and_signals_only_after_commit() {
+    let f = CancellationFixture::history();
+    let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let c = f.coordinator.clone();
+    let job = f.job.clone();
+    let cancel = thread::spawn(move || {
+        cancel_hooks::PREPARE.with(|hook| {
+            *hook.borrow_mut() = Some(Box::new(move || {
+                entered_tx.send(()).unwrap();
+                release_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+            }))
+        });
+        let before = crate::collection_machine::replay_calls();
+        let response = c
+            .dispatch(Command::CancelCollection {
+                job_id: job,
+                expected_generation: 1,
+            })
+            .unwrap();
+        (response, crate::collection_machine::replay_calls() - before)
+    });
+    entered_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+    // This is a paused-before-replay access check, not a duration claim.
+    {
+        let mut workspace = f.coordinator.shared.workspace.try_lock().unwrap();
+        let _lane = f
+            .coordinator
+            .shared
+            .collection
+            .as_ref()
+            .unwrap()
+            .state
+            .try_lock()
+            .unwrap();
+        workspace
+            .import("other.txt", b"Independent write while Cancel is preparing")
+            .unwrap();
+    }
+    assert!(!f.token_cancelled());
+    let revision = f.revision();
+    release_tx.send(()).unwrap();
+    let (response, replays) = cancel.join().unwrap();
+    let result: CollectionRunInspection = serde_json::from_value(response).unwrap();
+    assert_eq!(replays, 1);
+    assert_eq!(result.workspace_revision, revision + 1);
+    assert_eq!(result.run.state, CollectionState::Running);
+    assert!(result.run.cancellation_requested);
+    assert!(!result.controls.can_cancel && !result.controls.can_resume);
+    until(|| inspect(&f.coordinator, &f.job).run.state == CollectionState::Cancelled);
+    assert!(f.saw_committed_cancel.load(Ordering::Acquire));
+    assert_eq!(inspect(&f.coordinator, &f.job).run.requests_used, 3);
+    f.coordinator.shutdown().unwrap();
+}
+#[test]
+fn public_prepared_cancel_preflight_and_failed_publication_never_signal() {
+    for oversized in [false, true] {
+        let f = CancellationFixture::history();
+        let before = inspect(&f.coordinator, &f.job);
+        let revision = f.revision();
+        if oversized {
+            cancel_hooks::ACK.with(|hook| {
+                *hook.borrow_mut() = Some(Box::new(|response| {
+                    response.limitations.push("x".repeat(RESPONSE_BYTES));
+                }))
+            });
+        } else {
+            sql(&f.temp, "CREATE TRIGGER refuse_cancel BEFORE UPDATE ON records WHEN NEW.kind='collection_run' BEGIN SELECT RAISE(ABORT,'fixed cancellation refusal'); END;");
+        }
+        let failure = f.cancel().unwrap_err().to_string();
+        assert!(
+            failure.contains(if oversized {
+                "response bound"
+            } else {
+                "fixed cancellation refusal"
+            }),
+            "{failure}"
+        );
+        assert!(!f.token_cancelled());
+        assert_eq!(f.revision(), revision);
+        assert_eq!(
+            serde_json::to_value(inspect(&f.coordinator, &f.job)).unwrap(),
+            serde_json::to_value(before).unwrap()
+        );
+        if !oversized {
+            sql(&f.temp, "DROP TRIGGER refuse_cancel;");
+        }
+        f.cancel().unwrap();
+        until(|| inspect(&f.coordinator, &f.job).run.state == CollectionState::Cancelled);
+        f.coordinator.shutdown().unwrap();
+    }
+}
+#[test]
+fn public_prepared_cancel_accepts_exact_cancel_suffix_without_second_write() {
+    let f = CancellationFixture::history();
+    let c = f.coordinator.clone();
+    let job = f.job.clone();
+    cancel_hooks::PREPARE.with(|hook| {
+        *hook.borrow_mut() = Some(Box::new(move || {
+            c.shared
+                .workspace
+                .lock()
+                .unwrap()
+                .cancel_durable_collection(&job, 1, now())
+                .unwrap();
+        }))
+    });
+    let before = f.revision();
+    let value: CollectionRunInspection = serde_json::from_value(f.cancel().unwrap()).unwrap();
+    assert_eq!(value.workspace_revision, before + 1);
+    assert!(value.run.cancellation_requested);
+    until(|| inspect(&f.coordinator, &f.job).run.state == CollectionState::Cancelled);
+    assert!(f.saw_committed_cancel.load(Ordering::Acquire));
+    f.coordinator.shutdown().unwrap();
+}
+#[test]
+fn public_prepared_cancel_rejects_drift_or_quarantine_without_signalling_current_token() {
+    for scenario in 0..3 {
+        let f = CancellationFixture::history();
+        let c = f.coordinator.clone();
+        cancel_hooks::PREPARE.with(|hook| {
+            *hook.borrow_mut() = Some(Box::new(move || {
+                if scenario == 1 {
+                    c.shared.ownership.quarantine();
+                } else if scenario == 2 {
+                    c.shared.stopping.store(true, Ordering::Release);
+                } else {
+                    c.shared
+                        .workspace
+                        .lock()
+                        .unwrap()
+                        .recover_collections(
+                            &c.shared.ownership,
+                            now(),
+                            Some(CollectionProtocol::SyntheticV4),
+                        )
+                        .unwrap();
+                }
+            }))
+        });
+        let result = f.cancel();
+        assert!(result.is_err());
+        assert!(!f.token_cancelled());
+        let workspace = f.coordinator.shared.workspace.lock().unwrap();
+        let stored = workspace.inspect_durable_collection(&f.job).unwrap();
+        assert!(!stored.checkpoint.cancellation_requested);
+        drop(workspace);
+        // Test cleanup follows the ordinary stop path; this is not another Cancel.
+        let _ = f.coordinator.shutdown();
+        if scenario == 1 {
+            assert!(f.coordinator.shared.ownership.publication_held());
+        }
+    }
+}

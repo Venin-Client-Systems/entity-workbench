@@ -738,3 +738,6 @@ mod replay;
 
 #[path = "collection_reservation.rs"]
 mod reservation;
+
+#[path = "collection_cancellation.rs"]
+mod cancellation;

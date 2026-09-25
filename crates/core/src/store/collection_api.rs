@@ -93,55 +93,60 @@ pub(crate) fn response_bound(value: &impl Serialize) -> Result<()> {
         "Collection response exceeds the 2 MiB bound; no partial response returned",
     )
 }
+pub(super) fn project_inspection(
+    job: &DurableCollectionJob,
+    revision: u64,
+) -> Result<CollectionRunInspection> {
+    let limitations = vec![
+        "Collection records access facts, not permission, relevance, source independence or accepted observations.".into(),
+        "Static text is unreviewed; original response bytes remain authoritative. No accepted page-region anchors are created.".into(),
+        "Identical original bytes share evidence metadata. Later supported media interpretation may replace its current text; this is not an immutable web-text derivative.".into(),
+        "V4 HTML interpretation has bounded parser admission and extraction. A limit retains the complete original/receipt with quota status and no partial derivative; historical over-limit interpretation is refused without rewriting.".into(),
+        "Historical v1/v2/v3 specimens remain read-only and cannot resume through public controls.".into(),
+    ];
+    let requests = job
+        .checkpoint
+        .requests
+        .iter()
+        .map(|r| CollectionRequestView {
+            sequence: r.sequence,
+            generation: r.generation,
+            entry: r.entry.clone(),
+            reserved_at_ms: r.reserved_at_ms,
+            original: original(&r.progress),
+            progress: r.progress.clone(),
+        })
+        .collect();
+    let response = CollectionRunInspection {
+        schema_version: 1,
+        workspace_revision: revision,
+        availability: CollectionAvailability::StandaloneUnavailable,
+        native_execution_enabled: NATIVE_COLLECTION_ENABLED,
+        run: summary(job),
+        execution: CollectionExecutionStatus {
+            phase: CollectionExecutionPhase::Unavailable,
+            request_sequence: None,
+            publication_retries: 0,
+            publication_retry_limit: 3,
+        },
+        controls: CollectionControls {
+            can_cancel: false,
+            can_resume: false,
+            can_retry_settlement: false,
+        },
+        requests,
+        limitations,
+    };
+    response_bound(&response)?;
+    Ok(response)
+}
 impl Workspace {
     pub fn inspect_collection_run(&self, id: &str) -> Result<CollectionRunInspection> {
         require(canonical_uuid(id), "Invalid collection identifier")?;
         let tx = self.conn.unchecked_transaction()?;
         let revision: u64 = tx.query_row("SELECT revision FROM meta", [], |r| r.get(0))?;
         let loaded = load(&self.root, &tx, id, revision)?;
-        let limitations = vec![
-            "Collection records access facts, not permission, relevance, source independence or accepted observations.".into(),
-            "Static text is unreviewed; original response bytes remain authoritative. No accepted page-region anchors are created.".into(),
-            "Identical original bytes share evidence metadata. Later supported media interpretation may replace its current text; this is not an immutable web-text derivative.".into(),
-            "V4 HTML interpretation has bounded parser admission and extraction. A limit retains the complete original/receipt with quota status and no partial derivative; historical over-limit interpretation is refused without rewriting.".into(),
-            "Historical v1/v2/v3 specimens remain read-only and cannot resume through public controls.".into(),
-        ];
-        let requests = loaded
-            .job
-            .checkpoint
-            .requests
-            .iter()
-            .map(|r| CollectionRequestView {
-                sequence: r.sequence,
-                generation: r.generation,
-                entry: r.entry.clone(),
-                reserved_at_ms: r.reserved_at_ms,
-                original: original(&r.progress),
-                progress: r.progress.clone(),
-            })
-            .collect();
-        let response = CollectionRunInspection {
-            schema_version: 1,
-            workspace_revision: revision,
-            availability: CollectionAvailability::StandaloneUnavailable,
-            native_execution_enabled: NATIVE_COLLECTION_ENABLED,
-            run: summary(&loaded.job),
-            execution: CollectionExecutionStatus {
-                phase: CollectionExecutionPhase::Unavailable,
-                request_sequence: None,
-                publication_retries: 0,
-                publication_retry_limit: 3,
-            },
-            controls: CollectionControls {
-                can_cancel: false,
-                can_resume: false,
-                can_retry_settlement: false,
-            },
-            requests,
-            limitations,
-        };
-        response_bound(&response)?;
-        Ok(response)
+        project_inspection(&loaded.job, revision)
     }
     pub fn page_collection_runs(
         &self,
