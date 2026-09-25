@@ -97,3 +97,6 @@ fn native(
 ) -> Result<ResolvedCandidates, StopReason> {
     Err(StopReason::ResolverUnavailable)
 }
+
+#[cfg(test)]
+mod native_windows_proof;

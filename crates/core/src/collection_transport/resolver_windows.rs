@@ -1,4 +1,6 @@
 //! Owned overlapped system resolution. Cancellation requires observed completion.
+#[cfg(test)]
+use super::native_windows_proof as native_proof;
 use super::*;
 use std::{
     net::{Ipv4Addr, Ipv6Addr},
@@ -12,6 +14,7 @@ use windows_sys::Win32::{
         IO::OVERLAPPED,
     },
 };
+
 const _: () = assert!(
     WSAEINPROGRESS == 10036
         && WSA_IO_INCOMPLETE == 996
@@ -23,7 +26,9 @@ struct Winsock;
 impl Drop for Winsock {
     fn drop(&mut self) {
         unsafe {
-            WSACleanup();
+            let _status = WSACleanup();
+            #[cfg(test)]
+            native_proof::wsa_cleanup(_status);
         }
     }
 }
@@ -43,16 +48,24 @@ impl Drop for Operation {
         unsafe {
             if !self.result.is_null() {
                 FreeAddrInfoExW(self.result);
+                #[cfg(test)]
+                native_proof::result_freed();
             }
             if !self.overlapped.hEvent.is_null() {
-                CloseHandle(self.overlapped.hEvent);
+                let _closed = CloseHandle(self.overlapped.hEvent);
+                #[cfg(test)]
+                native_proof::event_closed(_closed != 0);
             }
         }
+        #[cfg(test)]
+        native_proof::context_dropped();
     }
 }
 fn unverified(operation: Box<Operation>) -> Result<ResolvedCandidates, ResolverFailure> {
     // Keep every pointer, handle and WSA reference alive if Windows has not
     // acknowledged completion. The later coordinator must suspend execution.
+    #[cfg(test)]
+    native_proof::context_retained();
     let _ = Box::leak(operation);
     Err(ResolverFailure::QuiescenceUnverified(ResolverUncertainty {
         method: "windows_overlapped_dns",
@@ -69,7 +82,10 @@ pub(super) fn native(
     let deadline = Instant::now() + Duration::from_secs(5).min(window.remaining());
     // SAFETY: zeroed WSADATA is output-only, version 2.2 is requested explicitly.
     let mut data: WSADATA = unsafe { std::mem::zeroed() };
-    if unsafe { WSAStartup(0x0202, &mut data) } != 0 {
+    let startup = unsafe { WSAStartup(0x0202, &mut data) };
+    #[cfg(test)]
+    native_proof::wsa_startup(startup);
+    if startup != 0 {
         return Err(StopReason::ResolverUnavailable.into());
     }
     let winsock = Winsock;
@@ -81,6 +97,8 @@ pub(super) fn native(
     if event.is_null() {
         return Err(StopReason::ResolverUnavailable.into());
     }
+    #[cfg(test)]
+    native_proof::event_created();
     let mut operation = Box::new(Operation {
         _winsock: winsock,
         name: host.encode_utf16().chain(Some(0)).collect(),
@@ -98,6 +116,8 @@ pub(super) fn native(
         handle: ptr::null_mut(),
         result: ptr::null_mut(),
     });
+    #[cfg(test)]
+    native_proof::context_created();
     // SAFETY: all pointers refer to stable Box/Vec allocations that remain alive
     // until completion (or are retained on unverified cancellation). DNS only.
     let status = unsafe {
@@ -114,6 +134,8 @@ pub(super) fn native(
             &mut operation.handle,
         )
     };
+    #[cfg(test)]
+    native_proof::launched(status, cancellation);
     let mut stop = None;
     if status == WSA_IO_PENDING {
         let mut cleanup_deadline = None;
@@ -126,15 +148,21 @@ pub(super) fn native(
                 if stop.is_some() {
                     // The cancel return alone never authorizes freeing the context.
                     unsafe {
-                        GetAddrInfoExCancel(&operation.handle);
+                        let _status = GetAddrInfoExCancel(&operation.handle);
+                        #[cfg(test)]
+                        native_proof::cancel_returned(_status);
                     }
                     cleanup_deadline = Some(Instant::now() + Duration::from_secs(1));
                 }
             }
             // SAFETY: event belongs to the still-live operation.
             let signalled = unsafe { WaitForSingleObject(event, POLL.as_millis() as u32) };
+            #[cfg(test)]
+            native_proof::wait_returned(signalled);
             if signalled == WAIT_OBJECT_0 {
                 let completed = unsafe { GetAddrInfoExOverlappedResult(&operation.overlapped) };
+                #[cfg(test)]
+                native_proof::completion_returned(completed);
                 if !windows_result_pending(completed) {
                     if stop.is_some() || completed == WSA_E_CANCELLED {
                         // Completion releases OUR context. Microsoft explicitly
@@ -154,7 +182,9 @@ pub(super) fn native(
                 std::thread::sleep(POLL); // A stale signalled event cannot spin.
             } else if signalled != WAIT_TIMEOUT {
                 unsafe {
-                    GetAddrInfoExCancel(&operation.handle);
+                    let _status = GetAddrInfoExCancel(&operation.handle);
+                    #[cfg(test)]
+                    native_proof::cancel_returned(_status);
                 }
                 return unverified(operation);
             }
