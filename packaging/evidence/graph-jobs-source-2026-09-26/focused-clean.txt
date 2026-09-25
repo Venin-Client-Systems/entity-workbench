@@ -1,0 +1,26 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.43s
+     Running unittests src/lib.rs (<shared-development-target>/debug/deps/workbench_core-77d4e335fed2ef45)
+
+running 20 tests
+test store::processing::graph_tests::graph_atomic_claim_reads_actual_c_and_capture_failure_rolls_back_every_write ... ok
+test store::processing::graph_tests::graph_original_loss_before_acceptance_never_publishes ... ok
+test store::processing::graph_tests::graph_history_inspection_survives_correction_but_reports_original_corruption ... ok
+test store::processing::graph_tests::graph_production_pair_is_explicitly_blocked_before_running_capture_or_worker ... ok
+test store::processing::graph_tests::graph_completed_retarget_to_another_valid_record_does_not_replay ... ok
+test store::processing::graph_tests::graph_queue_replay_binds_revision_and_endpoints_without_rewriting ... ok
+test store::processing::graph_tests::graph_publication_immediate_transaction_excludes_concurrent_writer_until_p ... ok
+test store::processing::graph_tests::graph_backup_restores_immutable_result_originals_and_old_document_job ... ok
+test store::processing::graph_tests::graph_queued_cancel_manual_retry_and_orphan_recovery_remain_explicit ... ok
+test store::processing::graph_tests::graph_cancellation_cleanup_and_unknown_exit_keep_failure_precedence ... ok
+test store::processing::graph_tests::graph_stale_revision_settles_without_result_or_recapture ... ok
+test store::processing::graph_tests::graph_r_q_c_p_publication_freezes_provenance_and_replay_is_no_write ... ok
+test store::processing::graph_tests::graph_queue_replay_rejects_substituted_mapping_job_id_or_request_uuid ... ok
+test store::processing::graph_tests::graph_transient_publication_write_failure_retains_same_attempt_and_rolls_back_result ... ok
+test store::processing::graph_tests::graph_transient_recapture_database_failure_is_not_consumed_as_bad_input ... ok
+test store::processing::graph_tests::graph_unreachable_result_has_frozen_full_denominator_and_closed_output ... ok
+test store::processing::graph_tests::graph_wrong_lease_cross_workspace_and_substituted_or_oversize_result_fail_closed ... ok
+test store::processing::graph_tests::graph_same_revision_claim_corruption_cannot_relabel_private_capture_or_history ... ok
+test store::processing::graph_tests::graph_inspection_rejects_mutated_or_oversize_record_before_acceptance ... ok
+test store::processing::graph_tests::graph_frozen_retention_oversize_refuses_atomically_and_keeps_attempt_for_settlement ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 478 filtered out; finished in 3.89s

@@ -1,0 +1,2 @@
+    Checking workbench-core v0.1.0 (<source-worktree>/crates/core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 7.87s
