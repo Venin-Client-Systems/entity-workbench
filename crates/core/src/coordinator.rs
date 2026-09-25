@@ -939,3 +939,7 @@ mod region_tests;
 #[cfg(test)]
 #[path = "coordinator_ownership_tests.rs"]
 mod ownership_tests;
+
+#[cfg(test)]
+#[path = "coordinator_native_https_proof.rs"]
+mod native_https_proof;
