@@ -1,15 +1,16 @@
-//! Exclusive automatic-write interval. Production has no configured graph executor.
-//! Lock order is workspace -> activity -> collection lane; no native process is enabled here.
+//! Exclusive automatic-write interval. Normal startup has no configured graph executor.
+//! Lock order is workspace -> activity -> collection lane.
 #![allow(dead_code)] // Private host seams await a separately reviewed runtime attachment.
 use super::*;
 use crate::processing::{JobTicket, ProcessingJob};
 use crate::store::graph_analysis::GraphAttempt;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, path::PathBuf};
 
 #[cfg(test)]
 type SyntheticGraph = dyn Fn(&[u8], &CancellationToken) -> Result<Vec<u8>> + Send + Sync;
 pub(super) enum GraphExecution {
     Unavailable,
+    Configured(crate::engines::python_graph::VerifiedGraphRuntime),
     #[cfg(test)]
     Synthetic(Arc<SyntheticGraph>),
 }
@@ -17,14 +18,15 @@ impl GraphExecution {
     fn available(&self) -> bool {
         !matches!(self, Self::Unavailable)
     }
-    fn execute(&self, input: &[u8], token: &CancellationToken) -> Result<Vec<u8>> {
+    fn execute(&self, scratch: &Path, input: &[u8], token: &CancellationToken) -> Result<Vec<u8>> {
         match self {
             Self::Unavailable => {
-                let _ = (input, token);
+                let _ = (scratch, input, token);
                 Err(Error::Blocked(
                     "Confined application-local graph runtime unavailable".into(),
                 ))
             }
+            Self::Configured(runtime) => runtime.execute(scratch, input, token),
             #[cfg(test)]
             Self::Synthetic(executor) => executor(input, token),
         }
@@ -239,6 +241,9 @@ pub(super) struct Pending {
     attempt: GraphAttempt,
     token: CancellationToken,
     ownership_lifetime: String,
+    // Derived from this workspace while admission and canonical ownership are held.
+    // Neither queued JSON nor the executor chooses the assignment parent.
+    scratch: PathBuf,
     result: Option<Result<ProcessingOutput>>,
 }
 /// Caller holds registry before atomic claim, so no committed claim can escape unregistered.
@@ -293,6 +298,7 @@ pub(super) fn claim(
         attempt,
         token,
         ownership_lifetime: shared.ownership.lifetime().into(),
+        scratch: workspace.processing_scratch(),
         result: None,
     }))
 }
@@ -325,9 +331,11 @@ pub(super) fn execute_and_publish(shared: &Shared, mut pending: Pending) {
         Err(Error::Interrupted("Graph cancelled before launch".into()))
     } else {
         std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            shared
-                .graph_executor
-                .execute(pending.attempt.worker_input(), &pending.token)
+            shared.graph_executor.execute(
+                &pending.scratch,
+                pending.attempt.worker_input(),
+                &pending.token,
+            )
         }))
         .unwrap_or_else(|_| {
             Err(Error::TerminationUnverified(
