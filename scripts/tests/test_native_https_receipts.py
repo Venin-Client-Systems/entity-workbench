@@ -5,6 +5,7 @@ from pathlib import Path
 import sys
 import subprocess
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
@@ -126,15 +127,19 @@ class NativeHttpsEvidenceTests(unittest.TestCase):
             with self.subTest(errors=errors), tempfile.TemporaryDirectory() as temp:
                 process = Mock(pid=12345)
                 process.wait.side_effect = [timeout, completion]
+                # Model the POSIX boundary explicitly: Windows has neither killpg
+                # nor SIGKILL. This offline contract test must never use the host OS.
+                kill = Mock(side_effect=kill_error)
                 with patch.object(runner.subprocess, "Popen", return_value=process) as launch, \
-                        patch.object(runner.os, "killpg", side_effect=kill_error) as kill:
+                        patch.object(runner, "os", SimpleNamespace(killpg=kill)), \
+                        patch.object(runner, "signal", SimpleNamespace(SIGKILL=9)):
                     with self.assertRaises(runner.ProcessTimeout) as failure:
                         runner.run_logged(["never-executed"], Path(temp) / "log", 30)
                 self.assertEqual(str(failure.exception), "outer_process_timeout")
                 self.assertEqual(failure.exception.termination, {
                     "kill_signal_sent": killed, "process_exit_confirmed": confirmed,
                     "exit_code": -9 if confirmed else None, "errors": errors})
-                launch.assert_called_once(); kill.assert_called_once()
+                launch.assert_called_once(); kill.assert_called_once_with(12345, 9)
                 self.assertEqual(process.wait.call_count, 2)
                 self.assertEqual(process.wait.call_args_list[0].kwargs, {"timeout": 30})
                 self.assertEqual(process.wait.call_args_list[1].kwargs, {"timeout": 5})
