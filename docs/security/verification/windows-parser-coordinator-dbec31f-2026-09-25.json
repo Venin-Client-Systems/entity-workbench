@@ -1,0 +1,268 @@
+{
+  "schema_version": 1,
+  "source_commit": "745f1c89592cfca76dba26318e0eddcdc1821c87",
+  "source_tree": "83e561677925cd86a579e659644946c77fb71854",
+  "source_parents": [],
+  "source_clean": true,
+  "nonce": "70528461-32a6-4451-9dd4-4f7b3f268d24",
+  "scope": "Windows Server development coordinator probe; no Windows 11 or release acceptance",
+  "complete_release": false,
+  "passed": true,
+  "failure": null,
+  "probe": {
+    "schema_version": 2,
+    "source_commit": "745f1c89592cfca76dba26318e0eddcdc1821c87",
+    "build_source_commit": "745f1c89592cfca76dba26318e0eddcdc1821c87",
+    "nonce": "70528461-32a6-4451-9dd4-4f7b3f268d24",
+    "complete_release": false,
+    "passed": true,
+    "phase": "complete",
+    "failure": null,
+    "checks": {
+      "altered_runtime_blocked": true,
+      "control_records_unchanged": true,
+      "evidence_unchanged": true,
+      "fixture_embedded-font.pdf": true,
+      "fixture_font-corpus.pdf": true,
+      "fixture_malformed.pdf": true,
+      "fixture_no-text.pdf": true,
+      "fixture_notice.docx": true,
+      "fixture_notice.pdf": true,
+      "fixture_notice.txt": true,
+      "fixture_traversal.zip": true,
+      "fixture_unreviewed.source": true,
+      "fixture_unsupported.bin": true,
+      "frozen_backup_isolated": true,
+      "full_backup_restored": true,
+      "idempotent_queue": true,
+      "joined_shutdown": true,
+      "missing_runtime_blocked": true,
+      "one_result_per_job": true,
+      "queued_cancellation_unclaimed": true,
+      "restart_unchanged": true,
+      "runtime_control_baseline": true,
+      "scratch_cleanup": true,
+      "staged_runtime_unchanged": true,
+      "wrong_role_runtime_blocked": true
+    },
+    "fixtures": [
+      {
+        "bytes": 90,
+        "name": "notice.txt",
+        "sha256": "ca07d359b73dcd0eb93837611c0a4b0843b93ca90e47c86abdf16ebbb12fcb60"
+      },
+      {
+        "bytes": 58,
+        "name": "unreviewed.source",
+        "sha256": "efde2c66d19a0f4a1019c0364cb2456b5aada1fd5fde179b4c306e037cee105e"
+      },
+      {
+        "bytes": 650,
+        "name": "notice.pdf",
+        "sha256": "c8f68df54244017916d97bb59b600322270829cb9657c96f184e2f51cc4c2e9f"
+      },
+      {
+        "bytes": 840,
+        "name": "notice.docx",
+        "sha256": "0d2653c31bd47be86c971df5b8195de720d4b296fe030cdb6b09e1f3edfd06de"
+      },
+      {
+        "bytes": 579,
+        "name": "no-text.pdf",
+        "sha256": "5da6326982def9b1b50107818dff93e1d59776d0c3afa80117931beab3ba7f4d"
+      },
+      {
+        "bytes": 31,
+        "name": "malformed.pdf",
+        "sha256": "c7bf6624e54e24542a469fb19963049fbcf0fc33fc944525c49d1058bbb9d4ff"
+      },
+      {
+        "bytes": 135,
+        "name": "traversal.zip",
+        "sha256": "8d56e8d9b3300182fc63d0d33fd0cd7be80edb3853b006445c870ef2333dce68"
+      },
+      {
+        "bytes": 24,
+        "name": "unsupported.bin",
+        "sha256": "96f3396084b7d98e309aa06c300ec333b0b1b6304c56d0a8cb18f561cf425a7f"
+      },
+      {
+        "bytes": 18574,
+        "name": "font-corpus.pdf",
+        "sha256": "836c0cbd6b5e686b5ae761c6e7fdb794ef1f5f50f5308bc71292ec5e659395d4"
+      },
+      {
+        "bytes": 5833,
+        "name": "embedded-font.pdf",
+        "sha256": "f4cf6d3bd3fed0a4c43ad679baf474df40b1f3fe278105d764773fac65fbc308"
+      }
+    ],
+    "derivatives": [
+      {
+        "fixture": "notice.txt",
+        "parser": "utf8-v1",
+        "record_sha256": "96b4402e11734133c8f2300241f031448117166aa95ff241fbc24dff392e7fb9",
+        "result_sha256": "bddaa4d09d3ede59115c826dd5ca37da0d53507905b53e4b15d4777d3098190b",
+        "schema_version": 2,
+        "source_sha256": "ca07d359b73dcd0eb93837611c0a4b0843b93ca90e47c86abdf16ebbb12fcb60",
+        "state": "completed",
+        "text_sha256": "ca07d359b73dcd0eb93837611c0a4b0843b93ca90e47c86abdf16ebbb12fcb60"
+      },
+      {
+        "fixture": "unreviewed.source",
+        "parser": "utf8-v1",
+        "record_sha256": "b303e60c86b624e3aeec4de7c6d8cec66d8f9f36b98b8a9bac2383a060fdc56c",
+        "result_sha256": "5cb90465f6d93a7227a79d94530be48de77a7476fbb3562b55c581aa382d672e",
+        "schema_version": 2,
+        "source_sha256": "efde2c66d19a0f4a1019c0364cb2456b5aada1fd5fde179b4c306e037cee105e",
+        "state": "completed",
+        "text_sha256": "efde2c66d19a0f4a1019c0364cb2456b5aada1fd5fde179b4c306e037cee105e"
+      },
+      {
+        "fixture": "notice.pdf",
+        "parser": "pdfbox-3.0.8-local-fonts-v1",
+        "record_sha256": "406cf1958b61cbbbb9ef307247c9d38b13b8e5138bc59ab1a66167a088f855e2",
+        "result_sha256": "49f4f1bc4d5ce0dafc81757266360c30daf711fb70dd909326598f2a0c5ef6b3",
+        "schema_version": 2,
+        "source_sha256": "c8f68df54244017916d97bb59b600322270829cb9657c96f184e2f51cc4c2e9f",
+        "state": "partial",
+        "text_sha256": "8d940e08b655dcdbd6fc0c92389316c54a0ccd43e55c5d8a7fb0f3e87d9d58cf"
+      },
+      {
+        "fixture": "notice.docx",
+        "parser": "tika-ooxml-3.3.2",
+        "record_sha256": "55f769f2f5c9aa1c8dcfec4da8bb2d846e0172c9a0e126d2e2e9fb62abb8e1bf",
+        "result_sha256": "fb3b4041f1d762670f2dc565a32248de823322cecd7142e19a673e127b6adfa7",
+        "schema_version": 2,
+        "source_sha256": "0d2653c31bd47be86c971df5b8195de720d4b296fe030cdb6b09e1f3edfd06de",
+        "state": "partial",
+        "text_sha256": "6729bd4c5a81f2c33bd6aa826583e4fff0dcb1a14e40e08dfe661dabf00524e0"
+      },
+      {
+        "fixture": "no-text.pdf",
+        "parser": "pdfbox-3.0.8-local-fonts-v1",
+        "record_sha256": "f2bb0988c72bc4d4476fae8f7566b1a497fbf9a2a12a79e2eff4fa10f8f5911a",
+        "result_sha256": "160f29ab2a319b531525e9e128c4a4267e2aad5bd4b32aa0158dbe1f5eb83f8a",
+        "schema_version": 2,
+        "source_sha256": "5da6326982def9b1b50107818dff93e1d59776d0c3afa80117931beab3ba7f4d",
+        "state": "partial",
+        "text_sha256": "7eb70257593da06f682a3ddda54a9d260d4fc514f645237f5ca74b08f8da61a6"
+      },
+      {
+        "fixture": "malformed.pdf",
+        "parser": "pdfbox-3.0.8-local-fonts-v1",
+        "record_sha256": "d75d54efaee4e806e600ed0ada115abd02a57f39109c13bd6cf7b6a6d1092e40",
+        "result_sha256": "228ab3313d51e2b9be365bccd99851a4dfdfb8606d71ed0f1866aac20893570a",
+        "schema_version": 2,
+        "source_sha256": "c7bf6624e54e24542a469fb19963049fbcf0fc33fc944525c49d1058bbb9d4ff",
+        "state": "failed",
+        "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "fixture": "traversal.zip",
+        "parser": "zip-preflight-v1",
+        "record_sha256": "0337ea0edf0de66b988dea8825f0cf77cc04525076cd7813d0a42a6a22a3f2af",
+        "result_sha256": "efd821b1353b08756bf09d6164118b4627dfc94a2cac1447d792f64997215a5b",
+        "schema_version": 2,
+        "source_sha256": "8d56e8d9b3300182fc63d0d33fd0cd7be80edb3853b006445c870ef2333dce68",
+        "state": "failed",
+        "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "fixture": "unsupported.bin",
+        "parser": "unsupported-v1",
+        "record_sha256": "cd982475c1c6b41998043b1afb24839ff7a9bdbf5831bffc1287f631f0e34e09",
+        "result_sha256": "f2c0852af0391e984c0072b48ac0c7b8877ec12772b63be001ea743fad255602",
+        "schema_version": 2,
+        "source_sha256": "96f3396084b7d98e309aa06c300ec333b0b1b6304c56d0a8cb18f561cf425a7f",
+        "state": "blocked",
+        "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "fixture": "font-corpus.pdf",
+        "parser": "pdfbox-3.0.8-local-fonts-v1",
+        "record_sha256": "cd7c72067fdef57d56735afceb04ad3065a37146def7e271718c74faef1fbe50",
+        "result_sha256": "cefb701b5d845383571e23373fa799b38ec9319d9ced02824052ce648d72e059",
+        "schema_version": 2,
+        "source_sha256": "836c0cbd6b5e686b5ae761c6e7fdb794ef1f5f50f5308bc71292ec5e659395d4",
+        "state": "partial",
+        "text_sha256": "44799dd518427e3bdb70922815d9dba0ec3893468da01c7b54302ec02e7cfa2d"
+      },
+      {
+        "fixture": "embedded-font.pdf",
+        "parser": "pdfbox-3.0.8-local-fonts-v1",
+        "record_sha256": "dcacf3d67a3740417b9185e7df52f8699ae2d793a9b66f3afcab635b4fe70b97",
+        "result_sha256": "e91a7a8331e47fbb7858173f0295b9aafb34b272a969ebe47706bc5282546b83",
+        "schema_version": 2,
+        "source_sha256": "f4cf6d3bd3fed0a4c43ad679baf474df40b1f3fe278105d764773fac65fbc308",
+        "state": "partial",
+        "text_sha256": "730e2a0b53231ddc6eec9dab40f4fc71072d861baa8285f4610bd44339a9e298"
+      }
+    ],
+    "joined_coordinators": 4,
+    "retained_workspace": false,
+    "in_flight_cancellation_proven": false,
+    "observed_job": null
+  },
+  "recorded_at_utc": "2026-09-25T13:56:50.569148+00:00",
+  "binary_sha256": "8de3ff0d5f0845f838684fa71f6cb8b4dca97d47d55d60668e588a4f2926ec96",
+  "runtime_manifests": {
+    "parser": "70ffc3b4cfbda94ab2815aee2f0aa70f31b42b42d63071ace4a03b035667935e",
+    "search": "3e5c5ae2dacf42e0355bd9987d5b6a303986e23df55a92b992022ccd9a2b27ad"
+  },
+  "fixtures": [
+    {
+      "name": "notice.txt",
+      "sha256": "ca07d359b73dcd0eb93837611c0a4b0843b93ca90e47c86abdf16ebbb12fcb60",
+      "bytes": 90
+    },
+    {
+      "name": "unreviewed.source",
+      "sha256": "efde2c66d19a0f4a1019c0364cb2456b5aada1fd5fde179b4c306e037cee105e",
+      "bytes": 58
+    },
+    {
+      "name": "notice.pdf",
+      "sha256": "c8f68df54244017916d97bb59b600322270829cb9657c96f184e2f51cc4c2e9f",
+      "bytes": 650
+    },
+    {
+      "name": "notice.docx",
+      "sha256": "0d2653c31bd47be86c971df5b8195de720d4b296fe030cdb6b09e1f3edfd06de",
+      "bytes": 840
+    },
+    {
+      "name": "no-text.pdf",
+      "sha256": "5da6326982def9b1b50107818dff93e1d59776d0c3afa80117931beab3ba7f4d",
+      "bytes": 579
+    },
+    {
+      "name": "malformed.pdf",
+      "sha256": "c7bf6624e54e24542a469fb19963049fbcf0fc33fc944525c49d1058bbb9d4ff",
+      "bytes": 31
+    },
+    {
+      "name": "traversal.zip",
+      "sha256": "8d56e8d9b3300182fc63d0d33fd0cd7be80edb3853b006445c870ef2333dce68",
+      "bytes": 135
+    },
+    {
+      "name": "unsupported.bin",
+      "sha256": "96f3396084b7d98e309aa06c300ec333b0b1b6304c56d0a8cb18f561cf425a7f",
+      "bytes": 24
+    },
+    {
+      "name": "font-corpus.pdf",
+      "sha256": "836c0cbd6b5e686b5ae761c6e7fdb794ef1f5f50f5308bc71292ec5e659395d4",
+      "bytes": 18574
+    },
+    {
+      "name": "embedded-font.pdf",
+      "sha256": "f4cf6d3bd3fed0a4c43ad679baf474df40b1f3fe278105d764773fac65fbc308",
+      "bytes": 5833
+    }
+  ],
+  "exit_code": 0,
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_bytes": 0
+}

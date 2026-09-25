@@ -38,3 +38,10 @@ managed renderer, fixtures, output hashes and page review. Its source-file
 binding is explicit; it does not claim a clean signed release or installed-app
 acceptance. Report assembly, full template design and complete-release gates
 remain open.
+
+Two subsequent bounded native Word app selections returned
+`timeoutReached -10005`; an intervening inventory still listed Word running.
+No generator-3 document was opened, edited or saved, and the existing app state
+was preserved. The [operator attempt record](verification/native-word-header-attempt.json)
+retains this unavailable verification separately from the successful managed
+rendering. It does not replace the earlier generator-2 Word observations.

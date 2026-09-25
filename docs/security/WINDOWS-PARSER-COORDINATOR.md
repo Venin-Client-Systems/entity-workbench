@@ -226,3 +226,20 @@ Root downloaded and revalidated all 25 required checks, ten fixture/derivative
 identities and four coordinator joins. In-flight cancellation remains explicitly
 unproved. This subsequent result retains the earlier successes and failures;
 it does not establish Windows 11 installation or release acceptance.
+
+## Report and runtime integration campaign — 25 September 2026
+
+[Run 36142865325](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36142865325)
+passed the worker, Java-engine and canonical coordinator stages at published
+`dbec31f`. Its actual PR merge source is
+`745f1c89592cfca76dba26318e0eddcdc1821c87`; tree
+`83e561677925cd86a579e659644946c77fb71854` matches the published head.
+GitHub commit readback confirms parents `b12271c` and `dbec31f`; the
+shallow receipt's empty parent list is retained.
+
+Root downloaded and strictly validated the [exact receipt](verification/windows-parser-coordinator-dbec31f-2026-09-25.json):
+25 required checks, ten bound fixture/derivative identities and four joins.
+SHA-256: `2592e4ae377b0f951f84f408cca9352445c3d37c6547066fbf21d5836ca9aef7`.
+All four [source jobs](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36142865319)
+also passed at `dbec31f`. In-flight canonical cancellation, Windows 11
+installation and complete-release acceptance remain unproved.

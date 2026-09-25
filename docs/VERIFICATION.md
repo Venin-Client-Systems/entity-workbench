@@ -589,3 +589,57 @@ the Windows Server host, exactly three native launches, no HTTP/retry,
 released-after-completion observation, quarantine refusal and unverified
 provider quiescence. Retained-pending-completion was not exercised natively.
 No historical Mac evidence changed and no release gate passed.
+
+
+## Report pagination and actual confined Python compatibility — 25 September 2026
+
+The [source-bound integration record](verification/integration-db55dc7.json)
+retains full `e10e2e6` verification: **442 ordinary core tests**, 24 specialised
+exclusions, strict all-target Clippy, 251 Python cases (247 passes/four skips)
+and **13/13 affected DOCX Chromium workflows**. The subsequent test-only
+import/quota diagnostics at `db55dc7` pass six focused Rust checks, strict
+all-target Clippy and 252 Python cases (248 passes/four skips). No later full
+core run is inferred from those focused checks. The prior complete 125-case
+browser campaign remains bound to `c2635c3`.
+
+Generator-3 [header pagination](reports/DOCX-HEADER-PAGINATION.md) preserves
+exact historical generator-1/2 bytes. Eight renderer cases and canonical
+publication/retry/export/restore for both historical versions pass. All seven
+managed-rendered pages were visually inspected. The ordinary and long-literal
+headers share page 2 with their first rows. Native Word controls timed out twice;
+[the operator record](reports/verification/native-word-header-attempt.json)
+records no generator-3 open, edit, save or native pagination proof.
+
+The [compact design record](design/DOCX-COMPACT-ACCESSIBILITY.md) binds native
+editable Figma frames `2006:53` and `2006:104`, exact post-reload export equality,
+actual Chrome 200% zoom and keyboard recovery. Canonical readback proves all 21
+prior snapshots unchanged plus one new capture. Root checked every retained
+artifact hash and visually reviewed the catalogue and recovery-focus captures.
+Manifest SHA-256: `328b1edaa27b5b173722e8f5e53eb2274ab35f7559bca7a58428c826f6115625`.
+The record preserves its limited route and absence of final owner approval.
+
+Signed Python source `fdf7265` first failed with generic quota exhaustion at the
+imports checkpoint. Its [original receipt](../packaging/evidence/python-compatibility-first-2026-09-25.json)
+remains byte-identical, SHA-256
+`128fdb98c944e6b129ac10c94d34caba0e0baa03d924c06cec4b51d446a507c2`.
+No individual import or particular exhausted limit is inferred from that run.
+Signed diagnostic source `6e357b1` then passed exactly one second campaign,
+with all fixed assertions, confirmed termination and cleanup. The
+[successful receipt](../packaging/evidence/python-compatibility-second-2026-09-25.json)
+has SHA-256 `12f3fb253e994fa5a903e87dd5337b544ca8a5546c5d138d1fd392836d9149ee`.
+Preparation took 46,657 ms; spawn through reaping took 22,844 ms under unchanged
+limits. Both diagnostic streams were empty. Independent verification retained
+11,320 files / 601,821,300 bytes / 58 RECORDs unchanged. Root separately
+validated exact native/outer receipt equality, expected results and source-file
+hashes. This result establishes no cause for the first failure and no hostile
+boundary, relocation, calibrated Splink or release claim.
+
+[Source run 36142865319](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36142865319)
+passes browser, Apple Silicon, Intel Mac and Windows Server jobs at published
+`dbec31f`. [Windows run 36142865325](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36142865325)
+passes worker, Java and canonical coordinator stages. The
+[retained receipt](security/verification/windows-parser-coordinator-dbec31f-2026-09-25.json)
+has SHA-256 `2592e4ae377b0f951f84f408cca9352445c3d37c6547066fbf21d5836ca9aef7`.
+Root verified all 25 predicates, ten derivatives and four joins, and the actual
+merge tree's equality with the published head. In-flight canonical cancellation
+remains explicitly unproved. All twelve complete-release gates remain false.

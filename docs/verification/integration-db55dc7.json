@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "scope": "development report pagination and test-only Python diagnostic integration",
+  "full_core_source": "e10e2e6937d53d5bc8e87a3618dd90690b04dc82",
+  "diagnostic_source": "db55dc7404d8724ac43d3fa15e710ae6ee509321",
+  "ordinary_core": {
+    "passed": 442,
+    "failed": 0,
+    "specialized_ignored": 24,
+    "strict_all_target_clippy": "passed"
+  },
+  "diagnostic_follow_up": {
+    "rust_passed": 6,
+    "rust_native_ignored": 1,
+    "rust_other_filtered": 385,
+    "strict_all_target_clippy": "passed",
+    "python_run": 252,
+    "python_passed": 248,
+    "python_platform_skipped": 4
+  },
+  "browser": {
+    "source": "e10e2e6",
+    "selected_file": "ui/tests/docx-snapshots.spec.ts",
+    "passed": 13,
+    "failed": 0,
+    "elapsed_reported": "1.3m",
+    "browser": "Chromium",
+    "native_word_claim": false
+  },
+  "logs": {
+    "ew-e10e2e6-core.log": {
+      "bytes": 54140,
+      "sha256": "731c5c8fc14ba10af59f7992ed2bf2ce7872895379ebc36984646fcd80aec3c5"
+    },
+    "ew-e10e2e6-clippy.log": {
+      "bytes": 185,
+      "sha256": "935135b19c28a45529e3efbd4ec68c5154caafa4c62ccb48230f618274ce85c2"
+    },
+    "ew-e10e2e6-python.log": {
+      "bytes": 41723,
+      "sha256": "2fac29f7a9b9d6ced32092d0ba911f41e08e4c5d790bb9f13bdad7bcc1232935"
+    },
+    "ew-e10e2e6-docx-ui.log": {
+      "bytes": 2609,
+      "sha256": "6a3497020bee033b58691ee5a450ac94ad344613162db3e8e540a9f2d6ee4a18"
+    },
+    "ew-db55dc7-probe.log": {
+      "bytes": 1234,
+      "sha256": "a549c2bb9c750c52d1467e9234e0eaa47572c755a6850878181d224244b3a780"
+    },
+    "ew-db55dc7-clippy.log": {
+      "bytes": 185,
+      "sha256": "5add740c43c31780aac2d318f1f903893abe7ca9b4777410d977cfb0eeaccca5"
+    },
+    "ew-db55dc7-python.log": {
+      "bytes": 41919,
+      "sha256": "548df0de701c1ad5148a101697ea38bfadba53ceadd151979de00df71333dfbc"
+    }
+  },
+  "limitations": [
+    "The full ordinary suite precedes the narrow test-only diagnostic changes; its total is not relabelled as a later full run.",
+    "The earlier complete browser run remains 125 cases at c2635c3; these 13 cases cover the affected DOCX workflow.",
+    "During the final scoped checks only documentation/evidence cherry-picks followed; tested code was unchanged.",
+    "Complete release gates remain unpassed."
+  ],
+  "complete_release": false
+}

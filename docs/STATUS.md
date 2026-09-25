@@ -16,7 +16,7 @@ This is an initial integrated development implementation. None of the three mile
 | Assessment | Question/hypothesis authoring, alternatives/gaps, multiple supporting/contradictory citations, explicit finding review and re-review, source inspection, immutable self-contained HTML snapshots with versioned transaction calculation/source links and complete review partitions, JSON transaction export; canonical immutable DOCX snapshots with frozen model/artifact storage, paged capture/save interface and typed uncertain-request recovery; metadata-only desktop report catalogue, verified explicit immutable HTML retrieval and bounded finding-history pages with native verification; revision-bound citation catalogue and exact selected metadata readers adopted in assessment forms | Actual native DOCX/Word checks and remaining report design, CSV/Parquet/graph exports; report assembly and exhibit controls |
 | Java engines | Separate parser/search/PDF-render JVMs; hash-bound text/PDF/DOCX extraction; bounded selected-page scan rendering with crop/rotation/raster provenance; supervised Lucene jobs with request-specific access, acknowledgement validation, damaged-index recovery, cancellation and explicit cleanup; actual hostile Mac development probes; separate Windows Server AppContainer parser/search recipe campaign with real document/query and role-boundary results | Python/Chromium compatibility, signed helpers, Intel runtime probes, in-flight Windows canonical cancellation and remaining search/OCR routes, hard aggregate disk/RSS bounds and crash recovery |
 | OCR adapter | Relocated app-local Tesseract 5.5.2 and pinned English model; canonical bounded PGM input; explicit blank/recognized states; exact raster binding; eight actual Mac OCR/hostile-runtime checks; bounded confined PNG/JPEG decoding, original-to-raster binding, immutable canonical image jobs/UI and backup/restore; separate selected-page scan PDF rendering/OCR with canonical jobs/UI; opt-in bounded raster word-region engine and canonical retention/restore | General PDF features, reviewed word anchors, extraction acceptance, additional languages and signed cross-platform distribution |
-| Python engines | Development DuckDB adapter preserves exact decimal scale and Parquet drillthrough; NetworkX reviewed paths and spaCy phrase candidates; pinned Apple Silicon CPython and 58 locked wheels assembled offline with independently verified files/RECORDs; static arm64 load-reference review | Actual confined imports and native loading; relocation execution; canonical snapshot/protocol and transfer-selection integration; Spatial extension; calibrated Splink; app integration and confinement |
+| Python engines | Development DuckDB adapter preserves exact decimal scale and Parquet drillthrough; NetworkX reviewed paths and spaCy phrase candidates; pinned Apple Silicon CPython and 58 locked wheels assembled offline with independently verified files/RECORDs; static arm64 load-reference review; actual fixed compatibility assertions in a confined Mac development worker | Hostile boundary tests; relocation execution; canonical snapshot/protocol and transfer-selection integration; Spatial extension; calibrated Splink; app integration and confinement |
 | Distribution | All three native targets compile in source CI; Apple Silicon development app with separate Java parser/Lucene/image-decoder/PDF-renderer and English OCR staging; versioned offline runtime inventory producer and validator with explicit component ownership and actual partial-staging rejection | Complete runtime trees and validation on all targets; Windows Fixed WebView2; offline clean-machine tests; signing/notarization |
 | Performance | Actual 100,000-row canonical core baseline on the available 16 GiB M1; complete denominators and exact-money checks; separate payload diagnostic and explicit report retrieval reduce a 198 MB refresh to 84 MB while preserving saved bytes; paired transaction-page measurements with exact response checks and repaired redundant empty-result scan | Remaining large-corpus pagination and native interaction measurements, required 10,000 pages/1,000 scans and concurrent maps/graphs; qualified p95 and total runtime memory |
 
@@ -354,3 +354,41 @@ Integrated application `c2635c3` passes the production UI build and all
 `bef9f30` result of **438 ordinary core tests**, 23 specialised exclusions and
 strict Clippy. The [integration record](verification/integration-c2635c3.json)
 binds retained logs and source distinctions. Complete-release gates remain false.
+
+
+## Confined Python compatibility, compact design and report pagination — 25 September 2026
+
+The [Python compatibility harness](security/PYTHON-COMPATIBILITY-PROBE.md) now
+has two actual source-bound observations. The first failed a generic quota
+before analytical assertions; termination, cleanup and prefix integrity were
+confirmed. A narrow diagnostic revision recorded individual imports, quota
+categories and elapsed intervals without increasing permissions or limits.
+The second campaign passed all six imports, 58 package versions, fixed spaCy
+phrase spans, NetworkX paths, exact DuckDB/Parquet totals and selected registry
+checks. Its supervised interval was 22,844 ms. Splink has import/version proof
+only; hostile boundaries, relocation, canonical integration and other targets
+remain separate work. The earlier assembly manifest remains unchanged and its
+unexecuted label describes assembly, not this later execution history.
+
+Two [compact editable Figma frames](design/DOCX-COMPACT-ACCESSIBILITY.md) were
+saved and re-exported byte-identically after reload. The application was checked
+at actual Chrome 200% zoom, including keyboard pagination, retained capture
+request identity and explicit recovery. All 21 earlier report snapshots remained
+unchanged after a new capture. This is bounded manual evidence, not final owner
+approval or full accessibility certification.
+
+New DOCX captures use [generator 3](reports/DOCX-HEADER-PAGINATION.md) to keep a
+table header with its first row. All seven managed-rendered pages were visually
+inspected; earlier generator-1/2 artifact bytes and backup/restore remain exact.
+Native Word selection still timed out, leaving generator-3 Word pagination and
+edit/save unverified. The [integration record](verification/integration-db55dc7.json)
+records 442 ordinary core tests at `e10e2e6`, 13 affected DOCX browser cases, then
+six scoped diagnostic Rust checks and 252 Python cases (248 passes/four skips)
+at `db55dc7`, with strict Clippy.
+
+Published `dbec31f` passed all four hosted source jobs and the separate Windows
+AppContainer/Java/canonical coordinator campaign. The downloaded canonical
+receipt was independently validated against its exact PR merge tree. These are
+Windows Server development observations. Durable collection's command/UI
+cutover and safe interchange exports continue in parallel; native durable
+execution remains gated. All twelve complete-release gates remain unpassed.
