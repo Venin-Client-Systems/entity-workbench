@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "scope": "EW-18 revision-bound reviewed internal account-flow backend; no UI",
+  "source_commit": "e370c8ddaa75c9ae85a22d13117e40849547275a",
+  "source_tree": "0f69c46d4d0c24ca1e554921b6320a434b1e682f",
+  "base_commit": "a42862bc02b8a8d919a391b26d69d6ddd31cfd35",
+  "source_signature": {
+    "verified": true,
+    "key_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y"
+  },
+  "changed_source_file_sha256": {
+    "crates/core/src/account_flow.rs": "ab33f09f7334d99da0c44402672b3cc9dacab15e841ad396c1d23349d8688998",
+    "crates/core/src/account_flow_tests.rs": "74f38c43c93a8f074f32bbf4f2fe70c9fe4632054774a2c60ad12cf613102810",
+    "crates/core/src/bin/ew-dev.rs": "1e77091f670a86954bbf90bc0cb77727674619901a285230b6da4a1755892e17",
+    "crates/core/src/domain.rs": "9e6f25b83600de6daf32bbda007f96ae1d82fd92884855393b5e384c8e50c54e",
+    "crates/core/src/lib.rs": "64f1565b4bb388340742f52204b5823c551de9ed148f169852241dd19e6d8cbe",
+    "crates/core/src/store.rs": "e12a51221e48b178f985c3a584fa37f38e4a52dd5e93fddb6d834db356cad970",
+    "crates/core/src/store/account_flow.rs": "62e517f5378ed2c292930397a15e5f3ba1d1ab2e74cfc8363d7af8cf5841d562",
+    "crates/core/src/store/account_flow_tests.rs": "fe37fc5ebca83acef8871848400aae1ade43b7c83022b1c476642966d5222af3",
+    "crates/core/src/transaction_analysis.rs": "4701b0675781e5eadfef753cb18c6665d0a74dc788e04b944e32480bd9dbcf97",
+    "docs/transactions/ACCOUNT-FLOWS.md": "530b6d7c86703f2523d7c0151c3bbc2bb2776f9143cc0e6551acff6566b743d1",
+    "schemas/account-flow-request.v1.schema.json": "3c4baf019f54d6edfe2f8a13d149b5d1897d92c40e2473b48763a791b0df0564",
+    "schemas/account-flows.v1.schema.json": "bab4a1961d68c2030fcd08b2e7fce94477efc8806adc4669a642f93396073a46",
+    "schemas/command.v25.schema.json": "3d581f2238abc74905b48d99abbdb09a7369290ec1e1cca35957860c34b9f4e4"
+  },
+  "lockfile_sha256": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+  "test_source_binding": "Final functional source bytes tested before signing; the later documentation example does not change implementation or schemas.",
+  "host": {
+    "system": "Darwin",
+    "architecture": "arm64",
+    "os_version": "26.6.2"
+  },
+  "checks": {
+    "ordinary_core_passed": 493,
+    "failed": 0,
+    "native_opt_in_ignored": 26,
+    "focused_account_flow_passed": 14,
+    "strict_debug_all_targets_clippy": "passed",
+    "strict_release_all_targets_clippy": "passed",
+    "fmt": "passed",
+    "source_staged_public_audit_files": 13
+  },
+  "wire": {
+    "command": "analyze_account_flows",
+    "command_schema_version": 25,
+    "request": "account-flow-request.v1.schema.json",
+    "response": "account-flows.v1.schema.json",
+    "storage_migration": false
+  },
+  "calculation_oracle": {
+    "synthetic_rows": 16,
+    "nodes": 4,
+    "edges": 2,
+    "AUD_0001_scope_count": 9,
+    "AUD_0001_accepted_credits": "2.00",
+    "AUD_0001_accepted_debits": "39.00",
+    "AUD_0001_accepted_net": "-37.00",
+    "AUD_0001_unmapped_credits": "2.00",
+    "AUD_0001_unmapped_debits": "19.00",
+    "AUD_0002_scope_count": 5,
+    "AUD_0002_accepted_credits": "28.00",
+    "AUD_0002_unmapped_credits": "8.00",
+    "AUD_directed_edge_amount": "20.00",
+    "AUD_pairs": 2,
+    "USD_directed_edge_amount": "3.00",
+    "USD_pairs": 1,
+    "duplicate_candidates_counted": true,
+    "unaccepted_rows_remain_in_denominators": true
+  },
+  "asymmetric_scope": {
+    "selected_account": "0001",
+    "selected_currency": "AUD",
+    "scope_rows": 9,
+    "support_rows": 2,
+    "support_node_selected_total": "0",
+    "either_endpoint_selection_supported": true,
+    "both_endpoint_versions_and_dates_retained": true
+  },
+  "meaningful_regressions": [
+    "shared reciprocal accepted nonzero equal-opposite same-currency distinct-account rule",
+    "repeated transfers remain separate pair contributions",
+    "near matches, refunds, unaccepted rows, one-sided markers and zero values do not invent edges",
+    "node selected/support partition and overlapping annotation counts",
+    "exact totals reject overflow and mixed-magnitude precision loss",
+    "empty scopes, leap-day inclusion and posting-date independence",
+    "canonical record key/body and Evidence key/body/digest retargeting refusal",
+    "selected and out-of-scope supporting original tampering refusal",
+    "real canonical correction unlinks pair and blocks stale revision",
+    "historical report JSON and HTML bytes remain unchanged",
+    "actual second canonical writer in WAL mode cannot mix peer versions/totals with old revision",
+    "all-or-error node/edge/output/input-byte/row-count bounds",
+    "actual escaping counted without allocating serialized output",
+    "source metadata resolves through existing exact-version transaction reader",
+    "input permutation preserves deterministic output"
+  ],
+  "bounds": {
+    "ledger_rows": 100000,
+    "retained_record_bytes": 2097152,
+    "retained_ledger_bytes": 67108864,
+    "aggregate_description_bytes": 33554432,
+    "anchor_json_bytes": 8192,
+    "nodes": 1000,
+    "directed_edges": 10000,
+    "pairs": 50000,
+    "result_json_bytes": 16777216
+  },
+  "historical_schemas": {
+    "base_commit": "a42862bc02b8a8d919a391b26d69d6ddd31cfd35",
+    "historical_files": 97,
+    "historical_json_schemas": 95,
+    "all_byte_identical": true,
+    "inventory": {
+      "path": "artifacts/account-flow/historical-schemas.json",
+      "bytes": 15637,
+      "sha256": "e35884d587071ef64022db379f856d52d181dc71b83b6be56b549c60b1614235"
+    }
+  },
+  "legacy_analysis": {
+    "change": "Validation loop extracted unchanged into validated_lookup; existing analyze still validates request first and preserves original loop order/messages.",
+    "financial_rules_changed": false,
+    "patterns_and_comparison_regressions": "passed in full ordinary suite"
+  },
+  "read_only_peer_review": {
+    "root": "No actionable blocker in selected/support partition, pair counting, exact sums, preflight and counting writer.",
+    "independent_agent": "No actionable blocker; suggested actual concurrent-writer coverage was added and passed. No duplicate executions by reviewer."
+  },
+  "retained_logs": [
+    {
+      "path": "artifacts/account-flow/focused-initial.log",
+      "bytes": 7678,
+      "sha256": "6cf33310bbac55f99150631922dd5e6ade6a19f0b58c05114a8040442ebd33d0"
+    },
+    {
+      "path": "artifacts/account-flow/focused-final.log",
+      "bytes": 1775,
+      "sha256": "d68f3be00c317d8687ff13ec7f97f4d07bd712dac1406dae99c04a49a811f6d0"
+    },
+    {
+      "path": "artifacts/account-flow/focused-reviewed.log",
+      "bytes": 1896,
+      "sha256": "dab4b95d4debb8bfac93a6a1a8bc89135bc786e7dc19d034137c4b8c83b45617"
+    },
+    {
+      "path": "artifacts/account-flow/core-tests.log",
+      "bytes": 60740,
+      "sha256": "ecb59d5326215ece18d367199e1b586f12d11eec6729426aad645ffd06c18589"
+    },
+    {
+      "path": "artifacts/account-flow/core-tests-final.log",
+      "bytes": 60860,
+      "sha256": "ff6ea2d4ec501fceb47dee8293c2b5766409c8ef19ff2f0a2ca41f3f90a928d3"
+    },
+    {
+      "path": "artifacts/account-flow/clippy-debug.log",
+      "bytes": 5064,
+      "sha256": "fd98c8553a031b65698753a33fe0158ab92abe1913d6a6e5efc5d7f27d613f57"
+    },
+    {
+      "path": "artifacts/account-flow/clippy-debug-final.log",
+      "bytes": 216,
+      "sha256": "c72022e5ffd8540a58ce1c44b8c6dee7d2d04c8374a4fb7fe9d50d32f3776052"
+    },
+    {
+      "path": "artifacts/account-flow/clippy-release-final.log",
+      "bytes": 5924,
+      "sha256": "2e6753d45c0844e4f14177fdf0df272b4f52f170baf7d6bbdbba66783bd60dcd"
+    },
+    {
+      "path": "artifacts/account-flow/fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/account-flow/schemas-final.log",
+      "bytes": 275,
+      "sha256": "595a9b05c9bb877f94c901a2e28c710f49bab7459354ae2a81f1f5b4f68742b0"
+    },
+    {
+      "path": "artifacts/account-flow/historical-schemas.json",
+      "bytes": 15637,
+      "sha256": "e35884d587071ef64022db379f856d52d181dc71b83b6be56b549c60b1614235"
+    },
+    {
+      "path": "artifacts/account-flow/public-audit-source.log",
+      "bytes": 40,
+      "sha256": "cc6146afe0388f522be1884f48f1bfcdc505a1d48881a61249cf46d1c74ecda3"
+    },
+    {
+      "path": "artifacts/account-flow/signature-source.log",
+      "bytes": 110,
+      "sha256": "bb3514ff9786724f2b565573e5d728aefdeda9d6742d890fa8115c5eb6dea636"
+    }
+  ],
+  "prior_observation": "Initial12-test run passed with one unused-import warning; import removed.13-test run and final14-test run passed. No functional test failure was discarded.",
+  "limitations": [
+    "Source anchors are bounded retained references; quote/location validation still belongs to source inspection.",
+    "The complete ledger is loaded within explicit input bounds; no hard RSS or indexed latency claim.",
+    "No automatic matching, external counterparty inference, FX or implicit deduplication.",
+    "No UI, Figma extension, browser/native graph interaction or Windows execution in this increment.",
+    "The full ordinary suite includes existing synthetic loopback transport tests; zero public-network requests does not mean zero local socket operations."
+  ],
+  "claims": {
+    "complete_release": false,
+    "complete_EW18_workflow": false,
+    "native_ui_verified": false,
+    "performance_verified": false,
+    "storage_migration": false,
+    "public_network_requests": 0
+  }
+}
