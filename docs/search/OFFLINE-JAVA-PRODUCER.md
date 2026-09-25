@@ -24,7 +24,7 @@ package
 -Dproject.build.outputTimestamp=2020-01-01T00:00:00Z
 ```
 
-`--offline` disables Maven repository resolution over the network. It is **a build setting, not a network sandbox claim**. Only the reviewed local project/plugins are executed. The fixed timestamp is supported by the installed Maven JAR plugin's primary plugin descriptor; the CycloneDX skip setting is likewise declared by its cached descriptor. Actual plugin/version/goal headers are checked against the fixed selected plugin list. Compiler annotation processing, Maven test compilation/execution and BOM generation are skipped explicitly. No arbitrary extra goals, arguments or caller-supplied POM are accepted.
+`--offline` disables Maven repository resolution over the network. It is **a build setting, not a network sandbox claim**. Only the reviewed local project/plugins are executed. The fixed timestamp is supported by the installed Maven JAR plugin's primary plugin descriptor; the CycloneDX skip setting is likewise declared by its cached descriptor. Actual plugin/version/goal headers must match the exact ordered seven lifecycle invocations across the five selected Maven plugins. Missing, changed or additional execution headers fail. Maven skips the online-only CycloneDX goal before plugin execution: the guard requires its explicit offline skip diagnostic exactly once and refuses a CycloneDX execution header. Its cached JAR identity is retained as a declared input, not evidence of execution. Compiler annotation processing, Maven test compilation/execution and BOM generation are skipped explicitly. No arbitrary extra goals, arguments or caller-supplied POM are accepted.
 
 ## Outputs and equality claims
 

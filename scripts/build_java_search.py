@@ -26,6 +26,12 @@ OPTIONS = ["--offline", "--batch-mode", "--no-transfer-progress", "--strict-chec
 PLUGINS = {"maven-resources-plugin": "3.3.1", "maven-compiler-plugin": "3.14.1",
            "maven-surefire-plugin": "3.5.4", "maven-jar-plugin": "3.4.1",
            "maven-dependency-plugin": "3.8.1"}
+LIFECYCLE = [("resources", "3.3.1", "resources"), ("compiler", "3.14.1", "compile"),
+             ("resources", "3.3.1", "testResources"), ("compiler", "3.14.1", "testCompile"),
+             ("surefire", "3.5.4", "test"), ("jar", "3.4.1", "jar"),
+             ("dependency", "3.8.1", "copy-dependencies")]
+OFFLINE_BOM_SKIP = ("[WARNING] Goal makeAggregateBom requires online mode for execution "
+                    "but Maven is currently offline, skipping")
 
 
 def require(value, reason):
@@ -76,12 +82,18 @@ def selected_plugins(cache, rows):
 def plugin_headers(log):
     text = inputs.file_bytes(log, 4 * 1024 * 1024).decode("utf-8", errors="replace")
     text = re.sub(r"\x1b\[[0-9;]*m", "", text)
-    headers = re.findall(r"--- ([a-z-]+):([0-9.]+):([A-Za-z]+) ", text)
-    expected = {name[len("maven-"):-len("-plugin")]: version for name, version in PLUGINS.items()}
-    expected["cyclonedx"] = "2.9.1"
-    require(headers and {name for name, _, _ in headers} == set(expected)
-            and all(expected.get(name) == version for name, version, _ in headers),
-            "actual_build_plugin_versions_differ")
+    lines = text.splitlines()
+    headers = []
+    for line in lines:
+        if line.startswith("[INFO] --- "):
+            match = re.fullmatch(r"\[INFO\] --- ([^:\s]+):([^:\s]+):([^\s]+) "
+                                 r"\([^()\r\n]+\) @ workers ---", line)
+            require(match is not None, "unexpected_build_plugin_header")
+            headers.append(match.groups())
+    require(headers == LIFECYCLE, "actual_build_plugin_versions_differ")
+    # Maven refuses this online-only goal before plugin execution, so no
+    # CycloneDX header is expected. Its pinned cached input is still recorded.
+    require(lines.count(OFFLINE_BOM_SKIP) == 1, "offline_bom_skip_not_observed")
     return [list(row) for row in headers]
 
 
@@ -180,6 +192,7 @@ def observe(artifact, *, signers, jdk, maven, cache, staged):
             record["exit_code"] = run_logged(invocation, artifact / f"build-{number}.log", 600, env)
             require(record["exit_code"] == 0, "offline_maven_package_failed")
             record["plugin_headers"] = plugin_headers(artifact / f"build-{number}.log")
+            record["cyclonedx_execution"] = "skipped_by_maven_offline_mode"
             target = area / "project/target"
             record["jar"] = inputs.jar_inventory(target / "workers-0.1.0.jar", (2020, 1, 1, 0, 0, 0))
             required_classes = {row["path"][len("src/main/java/"):-len(".java")] + ".class"

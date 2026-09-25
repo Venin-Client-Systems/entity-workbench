@@ -61,6 +61,31 @@ class ContractTests(unittest.TestCase):
             self.assertIn(expected, args)
         self.assertEqual(args.count("package"), 1)
 
+    def test_exact_lifecycle_and_explicit_offline_bom_skip_are_required(self):
+        # Portable log guard test, without descriptor helpers or a Maven run.
+        lines = [f"[INFO] --- {name}:{version}:{goal} (fixed) @ workers ---"
+                 for name, version, goal in producer.LIFECYCLE]
+        valid = "\n".join([*lines, producer.OFFLINE_BOM_SKIP]) + "\n"
+        with patch.object(inputs, "file_bytes", return_value=valid.encode()):
+            self.assertEqual(producer.plugin_headers(Path("unused")),
+                             [list(row) for row in producer.LIFECYCLE])
+        invalid = {
+            "missing lifecycle plugin": valid.replace(lines[-1] + "\n", ""),
+            "wrong plugin version": valid.replace("jar:3.4.1:", "jar:3.4.2:"),
+            "wrong goal": valid.replace("copy-dependencies", "resolve"),
+            "unexpected execution": valid + "[INFO] --- exec:3.5.0:java (extra) @ workers ---\n",
+            "unexpected malformed header": valid + "[INFO] --- unparsed-extra-execution ---\n",
+            "CycloneDX executed": valid + "[INFO] --- cyclonedx:2.9.1:makeAggregateBom (extra) @ workers ---\n",
+            "duplicate lifecycle": valid + lines[0] + "\n",
+            "missing offline skip": "\n".join(lines),
+            "wrong offline skip": valid.replace("makeAggregateBom", "anotherGoal"),
+            "duplicate offline skip": valid + producer.OFFLINE_BOM_SKIP + "\n",
+        }
+        for label, value in invalid.items():
+            with self.subTest(label=label), patch.object(inputs, "file_bytes", return_value=value.encode()):
+                with self.assertRaises(inputs.InvalidBuild):
+                    producer.plugin_headers(Path("unused"))
+
 
 @unittest.skipUnless(os.name == "posix", "Actual no-follow descriptor and private-mode controls require POSIX")
 class PosixInputsTests(unittest.TestCase):
@@ -146,15 +171,6 @@ class PosixInputsTests(unittest.TestCase):
         self.assertEqual(json.loads(path.read_text()), value)
         self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
-    def test_actual_plugin_headers_must_match_fixed_offline_build(self):
-        log = self.root / "build.log"
-        headers = "\n".join(f"--- {name[6:-7]}:{version}:goal (fixed) @ workers ---"
-                            for name, version in producer.PLUGINS.items())
-        log.write_text(headers + "\n--- cyclonedx:2.9.1:makeAggregateBom (fixed) @ workers ---\n")
-        self.assertEqual(len(producer.plugin_headers(log)), 6)
-        log.write_text(log.read_text().replace("jar:3.4.1:", "jar:3.4.2:"))
-        with self.assertRaises(inputs.InvalidBuild): producer.plugin_headers(log)
-
     def test_primary_timeout_survives_log_hash_failure(self):
         with patch.object(producer, "tracked_source", side_effect=producer.ProcessTimeout({"process_exit_confirmed": False})), \
              patch.object(inputs, "file_bytes", side_effect=inputs.InvalidBuild("changed log")):
@@ -169,26 +185,31 @@ class PosixInputsTests(unittest.TestCase):
     def test_build_failure_stops_before_second_build_and_preserves_log(self):
         # File/tool identities are explicit synthetic seams; Maven is never invoked.
         (self.root / "release").write_text('JAVA_VERSION="25"\n')
-        calls = []
-        def execute(command, log, seconds, env):
-            calls.append(command)
-            log.write_text("synthetic offline resolution failure\n")
-            return 1 if "package" in command else 0
         source = {"files": [{"path": "workers/java/pom.xml"}]}
         rows = [{"path": "pom.xml", "bytes": 1, "sha256": "a" * 64, "executable": False}]
-        with patch.object(producer, "tracked_source", return_value=source), \
-             patch.object(inputs, "scan", return_value=rows), \
-             patch.object(inputs, "copy_verified"), \
-             patch.object(inputs, "jar_inventory", return_value={"sha256": "b" * 64}), \
-             patch.object(producer, "selected_plugins", return_value=[]), \
-             patch.object(producer, "run_logged", side_effect=execute):
-            value = producer.observe(self.root, signers=self.root, jdk=self.root, maven=self.root,
-                                     cache=self.root, staged=self.root)
-        self.assertEqual(value["failure"], "offline_maven_package_failed")
-        self.assertEqual(len(value["builds"]), 1)
-        self.assertEqual(sum("package" in call for call in calls), 1)
-        self.assertTrue((self.root / "build-1.log").is_file())
-        self.assertFalse((self.root / "build-2").exists())
+        for exit_code, failure in [(1, "offline_maven_package_failed"),
+                                   (0, "actual_build_plugin_versions_differ")]:
+            with self.subTest(exit_code=exit_code):
+                artifact = self.root / str(exit_code)
+                artifact.mkdir()
+                calls = []
+                def execute(command, log, seconds, env):
+                    calls.append(command)
+                    log.write_text("synthetic incomplete build diagnostic\n")
+                    return exit_code if "package" in command else 0
+                with patch.object(producer, "tracked_source", return_value=source), \
+                     patch.object(inputs, "scan", return_value=rows), \
+                     patch.object(inputs, "copy_verified"), \
+                     patch.object(inputs, "jar_inventory", return_value={"sha256": "b" * 64}), \
+                     patch.object(producer, "selected_plugins", return_value=[]), \
+                     patch.object(producer, "run_logged", side_effect=execute):
+                    value = producer.observe(artifact, signers=self.root, jdk=self.root, maven=self.root,
+                                             cache=self.root, staged=self.root)
+                self.assertEqual(value["failure"], failure)
+                self.assertEqual(value["builds"], [{"number": 1, "exit_code": exit_code}])
+                self.assertEqual(sum("package" in call for call in calls), 1)
+                self.assertTrue((artifact / "build-1.log").is_file())
+                self.assertFalse((artifact / "build-2").exists())
 
 
 if __name__ == "__main__":
