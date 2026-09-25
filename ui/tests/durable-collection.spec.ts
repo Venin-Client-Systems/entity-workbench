@@ -327,6 +327,70 @@ test("a corrupted retained original makes inspection unavailable, never successf
     .click();
   await expect(dialog.getByText("Successful", { exact: true })).toBeVisible();
 });
+
+for (const failure of ["real standalone refusal", "injected preparation conflict"]) {
+  test(`stale Cancel controls require refresh after ${failure}`, async ({ page }) => {
+    await open(page);
+    const run = rows.find((r) => r.state === "interrupted")!;
+    const before = core({ action: "inspect_collection_run", job_id: run.id });
+    let staleInspection = true;
+    const requests: Record<string, unknown>[] = [];
+    await page.route("**/api/workbench", async (route) => {
+      const request = route.request().postDataJSON();
+      if (request.action === "inspect_collection_run" && request.job_id === run.id) {
+        const response = await route.fetch();
+        if (staleInspection) {
+          staleInspection = false;
+          const value: CollectionInspection = await response.json();
+          // Test-only stale availability: the standalone backend has no executor.
+          // This exercises refusal recovery, not enabled native collection.
+          value.availability = "synthetic_fixture";
+          value.controls.can_cancel = true;
+          await route.fulfill({ response, json: value });
+        } else await route.fulfill({ response });
+      } else if (request.action === "cancel_collection") {
+        requests.push(request);
+        if (failure === "injected preparation conflict") {
+          // The Rust coordinator tests establish the real conflicting write.
+          // Here only its transport/UI consequence is injected deliberately.
+          await route.fulfill({
+            status: 400,
+            json: { error: "Collection changed during cancellation preparation" },
+          });
+        } else {
+          const response = await route.fetch();
+          expect(response.status()).toBe(400);
+          await route.fulfill({ response });
+        }
+      } else await route.continue();
+    });
+    const { dialog } = await review(page, "interrupted");
+    const cancel = dialog.getByRole("button", { name: "Cancel collection", exact: true });
+    await expect(cancel).toBeEnabled();
+    await cancel.click();
+    await expect(dialog.getByRole("alert")).toContainText(
+      "Control outcome is unconfirmed. Refresh before taking another action.",
+    );
+    if (failure === "injected preparation conflict")
+      await expect(dialog.getByRole("alert")).toContainText(
+        "Collection changed during cancellation preparation",
+      );
+    await expect(cancel).toHaveCount(0);
+    await expect(dialog.getByText("Recorded outcome", { exact: true })).toHaveCount(0);
+    await expect(dialog.getByRole("status")).toHaveCount(0);
+    expect(requests).toEqual([
+      { action: "cancel_collection", job_id: run.id, expected_generation: run.generation },
+    ]);
+    expect(core({ action: "inspect_collection_run", job_id: run.id })).toEqual(before);
+    expect(core({ action: "view" }).workspace.revision).toBe(revision);
+    await dialog.getByRole("button", { name: "Refresh collection", exact: true }).click();
+    await expect(dialog.getByRole("alert")).toHaveCount(0);
+    await expect(dialog.getByText("Interrupted", { exact: true })).toBeVisible();
+    await expect(cancel).toBeDisabled();
+    expect(requests).toHaveLength(1); // Refresh must not retry the mutation.
+  });
+}
+
 test("held old inspection cannot populate a reopened different record", async ({
   page,
 }) => {
