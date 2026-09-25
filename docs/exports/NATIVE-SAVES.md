@@ -1,6 +1,6 @@
 # Native export preparation and verified saves
 
-Native transaction JSON, saved assessment HTML and retained DOCX use typed Rust operations. They do not create a Blob, initiate a WebKit download, accept frontend document bytes, choose analyst-supplied paths, or open exported HTML. The browser development interface retains its browser-owned download behavior.
+Native transaction JSON, typed-literal CSV, saved assessment HTML and retained DOCX use typed Rust operations. They do not create a Blob, initiate a WebKit download, accept frontend document bytes, choose analyst-supplied paths, or open exported HTML. The browser development interface retains its browser-owned download behavior.
 
 ## Why this path exists
 
@@ -23,7 +23,7 @@ One export is preparing, prepared or committing at a time. At most eight small c
 
 ## Storage and lifecycle
 
-The coordinator owns `native-export-staging` and uses the existing application-managed workspace `exports` directory. JSON/HTML files are at most 256 MiB; DOCX files are at most 32 MiB. On Unix, directories are 0700 and files are created 0600. Windows files inherit the workspace's OS access controls; these checks are not application-level encryption or an AppContainer boundary.
+The coordinator owns `native-export-staging` and uses the existing application-managed workspace `exports` directory. JSON/HTML/CSV files are at most 256 MiB; DOCX files are at most 32 MiB. On Unix, directories are 0700 and files are created 0600. Windows files inherit the workspace's OS access controls; these checks are not application-level encryption or an AppContainer boundary.
 
 Names are derived only from export kind, revision or report ID, and the exact SHA-256. A new stage is created exclusively, written, synced and closed. Publication uses a same-filesystem hard link that cannot clobber an existing name; an existing target is reusable only if ordinary, singly linked and byte-identical. Filesystems without the required operation fail explicitly. The temporary two-link state is allowed only when the stage and target identify the same file. The completed target must be singly linked. Unix directory synchronization precedes stage removal and acknowledgement.
 
@@ -40,3 +40,16 @@ Rust regressions cover exact bytes, immutable old HTML, stale revision, identity
 `native_export_session` is a developer-only persistent transport around the real coordinator. Browser tests route native IPC into it, inspect actual files and compare complete JSON/HTML bytes with canonical results. These verify interface lifecycle and core publication, not native WebKit execution. Existing browser export, stale-scope and assessment regressions remain required. Native app verification must separately confirm a responsive UI, exact exported bytes and unchanged canonical data on the actual compiled artifact.
 
 This slice does not reduce the existing core export's full-ledger allocation, add desktop DOCX controls, a save-location picker, or reveal/open files. The receipt displays the verified application-managed location. A future reveal operation must accept only a minted saved identity, reverify its internally derived path, and select the file without opening HTML. No product-design approval is claimed for a new layout: the existing export buttons and status text remain in use.
+
+
+## Typed-literal CSV native save
+
+The additive `transaction_csv` request accepts `request: { selection, non_accepted }`, `expected_revision`, `expected_row_count`, `expected_matching` and `expected_format: "typed_literal_v1"`. It reuses the [complete CSV serializer](../transactions/TYPED-CSV.md) with its original verification, exact decimal strings, explicit mixed-review policy, visible type prefixes and 256 MiB artifact bound. An omitted or unknown format/policy is refused; no arbitrary content or path can be supplied. Scope, row count and matching expectations are checked before a stage exists.
+
+The prepared and saved artifact carries the complete request, captured revision, matching profile, selection hash, format name/hash, full data dictionary, row count, byte length and exact CSV digest. The native interface receives metadata only; the BOM/CRLF CSV bytes stay in Rust and the private stage. The dictionary is metadata in the receipt; it is not a second saved sidecar file. The CSV's fixed visible prefixes and the documented v1 column contract remain in the exported artifact. This does not claim ordinary numeric spreadsheet cells, Excel/LibreOffice validation or universal formula safety.
+
+The native lifecycle schemas are additive v2 files; their older v1 bytes remain preserved. CSV prepared/saved envelopes use `schema_version: 2`. Existing JSON/HTML/DOCX envelopes remain version 1 with identical structure; the ticket and expiry behavior is unchanged. Clients must explicitly understand the new artifact kind and envelope version. The canonical Command remains v24 and the workspace schema remains unchanged.
+
+The internally derived name is `transactions-typed-v1-r<revision>-<sha256>.csv`. An export prepared before a correction keeps its original captured bytes and revision; a fresh export after that correction has a different identity. Recommit verifies the same file and ticket, identical content reuses an existing ordinary file, and a corrupt or unrelated target prevents a saved receipt. The save does not mutate canonical transactions or reports. The selected review policy does not alter the artifact content for an identical selection, and therefore may share its filename while remaining explicit in each receipt.
+
+Three focused Rust tests cover exact formula/leading-zero/decimal bytes through actual staging and publication, correction after preparation, exact-ticket recovery, duplicate-file avoidance, stale/count/matching/policy rejection without a stage, unknown format refusal and corrupt-target preservation. Existing lifecycle regressions continue to cover link substitution, shutdown and cleanup. The CSV desktop controls and actual native application save remain subsequent verification; this backend addition alone is not their acceptance evidence.

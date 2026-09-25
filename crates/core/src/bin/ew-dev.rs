@@ -193,28 +193,28 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "native-export-request",
-                1,
+                2,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::local_export::NativeExportRequest
                 ))?,
             ),
             (
                 "prepared-export",
-                1,
+                2,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::local_export::PreparedExport
                 ))?,
             ),
             (
                 "saved-export-receipt",
-                1,
+                2,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::local_export::SavedExportReceipt
                 ))?,
             ),
             (
                 "discarded-export",
-                1,
+                2,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::local_export::DiscardedExport
                 ))?,

@@ -46,6 +46,36 @@ impl Workspace {
         request: NativeExportRequest,
     ) -> Result<(ExportArtifact, Vec<u8>)> {
         match request {
+            NativeExportRequest::TransactionCsv {
+                request,
+                expected_revision,
+                expected_row_count,
+                expected_matching,
+                expected_format,
+            } => {
+                let export = self.export_transaction_csv(&request, expected_revision)?;
+                require(
+                    export.row_count == expected_row_count
+                        && export.matching == expected_matching
+                        && export.format == expected_format,
+                    "CSV export count, matching profile or format changed; refresh the ledger",
+                )?;
+                Ok((
+                    ExportArtifact::TransactionCsv {
+                        workspace_revision: export.workspace_revision,
+                        request: export.request,
+                        matching: export.matching,
+                        selection_sha256: export.selection_sha256,
+                        format: export.format,
+                        format_sha256: export.format_sha256,
+                        dictionary: Box::new(export.dictionary),
+                        row_count: export.row_count,
+                        bytes: export.bytes,
+                        sha256: export.sha256,
+                    },
+                    export.csv.into_bytes(),
+                ))
+            }
             NativeExportRequest::DocxReport {
                 report_id,
                 expected_document_sha256,
@@ -212,7 +242,7 @@ impl NativeExports {
         )?;
         self.session.directories()?;
         let prepared = PreparedExport {
-            schema_version: 1,
+            schema_version: artifact.envelope_version(),
             ticket: id(),
             expires_after_seconds: TTL.as_secs(),
             artifact,
@@ -315,7 +345,7 @@ impl NativeExports {
         self.session.cleanup(&mut state)?;
         verify(&target, &prepared.artifact, 1)?;
         let receipt = SavedExportReceipt {
-            schema_version: 1,
+            schema_version: prepared.schema_version,
             ticket: ticket.into(),
             filename: prepared.artifact.filename(),
             location: target.to_string_lossy().into_owned(),

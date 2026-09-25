@@ -2,9 +2,166 @@ use super::*;
 use crate::{
     coordinator::JobCoordinator,
     literal_search::LiteralMatching,
+    transaction_csv::{NonAcceptedCsvPolicy, TransactionCsvFormat, TransactionCsvRequest},
     transaction_export::TransactionExportRequest,
     transaction_page::{TransactionPageFilter, TransactionPageOrder},
 };
+
+fn csv_request(revision: u64, count: u64, policy: NonAcceptedCsvPolicy) -> NativeExportRequest {
+    NativeExportRequest::TransactionCsv {
+        request: TransactionCsvRequest {
+            selection: TransactionExportRequest {
+                query: String::new(),
+                filter: TransactionPageFilter::default(),
+                order: TransactionPageOrder::DateAscending,
+            },
+            non_accepted: policy,
+        },
+        expected_revision: revision,
+        expected_row_count: count,
+        expected_matching: LiteralMatching::default(),
+        expected_format: TransactionCsvFormat::TypedLiteralV1,
+    }
+}
+
+#[test]
+fn typed_csv_native_save_keeps_prepared_bytes_after_correction_and_retries_same_ticket() {
+    let (_temp, mut workspace) = fixture();
+    workspace
+        .import(
+            "synthetic.csv",
+            b"account,date,description,amount,currency\n000042,2024-02-29,=1+1,-0.10000001,AUD\n",
+        )
+        .unwrap();
+    let before = workspace.view().unwrap();
+    let request = csv_request(before.revision, 1, NonAcceptedCsvPolicy::AllowSelected);
+    let expected = workspace.native_export_content(request.clone()).unwrap();
+    let exports = workspace.start_native_exports().unwrap();
+    let prepared = exports
+        .prepare(|| workspace.native_export_content(request))
+        .unwrap();
+    assert!(
+        matches!(&prepared.artifact, ExportArtifact::TransactionCsv { workspace_revision, row_count: 1, .. } if *workspace_revision == before.revision)
+    );
+    assert_eq!(
+        serde_json::to_value(&prepared.artifact).unwrap(),
+        serde_json::to_value(&expected.0).unwrap()
+    );
+    let metadata = serde_json::to_value(&prepared).unwrap();
+    assert_eq!(prepared.schema_version, 2);
+    assert!(metadata["artifact"].get("csv").is_none());
+    workspace
+        .correct_transaction(
+            &before.transactions[0].id,
+            "-9.00000001",
+            "Synthetic correction after CSV preparation",
+            before.revision,
+        )
+        .unwrap();
+    let revision = workspace.revision().unwrap();
+    let saved = commit(&exports, &prepared).unwrap();
+    assert_eq!(saved.schema_version, 2);
+    assert!(saved.filename.ends_with(".csv"));
+    assert!(saved
+        .filename
+        .starts_with(&format!("transactions-typed-v1-r{}-", before.revision)));
+    let bytes = fs::read(&saved.location).unwrap();
+    assert_eq!(bytes, expected.1);
+    let text = String::from_utf8(bytes).unwrap();
+    assert!(text.starts_with('\u{feff}'));
+    assert!(
+        text.contains("text:000042")
+            && text.contains("text:=1+1")
+            && text.contains("decimal:-0.10000001")
+    );
+    assert_eq!(
+        serde_json::to_value(&saved).unwrap(),
+        serde_json::to_value(commit(&exports, &prepared).unwrap()).unwrap()
+    );
+    let current = exports
+        .prepare(|| {
+            workspace.native_export_content(csv_request(
+                revision,
+                1,
+                NonAcceptedCsvPolicy::AllowSelected,
+            ))
+        })
+        .unwrap();
+    let changed = commit(&exports, &current).unwrap();
+    assert_ne!(changed.filename, saved.filename);
+    assert_eq!(fs::read(&saved.location).unwrap(), expected.1);
+    assert_eq!(workspace.revision().unwrap(), revision);
+    exports.shutdown().unwrap();
+}
+
+#[test]
+fn typed_csv_native_refuses_nonaccepted_stale_and_wrong_scope_expectations_without_stage() {
+    let (_temp, mut workspace) = fixture();
+    workspace
+        .import(
+            "synthetic.csv",
+            b"account,date,description,amount,currency\n000042,2024-02-29,Synthetic,-1.01,AUD\n",
+        )
+        .unwrap();
+    let revision = workspace.revision().unwrap();
+    let exports = workspace.start_native_exports().unwrap();
+    let mut wrong_matching = csv_request(revision, 1, NonAcceptedCsvPolicy::AllowSelected);
+    if let NativeExportRequest::TransactionCsv {
+        expected_matching, ..
+    } = &mut wrong_matching
+    {
+        expected_matching.unicode_version = [0, 0, 0];
+    }
+    for request in [
+        csv_request(revision, 1, NonAcceptedCsvPolicy::Reject),
+        csv_request(revision - 1, 1, NonAcceptedCsvPolicy::AllowSelected),
+        csv_request(revision, 2, NonAcceptedCsvPolicy::AllowSelected),
+        wrong_matching,
+    ] {
+        assert!(exports
+            .prepare(|| workspace.native_export_content(request))
+            .is_err());
+        assert!(exports.session.registry.lock().unwrap().stage.is_none());
+        assert_eq!(fs::read_dir(exports.session.staging()).unwrap().count(), 0);
+        assert_eq!(fs::read_dir(exports.session.exports()).unwrap().count(), 0);
+    }
+    let mut invalid = serde_json::to_value(csv_request(
+        revision,
+        1,
+        NonAcceptedCsvPolicy::AllowSelected,
+    ))
+    .unwrap();
+    invalid["expected_format"] = serde_json::json!("raw_unquoted");
+    assert!(serde_json::from_value::<NativeExportRequest>(invalid).is_err());
+    assert_eq!(workspace.revision().unwrap(), revision);
+    exports.shutdown().unwrap();
+}
+
+#[test]
+fn typed_csv_native_same_content_reuses_file_but_corrupt_target_never_gets_receipt() {
+    let (_temp, workspace) = fixture();
+    let exports = workspace.start_native_exports().unwrap();
+    let make = || workspace.native_export_content(csv_request(0, 0, NonAcceptedCsvPolicy::Reject));
+    let prepared = exports.prepare(make).unwrap();
+    let saved = commit(&exports, &prepared).unwrap();
+    let second = exports.prepare(make).unwrap();
+    assert_eq!(commit(&exports, &second).unwrap().location, saved.location);
+    assert_eq!(fs::read_dir(exports.session.exports()).unwrap().count(), 1);
+    let third = exports.prepare(make).unwrap();
+    fs::write(&saved.location, b"unrelated prior file").unwrap();
+    assert!(commit(&exports, &third).is_err());
+    assert_eq!(fs::read(&saved.location).unwrap(), b"unrelated prior file");
+    assert!(!exports
+        .session
+        .registry
+        .lock()
+        .unwrap()
+        .completed
+        .iter()
+        .any(|r| r.ticket == third.ticket));
+    exports.discard(&third.ticket).unwrap();
+    exports.shutdown().unwrap();
+}
 fn fixture() -> (tempfile::TempDir, Workspace) {
     let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
     let workspace = Workspace::open(temp.path().join("case")).unwrap();
@@ -40,6 +197,7 @@ fn transaction_identity_exact_bytes_no_clobber_and_lost_ack_recommit() {
     let exports = workspace.start_native_exports().unwrap();
     let expected = workspace.native_export_content(request(0)).unwrap().1;
     let prepared = prepare(&exports, &workspace);
+    assert_eq!(prepared.schema_version, 1);
     assert!(exports
         .prepare(|| workspace.native_export_content(request(0)))
         .is_err());
@@ -47,6 +205,7 @@ fn transaction_identity_exact_bytes_no_clobber_and_lost_ack_recommit() {
         .commit(&prepared.ticket, &"0".repeat(64), prepared.artifact.bytes())
         .is_err());
     let saved = commit(&exports, &prepared).unwrap();
+    assert_eq!(saved.schema_version, 1);
     assert_eq!(fs::read(&saved.location).unwrap(), expected.as_slice());
     assert_eq!(
         serde_json::to_value(&saved).unwrap(),

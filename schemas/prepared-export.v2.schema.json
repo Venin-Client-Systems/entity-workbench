@@ -1,0 +1,434 @@
+{
+  "$defs": {
+    "CsvLogicalType": {
+      "enum": [
+        "text",
+        "exact_decimal_text",
+        "calendar_date_text",
+        "unsigned_integer",
+        "source_anchor_json",
+        "string_array_json"
+      ],
+      "type": "string"
+    },
+    "ExportArtifact": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dictionary": {
+              "$ref": "#/$defs/TransactionCsvDictionary"
+            },
+            "format": {
+              "$ref": "#/$defs/TransactionCsvFormat"
+            },
+            "format_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "transaction_csv",
+              "type": "string"
+            },
+            "matching": {
+              "$ref": "#/$defs/LiteralMatching"
+            },
+            "request": {
+              "$ref": "#/$defs/TransactionCsvRequest"
+            },
+            "row_count": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "selection_sha256": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "workspace_revision": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "workspace_revision",
+            "request",
+            "matching",
+            "selection_sha256",
+            "format",
+            "format_sha256",
+            "dictionary",
+            "row_count",
+            "bytes",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "document_sha256": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "docx_report",
+              "type": "string"
+            },
+            "report_id": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "workspace_revision": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "report_id",
+            "workspace_revision",
+            "document_sha256",
+            "bytes",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "const": "transactions",
+              "type": "string"
+            },
+            "matching": {
+              "$ref": "#/$defs/LiteralMatching"
+            },
+            "query_sha256": {
+              "type": "string"
+            },
+            "request": {
+              "$ref": "#/$defs/TransactionExportRequest"
+            },
+            "row_count": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "workspace_revision": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "workspace_revision",
+            "request",
+            "matching",
+            "query_sha256",
+            "row_count",
+            "bytes",
+            "sha256"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "const": "html_report",
+              "type": "string"
+            },
+            "report_id": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "workspace_revision": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "report_id",
+            "workspace_revision",
+            "bytes",
+            "sha256"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "LiteralMatching": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/LiteralSearchAlgorithm"
+        },
+        "unicode_version": {
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "unicode_version"
+      ],
+      "type": "object"
+    },
+    "LiteralSearchAlgorithm": {
+      "enum": [
+        "unicode_default_lowercase_literal_v1"
+      ],
+      "type": "string"
+    },
+    "NonAcceptedCsvPolicy": {
+      "enum": [
+        "reject",
+        "allow_selected"
+      ],
+      "type": "string"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "TransactionCsvColumn": {
+      "additionalProperties": false,
+      "properties": {
+        "logical_type": {
+          "$ref": "#/$defs/CsvLogicalType"
+        },
+        "meaning": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "logical_type",
+        "prefix",
+        "nullable",
+        "meaning"
+      ],
+      "type": "object"
+    },
+    "TransactionCsvDictionary": {
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/TransactionCsvColumn"
+          },
+          "type": "array"
+        },
+        "delimiter": {
+          "type": "string"
+        },
+        "encoding": {
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "null_literal": {
+          "type": "string"
+        },
+        "quote_policy": {
+          "type": "string"
+        },
+        "record_terminator": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "encoding",
+        "delimiter",
+        "record_terminator",
+        "quote_policy",
+        "null_literal",
+        "columns",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "TransactionCsvFormat": {
+      "enum": [
+        "typed_literal_v1"
+      ],
+      "type": "string"
+    },
+    "TransactionCsvRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "non_accepted": {
+          "$ref": "#/$defs/NonAcceptedCsvPolicy"
+        },
+        "selection": {
+          "$ref": "#/$defs/TransactionExportRequest"
+        }
+      },
+      "required": [
+        "selection",
+        "non_accepted"
+      ],
+      "type": "object"
+    },
+    "TransactionExportRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "filter": {
+          "$ref": "#/$defs/TransactionPageFilter"
+        },
+        "order": {
+          "$ref": "#/$defs/TransactionPageOrder"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query",
+        "filter",
+        "order"
+      ],
+      "type": "object"
+    },
+    "TransactionPageFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReviewState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TransactionPageOrder": {
+      "enum": [
+        "date_ascending",
+        "date_descending"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact": {
+      "$ref": "#/$defs/ExportArtifact"
+    },
+    "expires_after_seconds": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "ticket": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "ticket",
+    "expires_after_seconds",
+    "artifact"
+  ],
+  "title": "PreparedExport",
+  "type": "object"
+}
