@@ -354,11 +354,13 @@ test("late response after navigation cannot publish into a new flow instance", a
       ready = r;
     });
   await page.route("**/api/workbench", async (route) => {
-    if (route.request().postDataJSON().action !== "analyze_account_flows")
-      return route.continue();
+    // Own each real core response through completion, including the remounted
+    // ledger/facet reads, before the next fixture removes its workspace.
     const response = await route.fetch();
-    ready();
-    await held;
+    if (route.request().postDataJSON().action === "analyze_account_flows") {
+      ready();
+      await held;
+    }
     await route.fulfill({ response });
   });
   const panel = await open(page);
@@ -373,6 +375,12 @@ test("late response after navigation cannot publish into a new flow instance", a
     .getByRole("button", { name: /Transactions/ })
     .click();
   release();
+  await expect(panel.getByLabel("Flow account", { exact: true })).toContainText(
+    "0001",
+  );
+  // This also proves the deliberately late response was actually delivered;
+  // merely releasing its promise could leave the assertion ahead of delivery.
+  await page.unrouteAll({ behavior: "wait" });
   await expect(
     panel.getByText(
       "Choose a scope and calculate. No flow result has been requested.",
