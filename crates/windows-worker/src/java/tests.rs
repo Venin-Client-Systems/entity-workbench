@@ -311,12 +311,23 @@ fn trusted_runtime_access_failure_is_blocked_without_hiding_cancellation() {
     let execution = execute(&root, &root, &job, || false);
     let cancellation = prepared.verify_runtime_with_cancel(&root, &|| true);
     #[cfg(unix)]
+    let expected_kind = std::io::ErrorKind::PermissionDenied;
+    #[cfg(windows)]
+    let expected_kind = {
+        use windows_sys::Win32::Foundation::ERROR_SHARING_VIOLATION;
+        // The fixture causes a sharing violation, not an ACL denial. Keep the
+        // exact native control and use this toolchain's ErrorKind mapping.
+        let control = fs::read(&manifest).unwrap_err();
+        assert_eq!(control.raw_os_error(), Some(ERROR_SHARING_VIOLATION as i32));
+        control.kind()
+    };
+    #[cfg(unix)]
     fs::set_permissions(&manifest, original_permissions).unwrap();
     #[cfg(windows)]
     drop(exclusive);
     assert!(matches!(
         raw_read,
-        Err(Error::Io(std::io::ErrorKind::PermissionDenied))
+        Err(Error::Io(kind)) if kind == expected_kind
     ));
     assert_runtime_unavailable(verification);
     assert_runtime_unavailable(execution);

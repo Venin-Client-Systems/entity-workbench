@@ -437,4 +437,10 @@ DOCX UI source `1929391` passes 17 isolated compatibility cases; typed recovery 
 
 Windows runtime classification source `395215be` passes 52 host tests, host strict Clippy and Windows-target all-target check/Clippy. Its two before-fix failures are retained. Windows-specific branches were compiled locally, not executed on this Mac. The canonical adapter passes host binding and both-dispatch publication checks; actual Windows execution remains the next campaign. The earlier published `523bcfb` passed all five hosted source/AppContainer checks. Those results do not substitute for verification of this new source.
 
+## Windows campaign preflight regressions — 25 September 2026
+
+At `ed4ab2c`, [source run 36057371444](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36057371444) failed full Python discovery because `test_windows_parser_coordinator` resolved to the runner rather than the same-named test module. The unit file is now `test_windows_coordinator_receipts.py`; full discovery runs 140 cases with three platform skips on the development Mac. The campaign runner and its strict receipt validation are unchanged.
+
+[AppContainer run 36057371509](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36057371509) passed 65 worker tests and failed the trusted-runtime access fixture's raw `PermissionDenied` assertion. That fixture uses a Windows exclusive file handle, which must be checked as an exact `ERROR_SHARING_VIOLATION` using an independent native read. It now compares the runtime reader's error kind to that control, then still requires blocked verification/execution, cancellation precedence and successful verification after releasing the handle. No production code or worker access rules changed. All 52 host worker tests and strict host Clippy pass; Windows runtime verification remains a new hosted-run dependency.
+
 Combined local verification record: `artifacts/integration-3ce8000/verification.json`, SHA-256 `a85c6b84004c8dbba89a7e7413c15979148ad35addb6773dbf4030fd64ed4b76`. No release gate is changed.
