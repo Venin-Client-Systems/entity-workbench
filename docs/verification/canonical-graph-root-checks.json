@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "source_commit": "f76ef907e3aa0ba5072d742e07da4cea76fc3fec",
+  "campaign_id": "356c7b95-a336-43d7-a4ec-ffa61a4ed0d7",
+  "native_job_id": "d7a35f1e-baed-4ce1-99c1-9559cb741ab4",
+  "source_files_verified": 33,
+  "outer_sha256": "70d78b7574ac9da13c80fc9072be87e716dd845d991c8d38abc6244abdc3bfd8",
+  "native_sha256": "87ec97f88ba226ed93ccbb1cc6a4e05be7cd4230ba77c2e8e58b356ba581d8b5",
+  "compiled_binary_sha256": "1925aa7ce1aa33d0af1866d5bf4a902621aaf657033b433b5bf8bf8e2bdde02c",
+  "strict_native_receipt_and_raw_files_validated": true,
+  "canonical_integrity": "ok",
+  "canonical_state_sha256": "f91cc489be1f51b4cd4b0c9c0817cbcc6f2040bd15714aa0c9350f72fa654f70",
+  "canonical_row_counts": {
+    "derivative_objects": 0,
+    "events": 2,
+    "history": 0,
+    "meta": 1,
+    "records": 25,
+    "sqlite_sequence": 3
+  },
+  "independent_path": [
+    "a",
+    "b",
+    "c"
+  ],
+  "parallel_assertions": [
+    [
+      "r1",
+      "r1-parallel"
+    ],
+    [
+      "r2"
+    ]
+  ],
+  "originals": [
+    {
+      "sha256": "6a7b18ffff842f518e2744df71d659d865f50f80b81951d6eba1fd6260c836cd",
+      "bytes": 58
+    }
+  ],
+  "original_and_moved_inventory_equal": true,
+  "inventory": {
+    "verified": true,
+    "installation_state": "assembled-unexecuted",
+    "complete_release": false,
+    "runtime_components_satisfied": [],
+    "package_code_executed": false,
+    "files": 11320,
+    "bytes": 601821300,
+    "wheels": 58,
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822"
+  },
+  "assignment_directories_remaining": 0,
+  "new_worker_invocations": 0,
+  "complete_release": false
+}

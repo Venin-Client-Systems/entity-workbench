@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "source_commit": "774a8fc3b77d2c7e8d4f42ea07f1763b36347571",
+  "scope": "Ordinary integrated canonical graph recipe checks; no new candidate execution",
+  "rust_graph_capture_passed": 19,
+  "rust_graph_recipe_filter_passed": 3,
+  "overlap_cases": 1,
+  "native_tests_ignored_in_recipe_filter": 1,
+  "python_focused_passed": 10,
+  "strict_all_target_clippy": "passed",
+  "logs": {
+    "clippy.log": {
+      "sha256": "ba099c34604f40be30e9be690d004dcdbaf286e25068490011228d40365c302c",
+      "bytes": 185
+    },
+    "graph-capture.log": {
+      "sha256": "5d788b7a2dbe1f40c666d504c8fe4ce198dec062276bab96df7db3db861494a7",
+      "bytes": 2588
+    },
+    "graph-native-contract.log": {
+      "sha256": "e05cafcfb743471445055bcd4dc8b9839123638b46a71b187e5044a2714486f1",
+      "bytes": 830
+    },
+    "python-canonical.log": {
+      "sha256": "03b6aef23b658d4d88ea2538a3c312ef229403acfcf8863b5f4a4b3be65e9327",
+      "bytes": 2106
+    }
+  },
+  "complete_release": false
+}
