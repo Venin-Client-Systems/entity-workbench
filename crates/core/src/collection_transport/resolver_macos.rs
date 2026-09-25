@@ -123,6 +123,8 @@ unsafe extern "C" fn answer(
             }
         }
     };
+    #[cfg(test)]
+    native_proof::callback(flags, error);
     answers.record(flags, error, ip);
 }
 
@@ -136,6 +138,8 @@ impl Drop for Operation {
             // SAFETY: no dispatch queue or concurrent callback thread is used. The
             // poll registration is a stack value and ProcessResult has returned.
             unsafe { DNSServiceRefDeallocate(self.service) };
+            #[cfg(test)]
+            native_proof::deallocated();
             self.service = ptr::null_mut();
         }
     }
@@ -155,6 +159,8 @@ pub(super) fn native(
     window.check(cancellation)?;
     // SAFETY: all inputs/context outlive the continuing service, deallocated by
     // Operation on every return. Request both families without forcing multicast.
+    #[cfg(test)]
+    native_proof::attempted();
     let status = unsafe {
         DNSServiceGetAddrInfo(
             &mut operation.service,
@@ -166,6 +172,8 @@ pub(super) fn native(
             (&mut *operation.answers as *mut Answers).cast(),
         )
     };
+    #[cfg(test)]
+    native_proof::creation_status(status);
     if status != 0 {
         // Failed creation does not transfer a valid service reference to us.
         operation.service = ptr::null_mut();
@@ -174,6 +182,8 @@ pub(super) fn native(
     if operation.service.is_null() {
         return Err(StopReason::ResolverUnavailable);
     }
+    #[cfg(test)]
+    native_proof::created(window);
     // SAFETY: the successful service remains live throughout this owned loop.
     let fd = unsafe { DNSServiceRefSockFD(operation.service) };
     if fd < 0 {
@@ -261,3 +271,7 @@ mod tests {
         assert_eq!(answers.error, Some(StopReason::Network));
     }
 }
+
+#[cfg(test)]
+#[path = "native_macos_proof.rs"]
+mod native_proof;
