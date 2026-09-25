@@ -538,3 +538,175 @@ fn contained_lane_failure_refuses_new_work_instead_of_admitting_stranded_queue()
     drop(workspace);
     coordinator.shutdown().unwrap();
 }
+
+#[test]
+fn v4_interpretation_releases_workspace_for_canonical_cancel_and_preserves_complete_body() {
+    let (temp, w) = fixture();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let counter = calls.clone();
+    let c = JobCoordinator::with_public_collection_executor(
+        w,
+        no_documents(),
+        Arc::new(move |ticket, input, window, pacing, token| {
+            counter.fetch_add(1, Ordering::SeqCst);
+            let reply = if ticket.sequence == 0 {
+                response(0)
+            } else {
+                let body = b"<p>Unreviewed prepared HTML</p><a href='/must-not-fetch'>next</a>";
+                let mut reply = format!(
+                    "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: {}\r\n\r\n",
+                    body.len()
+                )
+                .into_bytes();
+                reply.extend_from_slice(body);
+                reply
+            };
+            canonical_tls(ticket, input, window, pacing, token, reply, false)
+        }),
+    )
+    .unwrap();
+    let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let release_rx = Mutex::new(release_rx);
+    *c.shared
+        .collection
+        .as_ref()
+        .unwrap()
+        .preparation_hook
+        .lock()
+        .unwrap() = Some(Arc::new(move |request| {
+        if request.sequence == 1 {
+            entered_tx.send(()).unwrap();
+            release_rx
+                .lock()
+                .unwrap()
+                .recv_timeout(Duration::from_secs(10))
+                .unwrap();
+        }
+    }));
+    let run = queue(&c, &key());
+    entered_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+    // A real command can acquire the mutex and COMMIT while the parser lane is
+    // paused. No SQLite read transaction from capture blocks that cancellation.
+    assert!(c.shared.workspace.try_lock().is_ok());
+    let cancelled: CollectionRunInspection = serde_json::from_value(
+        c.dispatch(Command::CancelCollection {
+            job_id: run.run.id.clone(),
+            expected_generation: 1,
+        })
+        .unwrap(),
+    )
+    .unwrap();
+    assert!(cancelled.run.cancellation_requested);
+    assert_eq!(cancelled.run.requests_used, 2);
+    assert_eq!(cancelled.run.state, CollectionState::Running);
+    release_tx.send(()).unwrap();
+    until(|| inspect(&c, &run.run.id).run.state == CollectionState::Cancelled);
+    let done = inspect(&c, &run.run.id);
+    assert_eq!(done.run.pages_retained, 0);
+    assert_eq!(calls.load(Ordering::SeqCst), 2);
+    assert!(done.requests[1].original.is_some());
+    assert!(c
+        .shared
+        .workspace
+        .lock()
+        .unwrap()
+        .view()
+        .unwrap()
+        .evidence
+        .iter()
+        .all(|source| source.text.is_none()));
+    c.shutdown().unwrap();
+    drop(c);
+    let reopened = Workspace::open(temp.path().join("case")).unwrap();
+    let after = reopened.inspect_collection_run(&done.run.id).unwrap();
+    assert_eq!(after.run, done.run);
+    assert_eq!(after.requests, done.requests);
+}
+
+#[test]
+fn v4_shutdown_joins_paused_preparation_before_releasing_owner_and_retains_exact_body() {
+    let (temp, w) = fixture();
+    let calls = Arc::new(AtomicUsize::new(0));
+    let counter = calls.clone();
+    let c = Arc::new(
+        JobCoordinator::with_public_collection_executor(
+            w,
+            no_documents(),
+            Arc::new(move |ticket, input, window, pacing, token| {
+                counter.fetch_add(1, Ordering::SeqCst);
+                canonical_tls(
+                    ticket,
+                    input,
+                    window,
+                    pacing,
+                    token,
+                    response(ticket.sequence),
+                    false,
+                )
+            }),
+        )
+        .unwrap(),
+    );
+    let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let release_rx = Mutex::new(release_rx);
+    *c.shared
+        .collection
+        .as_ref()
+        .unwrap()
+        .preparation_hook
+        .lock()
+        .unwrap() = Some(Arc::new(move |request| {
+        if request.sequence == 1 {
+            entered_tx.send(()).unwrap();
+            release_rx
+                .lock()
+                .unwrap()
+                .recv_timeout(Duration::from_secs(10))
+                .unwrap();
+        }
+    }));
+    let run = queue(&c, &key());
+    entered_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+    let stopping = c.clone();
+    let (finished_tx, finished_rx) = std::sync::mpsc::channel();
+    let joined = thread::spawn(move || {
+        finished_tx.send(stopping.shutdown()).unwrap();
+    });
+    until(|| c.shared.stopping.load(Ordering::Acquire));
+    assert!(c.shared.ownership.publication_held());
+    assert!(matches!(
+        finished_rx.try_recv(),
+        Err(std::sync::mpsc::TryRecvError::Empty)
+    ));
+    let reopened = Workspace::open(temp.path().join("case")).unwrap();
+    assert!(reopened.collection_ownership().is_err());
+    release_tx.send(()).unwrap();
+    finished_rx
+        .recv_timeout(Duration::from_secs(10))
+        .unwrap()
+        .unwrap();
+    joined.join().unwrap();
+    assert!(!c.shared.ownership.publication_held());
+    c.shutdown().unwrap();
+    let done = reopened.inspect_durable_collection(&run.run.id).unwrap();
+    assert_eq!(done.checkpoint.state, CollectionState::Cancelled);
+    assert_eq!(done.checkpoint.requests_used(), 2);
+    assert_eq!(done.checkpoint.pages_retained, 0);
+    assert_eq!(calls.load(Ordering::SeqCst), 2);
+    let source = reopened
+        .view()
+        .unwrap()
+        .evidence
+        .into_iter()
+        .find(|e| e.bytes == 9)
+        .unwrap();
+    assert!(source.text.is_none());
+    assert_eq!(
+        std::fs::read(temp.path().join("case/originals").join(&source.sha256)).unwrap(),
+        b"Synthetic"
+    );
+    let next = reopened.collection_ownership().unwrap();
+    next.release().unwrap();
+}

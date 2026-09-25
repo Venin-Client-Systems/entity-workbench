@@ -13,7 +13,9 @@ mod assessment;
 mod citation_catalogue;
 mod collection;
 mod collection_jobs;
-pub(crate) use collection_jobs::CollectionOwnership;
+pub(crate) use collection_jobs::{
+    CollectionCapture, CollectionOwnership, PreparedCollectionSettlement,
+};
 mod derivative_files;
 mod desktop_summary;
 mod docx_snapshots;

@@ -21,6 +21,8 @@ pub(super) type CollectionExecutor = dyn Fn(
     + Send
     + Sync;
 const MAX_PUBLICATION_RETRIES: u32 = 3;
+#[cfg(test)]
+type PreparationHook = dyn Fn(&RequestTicket) + Send + Sync;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum LanePhase {
@@ -54,12 +56,16 @@ pub(super) struct CollectionLane {
     wake: Condvar,
     executor: Arc<CollectionExecutor>,
     protocol: CollectionProtocol,
+    #[cfg(test)]
+    preparation_hook: Mutex<Option<Arc<PreparationHook>>>,
 }
 impl CollectionLane {
     pub(super) fn new(executor: Arc<CollectionExecutor>, protocol: CollectionProtocol) -> Self {
         Self {
             executor,
             protocol,
+            #[cfg(test)]
+            preparation_hook: Mutex::new(None),
             state: Mutex::new(LaneState {
                 status: CollectionLaneStatus {
                     phase: LanePhase::Idle,
@@ -406,6 +412,40 @@ fn settle_at(
     pending: &PendingSettlement,
     at_ms: i64,
 ) -> Result<DurableCollectionJob> {
+    let capture = {
+        let workspace = shared
+            .workspace
+            .lock()
+            .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+        pending.capture(&workspace, &shared.ownership)?
+    };
+    if let Some(capture) = capture {
+        // Full historical replay and new HTML interpretation happen without
+        // either the workspace mutex or a SQLite read transaction held.
+        #[cfg(not(test))]
+        let prepared = pending.prepare(capture)?;
+        #[cfg(test)]
+        let prepared = pending.prepare_with_hook(capture, || {
+            let hook = shared
+                .collection
+                .as_ref()
+                .and_then(|lane| lane.preparation_hook.lock().unwrap().clone());
+            if let Some(hook) = hook {
+                hook(pending.request());
+            }
+        })?;
+        let mut workspace = shared
+            .workspace
+            .lock()
+            .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+        return pending.commit_prepared(
+            prepared,
+            &mut workspace,
+            &shared.ownership,
+            shared.stopping.load(Ordering::Acquire) || !shared.ownership.held(),
+            at_ms,
+        );
+    }
     let mut workspace = shared
         .workspace
         .lock()

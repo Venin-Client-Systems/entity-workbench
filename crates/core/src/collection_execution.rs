@@ -36,6 +36,52 @@ impl PendingSettlement {
     pub(crate) fn locally_quiescent(&self) -> bool {
         self.observation.locally_quiescent
     }
+    pub(crate) fn capture(
+        &self,
+        workspace: &Workspace,
+        owner: &CollectionOwnership,
+    ) -> Result<Option<crate::store::CollectionCapture>> {
+        crate::require(
+            owner.lifetime() == self.ownership_lifetime,
+            "Collection ownership changed before preparation",
+        )?;
+        workspace.capture_collection_settlement(&self.request, &self.observation, owner)
+    }
+    pub(crate) fn prepare(
+        &self,
+        capture: crate::store::CollectionCapture,
+    ) -> Result<crate::store::PreparedCollectionSettlement> {
+        capture.prepare(&self.observation)
+    }
+    #[cfg(test)]
+    pub(crate) fn prepare_with_hook(
+        &self,
+        capture: crate::store::CollectionCapture,
+        hook: impl FnOnce(),
+    ) -> Result<crate::store::PreparedCollectionSettlement> {
+        capture.prepare_with_hook(&self.observation, hook)
+    }
+    pub(crate) fn commit_prepared(
+        &self,
+        prepared: crate::store::PreparedCollectionSettlement,
+        workspace: &mut Workspace,
+        owner: &CollectionOwnership,
+        stop_requested: bool,
+        at_ms: i64,
+    ) -> Result<DurableCollectionJob> {
+        crate::require(
+            owner.lifetime() == self.ownership_lifetime,
+            "Collection ownership changed before prepared publication",
+        )?;
+        workspace.commit_prepared_collection(
+            prepared,
+            &self.request,
+            &self.observation,
+            owner,
+            stop_requested,
+            at_ms,
+        )
+    }
     pub(crate) fn settle(
         &self,
         workspace: &mut Workspace,

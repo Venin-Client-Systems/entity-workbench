@@ -13,6 +13,7 @@ pub(crate) struct Promotion {
     pub text: String,
     pub media_type: String,
 }
+#[derive(Clone)]
 pub(crate) struct Machine {
     pub checkpoint: CollectionCheckpoint,
     input: CollectionInput,
@@ -133,6 +134,18 @@ impl Machine {
         };
         self.apply_ordered_event(&event, None)?;
         Ok(event)
+    }
+
+    /// Reapply only a stored v4 cancellation suffix to a verified prefix. The
+    /// caller must compare the resulting entire record with its canonical read.
+    /// This uses historical time ordering, not the current OS wall clock.
+    pub(crate) fn replay_cancel_suffix(&mut self, event: &CollectionEvent) -> Result<()> {
+        require(
+            self.version == 4 && matches!(event, CollectionEvent::Cancel { at_ms } if *at_ms >= 0),
+            "Invalid prepared cancellation suffix",
+        )?;
+        self.apply_ordered_event(event, None)?;
+        Ok(())
     }
 
     fn apply_ordered_event(

@@ -537,6 +537,16 @@ fn append(
     bounded(&loaded.job)?;
     Ok(promotion)
 }
+fn append_anchored_cancel(loaded: &mut Loaded) -> Result<()> {
+    require(
+        loaded.job.events.len() < MAX_EVENTS,
+        "Collection event bound reached",
+    )?;
+    let event = loaded.machine.cancel_reserved_at_checkpoint()?;
+    loaded.job.events.push(event);
+    loaded.job.checkpoint = loaded.machine.checkpoint.clone();
+    bounded(&loaded.job)
+}
 fn bounded(job: &DurableCollectionJob) -> Result<()> {
     require(
         serde_json::to_vec(job)?.len() <= MAX_RECORD_BYTES,
@@ -548,12 +558,12 @@ fn stamp(at_ms: i64) -> String {
         .expect("validated time")
         .to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
 }
-fn load(root: &Path, conn: &Connection, key: &str, revision: u64) -> Result<Loaded> {
+fn read_job(conn: &Connection, key: &str) -> Result<(DurableCollectionJob, String)> {
     // Reject oversized bodies before copying them across the SQLite boundary.
     let body: Option<String> = conn.query_row("SELECT CASE WHEN length(CAST(body AS BLOB))<=? THEN body ELSE NULL END FROM records WHERE kind='collection_run' AND id=?", params![MAX_RECORD_BYTES, key], |r| r.get(0))?;
-    let job: DurableCollectionJob = serde_json::from_str(&body.ok_or_else(|| {
-        Error::Validation("Durable collection record exceeds size bound".into())
-    })?)?;
+    let body = body
+        .ok_or_else(|| Error::Validation("Durable collection record exceeds size bound".into()))?;
+    let job: DurableCollectionJob = serde_json::from_str(&body)?;
     require(job.id == key, "Durable collection canonical key mismatch")?;
     let mapped: String = conn.query_row(
         "SELECT CASE WHEN length(CAST(body AS BLOB))<=80 THEN body ELSE 'null' END FROM records WHERE kind='collection_run_key' AND id=?",
@@ -564,43 +574,16 @@ fn load(root: &Path, conn: &Connection, key: &str, revision: u64) -> Result<Load
         mapped.len() <= 80 && serde_json::from_str::<String>(&mapped)? == key,
         "Durable collection request-key binding mismatch",
     )?;
+    Ok((job, body))
+}
+fn load(root: &Path, conn: &Connection, key: &str, revision: u64) -> Result<Loaded> {
+    let (job, _) = read_job(conn, key)?;
     let machine = collection_machine::replay(&job, |request, result| {
         if let FetchRecord::Complete { sha256, bytes, .. } = result {
-            require(
-                *bytes <= crate::collection::PAGE_BYTES as u64
-                    && sha256.len() == 64
-                    && sha256
-                        .bytes()
-                        .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
-                "Invalid retained response reference",
-            )?;
+            valid_response_reference(sha256, *bytes)?;
             let evidence = bounded_evidence(conn, sha256)?
                 .ok_or_else(|| Error::Validation("Retained response evidence is missing".into()))?;
-            require(
-                evidence.id == *sha256 && evidence.sha256 == *sha256 && evidence.bytes == *bytes,
-                "Retained response evidence identity mismatch",
-            )?;
-            let ended = job
-                .events
-                .iter()
-                .find_map(|event| match event {
-                    CollectionEvent::Complete {
-                        at_ms, sequence, ..
-                    } if *sequence == request.sequence => Some(*at_ms),
-                    CollectionEvent::TransportObserved {
-                        sequence, receipt, ..
-                    } if *sequence == request.sequence => Some(receipt.observed_wall_ms),
-                    _ => None,
-                })
-                .ok_or_else(|| Error::Validation("No settled acquisition time".into()))?;
-            require(
-                evidence.acquisitions.iter().any(|a| {
-                    a.job_id == job.id
-                        && a.url == request.entry.url
-                        && a.retrieved_at == stamp(ended)
-                }),
-                "Retained response acquisition is missing",
-            )?;
+            validate_acquisition(&job, request, sha256, *bytes, &evidence)?;
             Ok(Some(read_original(root, &evidence)?))
         } else {
             Ok(None)
@@ -612,7 +595,53 @@ fn load(root: &Path, conn: &Connection, key: &str, revision: u64) -> Result<Load
         revision,
     })
 }
+fn valid_response_reference(sha256: &str, bytes: u64) -> Result<()> {
+    require(
+        bytes <= crate::collection::PAGE_BYTES as u64
+            && sha256.len() == 64
+            && sha256
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+        "Invalid retained response reference",
+    )?;
+    Ok(())
+}
+fn validate_acquisition(
+    job: &DurableCollectionJob,
+    request: &ChargedRequest,
+    sha256: &str,
+    bytes: u64,
+    evidence: &Evidence,
+) -> Result<()> {
+    require(
+        evidence.id == sha256 && evidence.sha256 == sha256 && evidence.bytes == bytes,
+        "Retained response evidence identity mismatch",
+    )?;
+    let ended = job
+        .events
+        .iter()
+        .find_map(|event| match event {
+            CollectionEvent::Complete {
+                at_ms, sequence, ..
+            } if *sequence == request.sequence => Some(*at_ms),
+            CollectionEvent::TransportObserved {
+                sequence, receipt, ..
+            } if *sequence == request.sequence => Some(receipt.observed_wall_ms),
+            _ => None,
+        })
+        .ok_or_else(|| Error::Validation("No settled acquisition time".into()))?;
+    require(
+        evidence.acquisitions.iter().any(|a| {
+            a.job_id == job.id && a.url == request.entry.url && a.retrieved_at == stamp(ended)
+        }),
+        "Retained response acquisition is missing",
+    )?;
+    Ok(())
+}
 fn bounded_evidence(conn: &Connection, key: &str) -> Result<Option<Evidence>> {
+    Ok(bounded_evidence_raw(conn, key)?.map(|(_, evidence)| evidence))
+}
+fn bounded_evidence_raw(conn: &Connection, key: &str) -> Result<Option<(String, Evidence)>> {
     let body: Option<Option<String>> = conn.query_row(
         "SELECT CASE WHEN length(CAST(body AS BLOB))<=? THEN body ELSE NULL END FROM records WHERE kind='evidence' AND id=?",
         params![MAX_RECORD_BYTES, key], |r| r.get(0),
@@ -622,7 +651,10 @@ fn bounded_evidence(conn: &Connection, key: &str) -> Result<Option<Evidence>> {
         Some(None) => Err(Error::Validation(
             "Response evidence metadata exceeds collection read bound".into(),
         )),
-        Some(Some(body)) => Ok(Some(serde_json::from_str(&body)?)),
+        Some(Some(body)) => {
+            let evidence = serde_json::from_str(&body)?;
+            Ok(Some((body, evidence)))
+        }
     }
 }
 
@@ -696,3 +728,7 @@ mod review_demo;
 #[cfg(test)]
 #[path = "collection_html_tests.rs"]
 mod html_tests;
+
+#[path = "collection_preparation.rs"]
+mod preparation;
+pub(crate) use preparation::{CollectionCapture, PreparedCollectionSettlement};

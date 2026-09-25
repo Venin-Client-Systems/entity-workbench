@@ -26,14 +26,7 @@ impl Workspace {
         if loaded.job.checkpoint.cancellation_requested {
             return Ok(loaded.job);
         }
-        require(
-            loaded.job.events.len() < MAX_EVENTS,
-            "Collection event bound reached",
-        )?;
-        let event = loaded.machine.cancel_reserved_at_checkpoint()?;
-        loaded.job.events.push(event);
-        loaded.job.checkpoint = loaded.machine.checkpoint.clone();
-        bounded(&loaded.job)?;
+        append_anchored_cancel(&mut loaded)?;
         self.publish_collection(&loaded, None, None)?;
         Ok(loaded.job)
     }
