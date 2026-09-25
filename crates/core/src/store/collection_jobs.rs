@@ -98,7 +98,7 @@ impl Workspace {
             "Collection ownership is released, quarantined or belongs to another workspace",
         )
     }
-    fn collection_publication_owner(&self, owner: &CollectionOwnership) -> Result<()> {
+    pub(super) fn collection_publication_owner(&self, owner: &CollectionOwnership) -> Result<()> {
         require(
             owner.root == self.root && owner.publication_held(),
             "Collection publication ownership is released or belongs to another workspace",
@@ -402,7 +402,7 @@ impl Workspace {
         }
         Ok(count)
     }
-    fn retain_collection_response(
+    pub(super) fn retain_collection_response(
         &self,
         job_id: &str,
         url: &str,
@@ -418,30 +418,8 @@ impl Workspace {
             } = result
             {
                 let existing = bounded_evidence(&self.conn, sha256)?;
-                let mut evidence = existing.unwrap_or_else(|| Evidence {
-                    id: sha256.clone(),
-                    name: "http-response.bin".into(),
-                    sha256: sha256.clone(),
-                    bytes: *expected,
-                    media_type: "application/octet-stream".into(),
-                    origin_group: sha256.clone(),
-                    imported_at: stamp(at_ms),
-                    extraction_status: "acquisition_only".into(),
-                    text: None,
-                    acquisitions: Vec::new(),
-                });
-                require(
-                    evidence.id == *sha256
-                        && evidence.sha256 == *sha256
-                        && evidence.bytes == *expected,
-                    "Existing evidence differs from response identity",
-                )?;
+                let evidence = acquired_evidence(existing, job_id, url, at_ms, sha256, *expected)?;
                 retain_original(&self.root, &evidence, bytes.expect("complete response"))?;
-                evidence.acquisitions.push(Acquisition {
-                    job_id: job_id.to_owned(),
-                    url: url.to_owned(),
-                    retrieved_at: stamp(at_ms),
-                });
                 Some(evidence)
             } else {
                 None
@@ -455,24 +433,7 @@ impl Workspace {
         promotion: Option<Promotion>,
     ) -> Result<()> {
         bounded(&loaded.job)?;
-        if let Some(promotion) = &promotion {
-            let original = evidence
-                .as_mut()
-                .ok_or_else(|| Error::Validation("Derivative lacks acquired original".into()))?;
-            require(
-                original.id == promotion.sha256,
-                "Derivative differs from acquired response",
-            )?;
-            original.text = Some(promotion.text.clone());
-            original.media_type = promotion.media_type.clone();
-            original.extraction_status = "static_text_only".into();
-        }
-        if let Some(original) = &evidence {
-            require(
-                serde_json::to_vec(original)?.len() <= MAX_RECORD_BYTES,
-                "Response evidence metadata exceeds collection read bound",
-            )?;
-        }
+        prepare_collection_evidence(&mut evidence, promotion.as_ref())?;
         self.change(
             Some(loaded.revision),
             "collection.durable.checkpoint",
@@ -557,7 +518,7 @@ fn bounded(job: &DurableCollectionJob) -> Result<()> {
         "Durable collection record exceeds size bound",
     )
 }
-fn stamp(at_ms: i64) -> String {
+pub(super) fn stamp(at_ms: i64) -> String {
     chrono::DateTime::from_timestamp_millis(at_ms)
         .expect("validated time")
         .to_rfc3339_opts(chrono::SecondsFormat::Millis, true)
@@ -748,3 +709,60 @@ mod cancellation;
 
 #[path = "collection_snapshot.rs"]
 mod snapshot;
+
+pub(super) fn prepare_collection_evidence(
+    evidence: &mut Option<Evidence>,
+    promotion: Option<&Promotion>,
+) -> Result<()> {
+    if let Some(promotion) = promotion {
+        let original = evidence
+            .as_mut()
+            .ok_or_else(|| Error::Validation("Derivative lacks acquired original".into()))?;
+        require(
+            original.id == promotion.sha256,
+            "Derivative differs from acquired response",
+        )?;
+        original.text = Some(promotion.text.clone());
+        original.media_type = promotion.media_type.clone();
+        original.extraction_status = "static_text_only".into();
+    }
+    if let Some(original) = evidence {
+        require(
+            serde_json::to_vec(original)?.len() <= MAX_RECORD_BYTES,
+            "Response evidence metadata exceeds collection read bound",
+        )?;
+    }
+    Ok(())
+}
+
+pub(super) fn acquired_evidence(
+    existing: Option<Evidence>,
+    job_id: &str,
+    url: &str,
+    at_ms: i64,
+    sha256: &str,
+    bytes: u64,
+) -> Result<Evidence> {
+    let mut evidence = existing.unwrap_or_else(|| Evidence {
+        id: sha256.into(),
+        name: "http-response.bin".into(),
+        sha256: sha256.into(),
+        bytes,
+        media_type: "application/octet-stream".into(),
+        origin_group: sha256.into(),
+        imported_at: stamp(at_ms),
+        extraction_status: "acquisition_only".into(),
+        text: None,
+        acquisitions: Vec::new(),
+    });
+    require(
+        evidence.id == sha256 && evidence.sha256 == sha256 && evidence.bytes == bytes,
+        "Existing evidence differs from response identity",
+    )?;
+    evidence.acquisitions.push(Acquisition {
+        job_id: job_id.into(),
+        url: url.into(),
+        retrieved_at: stamp(at_ms),
+    });
+    Ok(evidence)
+}

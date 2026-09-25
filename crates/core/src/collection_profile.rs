@@ -32,7 +32,8 @@ impl ProfileLimits {
 
 /// Untrusted local plan data, not a new command or persisted record schema.
 /// There is deliberately no field carrying query text, case contents or headers.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct PublisherAccessInput {
     pub benchmark_sha256: String,
     pub task_id: String,

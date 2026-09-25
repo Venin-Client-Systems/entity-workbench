@@ -32,37 +32,45 @@ impl Machine {
         let clock_changed = receipt.stopped_for(StopReason::ClockChanged)
             || receipt.observed_wall_ms < request.reserved_at_ms;
         let mut promotion = None;
-        if !receipt.locally_quiescent {
-            self.checkpoint.saw_unknown = true;
-            self.finish(CollectionState::RecoveryRequired);
-        } else if clock_changed {
-            self.checkpoint.saw_failed = true;
-            self.finish(CollectionState::Failed);
-        } else if self.checkpoint.cancellation_requested
-            || receipt.stopped_for(StopReason::Cancelled)
-        {
-            self.checkpoint.cancellation_requested = true;
-            self.finish(CollectionState::Cancelled);
-        } else if self.expired(receipt.observed_wall_ms)
-            || receipt.stopped_for(StopReason::Deadline)
-            || receipt.stopped_for(StopReason::BodyLimit)
-            || receipt.elapsed_milliseconds >= self.input.max_seconds * 1000
-        {
-            self.checkpoint.saw_quota = true;
-            self.finish(CollectionState::QuotaExhausted);
-        } else if receipt.stopped_for(StopReason::Busy) {
-            self.checkpoint.saw_blocked = true;
-            self.finish(CollectionState::Blocked);
-        } else {
-            // Retain encoded bytes but never interpret them as robots or text.
-            let result = if receipt.head().is_some_and(|head| !head.identity_encoding) {
-                FetchRecord::Failed {
-                    reason: TransportFailure::Policy,
-                }
-            } else {
-                receipt.fetch_record()
-            };
-            promotion = self.received(&request, &result, body, receipt.observed_wall_ms)?;
+        match receipt_stop_state(
+            receipt,
+            self.checkpoint.cancellation_requested,
+            self.checkpoint.deadline_at_ms.expect("running deadline"),
+            request.reserved_at_ms,
+            self.input.max_seconds,
+        ) {
+            Some(CollectionState::RecoveryRequired) => {
+                self.checkpoint.saw_unknown = true;
+                self.finish(CollectionState::RecoveryRequired);
+            }
+            Some(CollectionState::Failed) => {
+                self.checkpoint.saw_failed = true;
+                self.finish(CollectionState::Failed);
+            }
+            Some(CollectionState::Cancelled) => {
+                self.checkpoint.cancellation_requested = true;
+                self.finish(CollectionState::Cancelled);
+            }
+            Some(CollectionState::QuotaExhausted) => {
+                self.checkpoint.saw_quota = true;
+                self.finish(CollectionState::QuotaExhausted);
+            }
+            Some(CollectionState::Blocked) => {
+                self.checkpoint.saw_blocked = true;
+                self.finish(CollectionState::Blocked);
+            }
+            Some(_) => unreachable!("closed transport stop classification"),
+            None => {
+                // Retain encoded bytes but never interpret them as robots or text.
+                let result = if receipt.head().is_some_and(|head| !head.identity_encoding) {
+                    FetchRecord::Failed {
+                        reason: TransportFailure::Policy,
+                    }
+                } else {
+                    receipt.fetch_record()
+                };
+                promotion = self.received(&request, &result, body, receipt.observed_wall_ms)?;
+            }
         }
         self.checkpoint.requests[sequence as usize].progress = RequestProgress::Observed {
             receipt: receipt.clone(),

@@ -167,10 +167,7 @@ impl Machine {
                     "Invalid collection start",
                 )?;
                 self.checkpoint.first_started_at_ms = Some(at);
-                self.checkpoint.deadline_at_ms = Some(
-                    at.checked_add(self.input.max_seconds as i64 * 1000)
-                        .ok_or_else(|| Error::Validation("Invalid collection deadline".into()))?,
-                );
+                self.checkpoint.deadline_at_ms = Some(first_deadline(at, self.input.max_seconds)?);
                 self.checkpoint.lease = Some(lease.clone());
                 self.checkpoint.state = CollectionState::Running;
             }
@@ -395,13 +392,14 @@ impl Machine {
             seconds: self.input.max_seconds,
             used: self.checkpoint.requests_used(),
         };
-        let elapsed = (at
-            - self
-                .checkpoint
+        reserve_budget(
+            &mut budget,
+            self.checkpoint
                 .first_started_at_ms
-                .expect("running has start")) as u64
-            / 1000;
-        budget.reserve(entry.hop, elapsed, u32::MAX)?;
+                .expect("running has start"),
+            at,
+            entry.hop,
+        )?;
         self.checkpoint.requests.push(ChargedRequest {
             sequence: budget.used - 1,
             generation: self.checkpoint.generation,
@@ -425,14 +423,7 @@ impl Machine {
         let entry = &request.entry;
         let url = policy::validate_https_url(&entry.url)?;
         if entry.purpose == Purpose::Robots {
-            let rules = match result {
-                FetchRecord::Complete { status: 404, .. } => Some(String::new()),
-                FetchRecord::Complete { status: 200, .. } => body
-                    .filter(|b| b.len() <= 512_000)
-                    .and_then(|b| std::str::from_utf8(b).ok())
-                    .map(str::to_owned),
-                _ => None,
-            };
+            let rules = robots_rules(result, body);
             let host = url.host_str().unwrap().to_owned();
             self.checkpoint.robots.push(RobotsCheckpoint {
                 host: host.clone(),
@@ -713,3 +704,58 @@ pub(crate) fn replay(
 
 #[path = "collection_machine_transport.rs"]
 mod transport;
+
+/// Shared arithmetic only; callers validate new/replayed times and input ceilings.
+pub(crate) fn first_deadline(at: i64, seconds: u64) -> Result<i64> {
+    at.checked_add(seconds as i64 * 1000)
+        .ok_or_else(|| Error::Validation("Invalid collection deadline".into()))
+}
+pub(crate) fn reserve_budget(
+    budget: &mut policy::DiscoveryBudget,
+    first_started: i64,
+    at: i64,
+    hop: u32,
+) -> Result<()> {
+    let elapsed = (at - first_started) as u64 / 1000;
+    budget.reserve(hop, elapsed, u32::MAX)
+}
+pub(crate) fn robots_rules(result: &FetchRecord, body: Option<&[u8]>) -> Option<String> {
+    match result {
+        FetchRecord::Complete { status: 404, .. } => Some(String::new()),
+        FetchRecord::Complete { status: 200, .. } => body
+            .filter(|b| b.len() <= 512_000)
+            .and_then(|b| std::str::from_utf8(b).ok())
+            .map(str::to_owned),
+        _ => None,
+    }
+}
+
+/// Keep transport stop precedence identical across private interpreters.
+pub(crate) fn receipt_stop_state(
+    receipt: &crate::collection_settlement::TransportReceipt,
+    cancelled: bool,
+    deadline: i64,
+    reserved_at: i64,
+    max_seconds: u64,
+) -> Option<CollectionState> {
+    use crate::collection_transport::StopReason;
+    if !receipt.locally_quiescent {
+        Some(CollectionState::RecoveryRequired)
+    } else if receipt.stopped_for(StopReason::ClockChanged)
+        || receipt.observed_wall_ms < reserved_at
+    {
+        Some(CollectionState::Failed)
+    } else if cancelled || receipt.stopped_for(StopReason::Cancelled) {
+        Some(CollectionState::Cancelled)
+    } else if receipt.observed_wall_ms >= deadline
+        || receipt.stopped_for(StopReason::Deadline)
+        || receipt.stopped_for(StopReason::BodyLimit)
+        || receipt.elapsed_milliseconds >= max_seconds * 1000
+    {
+        Some(CollectionState::QuotaExhausted)
+    } else if receipt.stopped_for(StopReason::Busy) {
+        Some(CollectionState::Blocked)
+    } else {
+        None
+    }
+}

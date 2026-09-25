@@ -12,6 +12,7 @@ use uuid::Uuid;
 mod assessment;
 mod citation_catalogue;
 mod collection;
+mod collection_access;
 mod collection_jobs;
 pub(crate) use collection_jobs::{
     CollectionCapture, CollectionOwnership, PreparedCollectionSettlement,

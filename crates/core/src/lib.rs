@@ -3,6 +3,8 @@ pub mod account_flow;
 pub mod analytics;
 pub mod citation_catalogue;
 pub mod collection;
+pub(crate) mod collection_access;
+pub(crate) mod collection_access_machine;
 pub mod collection_api;
 pub(crate) mod collection_execution;
 mod collection_html;

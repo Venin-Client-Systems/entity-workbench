@@ -159,6 +159,26 @@ impl TransportReceipt {
         }
     }
     pub fn validate(&self, url: &str, input: &CollectionInput, body: Option<&[u8]>) -> Result<()> {
+        self.validate_scoped(body, |addresses| {
+            let seeds = input
+                .urls
+                .iter()
+                .map(|raw| policy::validate_https_url(raw))
+                .collect::<Result<Vec<_>>>()?;
+            let hosts = seeds
+                .iter()
+                .filter_map(|seed| seed.host_str())
+                .collect::<Vec<_>>();
+            policy::validate_destination(url, addresses, &hosts).map(|_| ())
+        })
+    }
+    /// Shared receipt facts; the caller supplies its already selected URL scope.
+    /// The legacy wrapper retains its exact-host policy and validation ordering.
+    pub(crate) fn validate_scoped(
+        &self,
+        body: Option<&[u8]>,
+        scope: impl FnOnce(&[std::net::IpAddr]) -> Result<()>,
+    ) -> Result<()> {
         require(
             self.schema_version == 1 && self.http_delivery == delivery(self.phase),
             "Invalid transport receipt version or delivery knowledge",
@@ -231,23 +251,12 @@ impl TransportReceipt {
                     ),
                 "Invalid observed candidate snapshot",
             )?;
-            let seeds = input
-                .urls
-                .iter()
-                .map(|raw| policy::validate_https_url(raw))
-                .collect::<Result<Vec<_>>>()?;
-            let hosts = seeds
-                .iter()
-                .filter_map(|seed| seed.host_str())
-                .collect::<Vec<_>>();
-            policy::validate_destination(
-                url,
+            scope(
                 &resolved
                     .addresses
                     .iter()
                     .map(|address| address.ip())
                     .collect::<Vec<_>>(),
-                &hosts,
             )?;
             require(
                 matches!(
