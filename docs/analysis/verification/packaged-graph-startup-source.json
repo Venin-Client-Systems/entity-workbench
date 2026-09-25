@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "kind": "packaged_graph_startup_source_verification",
+  "recorded_at": "2026-09-25T21:45:52.112376+00:00",
+  "source": {
+    "commit": "b7d9319e6b2287e0f309012b0963ac4f0f868638",
+    "tree": "0277aa96a65d9c9397803f9ae479427678480e2e",
+    "base": "b680d4bcf6a6dbf2200ca5c455b4daf85024d983",
+    "trusted_signature": "verified",
+    "files": {
+      "desktop/Cargo.toml": {
+        "bytes": 610,
+        "sha256": "e3fe4b59c38a76143dc2ff6e14ed94a86f7b8cc2b2b8f5d04122ad94b6c8084b"
+      },
+      "desktop/src/graph_startup.rs": {
+        "bytes": 9995,
+        "sha256": "800ea18f77e3768038697534c0e9da5a36d5e9f2fb67bbf672f66bf3f36cb5e2"
+      },
+      "desktop/src/graph_startup/tests.rs": {
+        "bytes": 10734,
+        "sha256": "36701fa6d8b1f1d0b0c8f3f8124fcd6d1a24874d5c46200cb05b203b29eeeaa3"
+      },
+      "desktop/src/main.rs": {
+        "bytes": 5056,
+        "sha256": "f4624e6e709a33c5ea79365f0b04641b395f45c72f61770ebc81fbb90ff0e115"
+      },
+      "docs/analysis/GRAPH-PACKAGED-STARTUP-PROOF.md": {
+        "bytes": 11285,
+        "sha256": "c1d52c0e69263ffa4ebea53463ae4367e44feb5ebde9e3f106bbd5f2e268bb36"
+      }
+    }
+  },
+  "checks": {
+    "desktop_source_tests": {
+      "default": {
+        "passed": 11,
+        "failed": 0,
+        "log": "artifacts/packaged-graph-startup-source/desktop-test-default-reviewed.log"
+      },
+      "proof_feature": {
+        "passed": 11,
+        "failed": 0,
+        "log": "artifacts/packaged-graph-startup-source/desktop-test-proof-reviewed.log"
+      }
+    },
+    "strict_clippy": [
+      {
+        "target": "aarch64-apple-darwin",
+        "feature": null,
+        "all_targets": true,
+        "warnings_denied": true,
+        "result": "passed",
+        "log": "artifacts/packaged-graph-startup-source/clippy-host-default-reviewed.log"
+      },
+      {
+        "target": "aarch64-apple-darwin",
+        "feature": "development-graph-runtime",
+        "all_targets": true,
+        "warnings_denied": true,
+        "result": "passed",
+        "log": "artifacts/packaged-graph-startup-source/clippy-host-runtime-reviewed.log"
+      },
+      {
+        "target": "aarch64-apple-darwin",
+        "feature": "development-graph-startup-proof",
+        "all_targets": true,
+        "warnings_denied": true,
+        "result": "passed",
+        "log": "artifacts/packaged-graph-startup-source/clippy-host-proof-reviewed.log"
+      },
+      {
+        "target": "x86_64-apple-darwin",
+        "feature": null,
+        "all_targets": true,
+        "warnings_denied": true,
+        "result": "passed",
+        "log": "artifacts/packaged-graph-startup-source/clippy-intel-default-reviewed.log"
+      },
+      {
+        "target": "x86_64-apple-darwin",
+        "feature": "development-graph-runtime",
+        "all_targets": true,
+        "warnings_denied": true,
+        "result": "passed",
+        "log": "artifacts/packaged-graph-startup-source/clippy-intel-runtime-reviewed.log"
+      },
+      {
+        "target": "x86_64-apple-darwin",
+        "feature": "development-graph-startup-proof",
+        "all_targets": true,
+        "warnings_denied": true,
+        "result": "passed",
+        "log": "artifacts/packaged-graph-startup-source/clippy-intel-proof-reviewed.log"
+      }
+    ],
+    "fmt": "passed",
+    "public_audit": {
+      "surviving_staged_files": 5,
+      "result": "passed"
+    },
+    "source_check_config": {
+      "bundle": {
+        "active": false,
+        "resources": []
+      }
+    },
+    "historical_schemas_equal": 110,
+    "preserved_additional_files": [
+      "Cargo.lock",
+      "desktop/tauri.conf.json",
+      "desktop/tauri.macos.conf.json",
+      "desktop/capabilities/main.json"
+    ]
+  },
+  "review": {
+    "method": "independent agent read-only source review",
+    "final_source_hashes_matched": true,
+    "finding": "Windows desktop tests included positive POSIX bundle paths which fail the deliberate Windows prefix refusal.",
+    "repair": "Unix-only positive filesystem fixtures, explicit Windows refusal test, no Windows path-admission widening; reservation helper avoids unused branches.",
+    "final_actionable_blockers_reported": 0,
+    "review_is_not_native_or_owner_approval": true
+  },
+  "retained_failures": [
+    {
+      "kind": "initial_fixture_compile_error",
+      "detail": "Command::View required struct variant braces; fixed in test only.",
+      "log": "artifacts/packaged-graph-startup-source/desktop-test-first.log"
+    },
+    {
+      "kind": "parallel_fixture_name_collision",
+      "detail": "Identical system timestamps collided in inert temporary fixture names; a per-process atomic sequence now distinguishes names.",
+      "log": "artifacts/packaged-graph-startup-source/desktop-test-default-fixture-collision.log"
+    },
+    {
+      "kind": "windows_cross_check_unavailable",
+      "detail": "Existing C dependency build could not find x86_64-w64-mingw32-gcc. No Windows compilation or execution pass is claimed.",
+      "log": "artifacts/packaged-graph-startup-source/clippy-windows-cross-attempt.log"
+    }
+  ],
+  "boundaries": {
+    "packaged_app_built": false,
+    "app_launched": false,
+    "candidate_interpreter_or_worker_invocations": 0,
+    "runtime_staged_or_verified": false,
+    "ui_or_canonical_schema_changes": false,
+    "default_graph_activation_changed": false,
+    "intel_code_executed": false,
+    "windows_code_executed": false,
+    "no_sign_cli_help_only": true,
+    "receipt_claim": "Constructor Ready and empty R0 catalogue, native window creation plus bundled document Finished, and joined shutdown; does not independently prove React rendering or all-table/original conservation."
+  },
+  "remaining": [
+    "Root-reviewed isolated packaging and exact bundled-prefix verification before launch.",
+    "Actual native window, explicit normal quit and joined-shutdown receipt.",
+    "Independent closed full canonical-table/schema/sequence/original conservation and exact runtime inventory after exit.",
+    "Hosted Windows source check after the POSIX test gating repair.",
+    "Packaged worker execution, signed distribution, notarization and release acceptance remain separate."
+  ],
+  "artifact_count": 33,
+  "artifacts": {
+    "artifacts/packaged-graph-startup-source/clippy-host-default-final.log": {
+      "bytes": 215,
+      "sha256": "e5b2675da1a3889487ee37e424ac22c1864987a12ee16f677e6268d566013b35"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-host-default-reviewed.log": {
+      "bytes": 215,
+      "sha256": "82362578664dea5855c48fb90f63a039faad5c152f2a69dec5f85181c8ac4a2c"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-host-proof-final.log": {
+      "bytes": 215,
+      "sha256": "4b38c4c8c76ada75840b26f2a91f0db740d19fcaea38584553e99df77b14e270"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-host-proof-reviewed.log": {
+      "bytes": 215,
+      "sha256": "54489cec7b9ac11901c530600c198f98333482ea684a548ae5446087b6d1d9ac"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-host-proof.log": {
+      "bytes": 8721,
+      "sha256": "ee536ddd7c6c15049814fc3c1fb98ca35d0cce37276caaa6b276362076f9e7fd"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-host-runtime-final.log": {
+      "bytes": 215,
+      "sha256": "c6e3eea7441f359a4408bc032568dbb2fa6d23d1efaa6bf0e3698f1d2aae922c"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-host-runtime-reviewed.log": {
+      "bytes": 215,
+      "sha256": "0d1414932dd22630f318304f597669e335dbb290c7e4616483971ce051efdba2"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-intel-default-final.log": {
+      "bytes": 215,
+      "sha256": "040d150e5906150053383643d78ca4ad8cab8a335cc2618c428cd0c5eaa7e50b"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-intel-default-reviewed.log": {
+      "bytes": 215,
+      "sha256": "c640784359ed265161a86afffe5b3bde7655e5178c98f6b56020afc28c9f1385"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-intel-proof-final.log": {
+      "bytes": 10464,
+      "sha256": "701f9e409ed4ee0f3a240bb9a9bada1b4eca9adeba2781ba394542e788c30379"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-intel-proof-reviewed.log": {
+      "bytes": 215,
+      "sha256": "d063b5d0158e98403275aa6a9fb90eb25c856124c7fdd4fbe11aa97b7586d5e6"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-intel-runtime-final.log": {
+      "bytes": 215,
+      "sha256": "ee19ac1988648e003b98f24ebe0a2520560bc1be78c97d5bd30f400a7cca7d48"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-intel-runtime-reviewed.log": {
+      "bytes": 215,
+      "sha256": "c640784359ed265161a86afffe5b3bde7655e5178c98f6b56020afc28c9f1385"
+    },
+    "artifacts/packaged-graph-startup-source/clippy-windows-cross-attempt.log": {
+      "bytes": 6054,
+      "sha256": "610dec9e1e82b498b9dea49c34c74262981d6c03f81082a05ac2e6020c698adf"
+    },
+    "artifacts/packaged-graph-startup-source/compatibility.json": {
+      "bytes": 13290,
+      "sha256": "6dc262575ae558809857ec44d4ccca682e7e3c14fab608a6272ff978602fbf22"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-default-final.log": {
+      "bytes": 1456,
+      "sha256": "1dd182f58475dfcc9e32fbcbc1a63461c903363e2075b95ae0791772c639e419"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-default-fixture-collision.log": {
+      "bytes": 2117,
+      "sha256": "cf465b766a93c9a8b67d654b0f66ed07a195a109cf01eefae6445b2ab50e5ddb"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-default-reviewed.log": {
+      "bytes": 1552,
+      "sha256": "126cd9048c1bcf963be0aa9f0fea55959c308511f6493c494feaca6d6ddb448a"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-default.log": {
+      "bytes": 1258,
+      "sha256": "e9c48c508d4cbbd722285e73389f5a8e824308bd6dc269780415d14fc6136f82"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-first.log": {
+      "bytes": 11023,
+      "sha256": "095b301c5886f89eed8ca0fe603727668b4269b42d60028f1dfa2820992a73e9"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-proof-final.log": {
+      "bytes": 1456,
+      "sha256": "f035e431249d5d4691e5b3862a8a376c08401fa9ae1cdb98c3c55a8a4dfcec85"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-proof-pre-fixture-fix.log": {
+      "bytes": 1456,
+      "sha256": "63c6437dc2fe1f1e96d376d45a1d3ef4cffc555e28a038ff9b79fa1423fafc80"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-proof-reviewed.log": {
+      "bytes": 1552,
+      "sha256": "d7a02f7e2896c6a3c22529ecf99aee208a7110349f3b0970d261366229eaa370"
+    },
+    "artifacts/packaged-graph-startup-source/desktop-test-proof.log": {
+      "bytes": 1258,
+      "sha256": "78aa3107e0e9933b7218689196ba1815ec1dfc048e7f167eb72866c6519caea0"
+    },
+    "artifacts/packaged-graph-startup-source/fmt-final.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/packaged-graph-startup-source/fmt-reviewed.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/packaged-graph-startup-source/inspected-dependency-identities.json": {
+      "bytes": 1791,
+      "sha256": "b2bc45f83b1963f4646b84bf6acfa77862f3f8147a43e639b0d933fd670e9f6a"
+    },
+    "artifacts/packaged-graph-startup-source/public-audit-reviewed.log": {
+      "bytes": 39,
+      "sha256": "db8d6ed481e98d8b19622185736efea8163153c089e60baf4a22e45e03d8c563"
+    },
+    "artifacts/packaged-graph-startup-source/public-audit-source.log": {
+      "bytes": 39,
+      "sha256": "db8d6ed481e98d8b19622185736efea8163153c089e60baf4a22e45e03d8c563"
+    },
+    "artifacts/packaged-graph-startup-source/source-commit.log": {
+      "bytes": 303,
+      "sha256": "f0fb4053b59e8a0c5a7f004f7304c9ea0b84f20a230535f34e034603fbe81db6"
+    },
+    "artifacts/packaged-graph-startup-source/source-signature.log": {
+      "bytes": 95,
+      "sha256": "5f3f0d9f099255a8b0687a2dc0a0908eae975996f949d495203bf5e85992c355"
+    },
+    "artifacts/packaged-graph-startup-source/tauri-build-help.txt": {
+      "bytes": 3263,
+      "sha256": "a7cf6251dddf5a89176a55e670de4fca760ee9d18e65eb8585211cc57c7e280b"
+    },
+    "artifacts/packaged-graph-startup-source/tools.json": {
+      "bytes": 524,
+      "sha256": "ba7c164948adc9d0ee9176ce2770525ac3f81d77ee6931c5eef2b7a9e1c3df44"
+    }
+  }
+}
