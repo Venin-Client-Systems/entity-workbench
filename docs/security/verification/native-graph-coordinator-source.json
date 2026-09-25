@@ -1,0 +1,195 @@
+{
+  "schema_version": 1,
+  "scope": "Native graph coordinator campaign source and offline validators only",
+  "source_commit": "3736a9c7d1ba36bcbc692cd2c7d4421f10d6beac",
+  "source_tree": "afb1128b9a622fef8b4e2a048c65ac0a0c4dfc65",
+  "base_commit": "1a7d9ae",
+  "prerequisite_cfg_commit": "432c658273063816264eed90deab88f8d2a584b9",
+  "local_cfg_cherry_pick": "40e09a3",
+  "runtime_support_normalization": "exact bytes from root8b94b17; no historical receipt identities rewritten",
+  "source_files": {
+    "crates/core/src/coordinator_graph.rs": {
+      "bytes": 19221,
+      "sha256": "6890b4ccd10d8a7ea77f098ff55309f3ed04aa3afa17cc047f374c9b21f4ee0e"
+    },
+    "crates/core/src/coordinator_native_graph_proof.rs": {
+      "bytes": 18287,
+      "sha256": "5e6f66803adc8ed21e22a1986c1d285641dbe609c880fcf73471c5b8ea0eae2a"
+    },
+    "crates/core/src/engines/python_graph.rs": {
+      "bytes": 10994,
+      "sha256": "5973dcf510372a2b8742d472f8b34350bc9c5c04b2e4c9a3f03ed7ffb2293ac7"
+    },
+    "crates/core/src/engines/python_graph/observation.rs": {
+      "bytes": 9837,
+      "sha256": "0c10841aec006cc4128c62a30c4a8684134d562bf91ff72239467d9289614d0b"
+    },
+    "crates/core/src/engines/supervision.rs": {
+      "bytes": 21136,
+      "sha256": "526dfa61a47695e24ba90443a07370b2b00d149ae9dc816e9fdec793f51d8751"
+    },
+    "crates/core/src/engines/supervision/python.rs": {
+      "bytes": 15513,
+      "sha256": "4a5cbcef606a27e02a081255baf4009e1da52f0c895b15b8057645595ca46026"
+    },
+    "crates/core/src/store/graph_analysis.rs": {
+      "bytes": 9846,
+      "sha256": "035add304680f887907826b59779d04443d9b3bb86db88f457c6e2f3c7566dc4"
+    },
+    "crates/core/src/store/graph_analysis/coordinator_fixture.rs": {
+      "bytes": 13670,
+      "sha256": "d085aaa9dac9f343227bcec775550025a266bb88dcb7d593e690df08613ab6ef"
+    },
+    "crates/core/src/store/graph_analysis/probe_fixture.rs": {
+      "bytes": 11955,
+      "sha256": "883b9dfcd3a3e1e2fe0770cb68982267d835f25a5d1aa38f0fe5484341235bae"
+    },
+    "docs/security/NATIVE-GRAPH-COORDINATOR-CAMPAIGN.md": {
+      "bytes": 9138,
+      "sha256": "9640fe5df0f3c996c6049356ad4bfb96c4c641b5551f9d96cda4ab752b226fbb"
+    },
+    "scripts/python_graph_coordinator_receipts.py": {
+      "bytes": 18637,
+      "sha256": "ba39b7b7ab56f3049163aae6f8ab7f34abb6d731b8dd61504efe3714f66c3913"
+    },
+    "scripts/test_graph_coordinator_native.py": {
+      "bytes": 7674,
+      "sha256": "8fbccf7b216a1aad73ab697c099b6d01c1d91253699feb2bb7930e226f9678da"
+    },
+    "scripts/test_python_compatibility.py": {
+      "bytes": 22742,
+      "sha256": "894bfbcef66269ac6a399ce8a53d535cff590134166c9342994c13d42b2b997f"
+    },
+    "scripts/tests/test_graph_coordinator_native.py": {
+      "bytes": 8106,
+      "sha256": "b39da27255e9d4a4e04ecd9481662f141eacc21b0e116281441ead0803a606d4"
+    },
+    "workers/python/runtime_support.py": {
+      "bytes": 2572,
+      "sha256": "768ff834a13339e96149c4ec1b125f5917578c63b3df9f7b03bcffaf2eb72f8c"
+    }
+  },
+  "source_collector": {
+    "complete_tracked_tree_files": 1264,
+    "smoke_test_commit": "3736a9c7d1ba36bcbc692cd2c7d4421f10d6beac",
+    "invoked_candidate": false
+  },
+  "verification": {
+    "rust": {
+      "command": "cargo test --offline --locked -p workbench-core",
+      "unit_passed": 560,
+      "integration_passed": 79,
+      "total_passed": 639,
+      "native_ignored": 32
+    },
+    "focused_graph": {
+      "passed": 70,
+      "native_ignored": 2
+    },
+    "clippy": {
+      "debug_all_targets": true,
+      "release_all_targets": true,
+      "warnings_denied": true
+    },
+    "python": {
+      "normal_passed": 349,
+      "optimized_passed": 349,
+      "explicit_skips_each": 4,
+      "focused_campaign_passed": 8
+    },
+    "formatting": true,
+    "diff_check": true,
+    "historical_schema_files_byte_unchanged": 105,
+    "public_audit_source_files": 15,
+    "trusted_source_signature_verified": true
+  },
+  "artifacts": {
+    "artifacts/native-graph-source/core-final.log": {
+      "bytes": 79518,
+      "sha256": "b4c3939fac91eb4039dfe3f1efff8bbd7d40263cfbce2824f9fcf87cfdd7b397"
+    },
+    "artifacts/native-graph-source/clippy-final.log": {
+      "bytes": 219,
+      "sha256": "62c3bafc86fe47a5ff05959ed1fa5a73638000ab630bbccb6bf453bf9c67cd79"
+    },
+    "artifacts/native-graph-source/clippy-release-final.log": {
+      "bytes": 210,
+      "sha256": "842ec4eb08525e4017438be42235c0fbcb5a676778219572f12e32b858c352bf"
+    },
+    "artifacts/native-graph-source/python-focused-final.log": {
+      "bytes": 106,
+      "sha256": "74202dc09a3347400de94f86db7081b0c92ff6270bca74570c143aa53888e576"
+    },
+    "artifacts/native-graph-source/python-final.log": {
+      "bytes": 982,
+      "sha256": "83db44311ca9228a6c1b3e7d827954cd0ea27ffa4fad64c1837c8d3ad5646759"
+    },
+    "artifacts/native-graph-source/python-optimized-final.log": {
+      "bytes": 982,
+      "sha256": "a290543f5af14829ad3978dc6cac3d0925b13b0319264ccad34746803749ee4a"
+    },
+    "artifacts/native-graph-source/fmt.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/native-graph-source/diff-check.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/native-graph-source/compatibility.json": {
+      "bytes": 12255,
+      "sha256": "c7beabbd95b788b59cf52dcbf42192a881a292d4d795ee4fe8bd47329085f547"
+    },
+    "artifacts/native-graph-source/source-collector.json": {
+      "bytes": 151486,
+      "sha256": "76f2c49a4206e200be349a86326602ab12f5f036b75ed1c76d82ad68b56552fa"
+    },
+    "artifacts/native-graph-source/initial-fixture-failure.log": {
+      "bytes": 1376,
+      "sha256": "32f2e3169f9272758be6d824903117fd09f5b15ee43287046dbeb528aeed8f52"
+    },
+    "artifacts/native-graph-source/python-initial-fixture-failure.log": {
+      "bytes": 824,
+      "sha256": "3ea5dad4893db3c8dd7938cafed46d2314aca565a717a59ede497516e8802c57"
+    },
+    "artifacts/native-graph-source/graph-tests.log": {
+      "bytes": 8802,
+      "sha256": "4f4e9ab505739bf767914021da668b3798c34431206d091d43eb66ea0132c71d"
+    },
+    "artifacts/native-graph-source/observation.log": {
+      "bytes": 1243,
+      "sha256": "ae75131be6cc35a3869dc50ca9bf646d1ba91f97e65b0dc57e1d9d5c54b62c1b"
+    },
+    "artifacts/native-graph-source/fixture.log": {
+      "bytes": 775,
+      "sha256": "e3e1f416c32e5925f9c0187fbcddb24f1d2bfe44a64e96ecb1cc4b52f2f57e57"
+    }
+  },
+  "retained_failures": [
+    {
+      "kind": "Rust fixture setup",
+      "source_state": "uncommitted draft",
+      "artifact": "artifacts/native-graph-source/initial-fixture-failure.log",
+      "repair": "Canonical temporary parent preserves existing no-link workspace rule."
+    },
+    {
+      "kind": "Python negative fixture setup",
+      "source_state": "uncommitted draft",
+      "artifact": "artifacts/native-graph-source/python-initial-fixture-failure.log",
+      "repair": "Handle empty table when injecting mutation; added appended-history revision checks."
+    }
+  ],
+  "review_repairs": [
+    "Bounded wait and exact one synthetic execution plus terminal records prove competitor admission resumes after graph publication.",
+    "Unique canonical key/body bindings and logical snapshot identities prevent detached successful receipts from substituting for persisted records; independent reviewer reran8offline tests and closed finding."
+  ],
+  "candidate_runtime_invocations": 0,
+  "native_campaign_passed": false,
+  "normal_application_graph_execution": "Unavailable",
+  "remaining": [
+    "Root integration and exact clean-source native four-case invocation",
+    "Actual observed-live-child cancellation and retained publication retry evidence",
+    "Signed helper, platform confinement matrix, hard RSS and full release gates"
+  ],
+  "complete_release": false
+}
