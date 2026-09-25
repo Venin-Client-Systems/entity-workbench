@@ -59,6 +59,8 @@ pub(super) struct CollectionLane {
     pub(super) protocol: CollectionProtocol,
     #[cfg(test)]
     preparation_hook: Mutex<Option<Arc<PreparationHook>>>,
+    #[cfg(test)]
+    publication_retry_hook: Mutex<Option<Arc<PreparationHook>>>,
 }
 pub(super) struct DrainSnapshot {
     pub ticket: Option<CollectionTicket>,
@@ -73,6 +75,8 @@ impl CollectionLane {
             protocol,
             #[cfg(test)]
             preparation_hook: Mutex::new(None),
+            #[cfg(test)]
+            publication_retry_hook: Mutex::new(None),
             state: Mutex::new(LaneState {
                 status: CollectionLaneStatus {
                     phase: LanePhase::Idle,
@@ -593,7 +597,11 @@ fn publish(
                 return Ok(settle(shared, pending).ok());
             }
             if state.retry_requested {
+                // Consumption and the in-progress phase are one transition.
+                // Otherwise readers can offer/accept another retry before the
+                // next iteration acquires this lock to begin publication.
                 state.retry_requested = false;
+                state.status.phase = LanePhase::Settling;
                 break;
             }
             state = lane
@@ -602,6 +610,13 @@ fn publish(
                 .map_err(|_| Error::Blocked("Collection lane is unavailable".into()))?;
         }
         drop(state);
+        #[cfg(test)]
+        {
+            let hook = lane.publication_retry_hook.lock().unwrap().take();
+            if let Some(hook) = hook {
+                hook(pending.request());
+            }
+        }
     }
 }
 

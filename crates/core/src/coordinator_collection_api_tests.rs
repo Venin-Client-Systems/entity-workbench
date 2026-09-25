@@ -941,3 +941,83 @@ fn public_prepared_cancel_rejects_drift_or_quarantine_without_signalling_current
         }
     }
 }
+
+#[test]
+fn consumed_publication_retry_is_not_offered_or_accepted_before_next_attempt() {
+    let (temp, workspace) = fixture();
+    sql(&temp, "CREATE TRIGGER fail_retry_receipt BEFORE INSERT ON records WHEN NEW.kind='evidence' BEGIN SELECT RAISE(ABORT,'synthetic publication fault'); END;");
+    let calls = Arc::new(AtomicUsize::new(0));
+    let counter = calls.clone();
+    let c = JobCoordinator::with_public_collection_executor(
+        workspace,
+        no_documents(),
+        Arc::new(move |ticket, input, window, pacing, token| {
+            counter.fetch_add(1, Ordering::AcqRel);
+            canonical_tls(
+                ticket,
+                input,
+                window,
+                pacing,
+                token,
+                response(ticket.sequence),
+                false,
+            )
+        }),
+    )
+    .unwrap();
+    let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    let release_rx = Mutex::new(release_rx);
+    *c.shared
+        .collection
+        .as_ref()
+        .unwrap()
+        .publication_retry_hook
+        .lock()
+        .unwrap() = Some(Arc::new(move |_| {
+        entered_tx.send(()).unwrap();
+        release_rx
+            .lock()
+            .unwrap()
+            .recv_timeout(Duration::from_secs(10))
+            .unwrap();
+    }));
+    let queued = queue(&c, &key());
+    until(|| {
+        inspect(&c, &queued.run.id).execution.phase == CollectionExecutionPhase::SettlementPending
+    });
+    let before = inspect(&c, &queued.run.id);
+    c.dispatch(Command::RetryCollectionSettlement {
+        job_id: queued.run.id.clone(),
+        expected_generation: 1,
+        request_sequence: 0,
+    })
+    .unwrap();
+    entered_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+    // Pause after consuming the accepted retry, before acquiring the workspace
+    // for its next publication attempt. Both callers must see in-progress work.
+    let during = inspect(&c, &queued.run.id);
+    let public_refused = c
+        .dispatch(Command::RetryCollectionSettlement {
+            job_id: queued.run.id.clone(),
+            expected_generation: 1,
+            request_sequence: 0,
+        })
+        .is_err();
+    let internal_refused = c.retry_collection_settlement(&queued.run.id, 1, 0).is_err();
+    release_tx.send(()).unwrap();
+    until(|| {
+        let state = c.shared.collection.as_ref().unwrap().state.lock().unwrap();
+        state.status.phase == LanePhase::SettlementPending && !state.retry_requested
+    });
+    let after = inspect(&c, &queued.run.id);
+    c.shutdown().unwrap();
+    assert_eq!(during.execution.phase, CollectionExecutionPhase::Settling);
+    assert!(!during.controls.can_retry_settlement);
+    assert!(public_refused && internal_refused);
+    assert_eq!(during.execution.publication_retries, 1);
+    assert_eq!(after.execution.publication_retries, 1);
+    assert_eq!(after.workspace_revision, before.workspace_revision);
+    assert_eq!(after.requests, before.requests);
+    assert_eq!(calls.load(Ordering::Acquire), 1);
+}
