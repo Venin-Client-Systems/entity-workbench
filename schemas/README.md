@@ -4,7 +4,7 @@ The Rust development CLI emits current schemas with `cargo run -p workbench-core
 
 | Interface | Current public shape | Compatibility |
 |---|---|---|
-| Commands | `command.v24.schema.json` | v23 adds durable collection preview/read/control contracts; v24 adds complete typed-literal CSV export. Earlier versions remain published. |
+| Commands | `command.v25.schema.json` | v23 adds durable collection preview/read/control contracts; v24 adds complete typed-literal CSV export; v25 adds revision-bound account-flow analysis. Earlier versions remain published. |
 | Collection | `collection-preview.v1.schema.json`, `collection-run-page.v1.schema.json`, `collection-run-inspection.v1.schema.json` | Disclosure and canonical request identity are explicit; native execution remains disabled pending verification. |
 | Transaction CSV | `transaction-csv-request.v1.schema.json`, `transaction-csv-export.v1.schema.json` | Complete revision-bound selection, explicit review policy, reversible typed literals and separate format/artifact identities. |
 | Workspace | `workspace.v3.schema.json` | Historical full workspace and presentation responses remain available to their existing callers. |
