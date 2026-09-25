@@ -1,5 +1,9 @@
 # Native coordinator Search results
 
+This page preserves the older staged-worker observation. A separate
+[current-source worker campaign](CURRENT-SOURCE-NATIVE-SEARCH.md) now passes with
+its own source, runtime and retained-data evidence.
+
 One fixed native campaign passed on the available Apple Silicon Mac from clean
 source `792b2176bd3a3c0a845f57fc1c189b57a4c0d623`. It used actual coordinator
 dispatch, the existing confined Java/Lucene path and three synthetic text
