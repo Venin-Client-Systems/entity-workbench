@@ -1,6 +1,6 @@
-# Fixed native durable HTTPS proof — source only
+# Fixed native durable HTTPS proof
 
-This opt-in development harness connects the existing private NativeV3 collection lane to the actual native resolver and verified HTTPS transport. **No native HTTPS campaign has run for this increment.** The ordinary regression suite uses synthetic responses and no public networking. Production `NATIVE_COLLECTION_ENABLED` remains false, normal coordinator startup remains collection-disabled, standalone controls remain refused and the old synchronous collector remains disabled.
+This opt-in development harness connects the existing private NativeV3 collection lane to the actual native resolver and verified HTTPS transport. The source-only handoff is retained separately; the first actual observation is recorded below. The ordinary regression suite uses synthetic responses and no public networking. Production `NATIVE_COLLECTION_ENABLED` remains false, normal coordinator startup remains collection-disabled, standalone controls remain refused and the old synchronous collector remains disabled.
 
 This is an operator-selected transport test using this project's own published synthetic Apache-2.0 fixture. It is not an independent public publisher, broad-discovery benchmark, relevance measurement or release gate. None of the frozen benchmark tasks, seeds or thresholds change.
 
@@ -66,3 +66,36 @@ python3 -O -m unittest discover -s scripts/tests -p test_native_https_receipts.p
 ```
 
 Windows native HTTPS, active native HTTP cancellation, installed-platform behavior, public admission, UI enablement, broad coverage and complete release remain separate requirements. The earlier Windows DNS cancellation observation remains provider-uncertain even when caller storage was released; this harness does not reinterpret it. Offline negative fixtures preserve that distinction without invoking Windows FFI.
+
+
+## First actual Mac observation — 26 September 2026
+
+Exactly one campaign ran at signed source `8262223166b5aa51a65c06960e33f2e5af012627`
+on the available Apple Silicon development Mac (macOS 26.6.2). It passed with
+nonce `e4f62d1c-1652-45b0-b889-eadabf0995a1`, no retries and unchanged source/binary
+identities. The actual coordinator interval was 5,006 ms; the owned native test
+process interval was 5,932 ms. These are one observation, not latency targets.
+
+The robots request returned a complete 404 response, 14 bytes, retained as an
+original. The fixed seed then returned status 200 with the exact expected
+863-byte fixture. Both requests used the native observed DNS candidates and
+verified pinned HTTPS path. Two charged attempts and two transport launches
+produced one retained seed page. There were no redirects, expansion or accepted
+observations. Joined shutdown released publication ownership. Normal reopen and
+backup/restore preserved the canonical run, both receipts and both originals.
+
+The [exact sanitized receipt](verification/native-durable-https-first-2026-09-26.json)
+has SHA-256 `10e2f6ad95f2b24b746739aea587066215b149315f4720e1f1bb059f3638895d`.
+Root independently revalidated the log events and hashes, opened all three
+SQLite databases read-only, checked integrity and equality of every table, and
+hashed both originals in the source workspace, backup and restored workspace.
+All six fixture copies/robots originals matched their content-addressed names;
+each fixture also matched the checked-in bytes. The
+[root check record](verification/native-durable-https-first-root-checks.json)
+retains the exact scope of that independent check.
+
+This was real HTTPS collection of a project-owned synthetic fixture. It does
+not establish broad discovery, independent publisher relevance, a full DNS
+answer set, shared provider quiescence, active HTTP cancellation, Windows native
+HTTPS, installed-platform behavior or production activation. The normal native
+collection flag and public controls remain disabled. No release gate changed.
