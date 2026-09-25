@@ -93,6 +93,74 @@ def fingerprint(info):
     return info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns
 
 
+def scan_bundle(bundle_root, limits, error):
+    """Inspect a frozen staging tree; report only portable relative names."""
+    root = Path(bundle_root)
+    root_info = root.lstat()
+    if is_link(root_info) or not stat.S_ISDIR(root_info.st_mode):
+        raise InvalidInventory('Bundle root must be a real directory')
+    actual = {}
+    pending = [root]
+    visited = 0
+    actual_keys = set()
+    while pending:
+        directory = pending.pop()
+        with os.scandir(directory) as children:
+            for child in children:
+                visited += 1
+                if visited > limits['files'] * 2:
+                    raise InvalidInventory('Bundle exceeds entry limit')
+                path = Path(child.path).relative_to(root).as_posix()
+                key = path_key(path, limits['path_depth'])
+                if key in actual_keys:
+                    error('path_collision', 'Bundle paths collide across supported filesystems', path=path)
+                actual_keys.add(key)
+                # DirEntry.stat reports zero link/identity fields on Windows.
+                # Read real metadata without following reparse points.
+                info = os.stat(child.path, follow_symlinks=False)
+                if is_link(info):
+                    error('unsafe_link', 'Symlinks and reparse points are forbidden', path=path)
+                elif stat.S_ISDIR(info.st_mode):
+                    pending.append(Path(child.path))
+                elif not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                    error('unsafe_file', 'Only regular, non-hardlinked files are allowed', path=path)
+                else:
+                    actual[path] = info
+    return actual
+
+
+class InvalidAsset(InvalidInventory):
+    def __init__(self, code, detail):
+        super().__init__(detail)
+        self.code = code
+
+
+def hash_asset(root, path, before, expected_size):
+    """Hash one bounded regular asset and reject ordinary identity/content races."""
+    try:
+        digest = hashlib.sha256()
+        flags = os.O_RDONLY | getattr(os, 'O_BINARY', 0) | getattr(os, 'O_NOFOLLOW', 0)
+        with os.fdopen(os.open(root / path, flags), 'rb') as stream:
+            opened = os.fstat(stream.fileno())
+            if file_identity(opened) != file_identity(before):
+                raise InvalidAsset('file_changed', 'File changed before hashing')
+            count = 0
+            while block := stream.read(1024 * 1024):
+                count += len(block)
+                if count > expected_size:
+                    break
+                digest.update(block)
+            # Compare timestamps from the same descriptor API: Windows path and
+            # handle queries can expose different timestamps.
+            changed = fingerprint(os.fstat(stream.fileno())) != fingerprint(opened)
+            changed |= file_identity((root / path).lstat()) != file_identity(opened)
+        if changed or count != expected_size:
+            raise InvalidAsset('file_changed', 'File changed during hashing')
+        return digest.hexdigest(), count
+    except OSError as exc:
+        raise InvalidAsset('file_read_error', 'Could not safely read file') from exc
+
+
 def verify(bundle_root, inventory_path, target):
     report = {'schema_version': 1, 'target': target, 'complete': False,
               'inventory_sha256': None, 'requirements_sha256': None,
@@ -199,36 +267,7 @@ def verify(bundle_root, inventory_path, target):
         for path in sorted(owners.keys() - entries.keys()):
             error('missing_file_declaration', 'Component references an undeclared file', path=path)
         root = Path(bundle_root)
-        root_info = root.lstat()
-        if is_link(root_info) or not stat.S_ISDIR(root_info.st_mode):
-            raise InvalidInventory('Bundle root must be a real directory')
-        actual = {}
-        pending = [root]
-        visited = 0
-        actual_keys = set()
-        while pending:
-            directory = pending.pop()
-            with os.scandir(directory) as children:
-                for child in children:
-                    visited += 1
-                    if visited > limits['files'] * 2:
-                        raise InvalidInventory('Bundle exceeds entry limit')
-                    path = Path(child.path).relative_to(root).as_posix()
-                    key = path_key(path, limits['path_depth'])
-                    if key in actual_keys:
-                        error('path_collision', 'Bundle paths collide across supported filesystems', path=path)
-                    actual_keys.add(key)
-                    # DirEntry.stat reports zero link/identity fields on Windows.
-                    # Read real metadata without following reparse points.
-                    info = os.stat(child.path, follow_symlinks=False)
-                    if is_link(info):
-                        error('unsafe_link', 'Symlinks and reparse points are forbidden', path=path)
-                    elif stat.S_ISDIR(info.st_mode):
-                        pending.append(Path(child.path))
-                    elif not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
-                        error('unsafe_file', 'Only regular, non-hardlinked files are allowed', path=path)
-                    else:
-                        actual[path] = info
+        actual = scan_bundle(root, limits, error)
         for path in sorted(actual.keys() - entries.keys()):
             error('unlisted_file', 'File is absent from inventory', path=path)
         for path, entry in entries.items():
@@ -240,32 +279,14 @@ def verify(bundle_root, inventory_path, target):
                 error('size_mismatch', 'File size differs from inventory', path=path)
                 continue
             try:
-                digest = hashlib.sha256()
-                flags = os.O_RDONLY | getattr(os, 'O_BINARY', 0) | getattr(os, 'O_NOFOLLOW', 0)
-                with os.fdopen(os.open(root / path, flags), 'rb') as stream:
-                    opened = os.fstat(stream.fileno())
-                    if file_identity(opened) != file_identity(before):
-                        error('file_changed', 'File changed before hashing', path=path)
-                        continue
-                    count = 0
-                    while block := stream.read(1024 * 1024):
-                        count += len(block)
-                        if count > entry['size']:
-                            break
-                        digest.update(block)
-                    # Compare timestamps from the same descriptor API: Windows
-                    # path queries and handle queries can expose different times.
-                    changed = fingerprint(os.fstat(stream.fileno())) != fingerprint(opened)
-                    changed |= file_identity((root / path).lstat()) != file_identity(opened)
-                if changed or count != entry['size']:
-                    error('file_changed', 'File changed during hashing', path=path)
-                elif digest.hexdigest() != entry['sha256']:
+                digest, count = hash_asset(root, path, before, entry['size'])
+                if digest != entry['sha256']:
                     error('hash_mismatch', 'SHA-256 differs from inventory', path=path)
                 else:
                     report['verified_files'] += 1
                     report['verified_bytes'] += count
-            except OSError:
-                error('file_read_error', 'Could not safely read file', path=path)
+            except InvalidAsset as exc:
+                error(exc.code, str(exc), path=path)
     except (InvalidInventory, OSError, ValueError, TypeError, KeyError, RecursionError) as exc:
         # Do not expose absolute build paths or operating-system exception messages.
         detail = str(exc) if isinstance(exc, InvalidInventory) else 'Unreadable inventory, policy or bundle'

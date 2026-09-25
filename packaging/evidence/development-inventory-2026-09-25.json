@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-25T11:46:10.007267+00:00",
+  "scope": "Existing Apple Silicon development engines staging only; not the application bundle or a release package",
+  "complete_release": false,
+  "source_base_commit": "ed4ab2c76806c75847e9ce7cea9ea7b329859470",
+  "executed_source_sha256": {
+    "scripts/generate_runtime_inventory.py": "e0ddae70c25ec2ec58c2a292f332361db9efe328de8acf9991146694c8b10d41",
+    "scripts/verify_runtime_bundle.py": "0e72dd2766c432e23093267ce2e831829f2a1b883df1cc581d16aaf54d27f327"
+  },
+  "producer_exit_code": 1,
+  "producer_report_sha256": "3d4e59eccf3fd23ab322a4698cf75c31f6042bb39fd4d3bf89d227f4d3da65d5",
+  "producer_report": {
+    "complete": false,
+    "complete_release": false,
+    "failure": null,
+    "generated": true,
+    "inventory_sha256": "2d1cc4cf9620e6e46b56d6186d817e0188eb78196fc9bfa42a092bfd99301629",
+    "plan_sha256": "c451a167729acce3eacd4d7d5584f5379ce63b93cec7b0615f4b048fae566c00",
+    "published": true,
+    "requirements_sha256": "3ace9499c6a642dff600aa3490d544a96d699be0d828c494f113d940d7eff37b",
+    "schema_version": 1,
+    "target": "macos-aarch64",
+    "verification": {
+      "complete": false,
+      "errors": [
+        {
+          "code": "missing_components",
+          "detail": "Required runtimes or advertised assets are absent"
+        }
+      ],
+      "invalid_components": [],
+      "inventory_sha256": "2d1cc4cf9620e6e46b56d6186d817e0188eb78196fc9bfa42a092bfd99301629",
+      "missing_components": [
+        "application",
+        "chromium",
+        "duckdb",
+        "duckdb-spatial",
+        "fonts",
+        "help",
+        "icons",
+        "networkx",
+        "playwright",
+        "playwright-driver",
+        "pyarrow",
+        "python-runtime",
+        "sandbox-helper",
+        "spacy",
+        "splink",
+        "styles",
+        "synthetic-demo",
+        "ui-assets"
+      ],
+      "requirements_sha256": "3ace9499c6a642dff600aa3490d544a96d699be0d828c494f113d940d7eff37b",
+      "schema_version": 1,
+      "target": "macos-aarch64",
+      "verified_bytes": 250551479,
+      "verified_files": 425
+    }
+  },
+  "limitations": [
+    "The inventory identifies current bytes under reviewed producer declarations; versions are not independently inferred from binaries.",
+    "No executable was launched and no dependency was downloaded by this observation.",
+    "The checked tree contains no app/UI assets; their absence here is not a claim that the development app lacks an interface.",
+    "Architecture execution, confinement, clean installation, signing, final artifact extraction and release acceptance were not tested."
+  ]
+}

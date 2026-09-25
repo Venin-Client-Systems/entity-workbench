@@ -6,6 +6,11 @@
 
 The producer writes an inventory matching [the published v1 schema](../schemas/runtime-inventory.v1.json). Keep the inventory **outside** the bundle root, avoiding a self-referential checksum. Each component declares a pinned version and a non-empty list of owned relative files. The global file table records exact byte sizes and SHA-256 hashes. Include dependencies, licences and runtime support files in the appropriate component. Every file must be listed and owned; multiple components may share an explicitly declared file. All directory entries must be portable and free of links, including Windows reparse points/junctions and hardlinks. Materialize reviewed upstream links into ordinary files during staging.
 
+The [offline inventory producer](INVENTORY-PRODUCER.md) now generates this format
+from explicit reviewed component/version/path declarations, using the same
+scanner and hashing checks. A fully inventoried partial staging tree remains
+incomplete and exits nonzero; nothing is downloaded or inferred to fill a gap.
+
 ```sh
 python3 scripts/verify_runtime_bundle.py \
   --bundle artifacts/candidate-bundle \
