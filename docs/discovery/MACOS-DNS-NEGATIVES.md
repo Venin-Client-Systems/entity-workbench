@@ -1,6 +1,6 @@
 # macOS negative DNS observations
 
-This is a private resolver correction for EW-22/#25. It adds no public command, collection activation, new destination, Windows behavior or dependency. **No native queries have run against this change.** The preceding [failed native campaign](verification/native-transport-macos.json) remains byte-identical and continues to show four passing cases and one unmet negative-callback requirement.
+This is a private resolver correction for EW-22/#25. It adds no public command, collection activation, new destination, Windows behavior or dependency. **One explicitly reviewed DNS-only native campaign passed all five cases against the signed correction.** The preceding [failed native campaign](verification/native-transport-macos.json) remains byte-identical and continues to show four passing cases and one unmet negative-callback requirement.
 
 ## Primary contract and chosen semantics
 
@@ -32,4 +32,6 @@ Test-first callback regressions on the prior code produced one pass and four fai
 
 The opt-in native harness is versioned `fixed-three-subscriptions-no-http-v2`. Its five cases, two fixed names and maximum of three subscriptions are unchanged. The overall execution window is now distinct from the five-second internal DNS-stage boundary, within the same twenty-second campaign and thirty-second outer process bound. A future negative case requires an actual `NoSuchRecord` callback, generic Network after the internal stage, and observed subscription deallocation. It does not demand immediate termination or treat one-family NODATA as total NXDOMAIN. The earlier campaign/report is not reinterpreted under this policy.
 
-Before any further native run, the changed source, exact query scope and expected observations require integration review. HTTPS remains absent. Actual Windows execution, complete RRsets, live durable collection and release acceptance remain unproved.
+After source/scope review, signed clean commit `07311ce9bad0da20a34eb5b8f6824c5bfe780af3` ran the one authorised v2 campaign on macOS 26.6.2 arm64. All five cases passed. Public resolution observed four policy-valid candidates in 356 ms. The negative name delivered two actual `NoSuchRecord` callbacks; their undefined flags are null in the diagnostics. It returned generic Network after the five-second internal stage, rather than inferring complete family failure from those two callbacks. The active-deadline case deallocated its actual subscription in 1 ms; pre-cancelled and expired transport entries created none. All three created subscriptions were deallocated, and source/binary hashes remained unchanged after execution. These individual timings are observations, not worst-case latency guarantees.
+
+The [verification record](verification/macos-negative-dns.json) preserves source/binary/log hashes, exact observations, the original test-first failures, 432 passing ordinary core tests, strict debug/release Clippy and nine Python evidence regressions normally and under `-O`. No HTTP or retry occurred. Actual Windows execution, complete RRsets, live durable collection and release acceptance remain unproved.
