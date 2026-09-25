@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "complete_release": false,
+  "source": "439b772798e34e2d7f2b5352e7b167e9563b6813",
+  "source_files_verified": 413,
+  "binary_sha256": "032d664e8876b15797e11619fb7662eb54c3728314714ca571bdf4058ad0990a",
+  "outer_report_sha256": "3ff6b6e1ec437990b766ea8cb584f8b12f1ff01ac0b69678181e7799acdcc2b4",
+  "runtime_sha256": "a34ea61a64a823ea77180079126c9eba9b2da801ab3c48fc4962acad23c35570",
+  "workspaces": [
+    {
+      "workspace": "healthy-workspace",
+      "integrity": "ok",
+      "canonical_sha256": "3a74b86aa8e4434b6805200d78809fdc5cb5a9de200ed0b6ad473a9a25ae4d69",
+      "revision": 3,
+      "record_count": 3,
+      "originals": 3,
+      "index_or_intent_matches": true
+    },
+    {
+      "workspace": "intent-workspace",
+      "integrity": "ok",
+      "canonical_sha256": "44ec6009613a9f7d301b018c7df0e06444fb1a74d7981807ed91a1c0e905cdd6",
+      "revision": 3,
+      "record_count": 3,
+      "originals": 3,
+      "index_or_intent_matches": true
+    }
+  ],
+  "notes": [
+    "Independent read-only SQLite reconstruction matches trusted Rust typed logical digest",
+    "No native rerun or Java invocation",
+    "Recipe entries are not independent spawn evidence",
+    "Selected runtime is pinned; current-source worker producer and preparation chain recorded separately; JRE and third-party binaries are not source-built by this campaign"
+  ]
+}
