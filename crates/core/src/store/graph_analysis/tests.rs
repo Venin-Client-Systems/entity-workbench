@@ -712,3 +712,6 @@ fn concurrent_canonical_correction_cannot_mix_pinned_graph_or_provenance() {
         assert!(w.validate_graph_path(current, &raw).is_ok());
     }
 }
+
+#[path = "protocol_fixture.rs"]
+mod protocol_fixture;

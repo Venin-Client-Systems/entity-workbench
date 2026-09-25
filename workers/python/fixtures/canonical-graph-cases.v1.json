@@ -1,0 +1,195 @@
+{
+  "cases": [
+    {
+      "name": "connected",
+      "request": {
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "a",
+            "d"
+          ],
+          [
+            "b",
+            "c"
+          ],
+          [
+            "c",
+            "e"
+          ],
+          [
+            "d",
+            "e"
+          ]
+        ],
+        "engine": "networkx",
+        "engine_version": "3.6.1",
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f"
+        ],
+        "nonce": "df0ec15a-af79-4e35-9e05-7f964e0c181f",
+        "policy": "accepted_undirected_all_retained_time_v1",
+        "recipe": "shortest_connection_path_v1",
+        "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+        "schema_version": 1,
+        "snapshot_sha256": "b34bffa0020bdb6b3e5c5988853e30d8029f24fad60291aa60c8dc6713dd0d72",
+        "source_id": "a",
+        "target_id": "c",
+        "workspace_revision": 3
+      },
+      "result": {
+        "engine": "networkx",
+        "engine_version": "3.6.1",
+        "nonce": "df0ec15a-af79-4e35-9e05-7f964e0c181f",
+        "outcome": {
+          "nodes": [
+            "a",
+            "b",
+            "c"
+          ],
+          "state": "path"
+        },
+        "policy": "accepted_undirected_all_retained_time_v1",
+        "recipe": "shortest_connection_path_v1",
+        "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+        "schema_version": 1,
+        "snapshot_sha256": "b34bffa0020bdb6b3e5c5988853e30d8029f24fad60291aa60c8dc6713dd0d72",
+        "workspace_revision": 3
+      }
+    },
+    {
+      "name": "reverse",
+      "request": {
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "a",
+            "d"
+          ],
+          [
+            "b",
+            "c"
+          ],
+          [
+            "c",
+            "e"
+          ],
+          [
+            "d",
+            "e"
+          ]
+        ],
+        "engine": "networkx",
+        "engine_version": "3.6.1",
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f"
+        ],
+        "nonce": "576aec23-84a1-4cbb-a18a-8029a9baccc2",
+        "policy": "accepted_undirected_all_retained_time_v1",
+        "recipe": "shortest_connection_path_v1",
+        "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+        "schema_version": 1,
+        "snapshot_sha256": "b34bffa0020bdb6b3e5c5988853e30d8029f24fad60291aa60c8dc6713dd0d72",
+        "source_id": "c",
+        "target_id": "a",
+        "workspace_revision": 3
+      },
+      "result": {
+        "engine": "networkx",
+        "engine_version": "3.6.1",
+        "nonce": "576aec23-84a1-4cbb-a18a-8029a9baccc2",
+        "outcome": {
+          "nodes": [
+            "c",
+            "b",
+            "a"
+          ],
+          "state": "path"
+        },
+        "policy": "accepted_undirected_all_retained_time_v1",
+        "recipe": "shortest_connection_path_v1",
+        "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+        "schema_version": 1,
+        "snapshot_sha256": "b34bffa0020bdb6b3e5c5988853e30d8029f24fad60291aa60c8dc6713dd0d72",
+        "workspace_revision": 3
+      }
+    },
+    {
+      "name": "unreachable",
+      "request": {
+        "edges": [
+          [
+            "a",
+            "b"
+          ],
+          [
+            "a",
+            "d"
+          ],
+          [
+            "b",
+            "c"
+          ],
+          [
+            "c",
+            "e"
+          ],
+          [
+            "d",
+            "e"
+          ]
+        ],
+        "engine": "networkx",
+        "engine_version": "3.6.1",
+        "nodes": [
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f"
+        ],
+        "nonce": "0fb16618-7755-40d3-ad84-a2516a46d581",
+        "policy": "accepted_undirected_all_retained_time_v1",
+        "recipe": "shortest_connection_path_v1",
+        "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+        "schema_version": 1,
+        "snapshot_sha256": "b34bffa0020bdb6b3e5c5988853e30d8029f24fad60291aa60c8dc6713dd0d72",
+        "source_id": "a",
+        "target_id": "f",
+        "workspace_revision": 3
+      },
+      "result": {
+        "engine": "networkx",
+        "engine_version": "3.6.1",
+        "nonce": "0fb16618-7755-40d3-ad84-a2516a46d581",
+        "outcome": {
+          "state": "unreachable"
+        },
+        "policy": "accepted_undirected_all_retained_time_v1",
+        "recipe": "shortest_connection_path_v1",
+        "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+        "schema_version": 1,
+        "snapshot_sha256": "b34bffa0020bdb6b3e5c5988853e30d8029f24fad60291aa60c8dc6713dd0d72",
+        "workspace_revision": 3
+      }
+    }
+  ],
+  "schema_version": 1
+}
