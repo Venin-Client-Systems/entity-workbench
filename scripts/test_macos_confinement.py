@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCES = [
     "crates/core/src/engines.rs",
     "crates/core/src/engines/search.rs",
+    "crates/core/src/engines/search_corpus.rs",
     "crates/core/src/engines/search_lifecycle.rs",
     "crates/core/src/engines/supervision.rs",
     "crates/core/src/engines/supervision/tests.rs",

@@ -9,6 +9,7 @@ pub mod parser;
 pub mod pdf_render;
 pub(crate) mod python_graph;
 pub(crate) mod search;
+pub(crate) mod search_corpus;
 pub(crate) mod search_lifecycle;
 #[cfg(target_os = "macos")]
 mod supervision;

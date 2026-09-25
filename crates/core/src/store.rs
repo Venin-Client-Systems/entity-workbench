@@ -41,6 +41,7 @@ mod recovery;
 mod report_snapshots;
 mod review_decision_page;
 mod search;
+mod search_capture;
 mod statements;
 mod transaction_analysis;
 mod transaction_balance;

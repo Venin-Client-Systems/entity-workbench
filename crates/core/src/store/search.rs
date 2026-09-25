@@ -1,6 +1,7 @@
 //! Synchronous Search shares the one workspace execution owner; it never recovers an intent.
 use super::*;
 use crate::engines::{
+    search_corpus::{validate_query, SearchCorpus},
     search_lifecycle::{Completion, Disposition},
     SearchResults,
 };
@@ -37,8 +38,8 @@ impl Workspace {
         owner: &CollectionOwnership,
         query: &str,
     ) -> Result<SearchResults> {
-        self.search_owned_with(owner, query, |runtime, cache, revision, evidence, query| {
-            runtime.search_completed(cache, revision, evidence, query)
+        self.search_owned_with(owner, query, |runtime, cache, _, corpus, query| {
+            runtime.search_corpus_completed(cache, corpus, query)
         })
     }
     pub(crate) fn search_owned_with(
@@ -49,7 +50,7 @@ impl Workspace {
             &crate::engines::Runtime,
             &Path,
             u64,
-            &[Evidence],
+            &SearchCorpus,
             &str,
         ) -> Completion<SearchResults>,
     ) -> Result<SearchResults> {
@@ -70,8 +71,8 @@ impl Workspace {
         let runtime = self.runtime.as_ref().ok_or_else(|| {
             Error::Blocked("Packaged local search runtime is not available in this build".into())
         })?;
-        let revision = self.revision()?;
-        let evidence = all_evidence(&self.conn)?;
+        validate_query(query)?;
+        let corpus = self.capture_search()?;
         let mut permit = SearchPermit {
             owner,
             completed: false,
@@ -79,8 +80,8 @@ impl Workspace {
         let completion = execute(
             runtime,
             &self.root.join("indexes/lucene"),
-            revision,
-            &evidence,
+            corpus.revision(),
+            &corpus,
             query,
         );
         if completion.disposition == Disposition::Released {

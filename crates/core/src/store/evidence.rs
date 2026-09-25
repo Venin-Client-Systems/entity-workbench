@@ -2,7 +2,7 @@
 //! These checks do not read or hash original files; byte verification is separate.
 use super::*;
 
-fn decode(key: &str, body: &str) -> Result<Evidence> {
+pub(super) fn decode(key: &str, body: &str) -> Result<Evidence> {
     let evidence: Evidence = serde_json::from_str(body)?;
     require(
         evidence.id == key,

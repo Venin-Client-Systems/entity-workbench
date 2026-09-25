@@ -1,4 +1,7 @@
 //! Existing fixed Lucene recipe with explicit index/assignment ownership.
+use super::search_corpus::SearchCorpus;
+#[cfg(any(test, target_os = "macos"))]
+use super::search_corpus::{validate_query, CorpusBuilder};
 #[cfg(any(test, target_os = "macos"))]
 use super::search_lifecycle::Lease;
 #[cfg(target_os = "macos")]
@@ -70,6 +73,24 @@ impl Runtime {
             |cache, operation, input| self.run(cache, operation, input),
         )
     }
+    pub(crate) fn search_corpus_completed(
+        &self,
+        cache: &Path,
+        corpus: &SearchCorpus,
+        query: &str,
+    ) -> Completion<SearchResults> {
+        #[cfg(not(target_os = "macos"))]
+        {
+            let _ = (cache, corpus, query);
+            Completion::released(Err(Error::Blocked(
+                "Native worker confinement is not verified on this platform".into(),
+            )))
+        }
+        #[cfg(target_os = "macos")]
+        self.search_corpus_with(cache, corpus, query, |cache, operation, input| {
+            self.run(cache, operation, input)
+        })
+    }
     #[cfg(any(test, target_os = "macos"))]
     pub(crate) fn search_with(
         &self,
@@ -77,14 +98,33 @@ impl Runtime {
         revision: u64,
         evidence: &[Evidence],
         query: &str,
+        execute: impl FnMut(&Path, WorkerOperation, &str) -> Result<Vec<u8>>,
+    ) -> Completion<SearchResults> {
+        let prepare = || {
+            validate_query(query)?;
+            let mut builder = CorpusBuilder::new(revision)?;
+            for row in evidence {
+                builder.push(row)?;
+            }
+            builder.finish()
+        };
+        match prepare() {
+            Ok(corpus) => self.search_corpus_with(cache, &corpus, query, execute),
+            Err(error) => Completion::released(Err(error)),
+        }
+    }
+    #[cfg(any(test, target_os = "macos"))]
+    pub(crate) fn search_corpus_with(
+        &self,
+        cache: &Path,
+        corpus: &SearchCorpus,
+        query: &str,
         mut execute: impl FnMut(&Path, WorkerOperation, &str) -> Result<Vec<u8>>,
     ) -> Completion<SearchResults> {
-        if let Err(error) = require(
-            !query.trim().is_empty() && query.len() <= 1024,
-            "Query must contain 1 to 1024 bytes",
-        ) {
+        if let Err(error) = validate_query(query) {
             return Completion::released(Err(error));
         }
+        let revision = corpus.revision();
         let mut lease = match Lease::acquire(cache) {
             Ok(lease) => lease,
             Err(failure) => {
@@ -111,22 +151,10 @@ impl Runtime {
                 if marker.exists() {
                     fs::remove_file(&marker)?;
                 }
-                let manifest = serde_json::to_vec(
-                    &serde_json::json!({"workspace_revision":revision,"documents":evidence.iter().filter_map(|e|e.text.as_ref().map(|text|serde_json::json!({"id":e.id,"name":e.name,"text":text}))).collect::<Vec<_>>()}),
-                )?;
-                require(
-                    manifest.len() <= 16 * 1024 * 1024,
-                    "Index manifest exceeds the development limit",
-                )?;
                 let input = format!("manifest-{}.json", Uuid::new_v4());
-                lease.stage(&input, &manifest)?;
+                lease.stage(&input, corpus.manifest())?;
                 let bytes = execute(&cache, WorkerOperation::Index, &input)?;
-                accept_index_result(
-                    &bytes,
-                    revision,
-                    evidence.iter().filter(|item| item.text.is_some()).count() as u64,
-                    &marker,
-                )?;
+                accept_index_result(&bytes, revision, corpus.document_count(), &marker)?;
             }
             let input = format!("query-{}.json", Uuid::new_v4());
             lease.stage(
@@ -143,7 +171,7 @@ impl Runtime {
                 result
                     .hits
                     .iter()
-                    .all(|hit| hit.score.is_finite() && evidence.iter().any(|e| e.id == hit.id)),
+                    .all(|hit| hit.score.is_finite() && corpus.knows(&hit.id)),
                 "Search result references unknown evidence",
             )?;
             Ok(result)
