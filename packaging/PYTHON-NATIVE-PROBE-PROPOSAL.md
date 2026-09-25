@@ -1,6 +1,6 @@
 # Proposed first confined Python compatibility probe
 
-Status: **reviewed proposal with a test-only implementation and one failed native observation**. See
+Status: **reviewed proposal with a test-only implementation, a retained failed first observation and a successful second compatibility observation**. See
 [the source contract](../docs/security/PYTHON-COMPATIBILITY-PROBE.md). The offline
 installer does not execute it. The assembled prefix has only file-integrity evidence. The existing
 `workers/python/worker.py` envelope is experimental and is not a canonical

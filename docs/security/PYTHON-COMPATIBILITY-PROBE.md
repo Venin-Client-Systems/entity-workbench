@@ -174,7 +174,7 @@ history. The failed native execution is recorded separately and does not mutate
 that immutable installed manifest. Raw build/native logs remain private local
 artifacts. No job directories remained after confirmed cleanup.
 
-## Reviewed diagnostic refinement — awaiting execution review
+## Reviewed diagnostic refinement — executed in second campaign
 
 The follow-up records one closed `before`/`after` checkpoint around each of the
 six imports in the existing order: duckdb, networkx, spacy, click, splink, pyarrow.
@@ -196,3 +196,47 @@ existing wall-time timer. Null means that interval has not completed. Timing
 observations cannot authorize larger budgets or infer a causal explanation.
 Sandbox grants, all resource limits and final result assertions are unchanged.
 The first failure above remains byte-for-byte historical evidence.
+
+## Second native observation — 2026-09-25
+
+Exactly one diagnostic campaign at signed source
+`6e357b1879af4db15fb2ed6a508b1ecc48595246` passed all fixed compatibility
+assertions on macOS 26.6.2 arm64. The exact
+[outer receipt](../../packaging/evidence/python-compatibility-second-2026-09-25.json),
+[native receipt](../../packaging/evidence/python-compatibility-second-native-2026-09-25.json)
+and independent [post-campaign integrity receipt](../../packaging/evidence/python-compatibility-second-integrity-2026-09-25.json)
+are preserved verbatim. Runtime manifest, permissions and limits were unchanged.
+Root's heavier source/render checks had completed before this campaign; no
+controlled comparison establishes the cause of the preceding quota failure.
+
+The process exited zero; termination and cleanup were confirmed. Every phase
+and all twelve import boundaries completed, ending `pyarrow:after`; quota kind
+was null. Preparation took 46,657 ms, and spawn through reaping took 22,844 ms.
+The complete native Rust test took 114.73 seconds including the two full runtime
+checks. These timings describe this observation and are not performance claims.
+The total remains close to the runner's unchanged 120-second outer timeout;
+future campaigns must retain any outer-timeout failure and unverified termination
+instead of retrying or silently extending limits. Both diagnostic streams were
+empty, and no job directories remained after cleanup.
+
+All 58 version comparisons and six top-level imports matched. PhraseMatcher
+returned the three expected Unicode character spans with pending review status
+and the empty case passed. The graph used accepted assertions `r1` and `r2` for
+path `a,b,c`; the unreachable case passed. PyArrow/DuckDB returned exact AUD
+`1.123456788` for `aud-a, aud-b, aud-c` and USD `5.00000000` for `usd-a, usd-b`,
+with the fixed review exclusions and accepted-transfer rejection. The six
+metadata groups, two selected factory identities and synthetic reader output
+matched under `-I -S -B`; Splink was imported/version-checked only. No model
+quality, optional plugin, language-model or canonical protocol claim follows.
+
+The interpreter was SHA-256
+`3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc`.
+The actual profile was SHA-256
+`3f32bed856ed2c79043f3b2ed90413dc204866eb8c27254152bcdd93a49a26a4`;
+its assigned path spelling naturally differs from the first job. The compiled
+native test was SHA-256
+`0f79d741d89d2200a4558d4b1e8cadefdc98477f89fefb092d69de6fdb91cf19`.
+The runner revalidated the clean source identity and test-binary hash after
+acceptance. An independent reader then verified the unchanged 11,320 files,
+601,821,300 bytes and all 58 installed RECORDs. Complete-release and runtime
+activation flags remain false; all separately listed unmet checks remain open.
