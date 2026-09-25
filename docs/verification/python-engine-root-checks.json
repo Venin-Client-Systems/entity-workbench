@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "source_commit": "46e6c1e23d312f8e5e646441b3654635abb51b20",
+  "complete_release": false,
+  "checks": {
+    "networkx": {
+      "receipt_and_result_verified": true,
+      "source_hashes_verified": 24,
+      "retained_file_hashes_verified": 6,
+      "inventory_receipt_equality": true,
+      "paired_time_arithmetic": true
+    },
+    "transactions": {
+      "receipt_and_result_verified": true,
+      "source_hashes_verified": 24,
+      "retained_file_hashes_verified": 6,
+      "inventory_receipt_equality": true,
+      "paired_time_arithmetic": true
+    }
+  },
+  "harness_correction": "Initial independent comparison used failed-receipt projection; successful receipts retain the full result. Corrected to exact full native equality; no runtime execution or artifact changed."
+}
