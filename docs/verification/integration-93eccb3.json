@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "scope": "Prepared public Cancel plus explicitly labelled browser refusal recovery",
+  "source_commit": "93eccb3ae7d25585a90db7785cb11457720311f4",
+  "source_tree": "3fe2f04f52b84299c06e6af468932cd0760af50a",
+  "checks": {
+    "rust": {
+      "passed": 588,
+      "library": 509,
+      "integration": 79,
+      "ignored_native_or_specialized": 31,
+      "failed": 0
+    },
+    "clippy": "strict all targets passed",
+    "formatting": "passed",
+    "ui_build": "passed with existing large-chunk warning",
+    "browser": {
+      "file": "ui/tests/durable-collection.spec.ts",
+      "passed": 15,
+      "failed": 0,
+      "unchanged_real_core_flows": 13,
+      "new_explicitly_simulated_stale_control_cases": 2,
+      "new_case_scope": [
+        "A stale enabled Cancel inspection followed by the actual standalone backend refusal",
+        "A stale enabled Cancel inspection followed by an explicitly injected preparation-conflict transport response"
+      ],
+      "assertions": "Both clear controls/outcome, retain an unconfirmed error, leave canonical records/revision unchanged, require refresh and perform no implicit mutation retry",
+      "native_execution_proven": false
+    },
+    "python": {
+      "rerun": false,
+      "basis": "No Python files or dependencies changed since integrated 7f95843 (340 cases, 336 pass/four platform skips)",
+      "prior_evidence": "docs/verification/integration-7f95843.json"
+    },
+    "release_gates": {
+      "changed": false,
+      "passed": 0,
+      "unpassed": 12
+    }
+  },
+  "independent_handoff_checks": {
+    "source_files": 7,
+    "historical_files": 102,
+    "retained_artifacts": 18,
+    "all_exact": true,
+    "signed_source": "4773b54cb3d34c8a75fca97e72c2e11917be0c6d",
+    "signed_evidence": "d66a6365b0407bc74a5561bf747cca48e6173755",
+    "root_read_only_review": "Full production cancellation and new regression review found no concrete blocker"
+  },
+  "local_logs": {
+    "core": {
+      "sha256": "26709aba8f5b8cd03d711034293e1f5538d6ffd37ecc2cf004293d4ce1fa85a3",
+      "bytes": 73361,
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "workbench-core"
+      ],
+      "exit_code": 0
+    },
+    "clippy": {
+      "sha256": "8e391e2ff220993cc5468374cf472c2366de179c723c84283c8e04a6642030da",
+      "bytes": 184,
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "workbench-core",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    },
+    "fmt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    "ui-build": {
+      "sha256": "69d3eabd15e8d764f9ba5917c802df69118dcb861d6268580d1c5a6039f506b3",
+      "bytes": 932,
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    "browser": {
+      "sha256": "361500b1e549aa37c703b35869cc84dd8e46aa8311f0794c6171e1821a78a6eb",
+      "bytes": 2747,
+      "command": [
+        "npm",
+        "run",
+        "test:ui",
+        "--",
+        "ui/tests/durable-collection.spec.ts"
+      ],
+      "exit_code": 0
+    }
+  },
+  "limits": [
+    "No native candidate or public-network campaign; normal native collection remains disabled",
+    "One outside-lock historical replay still precedes cancellation token signalling; no hard latency or preemption guarantee",
+    "Capture, final original rehash, response serialization and canonical I/O remain under workspace/lane locks",
+    "Public inspection/catalogue, resume/start, startup recovery and direct store operations retain existing mutex-held replay",
+    "The two new UI cases deliberately inject stale availability and one conflict response; actual conflicting-write safety is established separately by Rust coordinator tests",
+    "Graph production execution remains blocked pending scheduling/runtime integration",
+    "Full earlier browser runs and Python checks remain pinned to their original revisions"
+  ],
+  "complete_release": false
+}
