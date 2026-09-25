@@ -13,6 +13,8 @@ import { Graph, LocalMap, TotalsChart } from "./Visuals";
 import { AssessmentWorkbench } from "./AssessmentWorkbench";
 import { DocxCapture } from "./docx-capture";
 import { CollectionHistory } from "./CollectionReview";
+import { DurableCollection } from "./DurableCollection";
+import { DurableCollectionSession } from "./durable-collection-session";
 import { DocumentJobs } from "./DocumentJobs";
 import { Dialog } from "./Dialog";
 import { TransactionLedger } from "./TransactionLedger";
@@ -68,9 +70,8 @@ function App() {
   const [visibleTransactionIds, setVisibleTransactionIds] = useState<string[]>(
     [],
   );
-  const [entityId, setEntityId] = useState(""),
-    [seeds, setSeeds] = useState("https://example.com/"),
-    [previewed, setPreviewed] = useState(false);
+  const [entityId, setEntityId] = useState("");
+  const [collectionSession] = useState(() => new DurableCollectionSession());
   const [searchHits, setSearchHits] = useState<
     { id: string; name: string; score: number }[] | null
   >(null);
@@ -664,91 +665,13 @@ function App() {
               )}
               {section === "Discovery" && (
                 <>
-                  <section className="panel">
-                    <h2>Direct public-web collection</h2>
-                    <p>
-                      The selected URLs and normal connection metadata are
-                      disclosed to those websites. Page links are followed only
-                      on the selected hosts. No local case contents or search
-                      terms are sent to a search provider.
-                    </p>
-                    <label>
-                      Seed URLs, one per line
-                      <textarea
-                        aria-label="Seed URLs"
-                        value={seeds}
-                        onChange={(e) => {
-                          setSeeds(e.target.value);
-                          setPreviewed(false);
-                        }}
-                      />
-                    </label>
-                    <div className="scope-grid">
-                      <div>
-                        <strong>2 hops</strong>
-                        <span>Maximum expansion</span>
-                      </div>
-                      <div>
-                        <strong>50 requests</strong>
-                        <span>Including robots and redirects</span>
-                      </div>
-                      <div>
-                        <strong>10 minutes</strong>
-                        <span>Maximum duration</span>
-                      </div>
-                    </div>
-                    <div className="actions">
-                      <button
-                        className="button"
-                        disabled={busy}
-                        onClick={() => {
-                          setPreviewed(true);
-                        }}
-                      >
-                        Preview disclosure
-                      </button>
-                      {previewed && (
-                        <button
-                          className="button primary"
-                          disabled={busy}
-                          onClick={() =>
-                            void run({
-                              action: "collect_web",
-                              urls: seeds
-                                .split("\n")
-                                .map((s) => s.trim())
-                                .filter(Boolean),
-                              max_hops: 2,
-                              max_requests: 50,
-                              max_seconds: 600,
-                            })
-                          }
-                        >
-                          Collect selected websites
-                        </button>
-                      )}
-                    </div>
-                    {previewed && (
-                      <div className="disclosure">
-                        <h3>Requests will be sent to</h3>
-                        {seeds
-                          .split("\n")
-                          .filter(Boolean)
-                          .map((url, i) => (
-                            <code key={i}>
-                              {url}
-                              <br />
-                            </code>
-                          ))}
-                        <p>
-                          Collection honours robots rules, requires HTTPS and
-                          stops at the first exhausted limit. Private, local and
-                          special-use addresses are rejected. Public access and
-                          robots permission do not grant republication rights.
-                        </p>
-                      </div>
-                    )}
-                  </section>
+                  <DurableCollection
+                    revision={w.revision}
+                    busy={busy}
+                    session={collectionSession}
+                    evidence={w.evidence}
+                    refresh={() => run({ action: "view" })}
+                  />
                   <CollectionHistory
                     workspace={w}
                     busy={busy}
@@ -800,7 +723,7 @@ function App() {
           onSource={setEvidence}
           close={() => {
             // A late mutation may close only the review that submitted it.
-            setSelected((current) => current === selected ? null : current);
+            setSelected((current) => (current === selected ? null : current));
           }}
         />
       )}

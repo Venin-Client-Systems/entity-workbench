@@ -139,6 +139,7 @@ pub struct CollectionExecutionStatus {
 #[serde(deny_unknown_fields)]
 pub struct CollectionRunSummary {
     pub id: String,
+    pub request_key: String,
     pub record_version: u32,
     pub mode: AcquisitionMode,
     pub collector_policy: String,

@@ -1,0 +1,43 @@
+# Durable collection review and queue interface
+
+This development increment replaces the synchronous collection form with Rust-generated disclosure preview, bounded durable history and verified retained-request inspection. It does **not** enable native collection execution. The ordinary native coordinator remains `native_disabled`; the browser development bridge remains `standalone_unavailable`. Both permit preview and historical review, with queue/control actions disabled. Broad public-web coverage and the complete release remain unpassed.
+
+## Editable design and comparison
+
+The working Figma file is **Entity Workbench — development design**, an editable development copy. Existing frames, styles and components remain intact. These are development specimens, not final product approval:
+
+| Frame | Native node | Size | Retained export |
+| --- | --- | --- | --- |
+| 25 / Instrument — Durable collection preview | [2011:2](https://www.figma.com/design/CphN4aTS8IXSVlKX7zDJtg/Entity-Workbench?node-id=2011-2) | 1120 × 1250 | [Preview](evidence/durable-collection-20260926/figma-preview.png) |
+| 26 / Instrument — Durable collection review | [2011:109](https://www.figma.com/design/CphN4aTS8IXSVlKX7zDJtg/Entity-Workbench?node-id=2011-109) | 1120 × 1280 | [Review](evidence/durable-collection-20260926/figma-review.png) |
+| 27 / Instrument — Collection recovery | [2011:165](https://www.figma.com/design/CphN4aTS8IXSVlKX7zDJtg/Entity-Workbench?node-id=2011-165) | 720 × 1290 | [Recovery states](evidence/durable-collection-20260926/figma-recovery.png) |
+
+The frames contain native editable text and vector layers. Dimensions, positions and text layers were read through Figma's native accessibility surface; PNGs were exported by Figma. Each exported frame was visually inspected. The original view-only file was not changed.
+
+Browser debugging initially timed out. Native Chrome accessibility control subsequently enabled the review/recovery exports. Later reload, navigation and repeat-export attempts returned without observable navigation or new files. Post-reload export equality is therefore **unverified**; repeated controls were stopped and the file was preserved. The successful initial exports and editable-layer observations are the retained evidence, not a claim that a later reload succeeded.
+
+The app uses existing hard-edged industrial controls, graphite section headers, amber disclosure notices, exact identifiers and explicit outcome/execution separation. [App preview](evidence/durable-collection-20260926/app-preview.png) and [full review surface](evidence/durable-collection-20260926/app-review.png) retain the implementation comparison. [Compact top](evidence/durable-collection-20260926/app-compact-top.png) and [compact bottom](evidence/durable-collection-20260926/app-compact-bottom.png) show the scrollable interrupted-state review at a 760-pixel viewport. These are actual browser captures; they are not substituted design mockups.
+
+The implemented review includes both robots and seed receipts and additional limitation text; the Figma review deliberately illustrates one seed receipt. Runtime dates, identifiers and hashes are from fixed synthetic canonical fixtures and differ from design examples. The standalone availability warning differs from native-disabled copy because those are distinct backend states. The catalogue uses the existing list-card style and a bounded pager. A complete compact preview/catalogue Figma specification and enabled-executor interactive state comparison remain future design work.
+
+## Identity and lifecycle
+
+- Rust normalizes the selected HTTPS URLs, limits, hosts, robots access and disclosure. The UI displays the returned scope and digest. Editing any input invalidates its preview. Preview performs no DNS or HTTP request.
+- A queue attempt freezes a UUID, normalized input, disclosure digest and observed revision in an App-lifetime session. Navigation/remount and workspace refresh retain it; browser reload or application restart do not. An uncertain acknowledgement offers only retry of the same request, with no inferred absence or automatic replacement UUID.
+- Queue acknowledgement acceptance requires the exact canonical request UUID, record version 3, collector policy, input and non-regressing revision. The two new collection DTO schemas now include `request_key`; this is an explicitly reviewed amendment to the not-yet-published v23 DTOs. All other 88 schema files, including every historical command schema and command v23, remain byte-identical to the base.
+- Catalogue reads use 25 rows per request, ascending canonical publication order, actual returned offsets and at most 100 cursor positions. One active and one latest pending read per lane bound concurrency. Revision changes reset the catalogue and availability. Empty and unavailable are distinct.
+- Selected inspection is keyed by record ID and revision. Unmount, revision change and A→B→A selection invalidate old responses. Controls use only returned capability booleans and exact current generation/request sequence. A failed action clears the actionable view and requires refreshed inspection.
+- A direct successful queue acknowledgement remains visible if the separate workspace refresh fails. Polling is limited to a ready/synthetic active queued/running inspection. Ordinary production and standalone availability never fabricate an active executor from saved state.
+- Historical v1/v2 receipt review and export remain available below the durable catalogue. Retained-source review requires the exact evidence ID, digest and byte count and calls the existing original-verifying reader. Collected script text is escaped. Source inspection is a sibling modal so Escape closes only the source and restores its opener.
+
+## Verification and limits
+
+[Validation manifest](evidence/durable-collection-20260926/validation.json) binds the source files, test executable, exports, captures and sanitized logs. The ordinary Rust suite passed **452 tests**, with 23 native cases ignored. Strict debug and release Clippy, UI type/build checks and **20 browser cases** passed: 13 new durable workflows and 7 historical receipt workflows.
+
+The new browser cases exercise real Rust preview, catalogue, inspection and fixed canonical specimens: 25+5 paging, revision reset, empty versus unavailable, retained-source corruption/restoration, escaped scripts, late preview and A→B→A rejection, modal focus, pager focus and deliberate move-then-blur, compact overflow, and four axe scans with zero reported violations. Initial tests exposed a pager contrast inheritance defect and nested Escape propagation; both were repaired. The initial fixture also required a canonical temporary-directory path, and two initial browser expectations were corrected to await real pagination and avoid a test-only mount overlap. Failed observations are retained by hash rather than hidden.
+
+The queue identity tests have narrow meanings. One delays/loses a **genuinely refused standalone queue** response and proves identity retention through remount and retry. Another substitutes actual canonical inspections of two same-input, different-key synthetic records: the wrong key remains uncertain; the exact key succeeds through the session seam. This is acknowledgement-validation evidence, **not** a successful live queue/lost-ack campaign. Actual durable executor recovery remains covered by the separate core synthetic-coordinator tests. This UI increment performs no live external collection and provides no enabled cancel/resume/settlement native proof.
+
+`seed-durable-collection-review` is a debug-only fixed CLI helper for a fresh synthetic workspace. It uses canonical SyntheticV3 queue, reserve, settlement and recovery paths for 30 bounded specimens. It accepts no supplied record, receipt, executor or state override, makes no network request, refuses a second seed and is absent from release builds. Standalone reads keep every execution control disabled. Two specimens intentionally share input and retain distinct request UUIDs.
+
+Browser accessibility checks do not establish native WebKit or assistive-technology certification. Full packaged/native collection verification, enabled-executor controls, post-reload Figma equality and the remaining compact design states remain open. Existing large-bundle build warnings are unchanged; no performance or release-completion claim is made.

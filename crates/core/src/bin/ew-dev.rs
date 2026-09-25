@@ -60,6 +60,15 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         return Ok(serde_json::to_value(workspace.view()?)?);
     }
     #[cfg(debug_assertions)]
+    if arg == "seed-durable-collection-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_durable_collection_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
     if arg == "seed-collection-review" {
         let path = std::env::args().nth(2).ok_or_else(|| {
             workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())

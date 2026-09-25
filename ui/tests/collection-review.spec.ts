@@ -63,13 +63,14 @@ const captures = resolve("artifacts/collection-review");
 
 test("request ancestry, escaped source, immutable export and keyboard review use the real core", async ({
   page,
+  baseURL,
 }) => {
   const errors: string[] = [],
     external: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("request", (request) => {
     if (
-      !request.url().startsWith("http://127.0.0.1:1420/") &&
+      !request.url().startsWith(`${new URL(baseURL!).origin}/`) &&
       !/^(blob:|data:)/.test(request.url())
     )
       external.push(request.url());
@@ -198,10 +199,15 @@ test("request ancestry, escaped source, immutable export and keyboard review use
   // visible but modal actions remain disabled; do not focus disabled controls.
   let releaseRefresh!: () => void;
   let observedRefresh!: () => void;
-  const refreshGate = new Promise<void>((resolve) => { releaseRefresh = resolve; });
-  const refreshObserved = new Promise<void>((resolve) => { observedRefresh = resolve; });
+  const refreshGate = new Promise<void>((resolve) => {
+    releaseRefresh = resolve;
+  });
+  const refreshObserved = new Promise<void>((resolve) => {
+    observedRefresh = resolve;
+  });
   await page.route("**/api/workbench", async (route) => {
-    if (route.request().postDataJSON().action !== "view") return route.continue();
+    if (route.request().postDataJSON().action !== "view")
+      return route.continue();
     const response = await route.fetch();
     observedRefresh();
     await refreshGate;
@@ -214,7 +220,9 @@ test("request ancestry, escaped source, immutable export and keyboard review use
   expect(readFileSync(resolve(root, exportedPath))).toEqual(bytes);
   expect(readdirSync(resolve(root, "exports"))).toHaveLength(2);
   await refreshObserved;
-  const closeReview = dialog.getByRole("button", { name: "Close collection review" });
+  const closeReview = dialog.getByRole("button", {
+    name: "Close collection review",
+  });
   await expect(closeReview).toBeDisabled();
   releaseRefresh();
   await expect(closeReview).toBeEnabled();

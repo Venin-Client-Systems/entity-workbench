@@ -108,6 +108,9 @@
           "minimum": 0,
           "type": "integer"
         },
+        "request_key": {
+          "type": "string"
+        },
         "requests_used": {
           "format": "uint32",
           "minimum": 0,
@@ -123,6 +126,7 @@
       },
       "required": [
         "id",
+        "request_key",
         "record_version",
         "mode",
         "collector_policy",

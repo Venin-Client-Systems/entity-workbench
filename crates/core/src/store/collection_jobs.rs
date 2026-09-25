@@ -688,3 +688,7 @@ mod transport_settlement;
 
 #[path = "collection_api.rs"]
 mod public_api;
+
+#[cfg(debug_assertions)]
+#[path = "collection_review_demo.rs"]
+mod review_demo;

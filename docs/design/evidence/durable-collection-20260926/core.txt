@@ -1,0 +1,549 @@
+   Compiling workbench-core v0.1.0 (<worktree>/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.64s
+     Running unittests src/lib.rs (target/debug/deps/workbench_core-77d4e335fed2ef45)
+
+running 399 tests
+test collection::tests::robots_denial_unavailability_and_rate_limit_remain_distinct ... ok
+test collection::tests::trace_has_no_phantom_request_when_robots_consumes_the_budget ... ok
+test collection::tests::trace_excludes_a_reservation_refused_before_charge ... ok
+test collection::tests::trace_does_not_hash_or_promote_incomplete_or_oversized_bodies ... ok
+test collection::tests::trace_counts_charged_failures_without_claiming_a_response ... ok
+test collection::tests::request_limits_keep_completed_sources_without_silent_extra_requests ... ok
+test collection::tests::trace_keeps_complete_empty_unsupported_and_error_bodies_without_promoting_pages ... ok
+test collection::tests::redirect_scope_and_missing_destinations_fail_without_fetching_them ... ok
+test collection::tests::unsupported_response_and_tls_failure_are_not_successful_empty_results ... ok
+test collection::tests::discovery_expands_only_allowed_links_to_the_reviewed_hop_limit ... ok
+test collection::tests::trace_preserves_redirect_then_link_ancestry_and_separate_originals ... ok
+test collection::tests::trace_retains_denied_redirect_metadata_without_fetching_or_echoing_credentials ... ok
+test collection_execution::tests::exhausted_segment_deadline_cannot_be_extended_by_another_reserved_request ... ok
+test collection_execution::tests::cancellation_before_reservation_is_uncharged_but_after_reservation_is_never_refunded ... ok
+test collection_transport::resolver::native_windows_proof::campaign_guard_rejects_extra_or_unselected_launch_before_native_call ... ok
+test collection_transport::resolver::native_windows_proof::launch_hook_only_cancels_its_owned_token_after_explicit_test_request ... ok
+test collection_execution::tests::pending_response_cannot_cross_ownership_lifetimes_even_before_recovery_revokes_lease ... ok
+test collection_transport::resolver::platform::native_proof::native_macos_dns_campaign ... ignored, explicit fixed DNS-only native campaign; use scripts/test_native_collection_transport.py
+test collection_transport::resolver::native_windows_proof::probe_is_inactive_by_default_and_bounded_without_global_callback_state ... ok
+test collection_transport::resolver::platform::native_proof::native_probe_is_thread_local_and_inactive_by_default ... ok
+test collection_transport::resolver::platform::negative_tests::every_overall_stop_wins_over_stage_expiry_and_retained_candidates ... ok
+test collection_transport::resolver::platform::negative_tests::later_non_negative_failure_is_not_hidden_by_an_earlier_positive ... ok
+test collection_transport::resolver::platform::negative_tests::mixed_add_remove_order_and_address_bound_remain_exact ... ok
+test collection_transport::resolver::platform::negative_tests::negative_callback_cannot_end_pending_batch_or_undo_a_removal ... ok
+test collection_transport::resolver::platform::negative_tests::negative_callbacks_never_invent_family_completion_or_poison_public_candidates ... ok
+test collection_transport::resolver::platform::negative_tests::negative_notifications_remain_subject_to_callback_limit ... ok
+test collection_transport::resolver::platform::negative_tests::stage_boundary_retains_only_current_public_candidates_without_completeness_claim ... ok
+test collection_transport::resolver::platform::negative_tests::successful_private_add_or_removal_remains_fatal_after_negative_callback ... ok
+test collection_transport::resolver::platform::tests::every_observed_address_and_bounded_notification_count_are_checked ... ok
+test collection_transport::resolver::platform::tests::batch_marker_is_not_an_address_family_completion_signal ... ok
+test collection_transport::resolver::tests::windows_in_progress_does_not_authorize_freeing_overlapped_storage ... ok
+test collection_execution::tests::reserve_and_publish_faults_never_repeat_transport_or_refund_the_charge ... ok
+test collection_transport::tests::complete_bytes_are_retained_when_cancellation_races_observed_eof ... ok
+test collection_execution::tests::lost_response_and_reservation_survive_restart_as_charged_unknown_without_retry ... ok
+test collection_transport::tests::final_wall_observation_is_the_exact_checked_sample_even_when_it_moves_backwards ... ok
+test collection_transport::tests::declared_chunked_and_truncated_bodies_cannot_publish_partial_originals ... ok
+test collection_transport::tests::pinned_resolver_never_falls_back_to_an_unexpected_name ... ok
+test collection_transport::tests::selected_scope_public_addresses_and_prelaunch_cancel_precede_any_connector ... ok
+test collection_transport::tests::complete_empty_error_redirect_and_encoded_bodies_are_exact_and_never_followed ... ok
+test collection_transport::tests::unknown_resolver_completion_suspends_further_attempts_without_false_cancel_ack ... ok
+test collection_transport::tests::local_tls_headers_and_body_cancellation_closes_owned_connections ... ok
+test coordinator::collection::public_api::tests::contained_lane_failure_refuses_new_work_instead_of_admitting_stranded_queue ... ok
+test coordinator::collection::public_api::tests::crash_recovery_retains_charge_and_fixed_deadline_and_requires_explicit_generation_resume ... ok
+test coordinator::collection::public_api::tests::normal_coordinator_exposes_disabled_catalogue_and_blocks_old_and_new_execution_without_mutation ... ok
+test collection_transport::tests::cancelled_pacing_and_dns_return_only_after_owned_resolver_cleanup ... ok
+test collection_transport::tests::wall_rollback_and_monotonic_budget_fail_without_fabricated_times ... ok
+test coordinator::collection::public_api::tests::quarantined_pending_receipt_exposes_only_exact_publication_retry_and_no_new_execution ... ok
+test coordinator::collection::public_api::tests::public_cancel_retains_complete_body_without_promotion_and_stale_generation_fails ... ok
+test coordinator::collection::public_api::tests::queued_cancel_is_uncharged_and_historical_v2_is_never_admitted_to_public_lane ... ok
+test coordinator::collection::tests::active_cancellation_is_responsive_and_complete_race_keeps_bytes_without_promotion ... ok
+test coordinator::collection::tests::exclusive_start_recovers_charged_unknown_and_requires_explicit_resume_with_original_deadline ... ok
+test coordinator::collection::tests::explicit_publication_retry_limit_and_failed_shutdown_leave_one_charged_unknown ... ok
+test coordinator::collection::tests::joined_shutdown_holds_shared_ownership_until_both_document_and_collection_lanes_exit ... ok
+test coordinator::collection::tests::ordinary_coordinator_keeps_collection_unactivated_and_does_not_recover_private_runs ... ok
+test coordinator::collection::tests::panicked_collection_adapter_keeps_the_shared_lock_quarantined_without_false_settlement ... ok
+test coordinator::collection::tests::panicked_join_never_releases_shared_ownership_on_repeated_shutdown ... ok
+test coordinator::collection::tests::ordinary_document_cleanup_failure_does_not_quarantine_collection_or_joined_release ... ok
+test coordinator::collection::tests::persisted_document_uncertainty_prevents_collection_start_after_exclusive_recovery ... ok
+test collection_transport::tests::tls_verification_and_single_send_survive_test_endpoint_override ... ok
+test coordinator::collection::tests::publication_failure_waits_for_exact_explicit_retry_without_another_transport ... ok
+test coordinator::collection::tests::synthetic_lane_recovery_does_not_rewrite_historical_v1_running_records ... ok
+test coordinator::collection::tests::stop_settlement_preserves_exact_receipts_when_the_coordinator_clock_moves_backwards ... ok
+test coordinator::collection::tests::unknown_document_exit_cancels_active_collection_preserves_its_bytes_and_blocks_queued_work ... ok
+test coordinator::collection::tests::unknown_collection_quarantines_before_failed_publication_and_retains_explicit_retry ... ok
+test coordinator::collection::tests::unknown_operation_retains_canonical_quarantine_and_never_starts_the_next_run ... ok
+test coordinator::image_tests::executor_panic_cannot_claim_worker_exit_or_start_queued_work ... ok
+test coordinator::image_tests::native_coordinator_images_publish_and_restore_recognition_and_provenance ... ignored, requires real confined PNG/JPEG and app-local OCR runtimes
+test coordinator::ownership_tests::joined_shutdown_releases_ownership_while_a_fork_inherits_the_descriptor ... ok
+test coordinator::image_tests::image_and_parse_share_two_slots_and_joined_shutdown ... ok
+test coordinator::pdf_tests::native_pdf_jobs_publish_selected_pages_and_restore_exact_unreviewed_provenance ... ignored, requires real confined PDF renderer and packaged English OCR
+test coordinator::pdf_tests::pdf_and_legacy_jobs_share_two_slots_and_joined_shutdown ... ok
+test coordinator::pdf_tests::pdf_running_cancellation_and_panic_do_not_publish_or_hide_unknown_exit ... ok
+test coordinator::region_tests::native_image_regions_retain_exact_provenance_raster_tsv_and_restore ... ignored, requires actual confined image and English word-region OCR runtimes
+test coordinator::region_tests::region_missing_runtime_is_visible_and_worker_pool_remains_bounded ... ok
+test coordinator::tests::malformed_worker_results_stay_invalid_without_publishing_in_both_dispatch_modes ... ok
+test coordinator::tests::native_coordinator_publishes_and_restores_pdf_derivative ... ignored, requires staged native Java parser and development confinement
+test collection_execution::tests::completed_tls_bytes_survive_cancel_race_without_text_or_expansion ... ok
+test coordinator::tests::responsive_cancellation_stops_execution_before_terminal_state_and_suppresses_success ... ok
+test coordinator::tests::shutdown_between_claim_and_registration_does_not_launch_a_worker ... ok
+test coordinator::tests::summary_dispatch_wakes_once_and_signals_the_same_cancellation_owner ... ok
+test collection_execution::tests::truncated_tls_body_retains_headers_and_unknown_delivery_without_phantom_original ... ok
+test engines::image::tests::cancelled_and_missing_image_runtime_fail_closed ... ok
+test engines::image::tests::image_results_bind_original_raster_dimensions_and_honest_outcome ... ok
+test engines::image::tests::native_images_decode_and_ocr_with_exact_original_and_raster_binding ... ignored, requires staged confined image worker and OCR runtime
+test engines::image::tests::native_images_reject_oversize_animation_malformed_and_unsupported_without_rasters ... ignored, requires staged confined image worker
+test engines::ocr::tests::missing_or_cancelled_ocr_fails_without_staging_input ... ok
+test engines::ocr::tests::native_ocr_reads_only_app_local_runtime_and_reports_empty_image ... ignored, requires staged native OCR runtime
+test engines::ocr::tests::native_ocr_rejects_omitted_dylibs_and_unlisted_runtime_assets ... ignored, requires staged native OCR runtime
+test coordinator::tests::worker_pool_is_bounded_and_shutdown_reaps_all_active_executors ... ok
+test engines::ocr::tests::raster_rejects_expansion_ambiguity_and_unsupported_encodings ... ok
+test collection_execution::tests::encoded_robots_and_pages_are_retained_without_rules_or_text ... ok
+test engines::ocr_regions::tests::native_regions_recognize_bounded_word_boxes_and_blank_raster ... ignored, requires packaged English OCR runtime
+test engines::ocr::tests::runtime_manifest_rejects_unreviewed_model_bytes ... ok
+test engines::ocr_regions::tests::regions_missing_runtime_and_cancelled_input_fail_without_scratch ... ok
+test engines::ocr_regions::tests::regions_parse_actual_hierarchy_and_separate_engine_confidence ... ok
+test engines::ocr_regions::tests::regions_reject_truncation_hierarchy_confidence_boxes_and_oversize ... ok
+test engines::ocr::tests::ocr_acceptance_preserves_raster_binding_and_uncertainty ... ok
+test coordinator::collection::public_api::tests::public_v3_queue_owned_tls_receipts_idempotency_and_backup_preserve_originals ... ok
+test engines::parser::tests::cancelled_parser_never_launches_or_stages_input ... ok
+test engines::parser::tests::local_font_contract_requires_exact_identity_paired_limits_and_honest_failure ... ok
+test engines::parser::tests::native_parser_extracts_supported_formats_and_preserves_limitations ... ignored, requires staged parser and search runtimes; run scripts/test_parser_workers.py
+test engines::parser::windows::tests::fixed_recipe_observes_cancellation_without_demoting_exit_uncertainty ... ok
+test engines::parser::tests::parser_results_require_source_binding_and_honest_status ... ok
+test engines::parser::windows::tests::typed_worker_outcomes_keep_cleanup_limits_and_invalid_results_distinct ... ok
+test engines::pdf_render::tests::native_pdf_crop_and_all_quarter_turns_match_pixel_mapping ... ignored, requires staged confined PDF renderer
+test engines::pdf_render::tests::native_pdf_rejections_are_explicit_and_never_enter_ocr ... ignored, requires staged confined PDF renderer
+test engines::pdf_render::tests::native_pdf_runtime_inventory_rejects_missing_unlisted_linked_or_modified_assets ... ignored, requires copied staged PDF runtime; mutates and restores its component
+test engines::pdf_render::tests::native_pdf_scan_and_selected_page_render_then_ocr_with_bound_provenance ... ignored, requires staged confined PDF renderer and OCR
+test engines::pdf_render::tests::pdf_requests_and_unavailable_runtime_fail_closed ... ok
+test engines::parser::windows::tests::output_must_match_both_request_identities_original_and_raw_digest ... ok
+test engines::supervision::image_tests::image_profile_adds_only_its_assigned_raster_output ... ok
+test engines::supervision::image_tests::native_image_worker_denies_outside_io_network_and_verifies_cancel_and_output_bound ... ignored, requires staged image worker and hostile fixture
+test engines::supervision::ocr::region_tests::native_regions_recipe_denies_outside_io_network_and_bounds_output_and_cancel ... ignored, requires compiled synthetic native OCR probe
+test engines::supervision::ocr::region_tests::regions_profile_grants_only_fixed_text_and_tsv_outputs ... ok
+test engines::supervision::ocr::tests::native_ocr_profile_denies_outside_io_network_fork_and_inheritance ... ignored, requires compiled synthetic native OCR probe
+test engines::supervision::ocr::tests::ocr_profile_excludes_other_workers_and_original_writes ... ok
+test engines::supervision::pdf_tests::native_pdf_worker_denies_outside_io_network_and_verifies_cancel_and_output_bound ... ignored, requires staged PDF renderer and hostile fixture
+test engines::supervision::pdf_tests::pdf_profile_adds_only_its_assigned_raster_output ... ok
+test engines::supervision::tests::cleanup_repairs_directories_without_touching_link_targets_and_reports_failure ... ok
+test engines::pdf_render::tests::pdf_result_rejects_original_page_dpi_geometry_raster_and_protocol_tampering ... ok
+test engines::supervision::tests::native_java_hostile_and_benign_boundaries ... ignored, requires staged Java 21 and current probe JAR; run scripts/test_macos_confinement.py
+test engines::supervision::tests::native_lucene_uses_separate_jobs_and_read_only_search_index ... ignored, requires staged Java 21 and current worker JAR; run scripts/test_macos_confinement.py
+test engines::supervision::tests::native_parser_has_no_search_access_and_cancels_running_worker ... ignored, requires separate staged parser runtime; run scripts/test_parser_workers.py
+test engines::supervision::tests::index_rejects_links_and_tree_budget_overruns ... ok
+test engines::supervision::tests::profile_has_distinct_read_and_write_access ... ok
+test engines::supervision::tests::result_rejects_links_and_oversize_and_special_files ... ok
+test engines::supervision::tests::unverified_termination_overrides_cancellation_and_retains_private_scratch ... ok
+test engines::tests::index_acknowledgement_is_required_before_revision_publication ... ok
+test report_docx::tests::archive_cap_rejects_seek_growth_and_overwrite_expansion ... ok
+test store::citation_catalogue::tests::catalogue_and_selected_resolution_remain_one_snapshot_with_a_real_concurrent_writer ... ok
+test store::citation_catalogue::tests::hostile_requests_stale_queries_and_forged_cursor_positions_fail ... ok
+test engines::ocr_regions::tests::regions_enforce_word_and_row_caps_and_reject_duplicate_boxes ... ok
+test coordinator::ownership_tests::repeated_shutdown_cannot_release_a_later_coordinators_ownership ... ok
+test store::citation_catalogue::tests::literal_search_preserves_display_fields_unicode_whitespace_and_selected_exclusions ... ok
+test engines::ocr_regions::tests::regions_reject_typed_result_binding_and_schema_tampering ... ok
+test engines::supervision::tests::process_setup_closes_inheritable_descriptor_and_reaps_timeout_group ... ok
+test store::citation_catalogue::tests::missing_colliding_and_corrupt_citations_fail_without_partial_selection ... ok
+test store::citation_catalogue::tests::public_commands_return_only_the_pinned_projection_in_all_response_modes ... ok
+test store::citation_catalogue::tests::source_groups_and_legacy_metadata_are_preserved_without_accepting_new_anchor_kinds ... ok
+test store::citation_catalogue::tests::source_metadata_rejects_digest_and_size_retargeted_to_another_intact_original ... ok
+test store::citation_catalogue::tests::maximum_selected_set_is_complete_and_excluded_order_is_only_a_set ... ok
+test store::citation_catalogue::tests::selected_preflight_is_complete_and_byte_short_catalogue_pages_do_not_omit_rows ... ok
+test store::collection::demo::tests::fixture_is_offline_consistent_and_rejects_nonempty_workspaces ... ok
+test store::collection::tests::changed_original_directory_and_dangling_export_link_fail_closed ... ok
+test store::collection::tests::collection_export_refuses_corrupt_original_without_new_files_or_records ... ok
+test store::collection::tests::backup_restores_receipts_and_nonindexed_originals_and_rejects_corruption ... ok
+test store::collection::tests::copied_originals_are_removed_when_collection_export_publication_rolls_back ... ok
+test store::collection::tests::document_import_and_response_retention_preserve_each_others_history ... ok
+test store::collection::tests::empty_and_unsupported_responses_survive_without_search_promotion ... ok
+test store::collection::tests::failed_final_transaction_leaves_job_unfinished_and_no_fabricated_receipt ... ok
+test store::collection::tests::exports_are_distinct_hash_bound_snapshots_that_do_not_change_on_later_import ... ok
+test store::collection::tests::interrupted_and_legacy_jobs_do_not_invent_request_receipts ... ok
+test store::collection::tests::malformed_receipts_fail_closed_under_current_workspace_storage_schema ... ok
+test store::collection::tests::page_promotion_cannot_write_a_valid_other_body_under_its_acquisition_key ... ok
+test store::collection::tests::receipts_reject_future_dates_and_make_observed_time_overruns_explicit ... ok
+test store::collection::tests::identical_body_deduplicates_original_but_preserves_acquisition_context ... ok
+test coordinator::collection::tests::synthetic_coordinator_runs_one_tls_lane_with_canonical_receipts_and_no_held_workspace_lock ... ok
+test store::collection::tests::retention_failure_cannot_publish_complete_receipt_or_export ... ok
+test store::collection_jobs::public_api::tests::disclosure_digest_binds_order_queries_limits_and_normalized_scope_without_side_effects ... ok
+test store::collection_jobs::public_api::tests::acknowledgement_lookup_refuses_corrupt_missing_and_historical_bindings_without_fallback ... ok
+test store::collection::tests::symbolic_export_directory_is_rejected_without_touching_destination ... ok
+test store::collection_jobs::public_api::tests::standalone_and_legacy_live_controls_refuse_before_creating_any_record ... ok
+test store::collection_jobs::public_api::tests::run_pages_are_revision_and_size_bound_ordered_complete_and_reject_forged_positions ... ok
+test store::collection_jobs::public_api::tests::v3_request_identity_binds_policy_mode_input_and_preserves_historical_bytes ... ok
+test store::collection_jobs::tests::altered_checkpoint_event_identity_and_original_fail_closed ... ok
+test store::collection_jobs::tests::actual_legacy_receipts_and_existing_observations_are_not_rewritten ... ok
+test store::citation_catalogue::tests::pages_and_selected_sets_preserve_kind_sequence_order_and_every_review_state ... ok
+test store::collection_jobs::tests::backup_restore_preserves_requests_originals_and_prior_receipt_records ... ok
+test store::collection_jobs::tests::cancel_then_crash_recovers_terminal_without_resetting_or_stranding_request ... ok
+test store::collection_jobs::tests::completed_response_checkpoint_is_atomic_and_replay_is_exactly_once ... ok
+test store::collection_jobs::tests::completion_at_exact_request_limit_is_success_when_no_frontier_remains ... ok
+test store::collection_jobs::tests::cancellation_keeps_received_original_without_expansion_and_requires_acknowledgement ... ok
+test coordinator::tests::raster_accessor_verifies_bytes_without_mutation_and_refuses_shutdown ... ok
+test store::collection_jobs::tests::crash_after_reservation_is_charged_unknown_and_resume_never_reissues_it ... ok
+test collection_execution::tests::durable_tls_lifecycle_retains_robots_redirect_page_ancestry_and_exact_replay ... ok
+test store::collection_jobs::tests::failed_transaction_leaves_charged_reservation_and_unreferenced_file_only ... ok
+test store::collection_jobs::tests::poisoned_shared_ownership_is_not_released_by_drop ... ok
+test store::collection_jobs::tests::prior_binary_opens_and_backs_up_new_checkpoint_and_every_original ... ignored, requires a separately built source-pinned pre-foundation ew-dev binary
+test store::collection_jobs::tests::identical_original_has_distinct_acquisitions_without_erasing_prior_text ... ok
+test store::collection_jobs::tests::immutable_deadline_budget_and_clock_cannot_reset_on_resume ... ok
+test store::collection_jobs::tests::known_failed_transport_remains_charged_without_an_original_or_phantom_retry ... ok
+test store::collection_jobs::tests::queue_identity_bounds_and_original_legacy_schemas_stay_untouched ... ok
+test store::collection_jobs::tests::recovered_cancel_and_pre_reservation_crash_have_no_phantom_request ... ok
+test store::collection_jobs::tests::unknown_robots_is_fail_closed_and_recovery_requires_exclusive_ownership ... ok
+test store::collection_jobs::tests::redirect_ancestry_hops_and_static_body_policy_are_replayed_from_originals ... ok
+test store::collection_jobs::transport_settlement::tests::a_later_canonical_cancel_does_not_misclassify_an_earlier_response_as_clock_regression ... ok
+test store::collection_jobs::review_demo::tests::fixed_review_seed_is_replayable_bounded_synthetic_and_read_only_in_standalone ... ok
+test store::collection_jobs::transport_settlement::tests::released_guard_cannot_authorize_settlement_even_with_unchanged_request_and_lifetime ... ok
+test store::collection_jobs::transport_settlement::tests::anchored_stop_requires_the_exact_still_reserved_request_and_owner ... ok
+test store::collection_jobs::transport_settlement::tests::anchored_stop_survives_a_large_clock_rollback_and_exact_publication_retry ... ok
+test store::collection_jobs::public_api::tests::bounded_reads_fail_for_oversized_or_key_substituted_runs_and_never_return_a_prefix ... ok
+test store::collection_jobs::transport_settlement::tests::v1_history_stays_byte_identical_and_cannot_adopt_v2_receipts ... ok
+test store::collection_jobs::transport_settlement::tests::v2_backwards_clock_preserves_raw_sample_body_and_last_valid_clock_without_invented_end_time ... ok
+test store::derivative_files::tests::ordinary_object_remains_readable_and_retain_verifies_existing_identity ... ok
+test store::derivative_files::tests::replaced_name_after_open_is_refused_even_when_bytes_are_identical ... ok
+test store::derivative_files::tests::same_length_in_place_change_is_refused_even_if_original_bytes_are_restored ... ok
+test store::derivative_files::tests::substituted_fifo_does_not_block_before_type_check ... ok
+test store::collection_jobs::transport_settlement::tests::v2_malformed_receipts_duplicate_json_and_revoked_tickets_fail_without_partial_publication ... ok
+test store::desktop_summary::tests::concurrent_canonical_review_cannot_mix_summary_counts_totals_or_revision ... ok
+test store::collection_jobs::transport_settlement::tests::resolver_uncertainty_quarantines_restart_and_other_jobs_without_false_cancel_or_body ... ok
+test store::collection_jobs::tests::terminal_empty_blocked_quota_failed_and_partial_results_remain_distinct ... ok
+test store::desktop_summary::tests::empty_and_pending_only_summaries_keep_different_denominators ... ok
+test store::desktop_summary::tests::failed_post_mutation_refresh_does_not_repeat_or_undo_a_committed_write ... ok
+test store::desktop_summary::tests::queued_job_response_replay_and_cancellation_are_not_summary_wrapped ... ok
+test store::desktop_summary::tests::invalid_and_unrepresentable_money_fail_as_legacy_without_writing_or_leaking_snapshot ... ok
+test store::docx_snapshots::catalogue::tests::catalogue_cursor_scope_bounds_and_stale_revision_are_explicit ... ok
+test store::desktop_summary::tests::summary_moves_retained_fields_and_preserves_difficult_calculations_exactly ... ok
+test store::citation_catalogue::tests::large_evidence_blobs_are_omitted_and_reads_leave_originals_records_and_old_reports_unchanged ... ok
+test store::collection_jobs::tests::wrong_completion_ticket_future_event_and_oversized_record_are_rejected_without_writes ... ok
+test store::docx_snapshots::catalogue::tests::catalogue_validates_only_requested_metadata_and_never_claims_artifact_integrity ... ok
+test store::desktop_summary::tests::summary_dispatch_mutates_once_and_keeps_legacy_and_direct_reader_responses ... ok
+test store::collection_jobs::tests::escaped_response_metadata_cannot_publish_a_checkpoint_that_its_reader_refuses ... ok
+test store::docx_snapshots::catalogue::tests::coordinator_dispatch_preserves_direct_receipt_and_single_publication ... ok
+test store::docx_snapshots::catalogue::tests::count_rows_and_cursor_remain_in_one_snapshot_during_a_real_publication ... ok
+test store::docx_snapshots::catalogue::tests::requested_corrupt_oversized_and_mismatched_metadata_never_returns_a_partial_page ... ok
+test store::docx_snapshots::catalogue::tests::direct_commands_recover_uncertain_publication_without_default_refresh_or_duplicate_writes ... ok
+test store::docx_snapshots::tests::bounded_record_identity_and_newer_schema_refusal_are_explicit ... ok
+test store::docx_snapshots::tests::bounds_invalid_xml_dangling_references_and_canonical_uuid_fail_before_retention ... ok
+test store::docx_snapshots::tests::exact_read_rejects_metadata_artifact_catalog_and_original_corruption ... ok
+test store::docx_snapshots::tests::concurrent_writer_after_file_preparation_leaves_only_unreferenced_objects ... ok
+test store::docx_snapshots::tests::backup_copies_the_saved_snapshot_union_even_if_another_docx_is_published ... ok
+test store::docx_snapshots::tests::failed_canonical_commit_rolls_back_both_catalog_entries_and_preserves_old_objects ... ok
+test store::docx_snapshots::tests::frozen_model_and_rendered_package_must_agree_even_when_every_hash_is_valid ... ok
+test store::docx_snapshots::tests::recovery_absence_at_same_revision_cannot_preclude_an_already_sent_capture ... ok
+test store::docx_snapshots::tests::missing_backup_object_refuses_canonical_restore_and_older_schema_cannot_hide_reports ... ok
+test store::docx_snapshots::tests::recovery_never_labels_corrupt_conflicting_or_future_identity_as_absent ... ok
+test store::docx_snapshots::tests::frozen_money_sources_and_legacy_html_survive_corrections_replay_and_restore ... ok
+test store::docx_snapshots::tests::recovery_pins_revision_and_lookup_while_an_actual_writer_publishes ... ok
+test store::docx_snapshots::tests::generator_one_snapshot_still_inspects_exports_and_restores_after_generator_two_capture ... ok
+test store::docx_snapshots::tests::recovery_restored_copies_do_not_authorize_replacement_at_same_or_earlier_revision ... ok
+test store::evidence_identity_tests::filtered_out_transfer_peer_still_requires_its_exact_evidence_key ... ok
+test store::evidence_identity_tests::malformed_existing_evidence_is_not_treated_as_missing_by_import ... ok
+test store::evidence_identity_tests::metadata_readers_preserve_order_and_missing_semantics_without_hashing_files ... ok
+test store::docx_snapshots::tests::recovery_direct_commands_verify_saved_identity_without_another_write_or_refresh ... ok
+test store::evidence_identity_tests::metadata_readers_reject_body_digest_retargeting_and_invalid_digest_shape ... ok
+test store::evidence_identity_tests::restore_refuses_substituted_body_even_when_manifest_and_both_files_exist ... ok
+test store::evidence_identity_tests::valid_b_under_a_cannot_authorize_observation_or_finding_review ... ok
+test store::evidence_identity_tests::valid_b_under_a_cannot_retarget_new_jobs_or_import_deduplication ... ok
+test store::docx_snapshots::tests::tampered_prepared_object_or_original_cannot_publish ... ok
+test store::evidence_identity_tests::valid_b_under_a_cannot_supply_analysis_or_comparison_originals ... ok
+test store::identity::source_inspection_tests::altered_missing_and_restored_originals_control_excerpt_availability ... ok
+test store::evidence_identity_tests::valid_b_under_a_cannot_be_returned_or_backed_up_as_a ... ok
+test store::identity::source_inspection_tests::cell_excerpt_retains_original_decimal_text_and_refuses_changed_statement ... ok
+test store::identity::source_inspection_tests::valid_original_does_not_hide_canonical_evidence_identity_corruption ... ok
+test store::local_exports::tests::cleanup_failure_is_explicit_retains_stage_and_blocks_new_preparation ... ok
+test store::identity::source_inspection_tests::retargeting_an_evidence_digest_cannot_verify_a_different_original ... ok
+test store::identity::tests::correcting_supporting_observation_reopens_reviewed_relationship ... ok
+test store::local_exports::tests::docx_native_preparation_rejects_wrong_identity_and_frontend_bytes_without_a_stage ... ok
+test store::local_exports::tests::docx_native_save_preserves_binary_both_digests_and_historical_revision_through_lost_ack ... ok
+test store::docx_snapshots::tests::schema_four_migration_preserves_review_history_and_keeps_a_recoverable_backup ... ok
+test store::local_exports::tests::housekeeping_cannot_falsely_reject_first_prepare_but_concurrent_generation_is_blocked ... ok
+test store::local_exports::tests::docx_stage_expiry_tamper_and_coordinator_shutdown_retain_exact_lifecycle_boundaries ... ok
+test store::local_exports::tests::identical_external_hardlink_target_is_rejected_for_publication_and_reuse ... ok
+test store::local_exports::tests::shutdown_during_preparation_waits_then_rejects_and_cleans_without_deadlock ... ok
+test store::local_exports::tests::immutable_html_uses_saved_identity_after_current_workspace_changes ... ok
+test store::local_exports::tests::links_never_touch_outside_sentinel_and_startup_refuses_unexpected_entries ... ok
+test store::local_exports::tests::startup_recovers_owned_publication_orphan_but_rejects_noncanonical_names ... ok
+test store::local_exports::tests::staged_and_target_tampering_fail_without_overwrite_or_false_receipt ... ok
+test store::docx_snapshots::tests::legacy_backups_accept_actual_omitted_or_format_two_manifests_but_reject_explicit_unknown_versions ... ok
+test store::local_exports::tests::transaction_identity_exact_bytes_no_clobber_and_lost_ack_recommit ... ok
+test store::local_exports::tests::verification_refuses_path_replacement_and_fifo_swap_without_blocking ... ok
+test store::originals::tests::copy_refuses_linked_destination_and_preserves_external_file ... ok
+test store::originals::tests::copy_rejects_bad_buffers_and_existing_names_and_accepts_empty_original ... ok
+test store::originals::tests::exact_original_and_import_ceiling_and_corruption_are_checked ... ok
+test store::originals::tests::linked_special_and_growing_open_originals_fail_closed ... ok
+test store::local_exports::tests::coordinator_shutdown_and_restart_clean_stages_without_canonical_mutation ... ok
+test store::local_exports::tests::stage_expiry_discard_and_completed_cache_are_bounded ... ok
+test store::originals::tests::replaced_path_after_open_is_refused_even_with_identical_bytes ... ok
+test store::originals::tests::verified_buffer_copy_survives_source_replacement_without_reopening_it ... ok
+test store::presentation::tests::metadata_uses_utf8_bytes_and_refuses_non_text_html ... ok
+test store::presentation::tests::selected_export_rejects_missing_wrong_identity_and_corrupt_bytes ... ok
+test store::presentation::tests::presentation_omits_report_bytes_and_explicit_export_preserves_history ... ok
+test store::processing::extraction::tests::both_extraction_versions_reject_duplicate_metadata_even_when_last_value_digest_matches ... ok
+test store::processing::demo::tests::fixed_recovery_fixture_suspends_canonical_execution_without_overwriting ... ok
+test store::processing::extraction::tests::extraction_inspection_pins_record_owner_and_source_in_one_read_snapshot ... ok
+test store::processing::extraction::tests::extraction_record_requires_a_bounded_timestamp_and_canonical_owner_uuid ... ok
+test store::processing::extraction::tests::extraction_v2_publication_is_atomic_and_replay_preserves_unreviewed_font_outcomes ... ok
+test store::processing::extraction::tests::extraction_inspection_rejects_forged_versions_result_digests_and_bindings_without_rewrite ... ok
+test store::processing::extraction::tests::extraction_inspection_refuses_whole_valid_record_or_owner_substitution_and_source_loss ... ok
+test store::processing::extraction::tests::saved_v1_prior_attempt_remains_byte_identical_through_retry_reopen_backup_and_restore ... ok
+test store::docx_snapshots::catalogue::tests::canonical_sequence_pages_cover_more_than_fifty_reports_without_html_or_duplicates ... ok
+test store::processing::demo::tests::fixed_processing_fixtures_are_canonical_and_do_not_overwrite_workspaces ... ok
+test store::processing::image_tests::image_request_keys_bind_operation_and_preserve_parse_v1_schema ... ok
+test store::processing::extraction::tests::extraction_inspection_preflights_record_and_owner_before_decoding_oversized_bodies ... ok
+test store::processing::image_tests::image_cancellation_and_unverified_exit_keep_shared_attempt_and_suspension_rules ... ok
+test store::processing::image_tests::image_publication_is_atomic_replayable_and_keeps_original_text_unmodified ... ok
+test store::processing::pdf_tests::pdf_publication_is_atomic_replayable_and_keeps_original_text_and_raster_policy ... ok
+test store::processing::pdf_tests::pdf_cancellation_stale_leases_and_unverified_exit_preserve_shared_precedence ... ok
+test store::processing::pdf_tests::pdf_request_identity_binds_page_dpi_operation_and_preserves_legacy_versions ... ok
+test store::processing::image_tests::fixed_image_review_fixture_is_canonical_and_never_overwrites ... ok
+test store::processing::image_tests::typed_image_outcomes_and_retry_history_survive_backup_without_rasters ... ok
+test store::processing::image_tests::canonical_image_acceptance_rejects_wrong_raster_recognition_and_operation ... ok
+test store::local_exports::tests::docx_has_its_own_binary_limit_before_staging_even_if_other_export_kinds_allow_more ... ok
+test store::processing::pdf_tests::pdf_typed_outcomes_and_prior_attempts_survive_backup_without_raster_bytes ... ok
+test store::processing::pdf_tests::pdf_changed_original_never_publishes_and_fixed_review_seed_never_overwrites ... ok
+test store::processing::pdf_tests::pdf_acceptance_rejects_page_dpi_raster_recognition_and_operation_tampering ... ok
+test store::processing::region_tests::region_cancellation_and_invalid_results_publish_no_objects ... ok
+test store::processing::region_tests::region_completed_replay_rejects_changed_raster_and_tsv_bytes ... ok
+test store::processing::region_tests::region_backup_uses_snapshot_catalog_despite_concurrent_publication ... ok
+test store::processing::region_tests::region_publication_rollback_leaves_only_unreferenced_verified_objects ... ok
+test store::processing::region_tests::region_existing_published_corruption_is_not_repaired_and_orphan_conflicts_are_distinct ... ok
+test store::processing::tests::backup_restores_jobs_derivatives_and_their_originals ... ok
+test store::processing::tests::bad_results_and_changed_originals_never_publish ... ok
+test store::processing::tests::cancellation_wins_a_success_race_and_stale_actions_cannot_touch_retry ... ok
+test store::processing::tests::cleanup_failure_survives_cancellation_and_missing_original ... ok
+test store::processing::tests::interrupted_cancellation_does_not_claim_verified_worker_exit ... ok
+test store::processing::tests::orphan_recovery_and_queue_suspension_commit_together ... ok
+test store::processing::region_tests::region_links_and_oversized_objects_fail_without_modifying_outside_sentinels ... ok
+test store::processing::tests::prepared_processing_bytes_are_exact_and_altered_source_never_launches ... ok
+test store::processing::tests::processing_claim_refuses_linked_original_even_when_target_bytes_match ... ok
+test store::processing::tests::processing_input_refuses_evidence_key_retargeted_to_valid_other_original ... ok
+test store::processing::region_demo::tests::fixed_region_ui_states_verify_without_running_workers ... ok
+test store::processing::tests::publication_is_atomic_idempotent_and_preserves_original_text ... ok
+test store::processing::tests::recovery_requires_exclusive_ownership_and_does_not_republish ... ok
+test store::processing::tests::recovery_distinguishes_joined_shutdown_from_legacy_orphan_classification ... ok
+test store::processing::tests::request_keys_are_idempotent_and_do_not_alias_different_sources ... ok
+test store::processing::tests::retries_are_manual_and_bounded_and_queued_cancel_starts_no_attempt ... ok
+test store::processing::tests::unverified_exit_is_never_cancelled_and_suspends_further_execution ... ok
+test store::processing::region_tests::region_jobs_opt_in_identity_and_immutable_files_survive_restore ... ok
+test store::recovery::tests::backup_uses_snapshot_references_after_another_canonical_writer_commits ... ok
+test store::recovery::tests::copy_sources_preserves_existing_destination_and_rejects_corrupt_source ... ok
+test store::recovery::tests::linked_backup_source_is_refused_before_any_original_copy ... ok
+test store::recovery::tests::corrupt_backup_original_cannot_publish_restored_database ... ok
+test store::processing::region_tests::region_incomplete_or_mismatched_backup_manifest_never_publishes_database ... ok
+test store::report_snapshots::tests::replaced_export_directory_fails_without_writing_or_chmod_outside ... ok
+test store::processing::tests::pending_queue_is_bounded ... ok
+test store::report_snapshots::tests::complete_export_matches_canonical_bytes_and_restored_snapshot ... ok
+test store::review_decision_page::tests::cursor_reuse_requires_exact_target_kind_revision_size_and_existing_position ... ok
+test store::report_snapshots::tests::failed_canonical_publication_removes_only_the_new_export ... ok
+test store::review_decision_page::tests::hostile_requests_and_dispatch_are_read_only_with_legacy_views_unchanged ... ok
+test store::review_decision_page::tests::malformed_decision_key_state_and_unknown_fields_reject_the_page ... ok
+test store::recovery::tests::schema_three_upgrade_backs_up_and_failed_upgrade_rolls_back_catalog ... ok
+test store::review_decision_page::tests::supported_writer_targets_resolve_without_adding_kind_to_legacy_decisions ... ok
+test store::review_decision_page::tests::target_count_and_rows_remain_one_snapshot_while_a_real_writer_adds_a_decision ... ok
+test store::transaction_balance::tests::concurrent_correction_keeps_old_snapshot_then_invalidates_old_revision_and_version ... ok
+test store::review_decision_page::tests::missing_unsupported_ambiguous_and_corrupt_target_identity_are_explicit_failures ... ok
+test store::transaction_balance::tests::all_dispatch_modes_preserve_rows_originals_reports_and_revision ... ok
+test store::transaction_balance::tests::corrupt_canonical_identity_and_unselected_money_fail_instead_of_clearing_warnings ... ok
+test store::transaction_balance::tests::request_bounds_missing_versions_and_unknown_fields_fail_without_partial_results ... ok
+test store::transaction_balance::tests::selected_states_include_intervening_rows_in_source_order_across_all_review_states ... ok
+test store::review_decision_page::tests::full_page_body_budget_precedes_decode_and_never_returns_a_partial_prefix ... ok
+test store::transaction_balance::tests::maximum_batch_is_small_even_when_one_balance_window_has_many_contributors ... ok
+test store::transaction_export::tests::exact_byte_limit_fails_instead_of_truncating_a_json_array ... ok
+test store::processing::region_tests::region_empty_and_rejected_results_and_retry_history_remain_distinct ... ok
+test store::review_decision_page::tests::sequence_pages_preserve_all_decisions_once_with_tied_legacy_dates_and_verbatim_text ... ok
+test store::transaction_export::tests::malformed_unselected_records_and_scoped_nonmatching_text_are_not_silently_dropped ... ok
+test store::transaction_facets::tests::counts_values_and_cursor_use_one_snapshot_during_a_real_concurrent_import ... ok
+test store::transaction_export::tests::revision_query_and_scope_validation_never_returns_a_stale_or_partial_export ... ok
+test store::transaction_export::tests::export_is_a_single_snapshot_during_a_real_concurrent_correction ... ok
+test store::transaction_facets::tests::cursors_reject_changed_revision_dimension_size_position_and_hostile_input ... ok
+test store::transaction_facets::tests::empty_and_dispatch_results_preserve_views_and_make_no_canonical_writes ... ok
+test store::transaction_facets::tests::facets_cover_the_whole_ledger_in_binary_order_without_normalizing_identifiers ... ok
+test store::transaction_export::tests::public_export_is_identical_in_all_response_modes_and_rejects_oversized_filters ... ok
+test store::transaction_page::tests::cursors_reject_cross_query_reuse_stale_corrections_and_invalid_positions ... ok
+test store::transaction_page::tests::empty_selection_still_rejects_a_cursor_for_an_excluded_existing_row ... ok
+test store::transaction_page::tests::hostile_parameters_unknown_fields_and_corrupt_sources_fail_without_writes ... ok
+test store::transaction_page::tests::page_dispatch_returns_only_the_page_and_keeps_legacy_views_unchanged ... ok
+test store::transaction_export::tests::missing_and_retargeted_originals_fail_without_changing_retained_bytes_or_reports ... ok
+test store::transaction_facets::tests::full_page_budget_is_preflighted_and_large_nonfacet_bodies_are_not_decoded ... ok
+test store::transaction_page::tests::pending_only_scope_is_distinct_from_empty_scope ... ok
+test store::transaction_page::tests::pages_keep_every_tied_row_once_in_both_date_orders_and_preserve_exact_rows ... ok
+test store::processing::region_tests::region_files_and_original_tampering_block_reads_backup_and_restore ... ok
+test store::transaction_page::tests::transaction_page_pins_counts_and_rows_while_another_writer_commits ... ok
+test store::transaction_export::tests::complete_export_matches_all_search_pages_for_exact_filters_and_date_orders ... ok
+test store::transaction_search::tests::empty_query_keeps_v12_page_semantics_including_long_legacy_text_but_not_cursor_family ... ok
+test store::transaction_facets::tests::invalid_or_oversized_facet_values_fail_instead_of_disappearing_from_counts ... ok
+test store::transaction_search::tests::page_and_search_reject_evidence_retargeted_to_another_intact_original ... ok
+test store::transaction_search::tests::search_cursors_bind_text_profile_scope_size_and_revision_including_empty_scopes ... ok
+test store::transaction_page::tests::scope_counts_keep_every_review_denominator_and_currency_account_dates_exact ... ok
+test store::transaction_search::tests::malformed_or_oversized_in_scope_fields_fail_even_when_hidden_by_query_or_review ... ok
+test store::transaction_search::tests::strict_hostile_requests_and_fixed_function_do_not_mutate_workspace ... ok
+test store::transaction_search::tests::text_counts_and_exact_rows_share_a_snapshot_during_real_concurrent_import ... ok
+test store::transaction_sources::tests::canonical_corruption_and_modified_original_reject_the_whole_read ... ok
+test store::transaction_sources::tests::rejected_keys_and_missing_rows_never_return_a_partial_batch ... ok
+test store::transaction_sources::tests::revision_and_row_version_checks_require_an_explicit_fresh_result ... ok
+test store::transaction_sources::tests::selected_rows_preserve_request_order_money_anchors_and_dispatch_shape ... ok
+test store::transaction_sources::tests::revision_size_metadata_and_rows_remain_one_snapshot_during_a_writer_commit ... ok
+test store::transfer_candidates::tests::broad_candidates_preserve_repeats_other_currencies_and_existing_pairs_with_stable_pages ... ok
+test store::transaction_search::tests::javascript_fixture_cases_match_actual_canonical_search_and_report_unicode_version ... ok
+test store::transfer_candidates::tests::exact_filters_and_literal_query_preserve_denominators_and_empty_scope ... ok
+test store::transfer_candidates::tests::direct_dispatch_and_existing_page_search_schemas_remain_independent ... ok
+test store::transfer_candidates::tests::real_concurrent_candidate_correction_keeps_target_counts_and_rows_in_one_snapshot ... ok
+test store::transfer_candidates::tests::malformed_account_cannot_silently_disappear_from_other_account_scope ... ok
+test store::transaction_search::tests::search_scope_precedes_review_selection_and_keeps_exact_values_order_and_ties ... ok
+test store::transfer_candidates::tests::request_bounds_and_unknown_fields_reject_before_canonical_work ... ok
+test store::transfer_candidates::tests::stale_target_missing_rows_and_cross_query_cursor_reuse_are_rejected ... ok
+test store::processing::region_tests::retained_regions_and_docx_share_snapshot_backup_without_reference_loss ... ok
+test store::view_tests::delete_journal_view_holds_writer_until_the_snapshot_is_released ... ok
+test store::view_tests::failed_view_releases_its_snapshot_before_later_canonical_work ... ok
+test store::view_tests::presentation_excludes_a_committed_concurrent_revision ... ok
+test store::transfer_candidates::tests::target_and_returned_candidate_identity_and_original_corruption_fail_explicitly ... ok
+test store::transfer_candidates::tests::target_review_and_existing_match_do_not_silently_narrow_the_legacy_selector ... ok
+test store::view_tests::view_excludes_a_committed_concurrent_revision_in_wal_mode ... ok
+test store::view_tests::saved_report_uses_one_snapshot_when_a_second_connection_commits ... ok
+test store::transfer_candidates::tests::unicode_query_scope_and_equivalent_casing_share_existing_matcher_semantics ... ok
+test store::transaction_sources::tests::whole_batch_size_is_checked_before_any_body_is_decoded ... ok
+test store::transaction_page::tests::byte_budget_shortens_pages_without_skipping_and_oversized_single_rows_fail ... ok
+test store::transfer_candidates::tests::byte_shortened_pages_never_skip_rows_and_oversized_target_or_candidate_fail ... ok
+test store::transaction_search::tests::matching_rows_preserve_page_body_budget_and_original_integrity_checks ... ok
+
+test result: ok. 376 passed; 0 failed; 23 ignored; 0 measured; 0 filtered out; finished in 19.03s
+
+     Running unittests src/bin/ew-dev.rs (target/debug/deps/ew_dev-0541c3e765e1209a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assessment_workflows.rs (target/debug/deps/assessment_workflows-b5089c3be341a35b)
+
+running 7 tests
+test review_refuses_tampered_retained_evidence ... ok
+test invalid_and_stale_assessment_writes_are_atomic ... ok
+test schema_three_storage_upgrade_preserves_reviewed_findings_and_report_bytes ... ok
+test mixed_support_and_contradictions_require_accepted_records_and_valid_originals ... ok
+test questions_findings_review_and_edits_preserve_previous_snapshots ... ok
+test schema_two_upgrade_reopens_legacy_findings_and_preserves_report_and_originals ... ok
+test failed_schema_two_upgrade_rolls_back_finding_review_and_recovers_from_backup ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/desktop_summary_cli.rs (target/debug/deps/desktop_summary_cli-bd4b4f7865a3734a)
+
+running 1 test
+test summary_flag_controls_view_and_mutation_but_keeps_legacy_and_direct_responses ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+
+     Running tests/identity_workflows.rs (target/debug/deps/identity_workflows-7c6100e1a1785c16)
+
+running 8 tests
+test source_excerpt_is_bounded_and_invalid_ranges_fail_without_mutation ... ok
+test invalid_or_stale_entity_edits_leave_no_partial_records ... ok
+test observations_cannot_cite_missing_entities_or_nonexistent_source_regions ... ok
+test csv_anchor_uses_logical_rows_even_with_embedded_newlines ... ok
+test comparisons_distinguish_reviewed_differences_from_unreviewed_claims ... ok
+test authoring_preserves_namesakes_namespaces_and_leading_zeros ... ok
+test observation_correction_preserves_originals_and_previous_report ... ok
+test merge_and_separate_decisions_work_for_authored_records_and_survive_restore ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/report_calculations.rs (target/debug/deps/report_calculations-5dd19bcea9dcde26)
+
+running 2 tests
+test pending_only_and_empty_workspaces_do_not_invent_reviewed_calculations ... ok
+test saved_calculations_link_exact_currency_partitions_and_versioned_source_rows ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/report_docx.rs (target/debug/deps/report_docx-c54f144958c4db13)
+
+running 8 tests
+test dangling_ambiguous_and_retargeted_sources_fail_closed ... ok
+test shared_money_transfer_review_and_balance_semantics_are_frozen_without_recalculation_rules ... ok
+test retained_anchor_variants_and_literal_whitespace_survive_frozen_roundtrip ... ok
+test invalid_xml_oversized_strings_nested_lists_rows_originals_and_serialized_input_are_rejected ... ok
+test generator_one_is_byte_stable_and_new_captures_use_word_level_wrapping ... ok
+test frozen_roundtrip_is_deterministic_editable_and_has_only_fixed_internal_parts ... ok
+test canonical_html_and_frozen_docx_survive_later_correction ... ok
+test aggregate_json_and_xml_expansion_limits_never_return_a_truncated_package ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.20s
+
+     Running tests/statement_mapping.rs (target/debug/deps/statement_mapping-d703e0d9dfc11be0)
+
+running 9 tests
+test invalid_rows_block_the_entire_import_and_are_reported_beyond_the_sample ... ok
+test structural_and_mapping_errors_fail_closed ... ok
+test preview_binding_rejects_changed_bytes_mapping_filename_and_workspace ... ok
+test signed_polarity_grouping_dates_and_constants_are_explicit ... ok
+test same_original_is_not_imported_twice_but_overlapping_sources_remain_reviewable ... ok
+test tab_separated_bom_and_optional_cells_survive_import_and_source_review ... ok
+test mapped_import_preserves_decimals_reference_text_and_logical_source_rows ... ok
+test failed_upgrade_rolls_back_version_and_records_and_retains_backup ... ok
+test schema_one_upgrade_creates_a_recoverable_backup_with_originals ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.21s
+
+     Running tests/transaction_comparison.rs (target/debug/deps/transaction_comparison-c03fda9d33153ba8)
+
+running 10 tests
+test inclusive_leap_year_boundaries_gaps_and_posting_dates_are_explicit ... ok
+test comparison_precision_never_rounds_deltas_ratios_or_totals ... ok
+test account_currency_review_denominators_and_duplicate_purchases_are_preserved ... ok
+test selected_direction_is_preserved_when_baseline_is_later ... ok
+test invalid_dates_overlap_order_filters_and_unknown_fields_are_rejected ... ok
+test only_verified_reviewed_transfers_are_excluded_including_outside_period_peers ... ok
+test zero_missing_unaccepted_and_signed_baselines_never_invent_percentages ... ok
+test canonical_comparison_is_revision_bound_read_only_and_recomputes_after_correction ... ok
+test shared_ledger_validation_applies_even_to_filtered_out_rows ... ok
+test both_period_originals_and_filtered_out_transfer_peer_are_verified ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/transaction_patterns.rs (target/debug/deps/transaction_patterns-5413dae4bf855dd3)
+
+running 11 tests
+test decimal_parsing_and_shared_arithmetic_never_round_away_source_value ... ok
+test classification_respects_direction_whole_tokens_and_original_description_boundaries ... ok
+test calendar_month_ends_and_exact_amount_spread_are_explainable ... ok
+test noncanonical_dates_fail_before_filtering_or_cadence_comparison ... ok
+test recurrence_does_not_hide_same_day_rows_missing_periods_or_gradual_drift ... ok
+test explicit_transfer_exclusion_checks_peers_outside_selected_scope ... ok
+test independent_totals_keep_currencies_denominators_and_repeated_purchases ... ok
+test excluded_transfer_counterpart_original_is_checked_outside_the_filter ... ok
+test invalid_parameters_duplicate_ids_and_overflow_fail_without_partial_totals ... ok
+test canonical_analysis_is_read_only_fresh_source_bound_and_updates_after_correction ... ok
+test invalid_transfer_links_are_visible_and_not_implicitly_excluded ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/workflows.rs (target/debug/deps/workflows-c8f2cf14ccd37405)
+
+running 20 tests
+test discovery_stops_at_first_budget_and_never_silently_expands ... ok
+test decimal_and_calendar_validation_are_strict ... ok
+test html_is_extracted_without_scripts_or_offsite_link_authority ... ok
+test malformed_import_is_atomic ... ok
+test missing_balances_include_all_intervening_rows_without_crossing_accounts ... ok
+test network_destination_checks_reject_private_and_special_use_addresses ... ok
+test newer_schema_is_refused ... ok
+test ambiguous_online_and_out_of_date_locations_are_uncertain ... ok
+test import_is_idempotent_and_does_not_delete_repeated_purchases ... ok
+test corrupt_original_blocks_backup_and_report ... ok
+test symlink_workspace_is_refused ... ok
+test report_escapes_active_content_and_has_no_scripts ... ok
+test worker_messages_and_archive_paths_fail_closed ... ok
+test demo_cannot_add_fictional_records_to_an_existing_entity_free_workspace ... ok
+test currencies_are_never_summed_together ... ok
+test stale_and_reasonless_decisions_are_rejected ... ok
+test namesakes_retain_leading_zeros_and_merge_can_be_reversed ... ok
+test review_correction_propagates_without_changing_original_or_snapshot ... ok
+test transfer_exclusion_requires_matching_reviewed_opposite_amounts ... ok
+test backup_restores_database_and_all_referenced_evidence ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.52s
+
+   Doc-tests workbench_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

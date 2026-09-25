@@ -1,0 +1,29 @@
+{
+  "rules": [
+    "aria-allowed-attr",
+    "aria-allowed-role",
+    "aria-conditional-attr",
+    "aria-deprecated-role",
+    "aria-hidden-body",
+    "aria-prohibited-attr",
+    "aria-required-attr",
+    "aria-roles",
+    "aria-valid-attr-value",
+    "aria-valid-attr",
+    "button-name",
+    "color-contrast",
+    "empty-heading",
+    "heading-order",
+    "landmark-no-duplicate-banner",
+    "landmark-unique",
+    "list",
+    "listitem",
+    "meta-viewport-large",
+    "meta-viewport",
+    "nested-interactive",
+    "region",
+    "scrollable-region-focusable"
+  ],
+  "violations": [],
+  "incomplete": []
+}

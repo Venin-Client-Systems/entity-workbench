@@ -50,6 +50,7 @@ fn summary(job: &DurableCollectionJob) -> CollectionRunSummary {
     let checkpoint = &job.checkpoint;
     CollectionRunSummary {
         id: job.id.clone(),
+        request_key: job.request_key.clone(),
         record_version: job.schema_version,
         mode: if job.synthetic {
             AcquisitionMode::Synthetic
