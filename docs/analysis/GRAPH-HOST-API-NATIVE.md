@@ -1,5 +1,9 @@
 # Native host constructor and public graph proof
 
+The source-only contract below is preserved. A later
+[native observation](NATIVE-GRAPH-HOST-RESULTS.md) now passes with separate
+source, executable, workspace and runtime evidence.
+
 This is a source-only, explicitly ignored development experiment. No candidate
 interpreter has been executed for this slice. It is designed to test the actual
 `JobCoordinator::start_with_development_app_resources` constructor together with

@@ -852,3 +852,9 @@ At the earlier published `ee18cd3` checkpoint, both [the source workflow](https:
 ## Current-source native Search — 26 September 2026
 
 The [current-source Search campaign](search/CURRENT-SOURCE-NATIVE-SEARCH.md) passed once at signed clean `39e669f`. The actual worker equals both reproducible producer outputs; all 20 Java/POM inputs match the native source. The unchanged five-recipe experiment passed index reuse, typed malformed-query cleanup, a later valid query and inert-intent refusal. Root and a second agent independently checked the new retained source, executable, events, both complete databases, originals, index and 269-file runtime. No campaign retry occurred. The preparation tool is now integrated; 19 related synthetic tests pass. This remains development Mac evidence, with all complete-release gates false.
+
+## Resource-backed graph host and public commands — 26 September 2026
+
+One [native graph host experiment](analysis/NATIVE-GRAPH-HOST-RESULTS.md) passed at clean signed `b680d4b`: the actual resource constructor, one worker launch, public queue/catalogue/inspection, discoverable result, exact replay and unchanged reopen. Root independently checked all 1,388 source files, the actual executable, raw graph bytes, complete SQLite state and both 11,320-file runtime copies. The [integrated checks](verification/integration-graph-host-b680d4b.json) passed 700 Rust cases, strict host Clippy/formatting, and 388 Python cases with four skips in each mode. This does not launch a packaged Tauri app or enable the default graph capability.
+
+At the earlier `39e669f` checkpoint, all [hosted source jobs](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36188185354) and the separate [Windows Server AppContainer campaign](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36188185168) passed. These are source-bound development results, not clean Windows 11 installation or signed-release acceptance.
