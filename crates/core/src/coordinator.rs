@@ -50,34 +50,7 @@ pub struct JobCoordinator {
 
 impl JobCoordinator {
     pub fn start(workspace: Workspace, concurrency: usize) -> Result<Self> {
-        Self::with_executor(
-            workspace,
-            concurrency,
-            Arc::new(|runtime, scratch, input, bytes, token| {
-                let runtime = runtime.ok_or_else(|| {
-                    Error::Blocked("Packaged processing runtime is unavailable".into())
-                })?;
-                match input {
-                    ProcessingInput::ShortestConnectionPath { .. } => Err(Error::Blocked(
-                        "Application-local Python graph execution is not activated".into(),
-                    )),
-                    ProcessingInput::ParseDocument { .. } => runtime
-                        .parse_with_cancel(scratch, bytes, token)
-                        .map(ProcessingOutput::Document),
-                    ProcessingInput::PdfPageOcr {
-                        page_number, dpi, ..
-                    } => runtime
-                        .ocr_pdf_page_with_cancel(scratch, bytes, *page_number, *dpi, token)
-                        .map(|output| ProcessingOutput::Pdf(Box::new(output))),
-                    ProcessingInput::ImageOcrRegions { .. } => runtime
-                        .ocr_image_regions_with_cancel(scratch, bytes, token)
-                        .map(|output| ProcessingOutput::ImageRegions(Box::new(output))),
-                    ProcessingInput::ImageOcr { .. } => runtime
-                        .ocr_image_with_cancel(scratch, bytes, token)
-                        .map(|output| ProcessingOutput::Image(Box::new(output))),
-                }
-            }),
-        )
+        Self::with_executor(workspace, concurrency, bootstrap::document_executor())
     }
 
     fn with_executor(
@@ -358,6 +331,8 @@ impl JobCoordinator {
     }
 }
 
+#[path = "coordinator_bootstrap.rs"]
+mod bootstrap;
 #[path = "coordinator_collection.rs"]
 mod collection;
 #[path = "coordinator_graph.rs"]

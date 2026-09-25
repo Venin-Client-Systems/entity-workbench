@@ -5,6 +5,11 @@ edition.workspace = true
 license.workspace = true
 build = "build.rs"
 
+[features]
+default = []
+# Explicit development build only; no runtime environment or frontend switch.
+development-graph-runtime = []
+
 [build-dependencies]
 tauri-build = { version = "=2.6.3", features = [] }
 

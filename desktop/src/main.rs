@@ -49,10 +49,20 @@ fn main() {
                 .join("workspaces")
                 .join("default");
             let mut workspace = Workspace::open(root)?;
+            let resources = app.path().resource_dir()?;
             workspace.attach_runtime(workbench_core::engines::Runtime {
-                root: app.path().resource_dir()?.join("engines"),
+                root: resources.join("engines"),
             });
-            app.manage(Arc::new(JobCoordinator::start(workspace, 2)?));
+            #[cfg(feature = "development-graph-runtime")]
+            let coordinator = JobCoordinator::start_with_development_app_resources(
+                workspace,
+                2,
+                &resources,
+                &workbench_core::engines::CancellationToken::default(),
+            )?;
+            #[cfg(not(feature = "development-graph-runtime"))]
+            let coordinator = JobCoordinator::start(workspace, 2)?;
+            app.manage(Arc::new(coordinator));
             tauri::WebviewWindowBuilder::from_config(app, &app.config().app.windows[0])?
                 .on_download(|_, _| false)
                 .build()?;
