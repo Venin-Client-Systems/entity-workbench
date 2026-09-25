@@ -13,11 +13,12 @@ import uuid
 
 import test_python_compatibility as common
 import relocate_python_prefix as relocation
+import python_engine_receipts as engines
 
 ROOT = common.ROOT
 HOSTILE_TEST = 'engines::supervision::python_probe::hostile::native_python_hostile'
 HASH_TEST = 'engines::supervision::python_probe::native_python_prefix_hash_measurement'
-EXTRA_SOURCES = ('Cargo.toml', 'Cargo.lock', 'scripts/test_python_isolation.py', 'scripts/relocate_python_prefix.py',
+EXTRA_SOURCES = ('Cargo.toml', 'Cargo.lock', 'scripts/test_python_isolation.py', 'scripts/relocate_python_prefix.py', 'scripts/python_engine_receipts.py',
                  'workers/python/probe/hostile.py', 'crates/core/src/engines/supervision/python_probe/hostile.rs',
                  'crates/core/src/engines/supervision/python_probe/listeners.rs')
 HOSTILE_ASSIGNED = {'code/bootstrap.py', 'input/sentinel.txt', 'input/assignment.json'}
@@ -111,8 +112,15 @@ def accept_measurement(native, campaign):
             'trusted-prefix-measurement-failed')
 
 
+def native_summary(native, campaign, case):
+    if case == 'measure': return measurement_summary(native, campaign)
+    if case == 'hostile': return hostile_summary(native, campaign)
+    if case in engines.RECIPES: return engines.summary(native, campaign, case)
+    return common.failure_summary(native, campaign)
+
+
 def observe(prefix, artifacts, case):
-    require(case in ('measure', 'hostile', 'relocated'), 'unknown-isolation-case')
+    require(case in ('measure', 'hostile', 'relocated', 'networkx', 'transactions'), 'unknown-isolation-case')
     report = {'schema_version': 1, 'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'case': case,
               'campaign_id': str(uuid.uuid4()), 'passed': False, 'complete_release': False, 'failure': None,
               'build_profile': 'release', 'native_test_started': False, 'candidate_started': False,
@@ -141,7 +149,7 @@ def observe(prefix, artifacts, case):
         report['phase'] = 'compile-release-native-test'; common.save(artifacts, report)
         binary = common.build_binary(artifacts, release=True); report['native_binary_sha256'] = common.digest(binary)
         require(source_identity() == identity, 'source-changed-during-build')
-        test = HASH_TEST if case == 'measure' else HOSTILE_TEST if case == 'hostile' else common.NATIVE_TEST
+        test = HASH_TEST if case == 'measure' else HOSTILE_TEST if case == 'hostile' else engines.TESTS[case] if case in engines.RECIPES else common.NATIVE_TEST
         report['native_test'] = test; report['native_test_started'] = True; report['candidate_started'] = case != 'measure'
         report['phase'] = 'trusted-prefix-hash' if case == 'measure' else 'confined-' + case
         report['termination_state'] = 'not-applicable' if case == 'measure' else 'unconfirmed'; common.save(artifacts, report)
@@ -155,15 +163,18 @@ def observe(prefix, artifacts, case):
             report['native'] = measurement_summary(native, report['campaign_id'])
             accept_measurement(native, report['campaign_id'])
         else:
-            report['native'] = hostile_summary(native, report['campaign_id']) if case == 'hostile' else common.failure_summary(native, report['campaign_id'])
+            report['native'] = native_summary(native, report['campaign_id'], case)
             report['termination_state'] = native['termination_state']
-            require(native['termination_state'] != 'unverified', 'native-termination-unverified')
+            if native['termination_state'] not in ('confirmed', 'not-started'):
+                report['termination_state'] = 'unverified'
+                raise common.ProbeFailure('native-termination-unverified')
             # Verify after both successful and confirmed failed executions, without changing source bytes.
             report['post_original_inventory'] = common.installed.verify(prefix, common.MANIFEST)
             report['post_selected_inventory'] = common.installed.verify(selected, common.MANIFEST)
             require(report['post_original_inventory'].get('verified') is True and report['post_selected_inventory'].get('verified') is True,
                     'post-campaign-inventory-failed')
             if case == 'hostile': accept_hostile(native, report['campaign_id'], interpreter)
+            elif case in engines.RECIPES: engines.accept(native, report['campaign_id'], interpreter, case)
             else: common.accept_native(native, report['campaign_id'], interpreter)
         require(completed.returncode == 0, 'native-test-process-failed')
         require(source_identity() == identity and common.digest(binary) == report['native_binary_sha256'], 'source-or-binary-changed')
@@ -176,9 +187,7 @@ def observe(prefix, artifacts, case):
         # Read only the bounded parent receipt, never candidate scratch, after an outer timeout.
         try:
             native = common.read_json(artifacts / 'native-report.json', 1024**2)
-            report['native'] = (measurement_summary(native, report['campaign_id']) if case == 'measure' else
-                                hostile_summary(native, report['campaign_id']) if case == 'hostile' else
-                                common.failure_summary(native, report['campaign_id']))
+            report['native'] = native_summary(native, report['campaign_id'], case)
             report['native_report_sha256'] = common.digest(artifacts / 'native-report.json')
         except (OSError, ValueError, TypeError, KeyError, common.ProbeFailure):
             pass
@@ -194,7 +203,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--prefix', type=Path, required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
-    parser.add_argument('--case', choices=('measure', 'hostile', 'relocated'), required=True)
+    parser.add_argument('--case', choices=('measure', 'hostile', 'relocated', 'networkx', 'transactions'), required=True)
     parser.add_argument('--execute-reviewed-probe', action='store_true')
     args = parser.parse_args()
     if args.case != 'measure' and not args.execute_reviewed_probe:

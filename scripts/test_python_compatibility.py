@@ -25,6 +25,8 @@ SOURCES = ('crates/core/src/engines/supervision.rs', 'crates/core/src/engines/su
            'crates/core/src/engines/supervision/python_probe/import_diagnostics.rs',
            'workers/python/probe/bootstrap.py', 'workers/python/probe/compatibility.py',
            'workers/python/probe/import_diagnostics.py',
+           'workers/python/probe/engine_recipes.py',
+           'crates/core/src/engines/supervision/python_probe/engine_recipes.rs',
            'workers/python/probe/fixture.json', 'workers/python/probe/expected.json',
            'workers/python/transaction_totals.py', 'scripts/test_python_compatibility.py',
            'scripts/verify_python_install.py', 'scripts/install_python_offline.py',
@@ -125,11 +127,30 @@ def validate_import_diagnostics(value, last):
     require(last == expected_last, 'import-diagnostic-last-mismatch')
 
 
+def validate_engine_diagnostics(value):
+    if value is None:
+        return
+    require(isinstance(value, dict) and set(value) == {'valid', 'checkpoints'}
+            and type(value['valid']) is bool and isinstance(value['checkpoints'], list)
+            and len(value['checkpoints']) <= 4, 'unsafe-engine-diagnostics')
+    expected = (('initialization', 'before'), ('initialization', 'ready'), ('operation', 'before'), ('operation', 'after'))
+    previous = (0, 0)
+    for record, pair in zip(value['checkpoints'], expected):
+        require(isinstance(record, dict) and set(record) == {'stage', 'boundary', 'elapsed_ms', 'process_cpu_ms'}
+                and (record['stage'], record['boundary']) == pair, 'unsafe-engine-diagnostic-order')
+        clocks = (record['elapsed_ms'], record['process_cpu_ms'])
+        require(all(type(now) is int and old <= now <= 120_000 for old, now in zip(previous, clocks)),
+                'unsafe-engine-diagnostic-clock')
+        previous = clocks
+
+
 def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assigned_names=ASSIGNED):
     # A malformed receipt cannot carry arbitrary strings, file names or identities into public evidence.
-    require(isinstance(native, dict) and set(native) == NATIVE_KEYS, 'native-observation-shape')
+    engine = recipe in ('python-networkx-v1', 'python-transactions-v1')
+    keys = NATIVE_KEYS | ({'engine_diagnostics'} if engine else set())
+    require(isinstance(native, dict) and set(native) == keys, 'native-observation-shape')
     require(type(native['schema_version']) is int and native['schema_version'] == 1
-            and recipe in ('python-compatibility-v1', 'python-hostile-v1') and native['recipe'] == recipe
+            and recipe in ('python-compatibility-v1', 'python-hostile-v1', 'python-networkx-v1', 'python-transactions-v1') and native['recipe'] == recipe
             and native['runtime_manifest_sha256'] == MANIFEST
             and native['complete_release'] is False and native['campaign_id'] == campaign
             and canonical_uuid(campaign) and canonical_uuid(native['job_id']) and native['architecture'] == 'aarch64'
@@ -138,7 +159,8 @@ def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assig
     require(native['phase'] in ('not-started', 'runtime-inventory', 'complete',
                                 'confined-hostile' if recipe == 'python-hostile-v1' else 'confined-compatibility')
             and (native['last_worker_checkpoint'] is None or native['last_worker_checkpoint'] in
-                 ('bootstrap', 'versions', 'imports', 'mentions', 'graph', 'transactions', 'plugins', 'complete'))
+                 (('bootstrap', 'versions', 'imports', 'init-ready', 'operation', 'complete') if engine else
+                  ('bootstrap', 'versions', 'imports', 'mentions', 'graph', 'transactions', 'plugins', 'complete')))
             and (native['failure'] is None or native['failure'] in
                  ('termination-unverified', 'cleanup-failed', 'quota-exhausted', 'compatibility-failed'))
             and (native['exit_code'] is None or type(native['exit_code']) is int and -128 <= native['exit_code'] <= 2**31 - 1)
@@ -152,7 +174,7 @@ def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assig
             and checkpoint['module'] in IMPORTS and checkpoint['boundary'] in ('before', 'after'),
             'unsafe-import-checkpoint')
     validate_import_diagnostics(native['import_diagnostics'], checkpoint)
-    require(recipe != 'python-hostile-v1' or native['import_diagnostics'] is None, 'unexpected-hostile-import-diagnostics')
+    require(not (engine or recipe == 'python-hostile-v1') or native['import_diagnostics'] is None, 'unexpected-hostile-import-diagnostics')
     require(native['quota_kind'] is None or native['quota_kind'] in
             ('wall-time', 'tree-depth', 'tree-entry-count', 'tree-or-file-bytes', 'tree-size-overflow', 'other'),
             'unsafe-quota-kind')
@@ -161,7 +183,9 @@ def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assig
     assigned = native['assigned_files']
     require(isinstance(assigned, dict) and set(assigned) <= set(assigned_names)
             and all(asset_identity(value, 64 * 1024) for value in assigned.values()), 'unsafe-assigned-identity')
-    return {key: native[key] for key in NATIVE_KEYS - {'result'}}
+    if engine:
+        validate_engine_diagnostics(native['engine_diagnostics'])
+    return {key: native[key] for key in keys - {'result'}}
 
 
 def accept_native(native, campaign, interpreter):

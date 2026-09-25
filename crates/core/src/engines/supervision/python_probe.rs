@@ -10,7 +10,9 @@ use std::{
     path::{Component, PathBuf},
 };
 
+mod engine_recipes;
 mod hostile;
+use engine_recipes::Recipe;
 mod import_diagnostics;
 mod listeners;
 
@@ -87,7 +89,7 @@ struct Checks {
 }
 #[derive(Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-struct WorkerResult {
+struct WorkerResult<C = Checks> {
     schema_version: u32,
     recipe: String,
     job_id: String,
@@ -97,7 +99,7 @@ struct WorkerResult {
     no_site: bool,
     no_bytecode: bool,
     verified_paths: bool,
-    checks: Checks,
+    checks: C,
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -310,9 +312,9 @@ fn accept(bytes: &[u8], job_id: &str) -> Result<WorkerResult> {
     Ok(result)
 }
 
-fn checkpoint(job: &Path) -> Option<String> {
+fn checkpoint(job: &Path, phases: &[&str]) -> Option<String> {
     let mut last = None;
-    for (index, phase) in PHASES.iter().enumerate() {
+    for (index, phase) in phases.iter().enumerate() {
         let bytes = read_result(&job.join(format!("scratch/checkpoint-{index}.json")), 512).ok()?;
         let record: Checkpoint = serde_json::from_slice(&bytes).ok()?;
         if record.phase != *phase {
@@ -372,7 +374,8 @@ fn run(
     job_id: &str,
     observation: &mut serde_json::Value,
     output: &mut File,
-) -> Result<WorkerResult> {
+    recipe: Recipe,
+) -> Result<serde_json::Value> {
     let preparation_started = Instant::now();
     observation["phase"] = "runtime-inventory".into();
     save(output, observation)?;
@@ -385,23 +388,14 @@ fn run(
         for name in ["code", "input", "scratch"] {
             fs::create_dir(job.path().join(name))?;
         }
-        for (name, data, maximum) in [
-            ("code/bootstrap.py", BOOTSTRAP, 64 * 1024),
-            ("code/compatibility.py", COMPATIBILITY, 64 * 1024),
-            ("code/import_diagnostics.py", IMPORT_DIAGNOSTICS, 64 * 1024),
-            ("code/transaction_totals.py", ADAPTER, 32 * 1024),
-            ("input/fixture.json", FIXTURE, 64 * 1024),
-        ] {
+        let assets = recipe.assets();
+        for (name, data, maximum) in &assets {
             require(
-                data.len() <= maximum,
+                data.len() <= *maximum,
                 "Compiled probe input exceeds reviewed bound",
             )?;
             super::super::write_new(&job.path().join(name), data)?;
         }
-        super::super::write_new(
-            &job.path().join("input/reader.json"),
-            br#"{"synthetic":true,"reference":"000123"}"#,
-        )?;
         let assignment = serde_json::to_vec(
             &serde_json::json!({"schema_version":1,"job_id":job_id,"prefix":prefix,"manifest_sha256":MANIFEST}),
         )?;
@@ -410,15 +404,11 @@ fn run(
         super::super::write_new(&job.path().join("worker.sb"), expanded_profile.as_bytes())?;
         observation["profile_sha256"] = digest(expanded_profile.as_bytes()).into();
         let mut assigned = BTreeMap::new();
-        for name in [
-            "code/bootstrap.py",
-            "code/compatibility.py",
-            "code/import_diagnostics.py",
-            "code/transaction_totals.py",
-            "input/fixture.json",
-            "input/reader.json",
-            "input/assignment.json",
-        ] {
+        for name in assets
+            .iter()
+            .map(|(name, _, _)| *name)
+            .chain(["input/assignment.json"])
+        {
             let data = read_result(&job.path().join(name), 64 * 1024)?;
             assigned.insert(
                 name.to_owned(),
@@ -441,6 +431,7 @@ fn run(
             .arg(prefix.join("install/bin/python3.13"))
             .args(["-I", "-S", "-B"])
             .arg(job.path().join("code/bootstrap.py"))
+            .arg(recipe.identity())
             .current_dir(job.path().join("scratch"))
             .env_clear()
             .envs(std::env::vars_os().filter(|(key, _)| key == "HOME"))
@@ -485,10 +476,18 @@ fn run(
             other => other,
         };
         observation["termination_state"] = "confirmed".into();
-        observation["last_worker_checkpoint"] = serde_json::json!(checkpoint(job.path()));
-        let imports = import_diagnostics::collect(job.path());
-        observation["last_import_checkpoint"] = serde_json::to_value(imports.last())?;
-        observation["import_diagnostics"] = serde_json::to_value(&imports)?;
+        observation["last_worker_checkpoint"] =
+            serde_json::json!(checkpoint(job.path(), recipe.phases()));
+        let complete_diagnostics = if recipe == Recipe::Compatibility {
+            let imports = import_diagnostics::collect(job.path());
+            observation["last_import_checkpoint"] = serde_json::to_value(imports.last())?;
+            observation["import_diagnostics"] = serde_json::to_value(&imports)?;
+            imports.complete()
+        } else {
+            let timings = engine_recipes::collect(job.path());
+            observation["engine_diagnostics"] = serde_json::to_value(&timings)?;
+            timings.complete()
+        };
         for name in ["stdout.txt", "stderr.txt"] {
             if let Ok(data) = read_result(&job.path().join("scratch").join(name), DIAGNOSTIC_LIMIT)
             {
@@ -518,11 +517,14 @@ fn run(
             )?;
         }
         require(
-            checkpoint(job.path()).as_deref() == Some("complete"),
+            checkpoint(job.path(), recipe.phases()).as_deref() == Some("complete"),
             "Incomplete Python probe checkpoints",
         )?;
-        require(imports.complete(), "Incomplete Python import checkpoints")?;
-        let accepted = accept(
+        require(
+            complete_diagnostics,
+            "Incomplete Python diagnostic checkpoints",
+        )?;
+        let accepted = recipe.accept(
             &read_result(&job.path().join("scratch/result.json"), RESULT_LIMIT)?,
             job_id,
         )?;
@@ -560,6 +562,10 @@ fn python_probe_initial_receipt_has_fresh_job_identity_before_any_preparation() 
 #[test]
 #[ignore = "requires explicit reviewed macOS-arm64 candidate execution"]
 fn native_python_compatibility() {
+    native_recipe(Recipe::Compatibility);
+}
+
+fn native_recipe(recipe: Recipe) {
     assert!(cfg!(target_arch = "aarch64"));
     let prefix = PathBuf::from(
         std::env::var_os("WORKBENCH_TEST_PYTHON_PREFIX").expect("Explicit prefix required"),
@@ -580,9 +586,20 @@ fn native_python_compatibility() {
         .open(artifacts.join("native-report.json"))
         .unwrap();
     let mut observation = initial_observation(&campaign_id);
+    observation["recipe"] = recipe.identity().into();
+    if recipe != Recipe::Compatibility {
+        observation["engine_diagnostics"] = serde_json::Value::Null;
+    }
     let job_id = observation["job_id"].as_str().unwrap().to_owned();
     save(&mut output, &observation).unwrap();
-    match run(&prefix, &artifacts, &job_id, &mut observation, &mut output) {
+    match run(
+        &prefix,
+        &artifacts,
+        &job_id,
+        &mut observation,
+        &mut output,
+        recipe,
+    ) {
         Ok(result) => {
             observation["result"] = serde_json::to_value(result).unwrap();
             observation["passed"] = true.into();

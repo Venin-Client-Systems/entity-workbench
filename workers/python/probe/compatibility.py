@@ -31,6 +31,45 @@ def write_transactions(pa, pq, path, rows):
     require(path.stat().st_size <= 1024 * 1024)
 
 
+def graph_checks(nx, fixture):
+    graph = nx.Graph()
+    for edge in fixture['graph']['edges']:
+        if edge['review'] == 'accepted':
+            graph.add_edge(edge['subject'], edge['object'], assertion_id=edge['id'])
+    path = nx.shortest_path(graph, fixture['graph']['source'], fixture['graph']['target'], backend='networkx')
+    assertions = [graph[a][b]['assertion_id'] for a, b in zip(path, path[1:])]
+    unreachable = False
+    try:
+        nx.shortest_path(graph, fixture['graph']['source'], fixture['graph']['unreachable'], backend='networkx')
+    except (nx.NetworkXNoPath, nx.NodeNotFound):
+        unreachable = True
+
+    return {'graph_path': path, 'graph_assertions': assertions, 'graph_unreachable': unreachable}
+
+
+def transaction_checks(pa, fixture, job):
+    import pyarrow.parquet as pq
+    from transaction_totals import transaction_totals
+    from decimal import localcontext
+    pa.set_cpu_count(1)
+    pa.set_io_thread_count(1)
+    source = job / 'scratch/transactions.parquet'
+    write_transactions(pa, pq, source, fixture['transactions'])
+    with localcontext() as context:
+        context.prec = 2  # Decimal input construction and exact aggregation must survive this.
+        totals = transaction_totals(source)
+    rejected = False
+    transfer = job / 'scratch/transfer.parquet'
+    write_transactions(pa, pq, transfer, [{'id': 'transfer', 'amount': '-1', 'currency': 'AUD',
+                                         'review': 'accepted', 'transfer_peer': 'unverified-peer'}])
+    try:
+        transaction_totals(transfer)
+    except ValueError as error:
+        rejected = str(error) == 'Transfer selection requires canonical pair validation'
+
+    return {'transaction_totals': totals, 'transfer_rejected': rejected}
+
+
 def execute(fixture, prefix, job, checkpoint, import_checkpoint):
     require(fixture['schema_version'] == 1)
     site = prefix / 'install/lib/python3.13/site-packages'
@@ -59,39 +98,10 @@ def execute(fixture, prefix, job, checkpoint, import_checkpoint):
     phrase_empty = len(matcher(nlp.make_doc(fixture['mentions']['empty_text']))) == 0
 
     checkpoint('graph')
-    nx = modules['networkx']
-    graph = nx.Graph()
-    for edge in fixture['graph']['edges']:
-        if edge['review'] == 'accepted':
-            graph.add_edge(edge['subject'], edge['object'], assertion_id=edge['id'])
-    path = nx.shortest_path(graph, fixture['graph']['source'], fixture['graph']['target'], backend='networkx')
-    assertions = [graph[a][b]['assertion_id'] for a, b in zip(path, path[1:])]
-    unreachable = False
-    try:
-        nx.shortest_path(graph, fixture['graph']['source'], fixture['graph']['unreachable'], backend='networkx')
-    except (nx.NetworkXNoPath, nx.NodeNotFound):
-        unreachable = True
+    graph_result = graph_checks(modules['networkx'], fixture)
 
     checkpoint('transactions')
-    pa = modules['pyarrow']
-    import pyarrow.parquet as pq
-    from transaction_totals import transaction_totals
-    from decimal import localcontext
-    pa.set_cpu_count(1)
-    pa.set_io_thread_count(1)
-    source = job / 'scratch/transactions.parquet'
-    write_transactions(pa, pq, source, fixture['transactions'])
-    with localcontext() as context:
-        context.prec = 2  # Decimal input construction and exact aggregation must survive this.
-        totals = transaction_totals(source)
-    rejected = False
-    transfer = job / 'scratch/transfer.parquet'
-    write_transactions(pa, pq, transfer, [{'id': 'transfer', 'amount': '-1', 'currency': 'AUD',
-                                         'review': 'accepted', 'transfer_peer': 'unverified-peer'}])
-    try:
-        transaction_totals(transfer)
-    except ValueError as error:
-        rejected = str(error) == 'Transfer selection requires canonical pair validation'
+    transaction_result = transaction_checks(modules['pyarrow'], fixture, job)
 
     checkpoint('plugins')
     observed = {name: {} for name in fixture['entry_point_groups']}
@@ -113,5 +123,4 @@ def execute(fixture, prefix, job, checkpoint, import_checkpoint):
     # The parent validates every returned value against compiled expected fixtures.
     # Splink is deliberately imported only: no uncalibrated matching is performed.
     return {'versions': versions, 'imported_modules': imported, 'phrase_matches': matches, 'phrase_empty': phrase_empty,
-            'graph_path': path, 'graph_assertions': assertions, 'graph_unreachable': unreachable,
-            'transaction_totals': totals, 'transfer_rejected': rejected, 'registry': registry_result}
+            **graph_result, **transaction_result, 'registry': registry_result}

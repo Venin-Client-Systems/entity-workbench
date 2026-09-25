@@ -43,7 +43,8 @@ def bootstrap_paths(prefix, code, initial):
     return [*initial, str(prefix / 'install/lib/python3.13/site-packages'), str(code)]
 
 
-def main():
+def main(recipe='python-compatibility-v1'):
+    require(recipe in ('python-compatibility-v1', 'python-networkx-v1', 'python-transactions-v1'))
     job = Path(__file__).resolve().parent.parent
     scratch = job / 'scratch'
     phase = 'bootstrap'
@@ -57,23 +58,33 @@ def main():
         require(Path(sys.executable) == prefix / 'install/bin/python3.13')
         require(Path(sys.prefix) == prefix / 'install' and Path(sys.base_prefix) == prefix / 'install')
         sys.path[:] = bootstrap_paths(prefix, job / 'code', list(sys.path))
-        from import_diagnostics import ImportDiagnostics
-        diagnostics = ImportDiagnostics(scratch)
+        if recipe == 'python-compatibility-v1':
+            from import_diagnostics import ImportDiagnostics
+            diagnostics = ImportDiagnostics(scratch)
+            phases = PHASES
+        else:
+            from engine_recipes import PHASES as phases
 
         def checkpoint(value):
             nonlocal phase
-            require(value in PHASES)
+            require(value in phases)
             phase = value
-            write_json(scratch / ('checkpoint-' + str(PHASES.index(value)) + '.json'), {'phase': value}, 512)
-            if value == 'imports':
+            write_json(scratch / ('checkpoint-' + str(phases.index(value)) + '.json'), {'phase': value}, 512)
+            if recipe == 'python-compatibility-v1' and value == 'imports':
                 diagnostics.install()
-            elif value == 'mentions':
+            elif recipe == 'python-compatibility-v1' and value == 'mentions':
                 diagnostics.finish()
 
         checkpoint('bootstrap')
-        from compatibility import execute
-        result = {'checks': execute(read_json(job / 'input/fixture.json'), prefix, job, checkpoint, diagnostics.checkpoint)}
-        result.update(schema_version=1, recipe='python-compatibility-v1', job_id=assignment['job_id'],
+        if recipe == 'python-compatibility-v1':
+            from compatibility import execute
+            checks = execute(read_json(job / 'input/fixture.json'), prefix, job, checkpoint, diagnostics.checkpoint)
+        else:
+            from engine_recipes import execute
+            checks = execute(recipe, read_json(job / 'input/fixture.json'), read_json(job / 'input/expected.json'),
+                             prefix, job, checkpoint)
+        result = {'checks': checks}
+        result.update(schema_version=1, recipe=recipe, job_id=assignment['job_id'],
                       manifest_sha256=assignment['manifest_sha256'], python_version=sys.version.split()[0],
                       isolated=True, no_site=True, no_bytecode=True, verified_paths=True)
         write_json(scratch / 'result.json', result, 1024 * 1024)
@@ -86,4 +97,5 @@ def main():
 
 
 if __name__ == '__main__':
-    raise SystemExit(main())
+    require(len(sys.argv) in (1, 2))
+    raise SystemExit(main(sys.argv[1] if len(sys.argv) == 2 else 'python-compatibility-v1'))
