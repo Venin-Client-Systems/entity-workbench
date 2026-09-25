@@ -21,6 +21,9 @@ mod evidence;
 use evidence::{all_evidence, find_evidence, get_evidence};
 mod file_identity;
 mod identity;
+// Internal source seam only; no command/worker activation until separately reviewed.
+#[allow(dead_code)]
+pub(crate) mod graph_analysis;
 mod originals;
 use originals::read_original;
 mod account_flow;
@@ -60,6 +63,7 @@ pub struct Workspace {
     root: PathBuf,
     conn: Connection,
     runtime: Option<crate::engines::Runtime>,
+    graph_capture_owner: Uuid,
 }
 pub fn hash(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
@@ -203,6 +207,7 @@ impl Workspace {
             root,
             conn,
             runtime: None,
+            graph_capture_owner: Uuid::new_v4(),
         };
         if (1..SCHEMA).contains(&version) {
             // Older readers lack mapping or finding-review semantics. Retain a

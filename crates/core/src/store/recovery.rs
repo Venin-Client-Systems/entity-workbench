@@ -82,6 +82,7 @@ impl Workspace {
         let source = Self {
             root: self.root.clone(),
             runtime: None,
+            graph_capture_owner: Uuid::new_v4(),
             conn: Connection::open_with_flags(
                 &snapshot,
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
@@ -93,6 +94,7 @@ impl Workspace {
         let copied = Self {
             root: path.clone(),
             runtime: None,
+            graph_capture_owner: Uuid::new_v4(),
             conn: Connection::open_with_flags(
                 &snapshot,
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
@@ -136,6 +138,7 @@ impl Workspace {
         let source = Self {
             root: backup.to_path_buf(),
             runtime: None,
+            graph_capture_owner: Uuid::new_v4(),
             conn: Connection::open_with_flags(
                 backup.join("workspace.db"),
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
@@ -215,6 +218,7 @@ impl Workspace {
         let copied = Self {
             root: destination.to_path_buf(),
             runtime: None,
+            graph_capture_owner: Uuid::new_v4(),
             conn: Connection::open_with_flags(
                 &pending,
                 rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
