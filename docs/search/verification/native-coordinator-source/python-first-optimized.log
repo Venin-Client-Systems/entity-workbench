@@ -1,0 +1,16 @@
+test_complete_control_and_exact_cross_language_fixture_identity (test_native_search_receipts.ReceiptTests.test_complete_control_and_exact_cross_language_fixture_identity) ... ok
+test_duplicate_unknown_and_oversized_event_tail_retains_prefix (test_native_search_receipts.ReceiptTests.test_duplicate_unknown_and_oversized_event_tail_retains_prefix) ... ok
+test_missing_reordered_extra_failed_or_foreign_receipts_are_refused (test_native_search_receipts.ReceiptTests.test_missing_reordered_extra_failed_or_foreign_receipts_are_refused) ... ok
+test_result_substitution_revision_bool_and_index_rebuild_are_refused (test_native_search_receipts.ReceiptTests.test_result_substitution_revision_bool_and_index_rebuild_are_refused) ... ok
+test_exact_success_and_initial_refusal_are_retained (test_native_search_receipts.RunnerTests.test_exact_success_and_initial_refusal_are_retained) ... ok
+test_later_binary_mutation_cannot_leave_prior_success (test_native_search_receipts.RunnerTests.test_later_binary_mutation_cannot_leave_prior_success) ... ok
+test_timeout_and_nonzero_exit_do_not_allow_runtime_postreads_or_retry (test_native_search_receipts.RunnerTests.test_timeout_and_nonzero_exit_do_not_allow_runtime_postreads_or_retry) ... ok
+test_declared_oversize_depth_count_and_special_files (test_native_search_receipts.RuntimeTests.test_declared_oversize_depth_count_and_special_files) ... ok
+test_exact_inventory_digest_and_changed_bytes_or_executable (test_native_search_receipts.RuntimeTests.test_exact_inventory_digest_and_changed_bytes_or_executable) ... ok
+test_inplace_content_mutation_during_hash_is_refused (test_native_search_receipts.RuntimeTests.test_inplace_content_mutation_during_hash_is_refused) ... ok
+test_links_alias_and_missing_components_are_refused (test_native_search_receipts.RuntimeTests.test_links_alias_and_missing_components_are_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.143s
+
+OK

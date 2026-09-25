@@ -1,0 +1,2488 @@
+{
+  "checks": {
+    "diff_check": true,
+    "fmt": {
+      "command": "cargo fmt --all -- --check",
+      "passed": true
+    },
+    "focused_python": {
+      "normal_and_optimized": true,
+      "passed": 11,
+      "run": 11
+    },
+    "focused_rust": {
+      "command": "cargo test --locked --offline -p workbench-core --lib search",
+      "ignored": 3,
+      "passed": 49
+    },
+    "full_rust": {
+      "command": "cargo test --locked --offline -p workbench-core",
+      "ignored": 32,
+      "integration_passed": 79,
+      "passed": 669,
+      "unit_passed": 590
+    },
+    "host_clippy": {
+      "command": "cargo clippy --locked --offline -p workbench-core --all-targets -- -D warnings",
+      "passed": true
+    },
+    "python_normal": {
+      "command": "python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v",
+      "passed": 352,
+      "run": 356,
+      "skipped": 4
+    },
+    "python_optimized": {
+      "command": "python3 -O -m unittest discover -s scripts/tests -p 'test_*.py' -v",
+      "passed": 352,
+      "run": 356,
+      "skipped": 4
+    },
+    "staged_public_audit": {
+      "passed": true,
+      "source_files": 11
+    }
+  },
+  "evidence_followup": "This record and the appended verification note are evidence only; the source commit and its 11-file identities remain historical. The documentation append is outside the earlier source aggregate.",
+  "historical_schemas": {
+    "all_byte_identical_to_base": true,
+    "count": 105,
+    "files": [
+      {
+        "bytes": 3544,
+        "path": "schemas/README.md",
+        "sha256": "19e04046245de2fca9757349b53cfa9f0f9e7a32f4f6b8ada2c725b758cfe5ab"
+      },
+      {
+        "bytes": 498,
+        "path": "schemas/account-flow-request.v1.schema.json",
+        "sha256": "3c4baf019f54d6edfe2f8a13d149b5d1897d92c40e2473b48763a791b0df0564"
+      },
+      {
+        "bytes": 13002,
+        "path": "schemas/account-flows.v1.schema.json",
+        "sha256": "bab4a1961d68c2030fcd08b2e7fce94477efc8806adc4669a642f93396073a46"
+      },
+      {
+        "bytes": 736,
+        "path": "schemas/analysis-manifest.v1.schema.json",
+        "sha256": "65a749c8c10ea3a3c86b4982c99bff43cd82ca7e8872466381f3209df1908c63"
+      },
+      {
+        "bytes": 8965,
+        "path": "schemas/citation-catalogue-page.v1.schema.json",
+        "sha256": "75f95824f59a69e7f8ce836ab5e75a49c19446e662bd50abd3f3b9d6512c8ec4"
+      },
+      {
+        "bytes": 570,
+        "path": "schemas/citation-catalogue-request.v1.schema.json",
+        "sha256": "61c582c165ed3230bf2fc55dab8549d8b7da1d844681373fabb58950f0d650bd"
+      },
+      {
+        "bytes": 302,
+        "path": "schemas/citation-selections-request.v1.schema.json",
+        "sha256": "8c1e24de311e62ffbb9d4cda108d7d5eebbde6d40167371e216e4ed065a6dc96"
+      },
+      {
+        "bytes": 7915,
+        "path": "schemas/citation-selections.v1.schema.json",
+        "sha256": "f14a21642f5fbbab8aa2478b7cee104eb10ccb0159ba800f069daf8270b2f051"
+      },
+      {
+        "bytes": 2269,
+        "path": "schemas/collection-preview.v1.schema.json",
+        "sha256": "56b85de6ad0379f88931554e215a74d2737b25af544d117f7985f6999c944752"
+      },
+      {
+        "bytes": 5036,
+        "path": "schemas/collection-receipt.v1.schema.json",
+        "sha256": "227a93dc7446f32eddebf051f2a689c8032ed028756cc370ed9fd191554bab45"
+      },
+      {
+        "bytes": 17519,
+        "path": "schemas/collection-run-inspection.v1.schema.json",
+        "sha256": "1f84aca15f0e7427f5758cdf746e4f6daa888a1196d26ddabcbfe8f8c902ac0f"
+      },
+      {
+        "bytes": 390,
+        "path": "schemas/collection-run-page-request.v1.schema.json",
+        "sha256": "8e8d36fd4c269e4f693f0e018c838ac6240400dff892f1afd8441c3a99041163"
+      },
+      {
+        "bytes": 4452,
+        "path": "schemas/collection-run-page.v1.schema.json",
+        "sha256": "97a852dd0ff65ec8cf5f9f01316b9baa379b91d7b5d85111abd430a300cc1d5a"
+      },
+      {
+        "bytes": 16243,
+        "path": "schemas/command.v1.schema.json",
+        "sha256": "d8608ccd594c43202d4d8075ff25c62a9fe94aac808d531d02e8451b38fe9d6e"
+      },
+      {
+        "bytes": 34842,
+        "path": "schemas/command.v10.schema.json",
+        "sha256": "882799cb76f14f5713618dcde8aeafe8439c9ec36a69b02395e826aad34322e4"
+      },
+      {
+        "bytes": 35271,
+        "path": "schemas/command.v11.schema.json",
+        "sha256": "554ae9ac9308771ba53521037870f91d902cc6762343f543aab4ab2d629e5242"
+      },
+      {
+        "bytes": 37248,
+        "path": "schemas/command.v12.schema.json",
+        "sha256": "e1a52d89c8dd9544686d233548ec97d683d1621908da07ab97899e18e579383f"
+      },
+      {
+        "bytes": 38644,
+        "path": "schemas/command.v13.schema.json",
+        "sha256": "033c91cecdc7996c1c1a7dbea3de6447b22abc261a61aaa41b937323c2afacdc"
+      },
+      {
+        "bytes": 39636,
+        "path": "schemas/command.v14.schema.json",
+        "sha256": "2b113e80cab45f41fa5c7c6aaebcdaf946ef7e433a7dab3f4e1202a6d605f08f"
+      },
+      {
+        "bytes": 40763,
+        "path": "schemas/command.v15.schema.json",
+        "sha256": "48f296bdb45e08e6105626a6e63d28f11096940505380d2e6af9160b0bdc76e8"
+      },
+      {
+        "bytes": 41598,
+        "path": "schemas/command.v16.schema.json",
+        "sha256": "2bace5da1a0b964db9122e0cc668a75ed8a3ade947c0ec7d0a36471fb7d189ef"
+      },
+      {
+        "bytes": 43536,
+        "path": "schemas/command.v17.schema.json",
+        "sha256": "c85bed4f16f33fff522d24ed3bedb71d56b2ed0b07be47f21a3487121566fc93"
+      },
+      {
+        "bytes": 44743,
+        "path": "schemas/command.v18.schema.json",
+        "sha256": "432174a9c4c0ce814f2daf98b92c7b8e41dfdcf42d345e497975298f4535673a"
+      },
+      {
+        "bytes": 46727,
+        "path": "schemas/command.v19.schema.json",
+        "sha256": "12ec61dbb085cc3aa4538a45cfc078bc8ff078ba9d5af6f723524ee9531f5a93"
+      },
+      {
+        "bytes": 21949,
+        "path": "schemas/command.v2.schema.json",
+        "sha256": "3b181439ea5dfc8b4110672569a2a373b55688a87d012ddf93e70441d8069af3"
+      },
+      {
+        "bytes": 47661,
+        "path": "schemas/command.v20.schema.json",
+        "sha256": "b450d02c8ecd6a8c7485289eae9187d27f8430038339dbce88f0482a9757b066"
+      },
+      {
+        "bytes": 49599,
+        "path": "schemas/command.v21.schema.json",
+        "sha256": "ec0d508bdfdd617d1d4f2eaeae0e51d5f010c9ae27c6f3008a6897bc656896e6"
+      },
+      {
+        "bytes": 50086,
+        "path": "schemas/command.v22.schema.json",
+        "sha256": "851fa3e1b5354a715ce6977c46424fa965097f83c00d891c98eda873819c35f1"
+      },
+      {
+        "bytes": 54496,
+        "path": "schemas/command.v23.schema.json",
+        "sha256": "987474747ee8a54556e54bcd7f4762981ad4c79500f5fd281df7fc0d92274259"
+      },
+      {
+        "bytes": 55504,
+        "path": "schemas/command.v24.schema.json",
+        "sha256": "4e2a9500c23599266c8e5da3c4532612e11d39e23d10a595ba7ff76381985e97"
+      },
+      {
+        "bytes": 56554,
+        "path": "schemas/command.v25.schema.json",
+        "sha256": "3d581f2238abc74905b48d99abbdb09a7369290ec1e1cca35957860c34b9f4e4"
+      },
+      {
+        "bytes": 25942,
+        "path": "schemas/command.v3.schema.json",
+        "sha256": "5f238782302718eba8e869cfe3575cdb9e8727e33c194d919858e441593ae5e0"
+      },
+      {
+        "bytes": 26589,
+        "path": "schemas/command.v4.schema.json",
+        "sha256": "097fd9910aa5f0bb8fefda2c5c8b817fc78391b25278c3e153cdb8ea007907c1"
+      },
+      {
+        "bytes": 28958,
+        "path": "schemas/command.v5.schema.json",
+        "sha256": "d14aff6ba1251730419f9f9d99a9962c2db447510c6fc90ff5d1de6e30ebb886"
+      },
+      {
+        "bytes": 30801,
+        "path": "schemas/command.v6.schema.json",
+        "sha256": "f39ecb324514042a282f33363934ee59e65fc259db88925e0106a1d13c3bcc2d"
+      },
+      {
+        "bytes": 31562,
+        "path": "schemas/command.v7.schema.json",
+        "sha256": "7676d12e60cfec19a2d9d177f52650e26bb4328da287dfc3d89ffbd187e46d5e"
+      },
+      {
+        "bytes": 33038,
+        "path": "schemas/command.v8.schema.json",
+        "sha256": "1452c1472f9eace65983a01488db9ba8c23d28193f4b6dbe1532e90710cf73b4"
+      },
+      {
+        "bytes": 34066,
+        "path": "schemas/command.v9.schema.json",
+        "sha256": "9db44e411fde9f8197ddd86aca064cd3e4913afe665cc3fe325a8c0a382f4a56"
+      },
+      {
+        "bytes": 27248,
+        "path": "schemas/desktop-summary-response.v1.schema.json",
+        "sha256": "f65fb25adb13b0a082fdc9d886f6d0e15b5ad6d8e39871a14e34c69ef4e51d20"
+      },
+      {
+        "bytes": 6577,
+        "path": "schemas/discarded-export.v1.schema.json",
+        "sha256": "430392de33e526e6edb7e961fedbb02232afa9037f970c8e0cb8d0442a148efe"
+      },
+      {
+        "bytes": 10616,
+        "path": "schemas/discarded-export.v2.schema.json",
+        "sha256": "25f2c813c4821aa0a1c1fe42bdb0e17730e625b02be123488a11e358955af385"
+      },
+      {
+        "bytes": 3450,
+        "path": "schemas/docx-capture-resolution.v1.schema.json",
+        "sha256": "e13677b8c03e06af0eb9ba87e57054bbf31949ec7e079c1e6946bea2d72923a3"
+      },
+      {
+        "bytes": 18967,
+        "path": "schemas/docx-snapshot-inspection.v1.schema.json",
+        "sha256": "55cb9c76f588950032b076d266e9d7c3c167685d4fb3869a2b472cdfccde635c"
+      },
+      {
+        "bytes": 389,
+        "path": "schemas/docx-snapshot-page-request.v1.schema.json",
+        "sha256": "44524ca11c43eaa93e1b37907348e427a94c75ad1d927854cf3c8394605d8ba4"
+      },
+      {
+        "bytes": 2673,
+        "path": "schemas/docx-snapshot-page.v1.schema.json",
+        "sha256": "6697aad31ec9718ace88d2a6e2149a4cc0bd7ae37464fec7271b7c23800f183d"
+      },
+      {
+        "bytes": 1599,
+        "path": "schemas/docx-snapshot.v1.schema.json",
+        "sha256": "99ecebfe7907e03772bfd69231281190ebfe2f6846b09264bda3ae45ef4d12e0"
+      },
+      {
+        "bytes": 21968,
+        "path": "schemas/durable-collection-export-inspection.v1.schema.json",
+        "sha256": "ad75474f589faa507cc748cf56082c7e1639976687e086fc816a37d1c0e7b32a"
+      },
+      {
+        "bytes": 1337,
+        "path": "schemas/durable-collection-export.v1.schema.json",
+        "sha256": "d15fab6449f0e9e2721bada5ff714efa0577cc733e2f0b45c67b3be6d9fbfdb4"
+      },
+      {
+        "bytes": 20048,
+        "path": "schemas/durable-collection-snapshot.v1.schema.json",
+        "sha256": "2f2259e3bcd8e6dd18306849e961f4f5252f02c8a28cdd98637b71306801a46b"
+      },
+      {
+        "bytes": 3771,
+        "path": "schemas/extraction.v1.schema.json",
+        "sha256": "802221db4e0b53333be9f1e25e3e96f6ea272acfbf35d495592fc0f4ff30c0e9"
+      },
+      {
+        "bytes": 3995,
+        "path": "schemas/extraction.v2.schema.json",
+        "sha256": "29af330d9b22671e7c68c312683b52db897655c4e5293a7fc512b0245a2ecc04"
+      },
+      {
+        "bytes": 14021,
+        "path": "schemas/graph-analysis.v1.schema.json",
+        "sha256": "f6093f6349aa22c6c0c3e5ea0e161c28a8ababbe1fa321919e7eb418092af20b"
+      },
+      {
+        "bytes": 6920,
+        "path": "schemas/identity-comparison.v1.schema.json",
+        "sha256": "a6eeb057dd88a7d10e7d0f10ca37fd2fe45f1657e797d32d8f9c46c25386da6f"
+      },
+      {
+        "bytes": 7501,
+        "path": "schemas/image-extraction.v1.schema.json",
+        "sha256": "ecf8eff2270b10f43ee1669a12817a9335f3d103481173c2edf50e67994c9cb9"
+      },
+      {
+        "bytes": 2414,
+        "path": "schemas/image-region-extraction.v1.schema.json",
+        "sha256": "6e18fe3b6989a9a392b176fbb6e5362b1a621e37d9fdcfb3f9c31087675b0225"
+      },
+      {
+        "bytes": 11644,
+        "path": "schemas/image-region-inspection.v1.schema.json",
+        "sha256": "0244915ae37a2a264378c3e579c8d05428abb1803f99de70534968f4481ff4fb"
+      },
+      {
+        "bytes": 8665,
+        "path": "schemas/image-region-result.v1.schema.json",
+        "sha256": "c078e654c7ba92b644309283f81ae79364db78d92a748dcd057b5b62d3ac9262"
+      },
+      {
+        "bytes": 2660,
+        "path": "schemas/ledger-summary.v1.schema.json",
+        "sha256": "652e82237816f0480ea2e3f55b6c09352284e24c3592b1059e50d8c37bfd38d0"
+      },
+      {
+        "bytes": 3990,
+        "path": "schemas/native-export-request.v1.schema.json",
+        "sha256": "4e194c1c1da927d47819326ae531f58803c94cd5ee0bb1a4b800b8ed93fa95c5"
+      },
+      {
+        "bytes": 5485,
+        "path": "schemas/native-export-request.v2.schema.json",
+        "sha256": "38e03a42cf7594e89f78ded5cb3373c4d2f040ec63dbbacef23a23cea06181ea"
+      },
+      {
+        "bytes": 9162,
+        "path": "schemas/pdf-extraction.v1.schema.json",
+        "sha256": "9f12c9e8d9e849524e14d7e11675254126e9bf74722158d93f1eccc372e6991a"
+      },
+      {
+        "bytes": 5749,
+        "path": "schemas/prepared-export.v1.schema.json",
+        "sha256": "96b32edb3907a6c46e6824aca90685c07c4a0b030f7f9ccf873d36e4afc21484"
+      },
+      {
+        "bytes": 9788,
+        "path": "schemas/prepared-export.v2.schema.json",
+        "sha256": "97f4337c6b0010ab1397a3ea3dc26f37f5dc9b5afb701f8894fcb85c31601b48"
+      },
+      {
+        "bytes": 3475,
+        "path": "schemas/processing-job.v1.schema.json",
+        "sha256": "9ee0f7498b53f73acb64a26ca88fd51cf9626ea29433e4e4798befc25cf89b92"
+      },
+      {
+        "bytes": 4150,
+        "path": "schemas/processing-job.v2.schema.json",
+        "sha256": "bec8c024a3411cb2d714eec423f03fd9291f7196e9a5d06ce46990d1494b37f9"
+      },
+      {
+        "bytes": 5170,
+        "path": "schemas/processing-job.v3.schema.json",
+        "sha256": "73a84aa15e1a0508adf68a99037845d8949746cba526652094956d6b5eecdc50"
+      },
+      {
+        "bytes": 5856,
+        "path": "schemas/processing-job.v4.schema.json",
+        "sha256": "7078484db3e7d677ad47c849c8aed3968eb268a1214b3ab79bcd99a854bb89b7"
+      },
+      {
+        "bytes": 6792,
+        "path": "schemas/processing-job.v5.schema.json",
+        "sha256": "5291744fe01992831a764bf7537126069cf42da883d65eb99dca2681143bdde8"
+      },
+      {
+        "bytes": 8518,
+        "path": "schemas/release-evidence.v1.schema.json",
+        "sha256": "4a4afebf10f8208547c59136d23f3e9cda4b8baa8556316dc387427f24eaae45"
+      },
+      {
+        "bytes": 6513,
+        "path": "schemas/release-ledger.v2.schema.json",
+        "sha256": "b240bf5ea8dad0f9830a810d8e8dce304b01eb6f12468fdc126a8a4d99025045"
+      },
+      {
+        "bytes": 1549,
+        "path": "schemas/release-review.v1.schema.json",
+        "sha256": "e0bb7d5ec24e5b58289d9bd8941beab11aa38cc76b4ee9045911b80b5bdc28bd"
+      },
+      {
+        "bytes": 457,
+        "path": "schemas/review-decision-page-request.v1.schema.json",
+        "sha256": "86bc68261c265240c87ea3510c9b85bd5ecb0b0ed5cd7564fee6a4ef9aa1778f"
+      },
+      {
+        "bytes": 2154,
+        "path": "schemas/review-decision-page.v1.schema.json",
+        "sha256": "d7f0591434c5f5c28b6e9f4fe5efa28d99f6bbfded92e9e80b2093c7c9b22930"
+      },
+      {
+        "bytes": 2393,
+        "path": "schemas/runtime-inventory.v1.json",
+        "sha256": "d9194436f5cb293a9846aa435ee16987ee8e1f4d7185180f29cec8b11c311861"
+      },
+      {
+        "bytes": 5845,
+        "path": "schemas/saved-export-receipt.v1.schema.json",
+        "sha256": "aaa9e1951fd4423fa32900f3bc62706e332ef93112af6a9d3374bac4e2ba321b"
+      },
+      {
+        "bytes": 9884,
+        "path": "schemas/saved-export-receipt.v2.schema.json",
+        "sha256": "6c08bee696c49dfcd82fe9d7f51fafa5bb78781fa85ca6a9bb1af744f03fec93"
+      },
+      {
+        "bytes": 576,
+        "path": "schemas/source-excerpt.v1.schema.json",
+        "sha256": "9af773ab3d70d3bcb63ec88adc2bc765a2497236fd010b4a19ab88b0e7a3826e"
+      },
+      {
+        "bytes": 3376,
+        "path": "schemas/statement-mapping.v1.schema.json",
+        "sha256": "ab8784833e8a28540d95aec813a6b1f2f16947c71111f61514e53f364b63482d"
+      },
+      {
+        "bytes": 7620,
+        "path": "schemas/statement-preview.v1.schema.json",
+        "sha256": "c1ccce8fc0adf3afbdb01728486101e977b40d6788852b8baf61827fc7f1b8da"
+      },
+      {
+        "bytes": 4133,
+        "path": "schemas/statement-sample.v1.schema.json",
+        "sha256": "695ee6c7de69307efb83183e333f97684af8e7f412c3aa82ea6210b640d26f86"
+      },
+      {
+        "bytes": 1209,
+        "path": "schemas/transaction-analysis-request.v1.schema.json",
+        "sha256": "64c500e020cc7023730a8aba6ae2534c439b54c59f98b46d40a8b33689883e88"
+      },
+      {
+        "bytes": 9071,
+        "path": "schemas/transaction-analysis.v1.schema.json",
+        "sha256": "bc378590e029c0f96ac6aff007aec1891312359544eab4a76107209b32080329"
+      },
+      {
+        "bytes": 720,
+        "path": "schemas/transaction-balances-request.v1.schema.json",
+        "sha256": "f3a4c489461634387645d12540b731afd7760a9db434e9880613a793abf12b72"
+      },
+      {
+        "bytes": 2954,
+        "path": "schemas/transaction-balances.v1.schema.json",
+        "sha256": "2f31f0853c9a8149e8e9a7d1c8a99f42e941e5595b43a21c73a1b8d0f89cd5ef"
+      },
+      {
+        "bytes": 1051,
+        "path": "schemas/transaction-comparison-request.v1.schema.json",
+        "sha256": "936b7414845e7bd6d41a1cbaca5990cab003508eca948c56fd9ff566c7f9a674"
+      },
+      {
+        "bytes": 10736,
+        "path": "schemas/transaction-comparison.v1.schema.json",
+        "sha256": "b06d6671e027e41558a4afad7bf76a27d705c2032445fd8a0d8d91d40047ade8"
+      },
+      {
+        "bytes": 6210,
+        "path": "schemas/transaction-csv-export.v1.schema.json",
+        "sha256": "0d34c43e0294b9c46382c7ba5cd1c1223189679797fad344175887a4a1fc1479"
+      },
+      {
+        "bytes": 1989,
+        "path": "schemas/transaction-csv-request.v1.schema.json",
+        "sha256": "340289aba5b4fa3d1db80d47ac1a4003885e743205acc1c996f7e9a1e662e110"
+      },
+      {
+        "bytes": 1471,
+        "path": "schemas/transaction-export-request.v1.schema.json",
+        "sha256": "1f80018d874b3d0c4746f8d973aa6d2de2b2f70a4712a33220b625907001a83a"
+      },
+      {
+        "bytes": 3418,
+        "path": "schemas/transaction-export.v1.schema.json",
+        "sha256": "2eea6854be8277f06a37a845d6f0c48b772855aafa561c77d6d0ce1cbba41ac5"
+      },
+      {
+        "bytes": 1794,
+        "path": "schemas/transaction-facet-page.v1.schema.json",
+        "sha256": "a0b307926383ce28fc20373b552e0851e35807abf2ce0bfef24c0706cc034c97"
+      },
+      {
+        "bytes": 609,
+        "path": "schemas/transaction-facet-request.v1.schema.json",
+        "sha256": "6a0523cd6f96e98027da516bb23c2ddc7a1dd88c3663e12de81ee06ae0037ccf"
+      },
+      {
+        "bytes": 1604,
+        "path": "schemas/transaction-page-request.v1.schema.json",
+        "sha256": "f7c6b74a797ef43d504f2b9cc4a96b5b126e9327153fa333c9673f484b7ad352"
+      },
+      {
+        "bytes": 6913,
+        "path": "schemas/transaction-page.v1.schema.json",
+        "sha256": "82840294aa2a5c20a3171986a3a0e3488f4cf44b4c21ed5818683a7d9da9dc1a"
+      },
+      {
+        "bytes": 8314,
+        "path": "schemas/transaction-search-page.v1.schema.json",
+        "sha256": "8669b70041ed56035c7731f062eb5dc573bf28b8529dc0e5c1d9acdce1bcab17"
+      },
+      {
+        "bytes": 1981,
+        "path": "schemas/transaction-search-request.v1.schema.json",
+        "sha256": "6cecadec322f8b3406ea3792c8140f88859f9c82f4436f0c9698985c8e0b8e76"
+      },
+      {
+        "bytes": 911,
+        "path": "schemas/transaction-sources-request.v1.schema.json",
+        "sha256": "0532ec9a611efe8b6344f9098e42a2c789cd59ca6403aeb397acb1c85ac7ef42"
+      },
+      {
+        "bytes": 5625,
+        "path": "schemas/transaction-sources.v1.schema.json",
+        "sha256": "b1dc19658e6a224fca532bdc830e1f74fcea7cf889350883a82bb624e11dbbf3"
+      },
+      {
+        "bytes": 8508,
+        "path": "schemas/transfer-candidates-page.v1.schema.json",
+        "sha256": "d03937352d98b21f557a6c88ab7ee3a5c11593741e4ed5f88a4f3a11a72e3259"
+      },
+      {
+        "bytes": 1528,
+        "path": "schemas/transfer-candidates-request.v1.schema.json",
+        "sha256": "d7577ce2d859c28a1c12ed6f18c09e6527a06afc069279fa8ffd92a7a575a979"
+      },
+      {
+        "bytes": 2006,
+        "path": "schemas/worker-request.v1.schema.json",
+        "sha256": "5d4b3af75397b5cc907dcae3b98b7d9d17b5f971576bcb7df2eb9eaff9781717"
+      },
+      {
+        "bytes": 25538,
+        "path": "schemas/workspace-presentation.v1.schema.json",
+        "sha256": "5141dcaa851478662e259c97c70f0fb5f9a307ceae026c7e33d5c5b7bf773637"
+      },
+      {
+        "bytes": 20255,
+        "path": "schemas/workspace.v1.schema.json",
+        "sha256": "e8a4c82b2f6fedf4b48124a2317654f49c4cd607d9634e6841b36e1e79216ea3"
+      },
+      {
+        "bytes": 25213,
+        "path": "schemas/workspace.v2.schema.json",
+        "sha256": "967cc4fbad79b10dd8b3f838cbdf4684cb0654e0cb0aa39e3ef0055f2173db24"
+      },
+      {
+        "bytes": 25366,
+        "path": "schemas/workspace.v3.schema.json",
+        "sha256": "0cebcc5770da82e93d089cda85af1fe195deff83a315603b25038cc9b0e17a9a"
+      }
+    ],
+    "scope": "All tracked schemas-directory files, including its README."
+  },
+  "limitations": {
+    "complete_bundle": false,
+    "complete_release": false,
+    "jar_rebuilt_from_current_java_source": false,
+    "native_search_invoked": false,
+    "native_search_passed": false,
+    "quarantine_recovery": false,
+    "ranked_relevance_or_cold_corpus_benchmark": false,
+    "recipe_entries_are_spawn_evidence": false,
+    "selected_runtime_only": true,
+    "windows_or_intel_native": false
+  },
+  "log_sanitization": "Private worktree/home prefixes replaced with placeholders; trailing blank lines normalized in public copies. Raw logs remain unchanged and separately hashed.",
+  "logs": [
+    {
+      "private_name": "clippy-final.log",
+      "raw": {
+        "bytes": 221,
+        "sha256": "118a4dca22334a5a0037534f24548ac1c1f470702b32e9e48a491abfd10521ff"
+      },
+      "sanitized": {
+        "bytes": 133,
+        "sha256": "43a2d7b90f5e9587c8e25542e4fc32b87e8a148b598dd9c8a60c9fb3ccaab5f6"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/clippy-final.log"
+    },
+    {
+      "private_name": "clippy-first.log",
+      "raw": {
+        "bytes": 5941,
+        "sha256": "65995a1fbc5524091a9d80476b3ede18a1842f7c8c212b4b8296b928368c328e"
+      },
+      "sanitized": {
+        "bytes": 5765,
+        "sha256": "ad3b0926992d62a4610527aa8cb2d3958b16ec4acc18da3cc6603278e78e7681"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/clippy-first.log"
+    },
+    {
+      "private_name": "core-full.log",
+      "raw": {
+        "bytes": 82902,
+        "sha256": "4e04d0872e73c371e0624621a0f8b31bb9945237801c42b59b42ecfbc3794134"
+      },
+      "sanitized": {
+        "bytes": 82813,
+        "sha256": "93a7502e1e1dc12d9b2b43407096ce520075a9aeb846fcd8944434bcfd118c25"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/core-full.log"
+    },
+    {
+      "private_name": "diff-check.log",
+      "raw": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "sanitized": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/diff-check.log"
+    },
+    {
+      "private_name": "first-focused.log",
+      "raw": {
+        "bytes": 7798,
+        "sha256": "8e38868b37b0394e3b7dec98d20970585e8ff8e9ce415f51acea2e88b04f834d"
+      },
+      "sanitized": {
+        "bytes": 7621,
+        "sha256": "7064aa1ee170d4df26b5f83d99784867e170034f608fd2a78d0dc6055be919ff"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/first-focused.log"
+    },
+    {
+      "private_name": "fmt.log",
+      "raw": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "sanitized": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/fmt.log"
+    },
+    {
+      "private_name": "focused-final.log",
+      "raw": {
+        "bytes": 6611,
+        "sha256": "96817429ce6ca50d1fd7d6479c84fc565e67f0e4d092d54f9b48eedefd90fba5"
+      },
+      "sanitized": {
+        "bytes": 6522,
+        "sha256": "d2a9445ded089b6a222ed947fd5cd98065f2440f1683d3056bce0f691d20deae"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/focused-final.log"
+    },
+    {
+      "private_name": "python-first-optimized.log",
+      "raw": {
+        "bytes": 1962,
+        "sha256": "726df789d0f594ed644b3a6bd7630a2a4889e18fd9608e2c0332bc62df2150e4"
+      },
+      "sanitized": {
+        "bytes": 1962,
+        "sha256": "726df789d0f594ed644b3a6bd7630a2a4889e18fd9608e2c0332bc62df2150e4"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/python-first-optimized.log"
+    },
+    {
+      "private_name": "python-first.log",
+      "raw": {
+        "bytes": 1962,
+        "sha256": "4e4d85777362c37a85dc9f40282a5a5329f478c37d62f6ff637c71669fc0a352"
+      },
+      "sanitized": {
+        "bytes": 1962,
+        "sha256": "4e4d85777362c37a85dc9f40282a5a5329f478c37d62f6ff637c71669fc0a352"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/python-first.log"
+    },
+    {
+      "private_name": "python-full.log",
+      "raw": {
+        "bytes": 1211,
+        "sha256": "33dcbd1ecad8dae1a2e7c2d2bbfe09fa7b972fac7433a8206f7ad67999d49ad7"
+      },
+      "sanitized": {
+        "bytes": 1123,
+        "sha256": "2660d01bf20d75918771885058fc7e9ba208bfbe96ba944f595412865d86bcf8"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/python-full.log"
+    },
+    {
+      "private_name": "python-suite-final-optimized.log",
+      "raw": {
+        "bytes": 61709,
+        "sha256": "4be3adccc2f9b28ef320c6b6246d36405d21727102616d750e89fec367638f81"
+      },
+      "sanitized": {
+        "bytes": 61709,
+        "sha256": "4be3adccc2f9b28ef320c6b6246d36405d21727102616d750e89fec367638f81"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/python-suite-final-optimized.log"
+    },
+    {
+      "private_name": "python-suite-final.log",
+      "raw": {
+        "bytes": 61709,
+        "sha256": "958f0cc39dfe5f417f2a7bf3bf47378cddb27990a9881ea6e8ef585a963fa2a6"
+      },
+      "sanitized": {
+        "bytes": 61709,
+        "sha256": "958f0cc39dfe5f417f2a7bf3bf47378cddb27990a9881ea6e8ef585a963fa2a6"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/python-suite-final.log"
+    },
+    {
+      "private_name": "source-audit.log",
+      "raw": {
+        "bytes": 40,
+        "sha256": "39379a20a71aeb051751f06b4b896bd29db8a6d2a624b491e08dd7b764ea2b81"
+      },
+      "sanitized": {
+        "bytes": 40,
+        "sha256": "39379a20a71aeb051751f06b4b896bd29db8a6d2a624b491e08dd7b764ea2b81"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/source-audit.log"
+    },
+    {
+      "private_name": "source-commit.log",
+      "raw": {
+        "bytes": 642,
+        "sha256": "dbcddac31fbd55ffec9a45d4acbcdd4e32e88aa95d82df566bf14658d2b00467"
+      },
+      "sanitized": {
+        "bytes": 642,
+        "sha256": "dbcddac31fbd55ffec9a45d4acbcdd4e32e88aa95d82df566bf14658d2b00467"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/source-commit.log"
+    },
+    {
+      "private_name": "source-signature.log",
+      "raw": {
+        "bytes": 95,
+        "sha256": "5f3f0d9f099255a8b0687a2dc0a0908eae975996f949d495203bf5e85992c355"
+      },
+      "sanitized": {
+        "bytes": 95,
+        "sha256": "5f3f0d9f099255a8b0687a2dc0a0908eae975996f949d495203bf5e85992c355"
+      },
+      "sanitized_path": "docs/search/verification/native-coordinator-source/source-signature.log"
+    }
+  ],
+  "ordinary_test_binary": {
+    "bytes": 60899584,
+    "name": "workbench_core-3b02699a934d9ff3",
+    "native_source_guard_provided_by_test_commands": false,
+    "profile": "debug test",
+    "sha256": "937cc15c0d63cf73f8314227f6208d95bae347a0b369c6fb4aaa9ff04bcbcf72"
+  },
+  "peer_review": {
+    "change_after_initial_freeze": "Offline test moved from scripts/test_native_search_receipts.py to scripts/tests/test_native_search_receipts.py with the existing suite sys.path setup; no native/runner/validator source changed.",
+    "final_11_file_aggregate": "5d0d41a0688210e60e9c458db4f43eda9d3fb6d269c7b0d8a2b3e498337feec0",
+    "finding": "No remaining concrete blocker reported by independent peer and root source review.",
+    "initial_11_file_aggregate": "a824095599bea5442ecd869709b4298065060b61ec263952052a2c4927513e43",
+    "review_did_not_execute_native": true
+  },
+  "recorded_at": "2026-09-25T20:04:10.448426+00:00",
+  "retained_failures": [
+    {
+      "native_started": false,
+      "observation": "Initial shell log redirection failed because artifacts parent was absent. cargo fmt completed first; cargo test did not begin.",
+      "retention": "tool transcript; exact diagnostic was no such file or directory: artifacts/native-search-first-focused.log"
+    },
+    {
+      "log": "clippy-first.log",
+      "native_started": false,
+      "observation": "First strict Clippy failed on test-only and_then returning Ok; repaired to map."
+    },
+    {
+      "log": "python-full.log",
+      "native_started": false,
+      "observation": "Mistaken unittest discovery at scripts root failed importing the old test_java_workers.py because this isolated worktree has no runtime/java candidate. It raised StopIteration before any subprocess invocation. No runtime was linked or executed. Correct discovery is scripts/tests."
+    }
+  ],
+  "runtime_read_only_observation": {
+    "bytes": 168201487,
+    "claim": "pinned_selected_development_artifact",
+    "complete_release": false,
+    "file_count": 269,
+    "files": [
+      [
+        "java/NOTICE",
+        2400,
+        "c02756bcd9fa8191bf0fda4451bc018414dd44ee35bf09922c24377a475e4b5a",
+        false
+      ],
+      [
+        "java/bin/java",
+        70432,
+        "9be1d0a740ff6502df1a762145e62860f5de4b7e17658d9cb9498da3acf9d16c",
+        true
+      ],
+      [
+        "java/bin/jfr",
+        70448,
+        "0dc4445b9482b480ca5a5e9b6e171f8c9a04a310a19273c323b71753abba7a0e",
+        true
+      ],
+      [
+        "java/bin/jrunscript",
+        70464,
+        "a273976003d20d1f5b2c3fedfce894683b3252c77858e0aad4a2b50b785f0897",
+        true
+      ],
+      [
+        "java/bin/jwebserver",
+        70464,
+        "83b47b44c21784db3f19650b1ecce2e36f76e56755c20aaba9c2d91e9735f40e",
+        true
+      ],
+      [
+        "java/bin/keytool",
+        70464,
+        "17b50cf49c688935080bb39b3196494827577735d9240ef9178598df6dbe0911",
+        true
+      ],
+      [
+        "java/bin/rmiregistry",
+        70464,
+        "0fd9e9bec1badb4ae0aae451fb93ab2cd62f7ae7c1236d82a65f7c9927c77090",
+        true
+      ],
+      [
+        "java/conf/jaxp.properties",
+        7302,
+        "7d95c49465d0c836d608d02856d3b097934dfb5dc4bd2279affaf337d045b708",
+        false
+      ],
+      [
+        "java/conf/logging.properties",
+        2732,
+        "b62d2733ab99556b108a1951d894c5a8d76b1ac7a00c02c388f9eb9be046c56f",
+        false
+      ],
+      [
+        "java/conf/management/jmxremote.access",
+        3997,
+        "0c25d26ee212ca1e8c33f67c3c460d43fe849c3a1d23dbe341148517602b280c",
+        false
+      ],
+      [
+        "java/conf/management/jmxremote.password.template",
+        5690,
+        "0273b6a6b9e20e6ce54c5aee70164028e0395063b2b7d39060a40b6495543dbf",
+        false
+      ],
+      [
+        "java/conf/management/management.properties",
+        14988,
+        "07dffdd85b01c19bf46ca320a699aba48dd6b01043eb0bd6a9528c7993312bad",
+        false
+      ],
+      [
+        "java/conf/net.properties",
+        7441,
+        "2e070ed1d97052f0ce8771ed2ef74a38d7c260a45fde7a3682c8844e5fdf58a4",
+        false
+      ],
+      [
+        "java/conf/security/java.policy",
+        2294,
+        "d51bcab7ed301caeff3779a5e777e6019864cecee5e2abc102ef991b0de77af2",
+        false
+      ],
+      [
+        "java/conf/security/java.security",
+        71413,
+        "cf62c92ef0260bd0adca121fea4067aa7ac00675ab4ddccd75e62370165523d6",
+        false
+      ],
+      [
+        "java/conf/security/policy/README.txt",
+        2390,
+        "6da0747334b0fea7592fd92614b2bbc8b126535e129b1fee483774d914e98eb5",
+        false
+      ],
+      [
+        "java/conf/security/policy/limited/default_US_export.policy",
+        146,
+        "758b930a526fc670ab7537f8c26321527050a31f5f42149a2dda623c56a0a1a9",
+        false
+      ],
+      [
+        "java/conf/security/policy/limited/default_local.policy",
+        647,
+        "2b2627548e61316150d47ffc3e6cad465ca05b3cccd4785eb7d21aa7baa0f441",
+        false
+      ],
+      [
+        "java/conf/security/policy/limited/exempt_local.policy",
+        566,
+        "8c3d7648abcd95a272ce12db870082937f4d7f6878d730d83cb7fbb31eb8b2c9",
+        false
+      ],
+      [
+        "java/conf/security/policy/unlimited/default_US_export.policy",
+        146,
+        "758b930a526fc670ab7537f8c26321527050a31f5f42149a2dda623c56a0a1a9",
+        false
+      ],
+      [
+        "java/conf/security/policy/unlimited/default_local.policy",
+        193,
+        "8d8a318e6d90dfd7e26612d2b6385aa704f686ca6134c551f8928418d92b851a",
+        false
+      ],
+      [
+        "java/conf/sound.properties",
+        1210,
+        "299c2360b6155eb28990ec49cd21753f97e43442fe8fab03e04f3e213df43a66",
+        false
+      ],
+      [
+        "java/legal/java.base/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.base/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.base/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.base/aes.md",
+        1444,
+        "45c6d4da48325edfbff3dcf71c704e504c057904435ed23c6d57046d551eb69d",
+        false
+      ],
+      [
+        "java/legal/java.base/asm.md",
+        1582,
+        "683be15695bd248272d60f5b7fbe5e126a935ea6bf231a624a9aa164733e1d1d",
+        false
+      ],
+      [
+        "java/legal/java.base/c-libutl.md",
+        1556,
+        "bef40679922d6fdfb7e4ddb223ad6722300f6054ba737bbf6188d60fcec517f9",
+        false
+      ],
+      [
+        "java/legal/java.base/cldr.md",
+        9601,
+        "19515e14a240e022640e95b61b5095127fa9690755950b4a2b0a02e783e08163",
+        false
+      ],
+      [
+        "java/legal/java.base/icu.md",
+        30197,
+        "1bf28459c6e0af9f3429f4f8becd1668d6544055f8df240277456bc4b3d8a752",
+        false
+      ],
+      [
+        "java/legal/java.base/public_suffix.md",
+        17783,
+        "861de1e4992a7d28f1de25c73cd50d26a94779ebd749c0643fecfa56442c3429",
+        false
+      ],
+      [
+        "java/legal/java.base/siphash.md",
+        8256,
+        "5a792b5a74ad2a5f3d6a7ad8b7a841116e58a772c18bc6e392320a365b222c76",
+        false
+      ],
+      [
+        "java/legal/java.base/unicode.md",
+        9078,
+        "6f72f10d166b2c2e8a395e03e734c5afc852b59aeca73ced124f6b9c96268d53",
+        false
+      ],
+      [
+        "java/legal/java.base/zlib.md",
+        1010,
+        "c9c70c36a1f0325e8788771906202d42ba6ab4205caca44ec0f665707e83226b",
+        false
+      ],
+      [
+        "java/legal/java.compiler/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.compiler/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.compiler/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.datatransfer/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.datatransfer/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.datatransfer/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.desktop/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.desktop/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.desktop/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.desktop/colorimaging.md",
+        167,
+        "04d61e3e8e71dd452ebe52008af5378d9f6640d14578aeb515dc5375973b0189",
+        false
+      ],
+      [
+        "java/legal/java.desktop/freetype.md",
+        30465,
+        "553e804baecb7de7129d77c7259a6b70037d1893f1c600b41b35201695fb7758",
+        false
+      ],
+      [
+        "java/legal/java.desktop/giflib.md",
+        1689,
+        "206aab89ec75968e48a6a1ed6df7d8b9bfb7aea12cbe4c9345d93e5d97460a25",
+        false
+      ],
+      [
+        "java/legal/java.desktop/harfbuzz.md",
+        3629,
+        "5ec7cba7f8e7fc3a089213140aab6fa1b3bd5bf8a91bf8bddb3b8d315fc5f7d0",
+        false
+      ],
+      [
+        "java/legal/java.desktop/jpeg.md",
+        3474,
+        "c1dfb9719a71ad9f861f8728550542d681e25c8ef40e6393606e6e2a0c1d653a",
+        false
+      ],
+      [
+        "java/legal/java.desktop/lcms.md",
+        2654,
+        "843f9f6fa9c3f8109fcf4d5fe74caf7f2ae8e9bcd92238e4aff2d428c932b24b",
+        false
+      ],
+      [
+        "java/legal/java.desktop/libpng.md",
+        7519,
+        "f73afb394792f3aeecd959e89487603677a430e56b44eba596d8b572accfd540",
+        false
+      ],
+      [
+        "java/legal/java.desktop/mesa3d.md",
+        5732,
+        "63f4e6f75caebbccb95d903fb43e46ac7111b3624d0a34f146b276d7d9e7b152",
+        false
+      ],
+      [
+        "java/legal/java.desktop/pipewire.md",
+        1479,
+        "56a8fb1652c70ac204d13bb52ca4d678162e7d21a97d10209c2a633de8082de0",
+        false
+      ],
+      [
+        "java/legal/java.desktop/xwd.md",
+        1348,
+        "1d4ffa93c87f35084b02a7aa90a21084b4019db4fe1003c2e5ce775b4a384f59",
+        false
+      ],
+      [
+        "java/legal/java.instrument/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.instrument/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.instrument/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.logging/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.logging/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.logging/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.management.rmi/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.management.rmi/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.management.rmi/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.management/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.management/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.management/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.naming/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.naming/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.naming/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.net.http/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.net.http/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.net.http/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.prefs/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.prefs/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.prefs/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.rmi/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.rmi/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.rmi/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.scripting/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.scripting/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.scripting/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.se/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.se/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.se/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.security.jgss/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.security.jgss/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.security.jgss/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.security.sasl/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.security.sasl/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.security.sasl/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.smartcardio/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.smartcardio/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.smartcardio/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.smartcardio/pcsclite.md",
+        2155,
+        "b39ce363c281ed36e937f9e6c03311d7dbf0b20d3614dde084130c2a10909692",
+        false
+      ],
+      [
+        "java/legal/java.sql.rowset/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.sql.rowset/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.sql.rowset/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.sql/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.sql/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.sql/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.transaction.xa/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.transaction.xa/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.transaction.xa/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.xml.crypto/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.xml.crypto/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.xml.crypto/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.xml.crypto/santuario.md",
+        11505,
+        "d08690d25f660f145c73365d260ed522cd0aace8a0e1396706551b7a1ae8c9a3",
+        false
+      ],
+      [
+        "java/legal/java.xml/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/java.xml/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/java.xml/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/java.xml/bcel.md",
+        11196,
+        "cd578186ad93de46cca29ec8ace2b11f9da751987f3f140e6095c528596cc8c1",
+        false
+      ],
+      [
+        "java/legal/java.xml/dom.md",
+        3761,
+        "6686e8877667584a3a7c07344baadca1a03e29f677162d87c3c0811e990d1148",
+        false
+      ],
+      [
+        "java/legal/java.xml/jcup.md",
+        1448,
+        "8d5dcfdf50455a3c34c753a98f21e953248af200415a9084e3f102cb6c43b8bf",
+        false
+      ],
+      [
+        "java/legal/java.xml/xalan.md",
+        13477,
+        "c27eb875da4be683d4d7422be986e5e30f636ede31958ff1d39f9cd6109e7a00",
+        false
+      ],
+      [
+        "java/legal/java.xml/xerces.md",
+        11848,
+        "4a6bf6b367193ee68681cb2d9fed30ffc5d62dd2d477bd62e0271707d71b3244",
+        false
+      ],
+      [
+        "java/legal/jdk.accessibility/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.accessibility/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.accessibility/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.charsets/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.charsets/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.charsets/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.cryptoki/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.cryptoki/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.cryptoki/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.cryptoki/pkcs11cryptotoken.md",
+        4095,
+        "1f36ff1342a581142c858f90064e20633d43529ac82adb85345bd902a14e18b2",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.cryptoki/pkcs11wrapper.md",
+        2131,
+        "371974b1fca3744a3892c7ee1fcc593b8b4281fc218f4cafd2f709e9df5fd81d",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.ec/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.ec/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.crypto.ec/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.dynalink/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.dynalink/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.dynalink/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.dynalink/dynalink.md",
+        1502,
+        "17312591cabee3ef6c34ed8897d92e4e361ba9cea41ec00dcd61a322a8fc2cdb",
+        false
+      ],
+      [
+        "java/legal/jdk.httpserver/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.httpserver/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.httpserver/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.incubator.vector/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.incubator.vector/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.incubator.vector/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.ci/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.ci/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.ci/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.compiler.management/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.compiler.management/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.compiler.management/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.compiler/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.compiler/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.internal.vm.compiler/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.jdwp.agent/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.jdwp.agent/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.jdwp.agent/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.jfr/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.jfr/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.jfr/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.jsobject/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.jsobject/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.jsobject/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.localedata/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.localedata/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.localedata/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.localedata/cldr.md",
+        9601,
+        "19515e14a240e022640e95b61b5095127fa9690755950b4a2b0a02e783e08163",
+        false
+      ],
+      [
+        "java/legal/jdk.localedata/thaidict.md",
+        1346,
+        "c326144a2351c9608fa708b5d7d3c5a3da03e82b66479b128e9db4969539824a",
+        false
+      ],
+      [
+        "java/legal/jdk.management.agent/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.management.agent/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.management.agent/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.management.jfr/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.management.jfr/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.management.jfr/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.management/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.management/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.management/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.naming.dns/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.naming.dns/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.naming.dns/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.naming.rmi/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.naming.rmi/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.naming.rmi/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.net/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.net/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.net/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.nio.mapmode/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.nio.mapmode/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.nio.mapmode/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.sctp/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.sctp/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.sctp/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.security.auth/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.security.auth/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.security.auth/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.security.jgss/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.security.jgss/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.security.jgss/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.unsupported/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.unsupported/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.unsupported/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.xml.dom/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.xml.dom/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.xml.dom/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/legal/jdk.zipfs/ADDITIONAL_LICENSE_INFO",
+        2114,
+        "a69bce275ba7a3570af6579cb0f55682cd75fedfcd49e0e8e9022270c447c916",
+        false
+      ],
+      [
+        "java/legal/jdk.zipfs/ASSEMBLY_EXCEPTION",
+        1514,
+        "75292f03bf23d3db7c985aecc191029b93883200721ed23ed34a2e601463df33",
+        false
+      ],
+      [
+        "java/legal/jdk.zipfs/LICENSE",
+        19274,
+        "4b9abebc4338048a7c2dc184e9f800deb349366bdf28eb23c2677a77b4c87726",
+        false
+      ],
+      [
+        "java/lib/classlist",
+        77202,
+        "01b9c997aa616618b9cd713dda43b66fbcf5f25976cfe12240415d0641db801a",
+        false
+      ],
+      [
+        "java/lib/fontconfig.bfc",
+        2922,
+        "5409952a218126c5c11cf0e4963665711aeeab50f5648264d70866fca705a950",
+        false
+      ],
+      [
+        "java/lib/fontconfig.properties.src",
+        8931,
+        "c8d20a4a39240665252306bdd3dbc8d71e1e246c8cd8c7985b32e4101658a148",
+        false
+      ],
+      [
+        "java/lib/jfr/default.jfc",
+        37449,
+        "4fed4b508c5f1b69578293df84f94a63752f86b4259d97e12884e3b2ec56ef50",
+        false
+      ],
+      [
+        "java/lib/jfr/profile.jfc",
+        37401,
+        "485fb90dbecee9a950c45247464351162b1eb0c35387fbb929f002c600807251",
+        false
+      ],
+      [
+        "java/lib/jrt-fs.jar",
+        110124,
+        "45fc41e80103af6ac9e9dd1403c9228271b77a9719f262e96a800486b9646952",
+        false
+      ],
+      [
+        "java/lib/jspawnhelper",
+        72096,
+        "16feacbfe3ef61c58067ef1f5ca0608b073e3fa779be464e3361da08dd2e9ffe",
+        true
+      ],
+      [
+        "java/lib/jvm.cfg",
+        29,
+        "aa9efb969444c1484e29adecab55a122458090616e766b2f1230ef05bc3867e0",
+        false
+      ],
+      [
+        "java/lib/libawt.dylib",
+        551744,
+        "0209133afcc1e9a52dec1a6762d9996e4bf01584d093011c7ce7ebda9c1368f5",
+        false
+      ],
+      [
+        "java/lib/libawt_lwawt.dylib",
+        1237824,
+        "b19d0c418be5a240df513b22524e2e6faa3279227630e554f2c4e50691fee656",
+        false
+      ],
+      [
+        "java/lib/libdt_socket.dylib",
+        73872,
+        "616c53abe89aefb69160964fcc8fae77e87d3387db1f5a0d275be628fa71a11f",
+        false
+      ],
+      [
+        "java/lib/libextnet.dylib",
+        71024,
+        "9fd80625d872c6ad48eb0ea42c2594dc53fc6a1998c1f2eb11611d565c8cb181",
+        false
+      ],
+      [
+        "java/lib/libfontmanager.dylib",
+        1478688,
+        "333c72c46c10c81efd2e57467c47ba6bffc3c2698c5cdbac6ee5157517893378",
+        false
+      ],
+      [
+        "java/lib/libfreetype.dylib",
+        646704,
+        "c4d6b43539785d8522459bf67f2808f14f6c4361ee25a34c7e218a96e54a3a0c",
+        false
+      ],
+      [
+        "java/lib/libinstrument.dylib",
+        92496,
+        "e4a474c3a92c8da215a1dbdf1bdf8eb7c9850fa9587230d27a99b7374d4863f2",
+        false
+      ],
+      [
+        "java/lib/libj2gss.dylib",
+        92944,
+        "277488fa07b59692902c5102b3f18bcbcef883a21d156718a621dd3586b6c733",
+        false
+      ],
+      [
+        "java/lib/libj2pcsc.dylib",
+        71616,
+        "145419ebea46f8982ce0605da082b480ee946e2dcb7f2d56b406ae1c72ec428f",
+        false
+      ],
+      [
+        "java/lib/libj2pkcs11.dylib",
+        131312,
+        "f741fdca41f808a8e5239c99e846009a9f1f476041dc85314fe46ff9f14552b0",
+        false
+      ],
+      [
+        "java/lib/libjaas.dylib",
+        70016,
+        "bd5cb0642aa7ad86162333215ab395997039fed8e0b4d0aed1f38f50189c8a3f",
+        false
+      ],
+      [
+        "java/lib/libjava.dylib",
+        188320,
+        "30ed8d3f55fce957cd51ce59783115ee3574283c34b52e1b19c4c5382337722d",
+        false
+      ],
+      [
+        "java/lib/libjavajpeg.dylib",
+        265104,
+        "0cdad00d7ee91725a6976ae18dfbe138ee06521dceefe6b7be73d6254b5c74b0",
+        false
+      ],
+      [
+        "java/lib/libjawt.dylib",
+        53424,
+        "1b0ab5d66a0e69f204456c4c984fbcbe419f8b17a9c2049e4cc9f1c06e96ec63",
+        false
+      ],
+      [
+        "java/lib/libjdwp.dylib",
+        295696,
+        "d756a720d09af729180674301750d13d592a166552bca1f078095efbd1089f67",
+        false
+      ],
+      [
+        "java/lib/libjimage.dylib",
+        77616,
+        "55a40284a581585d3cf8ecea9b82ea487ae0c31e0ba1f735a10954dfd0f7f50f",
+        false
+      ],
+      [
+        "java/lib/libjli.dylib",
+        148800,
+        "10eaa148c303ead9a749bb3217534023f22af6a2fbac616c9c4439b322d7f34a",
+        false
+      ],
+      [
+        "java/lib/libjsig.dylib",
+        70896,
+        "78fcd0c817a4ebc5a65393c82059b72d72a99072071a3216af13d65493db521a",
+        false
+      ],
+      [
+        "java/lib/libjsound.dylib",
+        136000,
+        "d3e7f5451524b9baeedeb67a547870b3dd0d577ffad5f25cbe404b4db15d6119",
+        false
+      ],
+      [
+        "java/lib/liblcms.dylib",
+        410448,
+        "121f2f3e90697b2c5afca9320d86a9a3b87fae078c36f5a504b39ca8dc028023",
+        false
+      ],
+      [
+        "java/lib/libmanagement.dylib",
+        76800,
+        "202b22a451d59b872785600490c07c70b661a0792aa17aa87153e900ee040a68",
+        false
+      ],
+      [
+        "java/lib/libmanagement_agent.dylib",
+        69952,
+        "9d7d55ba15791761d916b8a82783ccccf5751477a1a3f4bac8238658316a5e0d",
+        false
+      ],
+      [
+        "java/lib/libmanagement_ext.dylib",
+        75312,
+        "820e33e6dab905b65a4efee4fefe69a0a8bfe72ac83d008728073302962756ce",
+        false
+      ],
+      [
+        "java/lib/libmlib_image.dylib",
+        507888,
+        "ae7063852da21fcce99f05c136d3ef6588ec39fa507c30c7530d26066f7acb8f",
+        false
+      ],
+      [
+        "java/lib/libnet.dylib",
+        114320,
+        "faf87c1231613754fb494756d8a9ed621b89a6d8a550cfcbe705547d96cb28ce",
+        false
+      ],
+      [
+        "java/lib/libnio.dylib",
+        126960,
+        "e723dc5463efe7426653e404228ebd0bd0fe89e9bc1dfc67c4d1e6ca6bf56a77",
+        false
+      ],
+      [
+        "java/lib/libosx.dylib",
+        74720,
+        "803d5eea4ac7cbc8cae0ccabd12762f89968fe232ddfe7c1a96bc75734e7b78e",
+        false
+      ],
+      [
+        "java/lib/libosxapp.dylib",
+        189568,
+        "b83a2aff33398ba454df761a5253ea81fa87b81417fb8039e9e7d6215de8b575",
+        false
+      ],
+      [
+        "java/lib/libosxkrb5.dylib",
+        74496,
+        "7837c48e9e209ecfeff61585bfb5378b0dbe485ed649929f554061e667a61a1e",
+        false
+      ],
+      [
+        "java/lib/libosxsecurity.dylib",
+        75104,
+        "2d3d93ac8d5d3793379567e9a1924df2b18ba781325be032a66b31a2906f910f",
+        false
+      ],
+      [
+        "java/lib/libosxui.dylib",
+        99616,
+        "03ac7a0d0b3118c5aa5092573092776368dbd17681c9c81aff2ddc459e9e79fd",
+        false
+      ],
+      [
+        "java/lib/libprefs.dylib",
+        74560,
+        "25470f88ca4f06ada7d92cc926eacc3048162e9c9630711c807e8c490af21fd9",
+        false
+      ],
+      [
+        "java/lib/librmi.dylib",
+        69648,
+        "aa96921fec715c02936dc67326b272ff4307bf9f67bc24d05597f5e5ef4dc85c",
+        false
+      ],
+      [
+        "java/lib/libsplashscreen.dylib",
+        409472,
+        "18bc46fe4dc47017dcf4dd5322843f8c74bce2f4d6de740d54ba892a3955e3f8",
+        false
+      ],
+      [
+        "java/lib/libsyslookup.dylib",
+        36352,
+        "85aecafd0c15353cca1d780b1e624b6044d0c4e9b14b5e36e50d364832aa4541",
+        false
+      ],
+      [
+        "java/lib/libverify.dylib",
+        106832,
+        "5c6a9c3006b9dbee4f6da465b4b8fc18a9e468c46e1d4c646a9175ff12c5d483",
+        false
+      ],
+      [
+        "java/lib/libzip.dylib",
+        162832,
+        "46e21dc95a453fd5c14050ebf75b1e7a23a75ab3964fca43d69d9dfc1d35df45",
+        false
+      ],
+      [
+        "java/lib/modules",
+        100621105,
+        "46e18cac03a6cc80b86fdcec7c5e5121bb36bc1b711ebfba7450b5501198621a",
+        false
+      ],
+      [
+        "java/lib/psfont.properties.ja",
+        3793,
+        "5a4bd51b969bf187ff86d94f4a71fdfbfa602762975fa3c73d264b4575f7c78f",
+        false
+      ],
+      [
+        "java/lib/psfontj2d.properties",
+        11390,
+        "780c565d5af3ee6f68b887b75c041cdf46a0592f67012f12eeb691283e92630a",
+        false
+      ],
+      [
+        "java/lib/security/blocked.certs",
+        2488,
+        "96572f243f31c2ef81a6e627542e596f6a9295cff3c7ae095c1b595cb1457ded",
+        false
+      ],
+      [
+        "java/lib/security/cacerts",
+        153428,
+        "98d34a90fca2688ef5674862d2a484e09e5ca25d2f07c5d654aa28f1581f3419",
+        false
+      ],
+      [
+        "java/lib/security/default.policy",
+        10657,
+        "2bd418aab30b091b136962f80be7ddf39dcba85f082a558a6993848ae65366ae",
+        false
+      ],
+      [
+        "java/lib/security/public_suffix_list.dat",
+        227396,
+        "16b42002aa6f83a7763c4cdbd399ecf738460377d447e362884495545afd60a3",
+        false
+      ],
+      [
+        "java/lib/server/classes.jsa",
+        13500416,
+        "b5f4b20ab562230df35499fd0262585411681cc76e8b3e0e0a593b59dbcbc42b",
+        false
+      ],
+      [
+        "java/lib/server/classes_nocoops.jsa",
+        13828096,
+        "1bcc5d073775593fa55c11e42f56e423d02364ed62a340e01e5ec1b83e3e4229",
+        false
+      ],
+      [
+        "java/lib/server/libjsig.dylib",
+        70896,
+        "78fcd0c817a4ebc5a65393c82059b72d72a99072071a3216af13d65493db521a",
+        false
+      ],
+      [
+        "java/lib/server/libjvm.dylib",
+        18203936,
+        "629b4f2a124e373f7eec14e0bdd3248ae6e817e20e2fb85c881f96a0233bbeec",
+        false
+      ],
+      [
+        "java/lib/shaders.metallib",
+        156589,
+        "5bba5cc7c25aa23f90ae7b0bf72d4835bfdfd9760b279f7a8f018670a5f77deb",
+        false
+      ],
+      [
+        "java/lib/tzdb.dat",
+        102956,
+        "5906b44e25a8a730131d7ba1beb5d15af27043f6536f1a169ca8a5d8b8bed8f8",
+        false
+      ],
+      [
+        "java/release",
+        1628,
+        "25090aa2833d7c13d195480f0cb53ac9c0759bac1cdfa8c249952782dcc014b1",
+        false
+      ],
+      [
+        "search/lib/jackson-annotations-2.22.jar",
+        84211,
+        "21ddb598807d3a51a876704eb979d9296e1c6a6f47ab1826ff88c6d6a127a2d0",
+        false
+      ],
+      [
+        "search/lib/jackson-core-2.22.3.jar",
+        594776,
+        "8a501126a385b25841915d839508f8a66e2a0dbc8a6709d055ef3b3e852b094c",
+        false
+      ],
+      [
+        "search/lib/jackson-databind-2.22.3.jar",
+        1709604,
+        "556db5439e206114346043f68d200497dc96a0bca62a360a81784092ebd0e0a9",
+        false
+      ],
+      [
+        "search/lib/lucene-analysis-common-10.5.1.jar",
+        1757025,
+        "f710afd91a820987a48f3a215e076715b9237b324cf5458281109ef0d2a17b73",
+        false
+      ],
+      [
+        "search/lib/lucene-core-10.5.1.jar",
+        4744152,
+        "2b4912cc792f462e8e7b350f7c958f538ee7ec42da4cf4b65902fb9d546bba53",
+        false
+      ],
+      [
+        "search/lib/lucene-facet-10.5.1.jar",
+        333386,
+        "f47044db3d231a9bf69ab23c6ae04086e2aa93e50722821059c5eed846ea12a3",
+        false
+      ],
+      [
+        "search/lib/lucene-queries-10.5.1.jar",
+        524043,
+        "6e98e7fd16b951cabe95c4b193e4c50ffd3a5613787d04bd848672c326b309f9",
+        false
+      ],
+      [
+        "search/lib/lucene-queryparser-10.5.1.jar",
+        426256,
+        "75eddb74abccaf1f3ea5cb1ca2ceff29afb7f564892b50914404720f03d458c4",
+        false
+      ],
+      [
+        "search/lib/lucene-sandbox-10.5.1.jar",
+        386983,
+        "0c66bc7b779ac7ecf337fdd7373f4ed1652c362da61035bb3f970c321a154693",
+        false
+      ],
+      [
+        "search/workers-0.1.0.jar",
+        9930,
+        "17185efac0a1b6f0c4590ba5026bf9244920a96eec2a1367ce94b8a10ff1f82e",
+        false
+      ]
+    ],
+    "rebuilt_from_current_java_source": false,
+    "sha256": "cb3f7cc163a851eec4f70ba11c96029458524e8465210720a57f318503aef9a7"
+  },
+  "schema_version": 1,
+  "scope": "source_only_fixed_native_coordinator_search_campaign",
+  "source": {
+    "aggregate_sha256": "5d0d41a0688210e60e9c458db4f43eda9d3fb6d269c7b0d8a2b3e498337feec0",
+    "base": "c35bb1d44562a8e8daf78e14e843d6d43786387a",
+    "clean_at_handoff": true,
+    "commit": "6c56d391225fa7a151fa1c985cb742c82dda04df",
+    "files": [
+      {
+        "path": "crates/core/src/coordinator_search.rs",
+        "sha256": "b6b9dbccd5f9909a104cde2758121f98c5dafe2c6cf7118c7cc29131ce4295e8"
+      },
+      {
+        "path": "crates/core/src/coordinator_search_native.rs",
+        "sha256": "cfc5486728f5fef60b92fe06fc2f15712fcfbef038e0fecb4b2e669cbc75760a"
+      },
+      {
+        "path": "crates/core/src/coordinator_search_native_inventory.rs",
+        "sha256": "aec4d85b874062417c8084fd035f81b9f26b1fcce58cd96bcc65298b7d31d8ff"
+      },
+      {
+        "path": "crates/core/src/engines/search.rs",
+        "sha256": "7e00d1f7ad2851b0aec1ed66b4143bef431b16051f0c4c906f20fc0723af2faa"
+      },
+      {
+        "path": "crates/core/src/engines/search_probe.rs",
+        "sha256": "b590401b1e94ddc37d3ce57cff1a28748d7f816f3f24f56cb61c6b7987931981"
+      },
+      {
+        "path": "crates/core/src/store/graph_analysis/probe_fixture.rs",
+        "sha256": "ef90220a154099db9b9f53df4275a0a068e33a0be22e2793f881ad8b4617c4cc"
+      },
+      {
+        "path": "docs/search/NATIVE-COORDINATOR-CAMPAIGN.md",
+        "sha256": "abc8f9c4a8761e116517542631261b80834871cc7653d26764f3b2a40c7cf923"
+      },
+      {
+        "path": "scripts/native_search_receipt.py",
+        "sha256": "d004df7630e1d213d9788fb2d5b1958a7dec7a2539cdb98904da84069f4537ed"
+      },
+      {
+        "path": "scripts/native_search_runtime.py",
+        "sha256": "d5c18d3619f76b8cca2c46b98dc3c39afa5e95fb6333627f9461abf9b7588495"
+      },
+      {
+        "path": "scripts/test_native_coordinator_search.py",
+        "sha256": "097e31be591b4d4ba9234812f1b851d7784c791b1afa69edb8063511deffb215"
+      },
+      {
+        "path": "scripts/tests/test_native_search_receipts.py",
+        "sha256": "d4b9626e0e3ea6b6538485fff3d4ec0357747bc310c261a53b6df36dea4f824f"
+      }
+    ],
+    "signature_verified": true,
+    "signer_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y",
+    "tree": "cbf8d15d3564b92b8f3e01cac4e28e152b5595e2",
+    "verification_binding": "Tests ran on the frozen Rust/source bytes before signing. The only subsequent implementation change was relocation of the offline Python test into the normal scripts/tests discovery tree; the final full Python runs used that path."
+  }
+}
