@@ -1,0 +1,256 @@
+{
+  "format_version": 1,
+  "recorded_at": "2026-09-25T22:25:44.235378+00:00",
+  "scope": "Bounded legacy Search snapshot capture; source and synthetic verification only",
+  "base_commit": "0cf52f720259890f1395275f271fc8d94486e65c",
+  "source_commit": "18ba1bb638487f5e6cb28d3413fa2b3ff38fd6db",
+  "source_tree": "206d8da6061edc55b74bc38b05100391f316eda7",
+  "source_files": [
+    {
+      "path": "crates/core/src/engines.rs",
+      "bytes": 1590,
+      "sha256": "8fed21a481fdf93df331ec7bb1f4a441b60372e71a787926a63e0ba47e5ff1b4"
+    },
+    {
+      "path": "crates/core/src/engines/search.rs",
+      "bytes": 12062,
+      "sha256": "35a96bdd70f048741c086308e930815f6fac0f65a05d435414d5b6462a501586"
+    },
+    {
+      "path": "crates/core/src/engines/search_corpus.rs",
+      "bytes": 4623,
+      "sha256": "266132e0b06b1f4f54d77ec6db36cb0a779e9260e72f4f2ac4e02f505e97d425"
+    },
+    {
+      "path": "crates/core/src/engines/search_corpus_tests.rs",
+      "bytes": 5244,
+      "sha256": "ba681fae201c265191e51d462ae9d5d61b88f29507f5cfbfcf1b8ef0d37653ef"
+    },
+    {
+      "path": "crates/core/src/store.rs",
+      "bytes": 45429,
+      "sha256": "1c4a9f4593342a55ec8f596593c5b5d6507889d3b390367dcc39fb34e8aba9e7"
+    },
+    {
+      "path": "crates/core/src/store/evidence.rs",
+      "bytes": 1604,
+      "sha256": "45c8d399e09d39003c8b7413fe747a3b9876bcc08af205f29058a39c63266fa1"
+    },
+    {
+      "path": "crates/core/src/store/search.rs",
+      "bytes": 3644,
+      "sha256": "28633299a4d6c94816472db88670d4a5654f9d86cff9610206c482da65d57939"
+    },
+    {
+      "path": "crates/core/src/store/search_capture.rs",
+      "bytes": 3094,
+      "sha256": "6352bb10f43136109e618a4d53875f63a31f5000f37dc4c80d192055309cc071"
+    },
+    {
+      "path": "crates/core/src/store/search_capture_tests.rs",
+      "bytes": 16426,
+      "sha256": "4cd18c7f603e8d0218985cb1e0640f071fbd56253e8875e4250e2ecf7f0892e7"
+    },
+    {
+      "path": "docs/search/BOUNDED-CORPUS-CAPTURE.md",
+      "bytes": 5479,
+      "sha256": "3b21387521c27cefdc110a8203cb5744f0a6694ae771b96ed3a411e17559f147"
+    },
+    {
+      "path": "scripts/test_macos_confinement.py",
+      "bytes": 5100,
+      "sha256": "9125d9846a0ce520c65fcc3319b87a016e6fc8ce81d307309ea8bd596f49c167"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "artifacts/bounded-search-capture/audit-source.log",
+      "bytes": 40,
+      "sha256": "39379a20a71aeb051751f06b4b896bd29db8a6d2a624b491e08dd7b764ea2b81"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/clippy-host-final.log",
+      "bytes": 218,
+      "sha256": "d1937b05f1eb2fae0593bf228248e84a9e03414e566ac4e495f1dc587aa72c0d"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/clippy-host.log",
+      "bytes": 2328,
+      "sha256": "2b4fe65142403c26140cbebea0d033ba73c5af018e515b476519159175d034bd"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/clippy-intel-final.log",
+      "bytes": 2400,
+      "sha256": "ba3ec005fba58c2101a72d4631a0cb5ba438383aa716a9ea692a6f291b3d6599"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/clippy-release-final.log",
+      "bytes": 5926,
+      "sha256": "4c2bb15b790c890fdf7d78621683a427de543c1ce45c1135add368d734ba8b6a"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/commit-source.log",
+      "bytes": 455,
+      "sha256": "a5bcdd407b786e1bbdeec49740bbc4963e6276914f547d92922c089591e56119"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/compatibility.json",
+      "bytes": 23379,
+      "sha256": "4d3ad5689bfdd005a5c9d671f85d4020c02f7c819eba10ee0cdba42909991836"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/core-final.log",
+      "bytes": 90437,
+      "sha256": "f965257cce7803280cf46beecbec723629d2bdb3de4751b33d5205b8de0612a1"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/fmt-final.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/focused-final.log",
+      "bytes": 9654,
+      "sha256": "b06e1e2c23d43c4553f23dd9c61f2f1a3b46e7f6d79bbccab24bbca823ed240c"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/focused-first.log",
+      "bytes": 83,
+      "sha256": "a4c3be1be8bc28a333f27a318c6747db0847dcb8e28060f299a41836d88a1ee1"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/focused-repaired.log",
+      "bytes": 9174,
+      "sha256": "46c268c233e8830af0588fd1ad35ab7a012fb10f641a585618cb22d747c52fe0"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/focused-second.log",
+      "bytes": 1831,
+      "sha256": "32584250e64aea26fef7c5dc225475696c11da39ee8127d758712d78194e1e1e"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/focused-signed-source.log",
+      "bytes": 9654,
+      "sha256": "19b1c6c32f6fa5b637f960971ad2d1418f5ff8454c1fdc22f75014f8d299f42e"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/focused-third.log",
+      "bytes": 4350,
+      "sha256": "cf6d1e7d97c204cacff58e5ca1e0f676a4ba71d5d6efc18efaa3b188ad2730a0"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/python-search-receipts-optimized.log",
+      "bytes": 110,
+      "sha256": "adde64845ebfe87bf9505a3524bd77182ecb1621d81cf83c485e6849c95cbf9d"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/python-search-receipts.log",
+      "bytes": 110,
+      "sha256": "e6aa37b06724de5515d1415a37e0da831f0eb80062d96edb8a4bd4a037440aaa"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/staged-whitespace.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/bounded-search-capture/verify-source-signature.log",
+      "bytes": 95,
+      "sha256": "5f3f0d9f099255a8b0687a2dc0a0908eae975996f949d495203bf5e85992c355"
+    }
+  ],
+  "checks": {
+    "full_core": {
+      "passed": 721,
+      "unit_passed": 642,
+      "integration_passed": 79,
+      "ignored": 34,
+      "log": "artifacts/bounded-search-capture/core-final.log",
+      "qualification": "Precedes only the test assertion err().expect/unwrap to expect_err/unwrap_err cleanup; all production files are final."
+    },
+    "final_relevant_search": {
+      "passed": 55,
+      "ignored": 3,
+      "log": "artifacts/bounded-search-capture/focused-signed-source.log",
+      "qualification": "Final source bytes including exact/+1 store ceilings, parameterized LIMIT and assertion cleanup."
+    },
+    "clippy": {
+      "strict": true,
+      "all_targets": true,
+      "host_debug": true,
+      "host_release": true,
+      "intel_cross_debug": true,
+      "intel_execution": false
+    },
+    "format": true,
+    "staged_whitespace": true,
+    "public_audit_files": 11,
+    "trusted_signature": {
+      "verified": true,
+      "key_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y",
+      "qualification": "Verified with the pre-existing private allowed-signers configuration; no Git configuration modification."
+    },
+    "offline_python_receipt_tests": {
+      "normal_passed": 11,
+      "optimized_passed": 11
+    },
+    "compatibility": {
+      "historical_schemas_unchanged": 110,
+      "java_files_unchanged": 20,
+      "cargo_lock_unchanged": true,
+      "fixed_confinement_source_list_updated": true
+    },
+    "native_worker_or_runtime_invocations": 0
+  },
+  "review": {
+    "kind": "Independent read-only agent source review; not owner or release approval",
+    "scope": "Borrowed admission, snapshot race, manifest parity, poisoned builder, cached-marker refusal, known IDs and lifecycle forwarding",
+    "findings_addressed": [
+      "SQL lookahead LIMIT derives from the row constant.",
+      "Document distinguishes capture-time workspace ownership from the later SearchPermit.",
+      "Cached-marker test exceeds a new capture ceiling rather than an old original-reference validation."
+    ],
+    "disposition": "No concrete blocker; trusted final source and only test-idiom delta independently rechecked.",
+    "final_source_aggregate_sha256": "b094d3885158d209773c08f3a1458bf6a0bb7cfa7fa3d5dc2ccf8925e2df4b13",
+    "aggregate_recipe": "SHA256 over sorted UTF-8(path), NUL, ASCII(file SHA256 hex), NUL"
+  },
+  "retained_failures": [
+    {
+      "artifact": "artifacts/bounded-search-capture/focused-first.log",
+      "description": "Initial package spelling was not a workspace package; no tests or native process ran."
+    },
+    {
+      "artifact": "artifacts/bounded-search-capture/focused-second.log",
+      "description": "Selected desktop package instead of core; build script refused absent development resources. No resource staging or runtime invocation."
+    },
+    {
+      "artifact": "artifacts/bounded-search-capture/focused-third.log",
+      "description": "Two deliberate corrupt-row fixtures initially hit the database json_valid CHECK during setup. Fixtures now explicitly bypass only that check before restoring enforcement; production schema is unchanged."
+    },
+    {
+      "artifact": "artifacts/bounded-search-capture/clippy-host.log",
+      "description": "Strict test-only err_expect lint; repaired with expect_err/unwrap_err without behavior change."
+    }
+  ],
+  "limits": {
+    "evidence_rows": 100000,
+    "raw_json_row_bytes": 17825792,
+    "aggregate_raw_json_bytes": 67108864,
+    "manifest_bytes": 16777216,
+    "indexed_documents": 10000,
+    "query_utf8_bytes": 1024
+  },
+  "limitations": [
+    "Search remains synchronous under the existing workspace mutex, ownership and shutdown barrier. No off-lock execution or cancellation API.",
+    "Legacy global Evidence.text eligibility and existing known-ID result validation are preserved; no acquisition-purpose-safe or run-scoped indexing claim.",
+    "Metadata capture does not open or rehash originals. Tests independently compare synthetic original bytes for conservation.",
+    "Ceilings constrain Rust input admission and serialized manifest size, not total heap or SQLite internal work. Oversized input is refused, never truncated.",
+    "Public DTOs, historical schemas, Java bytes, cache marker, worker limits and uncertainty/cleanup semantics are unchanged; no query receipts or runtime activation.",
+    "No native or interpreter campaign, packaged app interaction, performance measurement, Windows execution or release approval is claimed."
+  ]
+}
