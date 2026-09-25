@@ -1,0 +1,14 @@
+{
+  "build_profile": "release",
+  "campaign_id": "83358d82-6ac2-4af1-a6df-893e37129e6d",
+  "candidate_executed": false,
+  "complete_release": false,
+  "debug_assertions": false,
+  "elapsed_ms": 7432,
+  "failure": null,
+  "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "measurement_id": "d8f02a43-cd77-4e27-9004-46e4c4445139",
+  "passed": true,
+  "recipe": "trusted-prefix-hash-v1",
+  "schema_version": 1
+}

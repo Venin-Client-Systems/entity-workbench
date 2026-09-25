@@ -142,3 +142,26 @@ Canonical protocol, hard resident-memory limits, supervisor-crash recovery,
 minimum-OS support, signed clean offline installations, Intel Mac/Windows runtime
 execution and complete notices remain separate unmet checks. No complete-release
 flag or shared release gate is changed by this source increment.
+
+## Trusted release hashing observation — 2026-09-26
+
+At signed source `b502d987c5caa30e5c6cb16f75040cee69639437`, exactly the trusted
+Rust `native_python_prefix_hash_measurement` test ran. It passed full verification
+of the pinned 11,320-file prefix in **7,432 ms**; the complete test took 7.47 seconds.
+The release build completed in 4m 56s inside the unchanged 300-second build limit.
+No candidate interpreter, listener, hostile or relocation case executed. This is
+an observed host-verification cost, not a general performance claim or an
+explanation for the earlier compatibility failure.
+
+The source-bound [outer measurement receipt](../../packaging/evidence/python-prefix-hash-release-2026-09-26.json)
+and [native Rust receipt](../../packaging/evidence/python-prefix-hash-release-native-2026-09-26.json)
+are retained verbatim. Campaign identity was
+`83358d82-6ac2-4af1-a6df-893e37129e6d`; measurement identity was
+`d8f02a43-cd77-4e27-9004-46e4c4445139`. The release test binary SHA-256 was
+`e2b40682fe1891163bca734080483dfc52fd46261ec6393db2e032029fecb28f`.
+Compiler artifact metadata required optimization level three and disabled debug
+assertions; the measured Rust test separately asserted release compilation.
+Source/binary identities were rechecked after acceptance. The outer native-test
+limit remains 120 seconds and all worker limits remain unchanged. Hostile and
+relocation candidate tests still require final source review and separate native
+observations; neither has passed merely because this measurement did.
