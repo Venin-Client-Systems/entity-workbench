@@ -1,4 +1,4 @@
-/** Rust processing-job.v1/v2/v3/v4 and extraction contracts. Mutations remain canonical commands. */
+/** Rust processing-job.v1–v5 and extraction contracts. Mutations remain canonical commands. */
 export type ProcessingState =
   | "queued"
   | "running"
@@ -8,7 +8,7 @@ export type ProcessingState =
   | "failed"
   | "cancelled"
   | "completed";
-export type ProcessingInput = {
+export type DocumentProcessingInput = {
   evidence_id: string;
   sha256: string;
   bytes: number;
@@ -16,6 +16,14 @@ export type ProcessingInput = {
   | { operation: "parse_document" | "image_ocr" | "image_ocr_regions" }
   | { operation: "pdf_page_ocr"; page_number: number; dpi: number }
 );
+export type GraphProcessingInput = {
+  operation: "shortest_connection_path";
+  source_id: string;
+  target_id: string;
+  requested_revision: number;
+  queued_revision: number;
+};
+export type ProcessingInput = DocumentProcessingInput | GraphProcessingInput;
 export type ProcessingFailure =
   | "interrupted"
   | "input_unavailable"
@@ -31,7 +39,9 @@ export type ProcessingFailure =
   | "cleanup_failed"
   | "worker_exit_unverified"
   | "recovery_required"
-  | "derivative_unavailable";
+  | "derivative_unavailable"
+  | "stale_graph_capture"
+  | "scheduling_or_runtime_unavailable";
 export type ProcessingJob = {
   schema_version: number;
   id: string;
@@ -54,6 +64,13 @@ export type ProcessingJobPage = {
   total: number;
   limit: number;
 };
+export type DocumentProcessingJob = ProcessingJob & { input: DocumentProcessingInput };
+/** Positive selection: unsupported operations must never enter document controls. */
+export const isDocumentProcessingJob = (job: ProcessingJob): job is DocumentProcessingJob =>
+  job.input.operation === "parse_document" ||
+  job.input.operation === "image_ocr" ||
+  job.input.operation === "image_ocr_regions" ||
+  job.input.operation === "pdf_page_ocr";
 export type ParseLimitation =
   | "no_source_anchors"
   | "embedded_documents_excluded"
@@ -108,7 +125,9 @@ export const jobLabel = (job: ProcessingJob) =>
 export const activeJob = (job: ProcessingJob) =>
   job.state === "queued" || job.state === "running";
 export const processingMethodLabel = (input: ProcessingInput) =>
-  input.operation === "pdf_page_ocr"
+  input.operation === "shortest_connection_path"
+    ? "Graph connection path"
+    : input.operation === "pdf_page_ocr"
     ? `PDF page OCR · page ${input.page_number} · ${input.dpi} DPI · English`
     : input.operation === "image_ocr_regions"
       ? "Image OCR + word regions · English"
@@ -116,6 +135,7 @@ export const processingMethodLabel = (input: ProcessingInput) =>
         ? "Image OCR · English"
         : "Document parsing";
 export const retryableJob = (job: ProcessingJob) =>
+  isDocumentProcessingJob(job) &&
   job.failure !== "worker_exit_unverified" &&
   job.failure !== "recovery_required" &&
   !activeJob(job) &&

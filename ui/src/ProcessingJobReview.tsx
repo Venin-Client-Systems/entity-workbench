@@ -11,6 +11,7 @@ import {
   jobLabel,
   processingMethodLabel,
   retryableJob,
+  isDocumentProcessingJob,
   type ProcessingJob,
 } from "./processing-types";
 import type { Evidence } from "./types";
@@ -42,12 +43,13 @@ export function ProcessingJobReview({
     jobId,
     !mutating,
   );
-  const job = read.value;
+  const job = read.value && read.value.id === jobId && isDocumentProcessingJob(read.value)
+    ? read.value : null;
   const mutate = async (
     action: "cancel_processing_job" | "retry_processing_job",
     expectedAttempt: number,
   ) => {
-    if (mutating) return;
+    if (mutating || !job) return;
     setMutating(true);
     setError("");
     setNotice("");
@@ -58,6 +60,8 @@ export function ProcessingJobReview({
         expected_attempt: expectedAttempt,
         ...(action === "retry_processing_job" ? { reason } : {}),
       });
+      if (!isDocumentProcessingJob(updated) || updated.id !== jobId || updated.request_key !== job.request_key)
+        throw new Error("Acknowledgement did not identify the selected document job.");
       read.setValue(updated);
       setNotice(
         action === "retry_processing_job"
@@ -111,7 +115,9 @@ export function ProcessingJobReview({
           )}
           {!job && (
             <p role="status">
-              {read.error
+              {read.value
+                ? "The response does not identify this document job. Its original and extraction controls are unavailable here."
+                : read.error
                 ? "Job details unavailable."
                 : "Loading document job…"}
             </p>

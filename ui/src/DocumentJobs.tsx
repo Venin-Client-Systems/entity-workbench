@@ -7,9 +7,11 @@ import {
   jobLabel,
   processingMethodLabel,
   processingStates,
+  isDocumentProcessingJob,
+  type DocumentProcessingJob,
+  type DocumentProcessingInput,
   type ProcessingJob,
   type ProcessingJobPage,
-  type ProcessingInput,
 } from "./processing-types";
 import { useProcessingRead } from "./useProcessingRead";
 import { ProcessingJobReview } from "./ProcessingJobReview";
@@ -30,7 +32,7 @@ export function DocumentJobs({
   const [selected, setSelected] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [method, setMethod] =
-    useState<ProcessingInput["operation"]>("parse_document");
+    useState<DocumentProcessingInput["operation"]>("parse_document");
   const [filter, setFilter] = useState("all");
   const [pageNumber, setPageNumber] = useState("");
   const [dpi, setDpi] = useState("144");
@@ -50,13 +52,15 @@ export function DocumentJobs({
     null,
     !queueing,
   );
-  const jobs = read.value?.jobs ?? [];
+  const loadedJobs = read.value?.jobs ?? [];
+  const jobs = loadedJobs.filter(isDocumentProcessingJob);
+  const otherJobs = loadedJobs.length - jobs.length;
   const visible = jobs.filter(
     (job) =>
       filter === "all" ||
       (filter === "active" ? activeJob(job) : job.state === filter),
   );
-  const name = (job: ProcessingJob) =>
+  const name = (job: DocumentProcessingJob) =>
     evidence.find((item) => item.id === job.input.evidence_id)?.name ??
     job.input.evidence_id;
   const isPdf = method === "pdf_page_ocr";
@@ -81,6 +85,8 @@ export function DocumentJobs({
   );
   const queue = async () => {
     if (!input || queueing || (isPdf && !validPdfOptions)) return;
+    const original = evidence.find((item) => item.id === input);
+    if (!original) return;
     setQueueing(true);
     setError("");
     setNotice("");
@@ -99,6 +105,17 @@ export function DocumentJobs({
         request_key: requestKey,
         ...(isPdf ? { page_number: Number(pageNumber), dpi: Number(dpi) } : {}),
       });
+      if (
+        !isDocumentProcessingJob(job) ||
+        job.request_key !== requestKey ||
+        job.input.operation !== method ||
+        job.input.evidence_id !== original.id ||
+        job.input.sha256 !== original.sha256 ||
+        job.input.bytes !== original.bytes ||
+        (job.input.operation === "pdf_page_ocr" &&
+          (job.input.page_number !== Number(pageNumber) || job.input.dpi !== Number(dpi)))
+      )
+        throw new Error("Queue acknowledgement did not match the retained document request.");
       requestKeys.delete(pendingKey);
       if (mounted.current) {
         await onRefresh();
@@ -164,7 +181,7 @@ export function DocumentJobs({
               value={method}
               disabled={queueing}
               onChange={(event) =>
-                setMethod(event.target.value as ProcessingInput["operation"])
+                setMethod(event.target.value as DocumentProcessingInput["operation"])
               }
             >
               <option value="parse_document">Document parsing</option>
@@ -287,8 +304,10 @@ export function DocumentJobs({
           </label>
           <span>
             {read.value
-              ? `${visible.length} shown · ${jobs.length} loaded / ${read.value.total} total`
-              : "Reading jobs…"}
+              ? otherJobs
+                ? `${visible.length} document jobs shown · ${loadedJobs.length} processing jobs loaded / ${read.value.total} total`
+                : `${visible.length} shown · ${jobs.length} loaded / ${read.value.total} total`
+              : read.error ? "Job history unavailable" : "Reading jobs…"}
           </span>
         </div>
         {read.error && (
@@ -300,9 +319,15 @@ export function DocumentJobs({
             </button>
           </div>
         )}
-        {!!read.value && read.value.total > jobs.length && (
+        {!!otherJobs && (
           <p className="context-note">
-            Only the newest {read.value.limit} jobs are loaded. This filter
+            {otherJobs} loaded processing {otherJobs === 1 ? "job is" : "jobs are"} outside
+            document processing. Document controls do not apply to graph analysis.
+          </p>
+        )}
+        {!!read.value && read.value.total > loadedJobs.length && (
+          <p className="context-note">
+            Only the newest {read.value.limit} processing jobs are loaded. This filter
             applies to those loaded jobs.
           </p>
         )}
@@ -336,11 +361,13 @@ export function DocumentJobs({
             </li>
           ))}
         </ol>
-        {!read.loading && !visible.length && (
+        {!read.loading && !read.error && !!read.value && !visible.length && (
           <p className="muted">
             {jobs.length
               ? "No loaded jobs match this filter."
-              : "No document jobs have been queued."}
+              : read.value?.total
+                ? "No document jobs are present in the loaded processing history."
+                : "No document jobs have been queued."}
           </p>
         )}
         <p className="context-note">

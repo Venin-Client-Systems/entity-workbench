@@ -3,6 +3,7 @@ import { test, expect, type Page, type Locator } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { randomUUID } from "node:crypto";
 import AxeBuilder from "@axe-core/playwright";
 import type { Workspace } from "../src/types";
 import type {
@@ -96,6 +97,137 @@ const axe = async (page: Page, scope: string, name: string) => {
   );
   expect(result.violations).toEqual([]);
 };
+
+function queueGraphJob(): ProcessingJob {
+  for (const name of ["Synthetic path origin", "Synthetic path destination"]) {
+    const current: Workspace = core({ action: "view" }).workspace;
+    core({
+      action: "add_entity",
+      entity: { name, kind: "person", identifiers: [] },
+      reason: "Synthetic mixed processing history regression",
+      expected_revision: current.revision,
+    });
+  }
+  const current: Workspace = core({ action: "view" }).workspace;
+  return core({
+    action: "queue_graph_path",
+    source_id: current.entities.find((e) => e.name === "Synthetic path origin")!.id,
+    target_id: current.entities.find((e) => e.name === "Synthetic path destination")!.id,
+    expected_revision: current.revision,
+    request_key: randomUUID(),
+  }).job;
+}
+
+test("canonical graph jobs stay outside document lists and controls", async ({ page }) => {
+  const graph = queueGraphJob();
+  const before = core({ action: "view" });
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  await page.getByRole("navigation").getByRole("button", { name: /Evidence/ }).click();
+  const list = page.getByRole("region", { name: "Document jobs", exact: true });
+  await expect(list.getByText("11 document jobs shown · 12 processing jobs loaded / 12 total")).toBeVisible();
+  await expect(list.getByText(/1 loaded processing job is outside document processing/)).toBeVisible();
+  await expect(list.locator(`#document-job-${graph.id}`)).toHaveCount(0);
+  await expect(list.getByRole("button", { name: /Inspect document job/ })).toHaveCount(11);
+  await list.locator(`#document-job-${fixture("partial.pdf").id}`).click();
+  const dialog = page.getByRole("dialog", { name: "Document job", exact: true });
+  await expect(dialog.getByText("Document parsing", { exact: true })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: /Inspect extraction/ })).toHaveCount(1);
+  expect(errors).toEqual([]);
+  expect(core({ action: "view" })).toEqual(before);
+});
+
+for (const mismatch of ["graph", "different document"] as const) {
+test(`a ${mismatch} inspection response cannot expose document actions or crash`, async ({ page }) => {
+  const graph = queueGraphJob();
+  const before = core({ action: "view" });
+  const errors: string[] = [], mutations: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route("**/api/workbench", async (route) => {
+    const command = route.request().postDataJSON();
+    if (["cancel_processing_job", "retry_processing_job"].includes(command.action)) mutations.push(command.action);
+    // Negative transport fixture: return another real record for a selected document ID.
+    if (command.action === "inspect_processing_job")
+      await route.fulfill({ json: mismatch === "graph" ? graph : fixture("complete.txt") });
+    else await route.continue();
+  });
+  await page.goto("/");
+  await page.getByRole("navigation").getByRole("button", { name: /Evidence/ }).click();
+  await page.locator(`#document-job-${fixture("partial.pdf").id}`).click();
+  const dialog = page.getByRole("dialog", { name: "Document job", exact: true });
+  await expect(dialog.getByText(/The response does not identify this document job/)).toBeVisible();
+  await expect(dialog.getByRole("button", { name: /Inspect extraction|Cancel attempt|Review retry/ })).toHaveCount(0);
+  expect(errors).toEqual([]);
+  expect(mutations).toEqual([]);
+  expect(core({ action: "view" })).toEqual(before);
+});
+}
+
+test("a wrong document queue acknowledgement preserves the exact recovery request", async ({ page }) => {
+  const list = await openList(page);
+  const keys: string[] = [];
+  await page.route("**/api/workbench", async (route) => {
+    const input = route.request().postDataJSON();
+    if (input.action !== "queue_document_parse") return route.continue();
+    keys.push(input.request_key);
+    const response = await route.fetch();
+    if (keys.length === 1) await route.fulfill({ json: fixture("partial.pdf") });
+    else await route.fulfill({ response });
+  });
+  await list.getByLabel("Original to process").selectOption(workspace.evidence.find((e) => e.name === "synthetic-complete.txt")!.id);
+  await list.getByRole("button", { name: "Queue document", exact: true }).click();
+  await expect(list.getByText(/Queue acknowledgement did not match the retained document request/)).toBeVisible();
+  const afterFirst = core({ action: "view" });
+  await list.getByRole("button", { name: "Recover queue acknowledgement", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Document job", exact: true })).toBeVisible();
+  expect(keys).toHaveLength(2);
+  expect(keys[0]).toBe(keys[1]);
+  expect(core({ action: "view" })).toEqual(afterFirst);
+  expect(core({ action: "list_processing_jobs" }).total).toBe(12);
+});
+
+test("initial job catalogue refusal is unavailable, never empty history", async ({ page }) => {
+  await page.route("**/api/workbench", async (route) => {
+    if (route.request().postDataJSON().action === "list_processing_jobs")
+      await route.fulfill({ status: 503, json: { error: "Synthetic catalogue unavailable" } });
+    else await route.continue();
+  });
+  await page.goto("/");
+  await page.getByRole("navigation").getByRole("button", { name: /Evidence/ }).click();
+  const list = page.getByRole("region", { name: "Document jobs", exact: true });
+  await expect(list.getByText("Job history unavailable", { exact: true })).toBeVisible();
+  await expect(list.getByText(/No document jobs have been queued|No document jobs are present|0 shown/)).toHaveCount(0);
+  await expect(list.getByRole("button", { name: "Queue document", exact: true })).toBeDisabled();
+});
+
+test("a graph-only loaded window does not claim no documents were ever queued", async ({ page }) => {
+  test.setTimeout(60_000);
+  let graph = queueGraphJob();
+  if (graph.input.operation !== "shortest_connection_path") throw new Error("Expected graph fixture");
+  const { source_id, target_id } = graph.input;
+  let revision = core({
+    action: "cancel_graph_job", job_id: graph.id, expected_attempt: graph.attempt,
+  }).workspace_revision;
+  // Fill the real 200-row catalogue window without exceeding the active queue cap.
+  // The eleven original document jobs remain canonical but are outside this window.
+  for (let i = 1; i < 200; i++) {
+    graph = core({
+      action: "queue_graph_path", source_id, target_id,
+      expected_revision: revision, request_key: randomUUID(),
+    }).job;
+    revision = core({
+      action: "cancel_graph_job", job_id: graph.id, expected_attempt: graph.attempt,
+    }).workspace_revision;
+  }
+  await page.goto("/");
+  await page.getByRole("navigation").getByRole("button", { name: /Evidence/ }).click();
+  const list = page.getByRole("region", { name: "Document jobs", exact: true });
+  await expect(list.getByText("0 document jobs shown · 200 processing jobs loaded / 211 total")).toBeVisible();
+  await expect(list.getByText("No document jobs are present in the loaded processing history.")).toBeVisible();
+  await expect(list.getByText("No document jobs have been queued.")).toHaveCount(0);
+  await expect(list.getByText(/Only the newest 200 processing jobs are loaded/)).toBeVisible();
+});
 
 test("immutable partial extraction escapes text and metadata, exposes exact provenance and restores focus", async ({
   page,
