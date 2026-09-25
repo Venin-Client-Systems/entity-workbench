@@ -39,11 +39,11 @@ fn availability(
         return Ok(CollectionAvailability::ExecutionUnavailable);
     }
     Ok(match lane {
-        Some(lane) if lane.protocol == CollectionProtocol::SyntheticV3 => {
+        Some(lane) if lane.protocol == CollectionProtocol::SyntheticV4 => {
             CollectionAvailability::SyntheticFixture
         }
         Some(lane)
-            if lane.protocol == CollectionProtocol::NativeV3 && NATIVE_COLLECTION_ENABLED =>
+            if lane.protocol == CollectionProtocol::NativeV4 && NATIVE_COLLECTION_ENABLED =>
         {
             CollectionAvailability::Ready
         }
@@ -69,10 +69,10 @@ fn phase(value: LanePhase) -> CollectionExecutionPhase {
     }
 }
 fn matching_run(run: &CollectionRunSummary, lane: Option<&CollectionLane>) -> bool {
-    run.record_version == 3
+    run.record_version == 4
         && run.collector_policy == COLLECTOR_POLICY
         && lane.is_some_and(|l| {
-            l.protocol.version() == 3
+            l.protocol.version() == 4
                 && l.protocol.synthetic()
                     == (run.mode == crate::collection_receipt::AcquisitionMode::Synthetic)
         })
@@ -185,7 +185,7 @@ impl JobCoordinator {
                         request_key,
                     } => {
                         let input = confirmed(input, &preview_sha256)?;
-                        let lane = lane.filter(|l| l.protocol.version() == 3).ok_or_else(|| {
+                        let lane = lane.filter(|l| l.protocol.version() == 4).ok_or_else(|| {
                             Error::Blocked("Native collection execution is disabled".into())
                         })?;
                         if self.shared.stopping.load(Ordering::Acquire)
@@ -228,7 +228,7 @@ impl JobCoordinator {
                             current.run.generation == expected_generation,
                             "Collection generation changed",
                         )?;
-                        // Repeated acknowledgement is safe only on this enabled v3 lane.
+                        // Repeated acknowledgement is safe only on this enabled v4 lane.
                         crate::require(
                             matching_run(&current.run, lane)
                                 && executable(available)
@@ -309,7 +309,7 @@ impl JobCoordinator {
             workspace,
             1,
             processing,
-            Some((collection, CollectionProtocol::SyntheticV3)),
+            Some((collection, CollectionProtocol::SyntheticV4)),
         )
     }
 }

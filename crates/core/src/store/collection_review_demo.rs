@@ -32,7 +32,13 @@ impl Workspace {
                 },
                 &id(),
                 at,
-                CollectionProtocol::SyntheticV3,
+                // The acknowledgement pair models current admission. Other
+                // specimens intentionally retain historical v3 identities.
+                if n < 2 {
+                    CollectionProtocol::SyntheticV4
+                } else {
+                    CollectionProtocol::SyntheticV3
+                },
             )?;
             if n < 24 {
                 self.cancel_durable_collection(&job.id, 1, at + 1)?;

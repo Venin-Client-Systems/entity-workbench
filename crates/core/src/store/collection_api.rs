@@ -103,7 +103,8 @@ impl Workspace {
             "Collection records access facts, not permission, relevance, source independence or accepted observations.".into(),
             "Static text is unreviewed; original response bytes remain authoritative. No accepted page-region anchors are created.".into(),
             "Identical original bytes share evidence metadata. Later supported media interpretation may replace its current text; this is not an immutable web-text derivative.".into(),
-            "Historical v1/v2 specimens remain read-only and cannot resume through public controls.".into(),
+            "V4 HTML interpretation has bounded parser admission and extraction. A limit retains the complete original/receipt with quota status and no partial derivative; historical over-limit interpretation is refused without rewriting.".into(),
+            "Historical v1/v2/v3 specimens remain read-only and cannot resume through public controls.".into(),
         ];
         let requests = loaded
             .job

@@ -142,7 +142,7 @@ fn public_v3_queue_owned_tls_receipts_idempotency_and_backup_preserve_originals(
     let first = queue(&c, &request_key);
     let again = queue(&c, &request_key);
     assert_eq!(first.run.id, again.run.id);
-    assert_eq!(first.run.record_version, 3);
+    assert_eq!(first.run.record_version, 4);
     assert_eq!(first.availability, CollectionAvailability::SyntheticFixture);
     assert!(!first.native_execution_enabled);
     until(|| inspect(&c, &first.run.id).run.state == CollectionState::Successful);
@@ -342,7 +342,7 @@ fn crash_recovery_retains_charge_and_fixed_deadline_and_requires_explicit_genera
     let (_temp, mut w) = fixture();
     let owner = w.collection_ownership().unwrap();
     let job = w
-        .queue_collection_protocol(input(), &key(), now(), CollectionProtocol::SyntheticV3)
+        .queue_collection_protocol(input(), &key(), now(), CollectionProtocol::SyntheticV4)
         .unwrap();
     let ticket = w
         .start_durable_collection(&job.id, 1, &owner, now())
@@ -492,7 +492,7 @@ fn quarantined_pending_receipt_exposes_only_exact_publication_retry_and_no_new_e
 fn contained_lane_failure_refuses_new_work_instead_of_admitting_stranded_queue() {
     let (temp, mut workspace) = fixture();
     let job = workspace
-        .queue_collection_protocol(input(), &key(), now(), CollectionProtocol::SyntheticV3)
+        .queue_collection_protocol(input(), &key(), now(), CollectionProtocol::SyntheticV4)
         .unwrap();
     sql(&temp, &format!("UPDATE records SET body=json_set(body,'$.collector_policy','invalid') WHERE kind='collection_run' AND id='{}'", job.id));
     let coordinator = JobCoordinator::with_public_collection_executor(

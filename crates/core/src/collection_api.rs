@@ -8,7 +8,7 @@ pub use crate::collection_jobs::{
     CollectionInput, CollectionState, FrontierEntry, RequestProgress,
 };
 
-pub const COLLECTOR_POLICY: &str = "direct-https-durable-v3";
+pub const COLLECTOR_POLICY: &str = "direct-https-durable-html-bounded-v4";
 /// Deliberate reviewed-source gate, not an environment or frontend override.
 pub const NATIVE_COLLECTION_ENABLED: bool = false;
 pub(crate) const PAGE_LIMIT: u32 = 25;
@@ -48,6 +48,15 @@ struct PreviewPayload<'a> {
 }
 
 pub fn preview(input: CollectionInput) -> Result<CollectionPreview> {
+    preview_policy(input, COLLECTOR_POLICY)
+}
+
+/// A policy is selected by trusted source code, never from a command. Historical
+/// fixed proof profiles bind their own policy and are not current admission.
+pub(crate) fn preview_policy(
+    input: CollectionInput,
+    collector_policy: &str,
+) -> Result<CollectionPreview> {
     let input = input.normalized()?;
     let mut selected_hosts = Vec::new();
     let mut robots_urls = Vec::new();
@@ -70,7 +79,7 @@ pub fn preview(input: CollectionInput) -> Result<CollectionPreview> {
     };
     let preview_sha256 = crate::store::hash(&serde_json::to_vec(&PreviewPayload {
         schema_version: 1,
-        collector_policy: COLLECTOR_POLICY,
+        collector_policy,
         input: &input,
         selected_hosts: &selected_hosts,
         robots_urls: &robots_urls,
@@ -78,7 +87,7 @@ pub fn preview(input: CollectionInput) -> Result<CollectionPreview> {
     })?);
     Ok(CollectionPreview {
         schema_version: 1,
-        collector_policy: COLLECTOR_POLICY.into(),
+        collector_policy: collector_policy.into(),
         input,
         selected_hosts,
         robots_urls,
@@ -88,11 +97,19 @@ pub fn preview(input: CollectionInput) -> Result<CollectionPreview> {
 }
 
 pub(crate) fn confirmed(input: CollectionInput, digest: &str) -> Result<CollectionInput> {
+    confirmed_policy(input, digest, COLLECTOR_POLICY)
+}
+
+pub(crate) fn confirmed_policy(
+    input: CollectionInput,
+    digest: &str,
+    policy: &str,
+) -> Result<CollectionInput> {
     require(
         digest.len() == 64,
         "Collection disclosure digest is invalid",
     )?;
-    let preview = preview(input)?;
+    let preview = preview_policy(input, policy)?;
     require(
         preview.preview_sha256 == digest,
         "Collection scope or policy changed; review the disclosure again",

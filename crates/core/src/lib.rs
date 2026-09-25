@@ -5,6 +5,7 @@ pub mod citation_catalogue;
 pub mod collection;
 pub mod collection_api;
 pub(crate) mod collection_execution;
+mod collection_html;
 pub(crate) mod collection_jobs;
 pub(crate) mod collection_machine;
 pub mod collection_receipt;

@@ -6,7 +6,6 @@ use crate::{
     collection_receipt::{AcquisitionMode, RequestReceipt},
     policy, require, Error, Result,
 };
-use scraper::{Html, Selector};
 use serde::Serialize;
 #[cfg(test)]
 use std::{
@@ -192,12 +191,18 @@ impl Trace {
 
 /// Shared interpretation only. A complete response remains evidence even when no
 /// searchable derivative or usable robots policy can be produced.
-pub(crate) fn static_page(raw: &[u8], content_type: &str, url: &Url) -> Option<(String, Vec<Url>)> {
-    let text = std::str::from_utf8(raw).ok()?;
+pub(crate) fn static_page(
+    raw: &[u8],
+    content_type: &str,
+    url: &Url,
+) -> Result<Option<(String, Vec<Url>)>> {
+    let Ok(text) = std::str::from_utf8(raw) else {
+        return Ok(None);
+    };
     match media_type(content_type).as_deref() {
-        Some("text/html") => Some(extract_html(text, url)),
-        Some("text/plain") => Some((text.to_owned(), Vec::new())),
-        _ => None,
+        Some("text/html") => extract_html(text, url).map(Some),
+        Some("text/plain") => Ok(Some((text.to_owned(), Vec::new()))),
+        _ => Ok(None),
     }
 }
 
@@ -211,38 +216,13 @@ pub(crate) fn robots_has_crawl_delay(policy: &str) -> bool {
         .any(|line| line.trim().to_ascii_lowercase().starts_with("crawl-delay:"))
 }
 
-/// Memory-safe static text/link extraction. Never executes or renders source markup.
-pub fn extract_html(raw: &str, base: &Url) -> (String, Vec<Url>) {
-    let html = Html::parse_document(raw);
-    let text = html
-        .root_element()
-        .descendants()
-        .filter_map(|node| {
-            let value = node.value().as_text()?;
-            if node.ancestors().any(|p| {
-                p.value().as_element().is_some_and(|e| {
-                    ["script", "style", "svg", "noscript", "template"].contains(&e.name())
-                })
-            }) {
-                None
-            } else {
-                Some(value.text.as_ref())
-            }
-        })
-        .collect::<Vec<&str>>()
-        .join(" ")
-        .split_whitespace()
-        .collect::<Vec<_>>()
-        .join(" ");
-    let selector = Selector::parse("a[href]").expect("constant selector");
-    let links = html
-        .select(&selector)
-        .take(1000)
-        .filter_map(|a| base.join(a.value().attr("href")?).ok())
-        .filter_map(|u| policy::validate_https_url(u.as_str()).ok())
-        .collect();
-    (text, links)
+/// Bounded static interpretation. Never executes or renders source markup.
+/// Refusal never returns partial text or links; parsing is not cancellable.
+pub fn extract_html(raw: &str, base: &Url) -> Result<(String, Vec<Url>)> {
+    crate::collection_html::extract(raw, base)
+        .map_err(|reason| Error::QuotaExhausted(reason.to_string()))
 }
+
 pub fn collect(
     seeds: Vec<String>,
     hops: u32,
@@ -451,7 +431,7 @@ fn collect_with_transport(
                     ));
                     continue;
                 };
-                let (text, links) = static_page(raw.as_bytes(), &r.content_type, &url)
+                let (text, links) = static_page(raw.as_bytes(), &r.content_type, &url)?
                     .expect("media type and UTF-8 were checked above");
                 if hop < hops {
                     for link in links {

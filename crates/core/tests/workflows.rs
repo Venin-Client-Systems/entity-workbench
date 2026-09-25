@@ -471,7 +471,7 @@ fn discovery_stops_at_first_budget_and_never_silently_expands() {
 }
 #[test]
 fn html_is_extracted_without_scripts_or_offsite_link_authority() {
-    let (text,links)=workbench_core::collection::extract_html("<p>Public fact</p><script>secret()</script><svg><text>active</text></svg><a href='/next'>Lead</a><a href='javascript:evil()'>bad</a>",&url::Url::parse("https://example.com/start").unwrap());
+    let (text,links)=workbench_core::collection::extract_html("<p>Public fact</p><script>secret()</script><svg><text>active</text></svg><a href='/next'>Lead</a><a href='javascript:evil()'>bad</a>",&url::Url::parse("https://example.com/start").unwrap()).unwrap();
     assert!(text.contains("Public fact"));
     assert!(!text.contains("secret"));
     assert!(!text.contains("active"));

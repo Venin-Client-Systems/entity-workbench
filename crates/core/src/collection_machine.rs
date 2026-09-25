@@ -36,10 +36,10 @@ impl Machine {
             "Collection input is not canonical",
         )?;
         require(
-            matches!(version, 1..=3),
+            matches!(version, 1..=4),
             "Unsupported collection state machine version",
         )?;
-        if matches!(version, 2 | 3) && replaying {
+        if matches!(version, 2..=4) && replaying {
             require(at_ms >= 0, "Invalid collection timestamp")?;
         } else {
             valid_time(at_ms)?;
@@ -106,7 +106,7 @@ impl Machine {
             return self.observe_transport(*clock_anchor_ms, *sequence, receipt, body);
         }
         let at = event.at_ms();
-        if matches!(self.version, 2 | 3) && self.replaying {
+        if matches!(self.version, 2..=4) && self.replaying {
             require(at >= 0, "Invalid collection timestamp")?;
         } else {
             valid_time(at)?;
@@ -119,7 +119,7 @@ impl Machine {
     /// This remains usable after a rollback makes that anchor appear future-dated.
     pub(crate) fn cancel_reserved_at_checkpoint(&mut self) -> Result<CollectionEvent> {
         require(
-            matches!(self.version, 2 | 3)
+            matches!(self.version, 2..=4)
                 && self.checkpoint.state == CollectionState::Running
                 && self
                     .checkpoint
@@ -186,7 +186,7 @@ impl Machine {
             } => {
                 require(
                     self.version == 1,
-                    "V2/v3 require a lossless transport receipt",
+                    "V2/v3/v4 require a lossless transport receipt",
                 )?;
                 self.running()?;
                 let request = self
@@ -485,11 +485,27 @@ impl Machine {
                         self.checkpoint.saw_failed = true;
                     }
                 } else if *status == 200 {
-                    if let Some((text, links)) = collection::static_page(
+                    let interpreted = collection::static_page(
                         body.expect("complete has body"),
                         media_type.as_deref().unwrap_or(""),
                         &url,
-                    ) {
+                    );
+                    let interpreted = match interpreted {
+                        Ok(value) => value,
+                        Err(Error::QuotaExhausted(_)) if self.version >= 4 => {
+                            // The complete receipt/original still publishes. No
+                            // prefix text, links or successful page is accepted.
+                            self.checkpoint.saw_quota = true;
+                            return Ok(None);
+                        }
+                        Err(Error::QuotaExhausted(reason)) => {
+                            return Err(Error::Blocked(format!(
+                                "Historical HTML interpretation refused without rewriting its journal: {reason}"
+                            )));
+                        }
+                        Err(error) => return Err(error),
+                    };
+                    if let Some((text, links)) = interpreted {
                         if entry.hop < self.input.max_hops {
                             for link in links {
                                 if self
@@ -639,7 +655,7 @@ pub(crate) fn replay(
                 sequence, receipt, ..
             } => {
                 require(
-                    matches!(job.schema_version, 2 | 3),
+                    matches!(job.schema_version, 2..=4),
                     "V1 cannot contain transport receipts",
                 )?;
                 require(

@@ -15,6 +15,8 @@ pub(crate) enum CollectionProtocol {
     SyntheticV2,
     SyntheticV3,
     NativeV3,
+    SyntheticV4,
+    NativeV4,
 }
 impl CollectionProtocol {
     pub(crate) fn version(self) -> u32 {
@@ -22,16 +24,18 @@ impl CollectionProtocol {
             Self::FoundationV1 => 1,
             Self::SyntheticV2 => 2,
             Self::SyntheticV3 | Self::NativeV3 => 3,
+            Self::SyntheticV4 | Self::NativeV4 => 4,
         }
     }
     pub(crate) fn synthetic(self) -> bool {
-        self != Self::NativeV3
+        !matches!(self, Self::NativeV3 | Self::NativeV4)
     }
     pub(crate) fn policy(self) -> &'static str {
         match self {
             Self::FoundationV1 => "direct-https-durable-foundation-v1",
             Self::SyntheticV2 => "direct-https-durable-transport-v2",
-            Self::SyntheticV3 | Self::NativeV3 => crate::collection_api::COLLECTOR_POLICY,
+            Self::SyntheticV3 | Self::NativeV3 => "direct-https-durable-v3",
+            Self::SyntheticV4 | Self::NativeV4 => crate::collection_api::COLLECTOR_POLICY,
         }
     }
     pub(crate) fn matches(self, job: &DurableCollectionJob) -> bool {
@@ -241,7 +245,7 @@ pub(crate) struct DurableCollectionJob {
     pub id: String,
     pub request_key: String,
     pub collector_policy: String,
-    /// Trusted mode: v1/v2 require synthetic; v3 permits only configured policy/mode tuples.
+    /// Trusted mode: v1/v2 require synthetic; v3/v4 permit only configured policy/mode tuples.
     pub synthetic: bool,
     pub input: CollectionInput,
     pub created_at_ms: i64,
@@ -255,6 +259,8 @@ impl DurableCollectionJob {
             CollectionProtocol::SyntheticV2,
             CollectionProtocol::SyntheticV3,
             CollectionProtocol::NativeV3,
+            CollectionProtocol::SyntheticV4,
+            CollectionProtocol::NativeV4,
         ]
         .into_iter()
         .find(|p| p.matches(self))
@@ -266,7 +272,7 @@ impl DurableCollectionJob {
         let protocol = self.protocol()?;
         require(
             protocol != CollectionProtocol::FoundationV1,
-            "Transport requires a v2/v3 run",
+            "Transport requires a v2/v3/v4 run",
         )?;
         Ok(protocol)
     }

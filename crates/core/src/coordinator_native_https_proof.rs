@@ -2,7 +2,7 @@
 //! Normal production admission remains disabled; no caller-supplied URL or executor.
 use super::*;
 use crate::{
-    collection_api::{confirmed, preview, CollectionRunInspection, NATIVE_COLLECTION_ENABLED},
+    collection_api::{CollectionRunInspection, NATIVE_COLLECTION_ENABLED},
     collection_jobs::{
         CollectionInput, CollectionProtocol, CollectionState, RequestProgress, RequestTicket,
     },
@@ -143,8 +143,13 @@ fn campaign_controlled(
     let started = Instant::now();
     let deadline = started + Duration::from_secs(20);
     let mut workspace = Workspace::open(root.join("workspace"))?;
-    let disclosure = preview(input())?;
-    let confirmed = confirmed(input(), &disclosure.preview_sha256)?;
+    let disclosure =
+        crate::collection_api::preview_policy(input(), CollectionProtocol::NativeV3.policy())?;
+    let confirmed = crate::collection_api::confirmed_policy(
+        input(),
+        &disclosure.preview_sha256,
+        CollectionProtocol::NativeV3.policy(),
+    )?;
     // Deliberately private canonical admission. Normal public queue is still refused.
     let queued = workspace.queue_collection_protocol(confirmed, &context.nonce, now(), protocol)?;
     context.event(

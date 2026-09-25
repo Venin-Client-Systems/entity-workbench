@@ -692,3 +692,7 @@ mod public_api;
 #[cfg(debug_assertions)]
 #[path = "collection_review_demo.rs"]
 mod review_demo;
+
+#[cfg(test)]
+#[path = "collection_html_tests.rs"]
+mod html_tests;

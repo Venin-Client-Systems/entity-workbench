@@ -81,7 +81,7 @@ export class DurableCollectionSession {
       validateInspection(result, null, pending.minimumRevision);
       if (
         result.run.request_key !== pending.key ||
-        result.run.record_version !== 3 ||
+        result.run.record_version !== 4 ||
         result.run.collector_policy !== pending.preview.collector_policy ||
         JSON.stringify(result.run.input) !==
           JSON.stringify(pending.preview.input)

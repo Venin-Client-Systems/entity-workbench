@@ -108,6 +108,8 @@ test("Rust normalizes preview and rejects invalid scope; controls stay honestly 
   const form = page.getByRole("region", {
     name: "Direct public-web collection",
   });
+  const preview = core({ action: "preview_collection", input: rows[0].input });
+  expect(preview.collector_policy).toBe("direct-https-durable-html-bounded-v4");
   await form
     .getByLabel("Seed URLs", { exact: true })
     .fill("https://EXAMPLE.org:443/research/?x=1\nhttps://example.org/about/");
@@ -544,6 +546,9 @@ test("queue acknowledgement binds the exact canonical request key even for ident
   const a = rows[0],
     b = rows[1];
   expect(a.input).toEqual(b.input);
+  expect(a.record_version).toBe(4);
+  expect(b.record_version).toBe(4);
+  expect(rows.slice(2).every((row) => row.record_version === 3)).toBe(true);
   expect(a.request_key).not.toBe(b.request_key);
   const exact: CollectionInspection = core({
     action: "inspect_collection_run",
