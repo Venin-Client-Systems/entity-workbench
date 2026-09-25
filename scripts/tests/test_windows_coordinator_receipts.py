@@ -18,7 +18,7 @@ NONCE = "d210ee11-5199-4d47-a68a-4b973639f968"
 def success(nonce=NONCE):
     identities = CAMPAIGN.fixture_identities()
     return {
-        "schema_version": 1, "source_commit": SOURCE, "build_source_commit": SOURCE,
+        "schema_version": 2, "source_commit": SOURCE, "build_source_commit": SOURCE,
         "nonce": nonce, "complete_release": False, "passed": True, "phase": "complete",
         "failure": None, "checks": dict.fromkeys(CAMPAIGN.CHECKS, True), "fixtures": identities,
         "derivatives": [{"fixture": row[0], "source_sha256": identities[index]["sha256"],
@@ -26,6 +26,7 @@ def success(nonce=NONCE):
                          "text_sha256": "3" * 64, "schema_version": 2,
                          "state": row[3], "parser": row[4]} for index, row in enumerate(CAMPAIGN.FIXTURES)],
         "joined_coordinators": 4, "retained_workspace": False, "in_flight_cancellation_proven": False,
+        "observed_job": None,
     }
 
 
@@ -94,6 +95,27 @@ class ContractTests(unittest.TestCase):
         CAMPAIGN.validate_probe(value, SOURCE, NONCE)
         with self.assertRaises(ValueError):
             CAMPAIGN.validate_probe(value, SOURCE, NONCE, require_pass=True)
+
+    def test_failed_job_observation_is_bounded_and_not_a_success_claim(self):
+        value = success()
+        value.update(passed=False, phase="fixture_notice.txt", failure="publication", joined_coordinators=1, retained_workspace=True)
+        value["checks"] = {}
+        value["derivatives"] = []
+        value["observed_job"] = {"state": "blocked", "failure": "input_unavailable", "attempt": 1,
+                                 "result_count": 0, "started": False}
+        CAMPAIGN.validate_probe(value, SOURCE, NONCE)
+        with self.assertRaises(ValueError):
+            CAMPAIGN.validate_probe(value, SOURCE, NONCE, require_pass=True)
+        for key, replacement in [("state", "arbitrary message"), ("failure", "raw worker output"),
+                                 ("attempt", True), ("attempt", 4), ("result_count", 2),
+                                 ("result_count", -1), ("started", 1), ("path", "untrusted")]:
+            invalid = copy.deepcopy(value)
+            invalid["observed_job"][key] = replacement
+            with self.subTest(key=key, replacement=replacement), self.assertRaises(ValueError):
+                CAMPAIGN.validate_probe(invalid, SOURCE, NONCE)
+        value["phase"] = "complete"
+        with self.assertRaises(ValueError):
+            CAMPAIGN.validate_probe(value, SOURCE, NONCE)
 
     def test_duplicate_json_nonfinite_and_oversize_reject(self):
         with tempfile.TemporaryDirectory() as directory:

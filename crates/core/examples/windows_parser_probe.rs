@@ -20,7 +20,7 @@ use workbench_core::{
     coordinator::JobCoordinator,
     domain::Command,
     engines::Runtime,
-    processing::{ExtractionRecord, ProcessingJob, ProcessingState},
+    processing::{ExtractionRecord, ProcessingFailure, ProcessingJob, ProcessingState},
     store::{hash, Workspace},
 };
 
@@ -80,6 +80,14 @@ const REQUIRED: [&str; 25] = [
     "staged_runtime_unchanged",
 ];
 #[derive(Serialize)]
+struct JobObservation {
+    state: ProcessingState,
+    failure: Option<ProcessingFailure>,
+    attempt: u32,
+    result_count: usize,
+    started: bool,
+}
+#[derive(Serialize)]
 struct Receipt {
     schema_version: u32,
     source_commit: String,
@@ -95,11 +103,12 @@ struct Receipt {
     joined_coordinators: u32,
     retained_workspace: bool,
     in_flight_cancellation_proven: bool,
+    observed_job: Option<JobObservation>,
 }
 impl Receipt {
     fn new(source: String, nonce: String) -> Self {
         Self {
-            schema_version: 1,
+            schema_version: 2,
             source_commit: source,
             build_source_commit: option_env!("WORKBENCH_COORDINATOR_PROBE_SOURCE"),
             nonce,
@@ -116,6 +125,7 @@ impl Receipt {
             joined_coordinators: 0,
             retained_workspace: false,
             in_flight_cancellation_proven: false,
+            observed_job: None,
         }
     }
     fn pass(&mut self, name: &str) -> ProbeResult<()> {
@@ -131,6 +141,7 @@ impl Receipt {
     }
     fn phase(&mut self, phase: &str, path: &Path) -> ProbeResult<()> {
         self.phase = phase.into();
+        self.observed_job = None;
         self.save(path)
     }
 }
@@ -436,6 +447,16 @@ fn main_campaign(
                 let key = uuid::Uuid::new_v4().to_string();
                 let job = queue(coordinator, &hash(fixture.bytes), &key)?;
                 let job = wait(coordinator, &job.id)?;
+                // Retain only domain enums and bounded counts, never job IDs,
+                // source contents, paths or worker-provided diagnostic text.
+                receipt.observed_job = Some(JobObservation {
+                    state: job.state.clone(),
+                    failure: job.failure.clone(),
+                    attempt: job.attempt,
+                    result_count: job.result_ids.len(),
+                    started: job.started_at.is_some(),
+                });
+                receipt.save(report)?;
                 let extraction = result(coordinator, &job, fixture)?;
                 let revision: Value = call(coordinator, Command::View {})?;
                 let repeated = queue(coordinator, &hash(fixture.bytes), &key)?;

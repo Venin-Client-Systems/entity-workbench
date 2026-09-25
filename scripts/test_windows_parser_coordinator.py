@@ -38,6 +38,11 @@ PHASES = {"not_started", "restart_and_restore", "missing_runtime", "runtime_cont
 FAILURES = {"not_started", "arguments", "unsupported_host", "workspace", "command", "deadline",
             "fixture", "extraction", "publication", "recovery", "runtime_control", "shutdown",
             "cleanup", "receipt", "unexpected"}
+JOB_STATES = {"queued", "running", "completed", "partial", "blocked", "quota_exhausted", "failed", "cancelled"}
+JOB_FAILURES = {"interrupted", "input_unavailable", "runtime_unavailable", "worker_failed", "invalid_result",
+                "unsupported_format", "document_failed", "image_decode_failed", "encrypted_document",
+                "pdf_render_failed", "cancelled_by_analyst", "cleanup_failed", "worker_exit_unverified",
+                "recovery_required", "derivative_unavailable"}
 
 
 def require(condition):
@@ -90,12 +95,20 @@ def validate_probe(value, source, nonce, require_pass=False):
     require(type(value) is dict and set(value) == {
         "schema_version", "source_commit", "build_source_commit", "nonce", "complete_release", "passed", "phase", "failure",
         "checks", "fixtures", "derivatives", "joined_coordinators", "retained_workspace",
-        "in_flight_cancellation_proven"})
-    require(type(value["schema_version"]) is int and value["schema_version"] == 1)
+        "in_flight_cancellation_proven", "observed_job"})
+    require(type(value["schema_version"]) is int and value["schema_version"] == 2)
     require(value["source_commit"] == source and value["build_source_commit"] == source and value["nonce"] == nonce)
     require(value["complete_release"] is False and value["in_flight_cancellation_proven"] is False)
     require(type(value["passed"]) is bool and type(value["retained_workspace"]) is bool)
     require(value["phase"] in PHASES and (value["failure"] is None or value["failure"] in FAILURES))
+    observed = value["observed_job"]
+    if observed is not None:
+        require(value["phase"].startswith("fixture_"))
+        require(type(observed) is dict and set(observed) == {"state", "failure", "attempt", "result_count", "started"})
+        require(observed["state"] in JOB_STATES and (observed["failure"] is None or observed["failure"] in JOB_FAILURES))
+        require(type(observed["attempt"]) is int and 1 <= observed["attempt"] <= 3)
+        require(type(observed["result_count"]) is int and 0 <= observed["result_count"] <= 1)
+        require(type(observed["started"]) is bool)
     checks = value["checks"]
     require(type(checks) is dict and set(checks) <= CHECKS and all(item is True for item in checks.values()))
     identities = fixture_identities()
