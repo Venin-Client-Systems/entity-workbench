@@ -13,6 +13,7 @@ use std::{
 };
 
 pub(super) mod ocr;
+pub(super) mod python;
 #[cfg(test)]
 mod python_probe;
 
@@ -320,6 +321,19 @@ fn wait_assigned(
     timeout: Duration,
     cancellation: Option<&super::CancellationToken>,
 ) -> Result<ExitStatus> {
+    wait_assigned_with_cancellation(child, job, index, timeout, cancellation, || {
+        Error::Blocked("Local worker cancelled".into())
+    })
+}
+
+fn wait_assigned_with_cancellation(
+    child: Child,
+    job: &Path,
+    index: Option<&Path>,
+    timeout: Duration,
+    cancellation: Option<&super::CancellationToken>,
+    cancelled: fn() -> Error,
+) -> Result<ExitStatus> {
     let mut group = ProcessGroup {
         child,
         disarmed: false,
@@ -328,7 +342,7 @@ fn wait_assigned(
     let outcome = (|| {
         loop {
             if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
-                return Err(Error::Blocked("Local worker cancelled".into()));
+                return Err(cancelled());
             }
             // WNOWAIT preserves the leader PID until group termination, avoiding a
             // signal to a recycled PID after std::Child::try_wait has reaped it.

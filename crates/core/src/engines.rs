@@ -13,6 +13,7 @@ pub mod ocr;
 pub mod ocr_regions;
 pub mod parser;
 pub mod pdf_render;
+pub(crate) mod python_graph;
 #[cfg(target_os = "macos")]
 mod supervision;
 use uuid::Uuid;

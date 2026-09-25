@@ -2,12 +2,11 @@
 use super::*;
 use crate::engines::{ocr::digest, CancellationToken};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use std::{
     collections::{BTreeMap, BTreeSet},
     io::{Seek, SeekFrom, Write},
     os::unix::fs::PermissionsExt,
-    path::{Component, PathBuf},
+    path::PathBuf,
 };
 
 mod canonical_graph;
@@ -104,13 +103,6 @@ struct WorkerResult<C = Checks> {
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
-struct Asset {
-    bytes: u64,
-    sha256: String,
-    executable: bool,
-}
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
 struct Checkpoint {
     phase: String,
 }
@@ -122,172 +114,16 @@ struct ImportCheckpoint {
     boundary: String,
 }
 
-fn unique_versions<'de, D: serde::Deserializer<'de>>(
-    deserializer: D,
-) -> std::result::Result<BTreeMap<String, String>, D::Error> {
-    struct Versions;
-    impl<'de> serde::de::Visitor<'de> for Versions {
-        type Value = BTreeMap<String, String>;
-        fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            formatter.write_str("unique selected version fields")
-        }
-        fn visit_map<A: serde::de::MapAccess<'de>>(
-            self,
-            mut map: A,
-        ) -> std::result::Result<Self::Value, A::Error> {
-            let mut result = BTreeMap::new();
-            while let Some((name, version)) = map.next_entry::<String, String>()? {
-                if result.len() >= 58 || result.insert(name, version).is_some() {
-                    return Err(serde::de::Error::custom(
-                        "Duplicate or excess version field",
-                    ));
-                }
-            }
-            Ok(result)
-        }
-    }
-    deserializer.deserialize_map(Versions)
-}
+use crate::engines::python_graph::unique_versions;
 
-fn profile(prefix: &Path, job: &Path) -> Result<String> {
-    Ok(format!(
-        "(version 1)\n(deny default)\n(import \"dyld-support.sb\")\n(deny process-fork)\n(allow sysctl-read)\n(allow file-read-metadata)\n(allow process-exec (literal {}))\n(allow file-read* file-map-executable (subpath {}) (subpath \"/usr/lib\") (subpath \"/System/Library\"))\n(allow file-read* (literal {}) (subpath {}) (subpath {}) (subpath {}) (literal \"/dev/null\") (literal \"/dev/random\") (literal \"/dev/urandom\"))\n(allow file-write* (subpath {}))\n",
-        quote(&prefix.join("install/bin/python3.13"))?, quote(prefix)?, quote(job)?,
-        quote(&job.join("code"))?, quote(&job.join("input"))?, quote(&job.join("scratch"))?, quote(&job.join("scratch"))?
-    ))
-}
-
-fn reject_linked_ancestors(path: &Path) -> Result<()> {
-    require(path.is_absolute(), "Probe paths must be absolute")?;
-    let mut current = PathBuf::new();
-    for part in path.components() {
-        require(
-            matches!(part, Component::RootDir | Component::Normal(_)),
-            "Invalid probe path",
-        )?;
-        current.push(part);
-        require(
-            !fs::symlink_metadata(&current)?.file_type().is_symlink(),
-            "Linked probe ancestor rejected",
-        )?;
-    }
-    Ok(())
-}
-
+use super::python::{profile, reject_linked_ancestors};
 fn verify_prefix(prefix: &Path, expected_manifest: &str, expected_count: usize) -> Result<()> {
-    reject_linked_ancestors(prefix)?;
-    let raw = read_result(&prefix.join("manifest.json"), 16 * 1024 * 1024)?;
-    require(
-        digest(&raw) == expected_manifest,
-        "Probe runtime manifest identity mismatch",
-    )?;
-    let value: serde_json::Value = serde_json::from_slice(&raw)?;
-    let files = value
-        .get("files")
-        .ok_or_else(|| Error::Validation("Probe file inventory missing".into()))?;
-    let mut assets: BTreeMap<String, Asset> = serde_json::from_value(files.clone())?;
-    require(
-        assets.len() + 1 == expected_count && expected_count <= 20_000,
-        "Probe runtime file count mismatch",
-    )?;
-    assets.insert(
-        "manifest.json".into(),
-        Asset {
-            bytes: raw.len() as u64,
-            sha256: expected_manifest.into(),
-            executable: false,
-        },
-    );
-    let mut actual = BTreeSet::new();
-    let mut pending = vec![(prefix.to_owned(), 0usize)];
-    let mut entries = 0;
-    while let Some((directory, depth)) = pending.pop() {
-        require(depth <= 16, "Probe runtime depth exceeded")?;
-        for item in fs::read_dir(directory)? {
-            let item = item?;
-            entries += 1;
-            require(entries <= 40_000, "Probe runtime entry count exceeded")?;
-            let info = fs::symlink_metadata(item.path())?;
-            require(
-                !info.file_type().is_symlink(),
-                "Linked probe runtime entry rejected",
-            )?;
-            if info.is_dir() {
-                pending.push((item.path(), depth + 1));
-            } else {
-                require(
-                    info.is_file() && info.nlink() == 1,
-                    "Special or hardlinked probe runtime entry",
-                )?;
-                let path = item.path();
-                let relative = path
-                    .strip_prefix(prefix)
-                    .map_err(|_| Error::Validation("Invalid runtime path".into()))?;
-                actual.insert(
-                    relative
-                        .to_str()
-                        .ok_or_else(|| Error::Validation("Non-UTF8 runtime path".into()))?
-                        .to_owned(),
-                );
-            }
-        }
-    }
-    require(
-        actual == assets.keys().cloned().collect(),
-        "Probe runtime has missing or unlisted assets",
-    )?;
-    let mut total = 0u64;
-    for (name, asset) in assets {
-        require(
-            Path::new(&name)
-                .components()
-                .all(|part| matches!(part, Component::Normal(_))),
-            "Invalid runtime asset path",
-        )?;
-        total = total
-            .checked_add(asset.bytes)
-            .ok_or_else(|| Error::Validation("Runtime size overflow".into()))?;
-        require(
-            asset.bytes <= 80 * 1024 * 1024 && total <= 768 * 1024 * 1024,
-            "Probe runtime size exceeded",
-        )?;
-        let mut file = OpenOptions::new()
-            .read(true)
-            .custom_flags(libc::O_NOFOLLOW)
-            .open(prefix.join(name))?;
-        let before = file.metadata()?;
-        require(
-            before.is_file()
-                && before.nlink() == 1
-                && before.len() == asset.bytes
-                && before.permissions().mode() & 0o7777
-                    == if asset.executable { 0o755 } else { 0o644 },
-            "Probe runtime asset metadata mismatch",
-        )?;
-        let mut hash = Sha256::new();
-        let mut size = 0u64;
-        let mut buffer = [0; 64 * 1024];
-        loop {
-            let n = file.read(&mut buffer)?;
-            if n == 0 {
-                break;
-            }
-            size += n as u64;
-            require(size <= asset.bytes, "Probe runtime grew during hashing")?;
-            hash.update(&buffer[..n]);
-        }
-        let after = file.metadata()?;
-        require(
-            size == asset.bytes
-                && format!("{:x}", hash.finalize()) == asset.sha256
-                && before.mtime_nsec() == after.mtime_nsec()
-                && before.mtime() == after.mtime()
-                && before.ctime_nsec() == after.ctime_nsec()
-                && before.ctime() == after.ctime(),
-            "Probe runtime integrity mismatch",
-        )?;
-    }
-    Ok(())
+    super::python::verify_prefix(
+        prefix,
+        expected_manifest,
+        expected_count,
+        &CancellationToken::default(),
+    )
 }
 
 fn accept(bytes: &[u8], job_id: &str) -> Result<WorkerResult> {
@@ -406,63 +242,21 @@ fn run(
         if let Some(context) = canonical.as_ref() {
             assets.push(("input/graph-request.json", context.request(), 64 * 1024));
         }
-        for (name, data, maximum) in &assets {
-            require(
-                data.len() <= *maximum,
-                "Compiled probe input exceeds reviewed bound",
-            )?;
-            super::super::write_new(&job.path().join(name), data)?;
-        }
         let mut assignment = serde_json::json!({"schema_version":1,"job_id":job_id,"prefix":prefix,"manifest_sha256":MANIFEST});
         if let Some(context) = canonical.as_ref() {
             context.assignment(&mut assignment);
         }
         let assignment = serde_json::to_vec(&assignment)?;
-        super::super::write_new(&job.path().join("input/assignment.json"), &assignment)?;
+        assets.push(("input/assignment.json", &assignment, 64 * 1024));
+        let cancel = CancellationToken::default();
+        let assigned = super::python::stage(job.path(), &assets, &cancel)?;
         let expanded_profile = profile(prefix, job.path())?;
         super::super::write_new(&job.path().join("worker.sb"), expanded_profile.as_bytes())?;
         observation["profile_sha256"] = digest(expanded_profile.as_bytes()).into();
-        let mut assigned = BTreeMap::new();
-        for name in assets
-            .iter()
-            .map(|(name, _, _)| *name)
-            .chain(["input/assignment.json"])
-        {
-            let data = read_result(&job.path().join(name), 64 * 1024)?;
-            assigned.insert(
-                name.to_owned(),
-                serde_json::json!({"bytes":data.len(),"sha256":digest(&data)}),
-            );
-        }
         observation["assigned_files"] = serde_json::to_value(&assigned)?;
         drop(assets);
-        let stdout = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(job.path().join("scratch/stdout.txt"))?;
-        let stderr = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(job.path().join("scratch/stderr.txt"))?;
-        let mut command = Command::new("/usr/bin/sandbox-exec");
-        command
-            .args(["-f"])
-            .arg(job.path().join("worker.sb"))
-            .arg(prefix.join("install/bin/python3.13"))
-            .args(["-I", "-S", "-B"])
-            .arg(job.path().join("code/bootstrap.py"))
-            .arg(recipe.identity())
-            .current_dir(job.path().join("scratch"))
-            .env_clear()
-            .envs(std::env::vars_os().filter(|(key, _)| key == "HOME"))
-            .env("TMPDIR", job.path().join("scratch"))
-            .env("OMP_THREAD_LIMIT", "1")
-            .env("OMP_NUM_THREADS", "1")
-            .env("OPENBLAS_NUM_THREADS", "1")
-            .stdin(Stdio::null())
-            .stdout(stdout)
-            .stderr(stderr);
-        configure_process(&mut command)?;
+        let mut command =
+            super::python::command(prefix, job.path(), "bootstrap.py", Some(recipe.identity()))?;
         observation["preparation_elapsed_ms"] = elapsed_ms(preparation_started).into();
         observation["phase"] = "confined-compatibility".into();
         observation["termination_state"] = "unconfirmed".into();
@@ -481,7 +275,7 @@ fn run(
             job.path(),
             None,
             Duration::from_secs(30),
-            Some(&CancellationToken::default()),
+            Some(&cancel),
         );
         observation["supervised_elapsed_ms"] = elapsed_ms(supervised_started).into();
         if let Err(error) = &status {
@@ -529,13 +323,7 @@ fn run(
             "Probe diagnostic output exceeds limit",
         )?;
         check_tree(job.path(), 0, &mut 0, &mut 0)?;
-        for (name, expected) in assigned {
-            let data = read_result(&job.path().join(name), 64 * 1024)?;
-            require(
-                expected == serde_json::json!({"bytes":data.len(),"sha256":digest(&data)}),
-                "Assigned probe input changed",
-            )?;
-        }
+        super::python::verify_assigned(job.path(), &assigned, &cancel)?;
         require(
             checkpoint(job.path(), recipe.phases()).as_deref() == Some("complete"),
             "Incomplete Python probe checkpoints",

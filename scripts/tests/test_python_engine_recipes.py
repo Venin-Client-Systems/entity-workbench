@@ -25,6 +25,8 @@ def load(relative, name):
     return module
 
 
+sys.modules['runtime_support'] = load('workers/python/runtime_support.py', 'runtime_support')
+
 engine = load('workers/python/probe/engine_recipes.py', 'fixed_engine_source')
 compatibility = load('workers/python/probe/compatibility.py', 'fixed_compatibility_source')
 

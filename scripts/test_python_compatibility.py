@@ -21,7 +21,10 @@ import install_python_offline as assembler
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = '4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822'
 NATIVE_TEST = 'engines::supervision::python_probe::native_python_compatibility'
-SOURCES = ('crates/core/src/engines/supervision.rs', 'crates/core/src/engines/supervision/python_probe.rs',
+SOURCES = ('crates/core/src/engines/python_graph.rs', 'crates/core/src/engines/supervision/python.rs', 'crates/core/src/store/file_identity.rs',
+           'crates/core/src/engines.rs', 'crates/core/src/engines/ocr.rs',
+           'workers/python/graph_worker.py', 'workers/python/runtime_versions.json',
+           'workers/python/runtime_support.py', 'crates/core/src/engines/supervision.rs', 'crates/core/src/engines/supervision/python_probe.rs',
            'crates/core/src/engines/supervision/python_probe/import_diagnostics.rs',
            'workers/python/probe/bootstrap.py', 'workers/python/probe/compatibility.py',
            'workers/python/probe/import_diagnostics.py',
@@ -74,6 +77,7 @@ ATTEMPTS = frozenset(('numpy', 'numpy._core._multiarray_umath', 'catalogue', 'co
     'thinc', 'thinc.compat', 'thinc.backends.numpy_ops', 'blis', 'blis.cy', 'srsly',
     'pydantic_core', 'pydantic_core._pydantic_core', 'spacy.pipeline', 'spacy.language', 'spacy.cli', 'weasel'))
 ASSIGNED = {'code/bootstrap.py': 'workers/python/probe/bootstrap.py',
+            'code/runtime_support.py': 'workers/python/runtime_support.py',
             'code/compatibility.py': 'workers/python/probe/compatibility.py',
             'code/import_diagnostics.py': 'workers/python/probe/import_diagnostics.py',
             'code/transaction_totals.py': 'workers/python/transaction_totals.py',

@@ -8,6 +8,7 @@ FIELDS = {'networkx': ('versions', 'graph_path', 'graph_assertions', 'graph_unre
           'transactions': ('versions', 'transaction_totals', 'transfer_rejected')}
 IMPORTS = {'networkx': ['networkx'], 'transactions': ['duckdb', 'pyarrow', 'pyarrow.compute', 'pyarrow.parquet']}
 BASE_ASSIGNED = {'code/bootstrap.py': 'workers/python/probe/bootstrap.py',
+    'code/runtime_support.py': 'workers/python/runtime_support.py',
                  'code/compatibility.py': 'workers/python/probe/compatibility.py',
                  'code/engine_recipes.py': 'workers/python/probe/engine_recipes.py',
                  'input/fixture.json': 'workers/python/probe/fixture.json',

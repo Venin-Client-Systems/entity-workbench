@@ -21,7 +21,7 @@ mod desktop_summary;
 mod docx_snapshots;
 mod evidence;
 use evidence::{all_evidence, find_evidence, get_evidence};
-mod file_identity;
+pub(crate) mod file_identity;
 mod identity;
 // Internal source seam only; no command/worker activation until separately reviewed.
 #[allow(dead_code)]

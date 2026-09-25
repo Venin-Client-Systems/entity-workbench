@@ -11,16 +11,8 @@ def require(condition):
 
 
 def distribution_versions(site, wanted):
-    observed = {}
-    distributions = list(importlib.metadata.distributions(path=[str(site)]))
-    require(len(distributions) <= 128)
-    for distribution in distributions:
-        name = re.sub(r'[-_.]+', '-', distribution.metadata['Name']).lower()
-        if name in wanted:
-            require(name not in observed)
-            observed[name] = distribution.version
-    require(observed == wanted)
-    return observed, distributions
+    from runtime_support import distribution_versions as verify
+    return verify(site, wanted)
 
 
 def write_transactions(pa, pq, path, rows):

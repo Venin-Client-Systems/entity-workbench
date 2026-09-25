@@ -8,7 +8,7 @@ use windows_sys::Win32::Storage::FileSystem::{
     FileIdInfo, GetFileInformationByHandle, GetFileInformationByHandleEx,
     BY_HANDLE_FILE_INFORMATION, FILE_ID_INFO,
 };
-pub(super) fn unchanged(before: &fs::Metadata, after: &fs::Metadata) -> Result<()> {
+pub(crate) fn unchanged(before: &fs::Metadata, after: &fs::Metadata) -> Result<()> {
     #[cfg(unix)]
     {
         use std::os::unix::fs::MetadataExt;

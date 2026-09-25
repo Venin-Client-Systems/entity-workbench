@@ -47,6 +47,11 @@ impl Recipe {
     pub(super) fn assets(self) -> Vec<AssignedAsset<'static>> {
         let mut assets = vec![
             ("code/bootstrap.py", BOOTSTRAP, 64 * 1024),
+            (
+                "code/runtime_support.py",
+                include_bytes!("../../../../../../workers/python/runtime_support.py"),
+                64 * 1024,
+            ),
             ("code/compatibility.py", COMPATIBILITY, 64 * 1024),
             ("input/fixture.json", FIXTURE, 64 * 1024),
         ];

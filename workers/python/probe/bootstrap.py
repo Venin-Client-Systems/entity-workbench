@@ -12,35 +12,33 @@ def require(condition):
         raise ValueError('fixed-probe-contract')
 
 
+def support():
+    # Under -I -S the code directory is deliberately absent from sys.path.
+    # Load only this host-staged fixed sibling, then validate the initial paths.
+    import importlib.util
+    name = 'runtime_support'
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).parent / 'runtime_support.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        sys.modules[name] = module
+    return sys.modules[name]
+
+
 def unique(pairs):
-    result = {}
-    for key, value in pairs:
-        require(key not in result)
-        result[key] = value
-    return result
+    return support().unique(pairs)
 
 
 def read_json(path):
-    with path.open('rb') as stream:
-        data = stream.read(MAX_JSON + 1)
-    require(len(data) <= MAX_JSON)
-    return json.loads(data, object_pairs_hook=unique)
+    return support().read_json(path)
 
 
 def write_json(path, value, maximum=MAX_JSON):
-    data = json.dumps(value, allow_nan=False, sort_keys=True).encode()
-    require(len(data) <= maximum)
-    with path.open('xb') as stream:
-        stream.write(data)
+    return support().write_json(path, value, maximum)
 
 
 def bootstrap_paths(prefix, code, initial):
-    stdlib = prefix / 'install/lib/python3.13'
-    expected = {prefix / 'install/lib/python313.zip', stdlib, stdlib / 'lib-dynload'}
-    actual = [Path(value) for value in initial]
-    require(actual and len(actual) == len(set(actual)) and set(actual) == expected)
-    require(all(value.is_absolute() for value in actual))
-    return [*initial, str(prefix / 'install/lib/python3.13/site-packages'), str(code)]
+    return support().bootstrap_paths(prefix, code, initial)
 
 
 def main(recipe='python-compatibility-v1'):

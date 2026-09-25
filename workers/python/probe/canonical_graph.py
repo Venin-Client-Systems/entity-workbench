@@ -28,15 +28,8 @@ def canonical_uuid(value):
 
 
 def preimport_backends():
-    # Never call EntryPoint.load(). NetworkX would execute backend_info on import.
-    require('networkx' not in sys.modules)
-    require(not any(key.startswith('NETWORKX_') for key in os.environ))
-    require(list(importlib.metadata.entry_points(group='networkx.backend_info')) == [])
-    backends = list(importlib.metadata.entry_points(group='networkx.backends'))
-    require(len(backends) == 1)
-    entry = backends[0]
-    require((entry.name, entry.value) == LOOPBACK and entry.dist is not None
-            and entry.dist.metadata['Name'].lower() == 'networkx' and entry.dist.version == '3.6.1')
+    from runtime_support import preimport_backends as verify
+    verify()
 
 
 def execute(assignment, fixture, prefix, job, checkpoint):

@@ -14,6 +14,7 @@ SOURCES = (
 )
 ASSIGNED = {
     'code/bootstrap.py': 'workers/python/probe/bootstrap.py',
+    'code/runtime_support.py': 'workers/python/runtime_support.py',
     'code/compatibility.py': 'workers/python/probe/compatibility.py',
     'code/engine_recipes.py': 'workers/python/probe/engine_recipes.py',
     'code/canonical_graph.py': 'workers/python/probe/canonical_graph.py',

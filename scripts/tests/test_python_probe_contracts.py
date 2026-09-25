@@ -25,6 +25,7 @@ def load(name, relative):
     return module
 
 
+sys.modules['runtime_support'] = load('runtime_support', 'workers/python/runtime_support.py')
 bootstrap = load('probe_bootstrap_contract', 'workers/python/probe/bootstrap.py')
 compatibility = load('probe_compatibility_contract', 'workers/python/probe/compatibility.py')
 
