@@ -86,7 +86,7 @@ pub(crate) fn seed_case(path: &Path) -> Result<(Workspace, String)> {
     Ok((w, source))
 }
 
-fn canonical_state(workspace: &Workspace) -> Result<String> {
+pub(crate) fn canonical_state(workspace: &Workspace) -> Result<String> {
     // Fixed synthetic schema only. No caller SQL or table names; reject a new table
     // rather than silently omit its contents from the unchanged-state claim.
     let mut tables = workspace

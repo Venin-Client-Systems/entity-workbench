@@ -152,6 +152,8 @@ impl Runtime {
     }
     #[cfg(target_os = "macos")]
     fn run(&self, cache: &Path, operation: WorkerOperation, input: &str) -> Result<Vec<u8>> {
+        #[cfg(test)]
+        probe::enter(&operation)?;
         with_assignment(cache, |job| {
             let job_path = job.canonicalize()?;
             let index = cache.join("index");
@@ -195,6 +197,10 @@ impl Runtime {
         })
     }
 }
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "search_probe.rs"]
+pub(crate) mod probe;
 
 #[cfg(target_os = "macos")]
 fn with_assignment(

@@ -35,3 +35,7 @@ impl JobCoordinator {
 #[cfg(test)]
 #[path = "coordinator_search_tests.rs"]
 mod tests;
+
+#[cfg(all(test, target_os = "macos"))]
+#[path = "coordinator_search_native.rs"]
+mod native;
