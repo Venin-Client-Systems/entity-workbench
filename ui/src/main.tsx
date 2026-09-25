@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { command } from "./api";
+import { useEvidenceSearch } from "./evidence-search";
 import { downloadExport } from "./download";
 import type {
   DesktopSummaryResponse,
@@ -73,9 +74,15 @@ function App() {
   );
   const [entityId, setEntityId] = useState("");
   const [collectionSession] = useState(() => new DurableCollectionSession());
-  const [searchHits, setSearchHits] = useState<
-    { id: string; name: string; score: number }[] | null
-  >(null);
+  const w = data?.workspace,
+    a = data?.analysis;
+  const indexSearch = useEvidenceSearch(
+    section === "Evidence",
+    query,
+    w?.revision,
+    w?.evidence ?? [],
+  );
+  const visibleError = error || indexSearch.error;
   const pendingDocumentRequests = useRef(new Map<string, string>());
   const [docxCapture] = useState(() => new DocxCapture());
   const workspaceAction = useRef(false);
@@ -87,20 +94,6 @@ function App() {
   const [statementFile, setStatementFile] = useState<StatementFile | null>(
     null,
   );
-  const searchCorpus = async () => {
-    setBusy(true);
-    setError("");
-    try {
-      const result = await command<{
-        hits: { id: string; name: string; score: number }[];
-      }>({ action: "search", query });
-      setSearchHits(result.hits);
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
   const run = useCallback(
     async (action: Record<string, unknown>) => {
       if (workspaceAction.current) return false;
@@ -137,7 +130,7 @@ function App() {
     setSelected(null);
     setSection(s);
     setQuery("");
-    setSearchHits(null);
+    indexSearch.invalidate();
   };
   const inspectTransaction = (row: Transaction, revision: number) => {
     setSelected({ row, revision });
@@ -165,8 +158,6 @@ function App() {
     const saved = await downloadExport(content, name, type);
     if (saved) setNotice(`Saved export: ${saved}`);
   };
-  const w = data?.workspace,
-    a = data?.analysis;
   const uploadFile = async (file: File) => {
     if (file.size > 16 * 1024 * 1024) {
       setError("Import limit is 16 MiB per file.");
@@ -182,13 +173,11 @@ function App() {
     setSection("Evidence");
   };
   const evidenceList =
+    indexSearch.rows ??
     w?.evidence.filter((e) =>
-      searchHits
-        ? searchHits.some((h) => h.id === e.id)
-        : `${e.name} ${e.text ?? ""}`
-            .toLowerCase()
-            .includes(query.toLowerCase()),
-    ) ?? [];
+      `${e.name} ${e.text ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+    ) ??
+    [];
   return (
     <div
       className={`shell${selected && section === "Transactions" ? " review-open" : ""}`}
@@ -308,9 +297,9 @@ function App() {
                 : "LOCAL WORKSPACE"}
             </span>
           </div>
-          {error && (
+          {visibleError && (
             <div className="alert error" role="alert">
-              {error}
+              {visibleError}
             </div>
           )}
           {notice && (
@@ -486,13 +475,16 @@ function App() {
                         value={query}
                         onChange={(e) => {
                           setQuery(e.target.value);
-                          setSearchHits(null);
+                          indexSearch.invalidate();
                         }}
                       />
                       <button
                         className="button"
-                        disabled={busy || !query}
-                        onClick={() => void searchCorpus()}
+                        disabled={busy || indexSearch.pending || !query}
+                        onClick={() => {
+                          setError("");
+                          void indexSearch.search();
+                        }}
                       >
                         Search local index
                       </button>
