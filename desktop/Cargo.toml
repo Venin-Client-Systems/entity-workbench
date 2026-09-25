@@ -9,6 +9,8 @@ build = "build.rs"
 default = []
 # Explicit development build only; no runtime environment or frontend switch.
 development-graph-runtime = []
+# Isolated startup-only proof. Refuses ordinary identifiers and existing app data.
+development-graph-startup-proof = ["development-graph-runtime"]
 
 [build-dependencies]
 tauri-build = { version = "=2.6.3", features = [] }
