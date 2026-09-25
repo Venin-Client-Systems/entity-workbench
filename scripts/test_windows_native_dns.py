@@ -52,7 +52,7 @@ def build_binary(artifact, source):
     environment = dict(os.environ, EW_WINDOWS_DNS_BUILD_SOURCE=source)
     result = run_logged(["cargo", "test", "--locked", "--offline", "-p", "workbench-core",
                          "--lib", "--no-run", "--message-format=json"], artifact / "build.log",
-                        300, environment, build=True)
+                        600, environment, build=True)
     if result:
         raise Failure("native_build_failed")
     candidates = []
@@ -76,6 +76,7 @@ def observe(artifact, allow_fixed_dns, signers):
               "observed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "nonce": str(uuid.uuid4()), "complete_release": False,
               "limits": {"native_launches": 3, "http_requests": 0, "retries": 0,
+                         "offline_build_seconds": 600,
                          "cooperative_campaign_seconds": 20, "outer_native_process_seconds": 30,
                          "dns_stage_seconds": 5, "cancel_cleanup_seconds": 1},
               "claims": {"provider_quiescence": False, "windows_11_acceptance": False,

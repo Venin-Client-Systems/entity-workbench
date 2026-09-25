@@ -3,7 +3,7 @@ use super::*;
 use crate::collection_jobs::CollectionTicket;
 use crate::collection_transport::{fetch, Outcome};
 use serde_json::{json, Value};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 #[cfg(target_os = "windows")]
 use std::io::Write;
 
@@ -34,6 +34,21 @@ struct Probe {
 }
 thread_local! {
     static PROBE: RefCell<Option<Probe>> = const { RefCell::new(None) };
+    static LAUNCHES_LEFT: Cell<Option<u8>> = const { Cell::new(None) };
+}
+pub(super) fn before_native_operation(host: &str) {
+    LAUNCHES_LEFT.with(|budget| {
+        if let Some(remaining) = budget.get() {
+            assert!(remaining > 0, "fixed native DNS launch budget exhausted");
+            let expected = [
+                "example.com",
+                "ew-native-proof.invalid",
+                "ew-native-cancel-proof.invalid",
+            ][usize::from(3 - remaining)];
+            assert_eq!(host, expected, "fixed native DNS name/order mismatch");
+            budget.set(Some(remaining - 1));
+        }
+    });
 }
 fn update(f: impl FnOnce(&mut Probe)) {
     PROBE.with_borrow_mut(|state| {
@@ -228,6 +243,9 @@ fn native_windows_dns_campaign() {
     assert_eq!(BUILD_SOURCE, Some(source.as_str()));
     let nonce = std::env::var("EW_WINDOWS_DNS_NONCE").unwrap();
     assert_eq!(uuid::Uuid::parse_str(&nonce).unwrap().to_string(), nonce);
+    // Refuse a fourth native call even if a tested quarantine assertion fails.
+    // This thread-local guard is inactive outside this explicitly gated test.
+    LAUNCHES_LEFT.with(|budget| budget.set(Some(3)));
     let deadline = Instant::now() + Duration::from_secs(20);
     let mut passed_all = true;
     let mut stop_campaign = false;
@@ -331,6 +349,28 @@ fn native_windows_dns_campaign() {
         passed_all,
         "native Windows DNS campaign was incomplete or failed"
     );
+}
+
+#[test]
+fn campaign_guard_rejects_extra_or_unselected_launch_before_native_call() {
+    before_native_operation("inactive-synthetic.invalid");
+    LAUNCHES_LEFT.with(|budget| budget.set(Some(3)));
+    for host in ["unselected.invalid", "ew-native-proof.invalid"] {
+        assert!(std::panic::catch_unwind(|| before_native_operation(host)).is_err());
+        assert_eq!(LAUNCHES_LEFT.with(Cell::get), Some(3));
+    }
+    for host in [
+        "example.com",
+        "ew-native-proof.invalid",
+        "ew-native-cancel-proof.invalid",
+    ] {
+        start_probe(false);
+        before_native_operation(host);
+        assert!(zero_launch(&take_probe()));
+    }
+    assert_eq!(LAUNCHES_LEFT.with(Cell::get), Some(0));
+    assert!(std::panic::catch_unwind(|| before_native_operation("example.com")).is_err());
+    LAUNCHES_LEFT.with(|budget| budget.set(None));
 }
 
 #[test]
