@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "complete_release": false,
+  "source": "792b2176bd3a3c0a845f57fc1c189b57a4c0d623",
+  "source_files_verified": 387,
+  "binary_sha256": "85bb532c6498c181c9fd7731ef22f63635d828f5883a263d4b962504629f574b",
+  "outer_report_sha256": "ce409accc136f798795a48d301d2ddc05028470478393c5e26a48531d5e5587c",
+  "runtime_sha256": "cb3f7cc163a851eec4f70ba11c96029458524e8465210720a57f318503aef9a7",
+  "workspaces": [
+    {
+      "workspace": "healthy-workspace",
+      "integrity": "ok",
+      "canonical_sha256": "255ccf33f6ae40f236afd0964e57427c3ccff84050ea7377c5047308dd724ff9",
+      "revision": 3,
+      "record_count": 3,
+      "originals": 3,
+      "index_or_intent_matches": true
+    },
+    {
+      "workspace": "intent-workspace",
+      "integrity": "ok",
+      "canonical_sha256": "08a18858a4cc5045533f1c2abedae3368fd39b4ed5ab35911b3716cf187f872e",
+      "revision": 3,
+      "record_count": 3,
+      "originals": 3,
+      "index_or_intent_matches": true
+    }
+  ],
+  "notes": [
+    "Independent read-only SQLite reconstruction matches trusted Rust typed logical digest",
+    "No native rerun or Java invocation",
+    "Recipe entries are not independent spawn evidence",
+    "Selected runtime is pinned; current Java source provenance unestablished"
+  ]
+}

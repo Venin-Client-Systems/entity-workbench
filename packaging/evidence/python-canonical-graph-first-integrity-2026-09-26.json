@@ -1,0 +1,80 @@
+{
+  "assignment_directories_remaining": 0,
+  "campaign_id": "356c7b95-a336-43d7-a4ec-ffa61a4ed0d7",
+  "canonical_row_counts": {
+    "derivative_objects": 0,
+    "events": 2,
+    "history": 0,
+    "meta": 1,
+    "records": 25
+  },
+  "canonical_state_sha256": "f91cc489be1f51b4cd4b0c9c0817cbcc6f2040bd15714aa0c9350f72fa654f70",
+  "complete_release": false,
+  "files": {
+    "build.log": {
+      "bytes": 202894,
+      "sha256": "99c7c51c1178dc041f09d0258fe6dc35f27d151028ad51ab263c3a8edfc3dcae"
+    },
+    "captured-request.json": {
+      "bytes": 530,
+      "sha256": "6c3e8e80b33345ea2dca51ff699c3fb42fa2db0eac0c1c54548a2aae4777d70f"
+    },
+    "captured-result.json": {
+      "bytes": 453,
+      "sha256": "65b8fad9c0d6aa04517f78878bf4655fd082634704bdcb6d05b72abc7e7ee0c8"
+    },
+    "captured-wrapper.json": {
+      "bytes": 2036,
+      "sha256": "c26e67614049fbe000d7b7fbc9ee624c7e5103d9b0ca1363d9eb4ba7b9208a66"
+    },
+    "native-report.json": {
+      "bytes": 6991,
+      "sha256": "87ec97f88ba226ed93ccbb1cc6a4e05be7cd4230ba77c2e8e58b356ba581d8b5"
+    },
+    "native-test.log": {
+      "bytes": 209,
+      "sha256": "6899d944d1752be62a8c57db1397f62da2949fafea7286d2a231b7c2f3a96330"
+    },
+    "observation.json": {
+      "bytes": 14509,
+      "sha256": "70d78b7574ac9da13c80fc9072be87e716dd845d991c8d38abc6244abdc3bfd8"
+    },
+    "stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "independent_acceptance_passed": true,
+  "job_id": "d7a35f1e-baed-4ce1-99c1-9559cb741ab4",
+  "moved_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "observed_at": "2026-09-25T17:15:27.833111+00:00",
+  "original_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "retained_workspace_quick_check": "ok",
+  "schema_version": 1,
+  "source_and_binary_unchanged": true,
+  "source_commit": "f76ef907e3aa0ba5072d742e07da4cea76fc3fec"
+}

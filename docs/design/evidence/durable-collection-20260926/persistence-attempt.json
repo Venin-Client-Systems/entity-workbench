@@ -1,0 +1,219 @@
+{
+  "format_version": 1,
+  "observed_at_utc": "2026-09-25T17:00:51Z",
+  "scope": "EW-31 durable collection design persistence attempt and retained comparison review; documentation only",
+  "source_commit": "db1674b6fe036bf7868bd02f34609919ea839653",
+  "initial_validation_manifest": {
+    "path": "validation.json",
+    "sha256": "222ef02333576eca83bb456fbe918dd47a4ee97a019a68d870e7268733ef02e3"
+  },
+  "source_files": {
+    "ui/src/CollectionPreviewForm.tsx": {
+      "sha256": "d4bd94b2e7f1f5c23a918df6d110879edf5f48b545cd9ba74c907ef74a16b5c4",
+      "matches_initial_capture_source": true
+    },
+    "ui/src/CollectionRunCatalogue.tsx": {
+      "sha256": "e5f35bb249ccbb9f03745ca536fee2673a1424c9b199c816591a38382eee51a7",
+      "matches_initial_capture_source": true
+    },
+    "ui/src/CollectionRunReview.tsx": {
+      "sha256": "1a58092252cb300ffd68ed683fdec2172acd51abdbb721fe022fe8cd18389f95",
+      "matches_initial_capture_source": true
+    },
+    "ui/src/DurableCollection.tsx": {
+      "sha256": "743153c0178453af9c9f5b23eda7ffcdbab4255d3ce6fe947559b4096ca5723b",
+      "matches_initial_capture_source": true
+    },
+    "ui/src/durable-collection-session.ts": {
+      "sha256": "41840ebef4d25e5f227b4980221964e8d6e4758485c727fd60ec05e6fc732277",
+      "matches_initial_capture_source": true
+    },
+    "ui/src/durable-collection-types.ts": {
+      "sha256": "67d48a3d20b2d3489d053c3511b35f278eeae5dea91dd653ff53a10e6bf764ae",
+      "matches_initial_capture_source": true
+    },
+    "ui/src/durable-collection.css": {
+      "sha256": "f4b4c8dc7e4ef3bc9210a27abadfaa301072050cfc19c47c65888968881fa472",
+      "matches_initial_capture_source": true
+    }
+  },
+  "figma": {
+    "file_id": "CphN4aTS8IXSVlKX7zDJtg",
+    "file_title": "Entity Workbench — development design",
+    "frames": [
+      {
+        "node_id": "2011:2",
+        "name": "25 / Instrument — Durable collection preview",
+        "retained_export": "figma-preview.png"
+      },
+      {
+        "node_id": "2011:109",
+        "name": "26 / Instrument — Durable collection review",
+        "retained_export": "figma-review.png"
+      },
+      {
+        "node_id": "2011:165",
+        "name": "27 / Instrument — Collection recovery",
+        "retained_export": "figma-recovery.png"
+      }
+    ],
+    "frame_identity_basis": "Prior signed design documentation; frame contents not freshly loaded in this follow-up",
+    "attempts": [
+      {
+        "action": "Inventory browser surfaces",
+        "result": "Existing editable-file tabs were listed in the signed-in Chrome profile; no new tab or sign-in was requested."
+      },
+      {
+        "action": "Select existing editable-file tab via browser extension",
+        "result": "getTab timed out after 30 seconds and reset the tool kernel."
+      },
+      {
+        "action": "Inspect native Chrome and select known Figma tab",
+        "result": "Native click reported user changed Google Chrome and required a fresh observation."
+      },
+      {
+        "action": "Refresh native Chrome observation",
+        "result": "Concurrent activity remained visible outside the task tab. Control was stopped without another click, navigation, reload or export."
+      }
+    ],
+    "fresh_url_navigation_confirmed": false,
+    "fresh_editable_layer_observation": false,
+    "new_exports_created": false,
+    "post_navigation_export_equality_verified": false,
+    "figma_content_written": false,
+    "control_released": true,
+    "result": "Persistence remains unverified; control availability prevented the required fresh navigation and export.",
+    "privacy": "No unrelated tab content, raw accessibility dump, browser screenshot, profile identity or local user path is included in this evidence."
+  },
+  "retained_artifacts": {
+    "app-compact-bottom.png": {
+      "sha256": "6a1c59b48b9afd081cdedd414fedc0c5735cf7b54c70a0b4f4db944cbff322ee",
+      "matches_initial_manifest": true,
+      "pixels": [
+        720,
+        810
+      ],
+      "visually_inspected_this_followup": true
+    },
+    "app-compact-top.png": {
+      "sha256": "854e40f6a44c40133afcb04686db25c726a3ccf33db8e126f8ccc73945f5582b",
+      "matches_initial_manifest": true,
+      "pixels": [
+        720,
+        810
+      ],
+      "visually_inspected_this_followup": true
+    },
+    "app-preview.png": {
+      "sha256": "a1f442c3e3d7614a9a77b013956fd8bdfc1a3d32477404da88d69235f4b6caab",
+      "matches_initial_manifest": true,
+      "pixels": [
+        1200,
+        970
+      ],
+      "visually_inspected_this_followup": true
+    },
+    "app-review.png": {
+      "sha256": "2a98f21c211efff197615c561274209037456f5c6b3239b5c805e9227005fa74",
+      "matches_initial_manifest": true,
+      "pixels": [
+        920,
+        1750
+      ],
+      "visually_inspected_this_followup": true
+    },
+    "browser.txt": {
+      "sha256": "009d387adc1bc92ef8cef1151055774c07d2ce235993d82cc09080a2e66fb163",
+      "matches_initial_manifest": true
+    },
+    "build.txt": {
+      "sha256": "6316c9b30ea2250e468d1ba1111f3a7bc4760151ead2631352fb7f5a7b6dad3d",
+      "matches_initial_manifest": true
+    },
+    "clippy-debug.txt": {
+      "sha256": "0bb98eadaea45e93edffe45650d15d9892df9d6820ef02e8dea1f47f195905eb",
+      "matches_initial_manifest": true
+    },
+    "clippy-release.txt": {
+      "sha256": "4f6c6ddc6eca7eef317be2028b43ca7b825cfc51e499c6a261ec50fc11ea2467",
+      "matches_initial_manifest": true
+    },
+    "core.txt": {
+      "sha256": "635c8cbf797993508a04def8ff21946d1745253babcc15308790bec1a2e08973",
+      "matches_initial_manifest": true
+    },
+    "empty-preview-axe.json": {
+      "sha256": "243f80f4f47179cf034fd5a4452c2914bd4e6215090fa729b23e0c70c096bc1f",
+      "matches_initial_manifest": true
+    },
+    "figma-preview.png": {
+      "sha256": "d39cca0d514f293cff437dc49debfb4d0cf79a9a3551caafb19258f82ba2b1a4",
+      "matches_initial_manifest": true,
+      "pixels": [
+        1120,
+        1250
+      ],
+      "visually_inspected_this_followup": true
+    },
+    "figma-recovery.png": {
+      "sha256": "33c2fc93b87a6d592f6336b3e858d0a28db6ca368e4a9021a1ff0187f110c3e0",
+      "matches_initial_manifest": true,
+      "pixels": [
+        720,
+        1290
+      ],
+      "visually_inspected_this_followup": true
+    },
+    "figma-review.png": {
+      "sha256": "c836a6842e5560b75ec4a47e11a036d118fc47720cab79e25f5ea6119f7a9602",
+      "matches_initial_manifest": true,
+      "pixels": [
+        1120,
+        1280
+      ],
+      "visually_inspected_this_followup": true
+    },
+    "interrupted-compact-axe.json": {
+      "sha256": "7fa9672d5a867362cdce62584938958af3bc3956d8edbfeda5706009375e7415",
+      "matches_initial_manifest": true
+    },
+    "preview-wide-axe.json": {
+      "sha256": "243f80f4f47179cf034fd5a4452c2914bd4e6215090fa729b23e0c70c096bc1f",
+      "matches_initial_manifest": true
+    },
+    "review-wide-axe.json": {
+      "sha256": "6be35cbf1f801b1f3e5796e1c1c9fb93840244c9a2ac2035f881517fcc52acd2",
+      "matches_initial_manifest": true
+    },
+    "schemas.txt": {
+      "sha256": "57e6a7734507233d21115259ff4ea2cef56cb1fbd897ce1f9fec6cc2c35f0852",
+      "matches_initial_manifest": true
+    }
+  },
+  "visual_comparison": {
+    "basis": "Seven original PNG artifacts visually inspected at full supplied resolution, not regenerated captures.",
+    "wide_preview": "The app retains seed URLs, three bounded limit controls, disclosure action, reviewed URLs/hosts/robots, disclosure identity and unavailable queue explanation. It uses denser existing industrial typography and a distinct standalone availability notice. No visible content clipping found in the retained capture.",
+    "wide_review": "Recorded outcome and execution availability are separate, followed by request/page/frontier counts, scope and receipt history. The app shows both robots and seed receipts, source actions and explicit limitations; the design illustrates one seed receipt. Their different heights, sample IDs, dates and hashes are not export mismatches.",
+    "compact_review": "Two 720x810 panel crops from the previously recorded 760px viewport retain the interrupted outcome, unavailable execution, spent request count, remaining frontier and unknown-outcome warning. The lower crop explicitly says no complete response original was retained. Viewport edge cuts are normal scroll boundaries; no horizontal clipping of the visible content was found.",
+    "recovery_design": "The 720x1290 retained design distinguishes uncertain queue acknowledgement, interrupted request, response awaiting publication and recovery-required states. It explicitly limits pending UI identity to an open application and does not imply that the specimen buttons enable a live executor.",
+    "new_product_defect_found": false
+  },
+  "checks": {
+    "retained_artifact_hashes": {
+      "passed": 17,
+      "failed": 0
+    },
+    "captured_ui_source_hashes": {
+      "passed": 7,
+      "failed": 0
+    },
+    "images_visually_reviewed": 7,
+    "new_browser_or_native_tests_run": false
+  },
+  "remaining_limits": [
+    "Fresh URL navigation, persisted editable-layer readback and Figma re-export equality remain unverified.",
+    "This review does not certify the current server-side design, owner approval or a completed product design.",
+    "Complete compact preview/catalogue design and enabled-executor interactive comparison remain open.",
+    "No new runtime, live collection, keyboard, axe, native WebKit or assistive-technology proof is established."
+  ]
+}

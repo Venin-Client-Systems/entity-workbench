@@ -1,0 +1,25 @@
+    Checking workbench-core v0.1.0 (<worktree>/crates/core)
+error[E0433]: failed to resolve: could not find `std` in `unix`
+  --> crates/core/src/engines.rs:52:28
+   |
+52 |         use std::os::unix::std::fs::OpenOptionsExt;
+   |                            ^^^ could not find `std` in `unix`
+
+error[E0599]: no method named `mode` found for struct `std::fs::OpenOptions` in the current scope
+  --> crates/core/src/engines.rs:53:17
+   |
+53 |         options.mode(0o600);
+   |                 ^^^^ method not found in `std::fs::OpenOptions`
+  --> /rustc/1159e78c4747b02ef996e55082b704c09b970588/library/std/src/os/unix/fs.rs:406:8
+   |
+   = note: the method is available for `std::fs::OpenOptions` here
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `OpenOptionsExt` which provides `mode` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use std::os::unix::fs::OpenOptionsExt;
+   |
+
+Some errors have detailed explanations: E0433, E0599.
+For more information about an error, try `rustc --explain E0433`.
+error: could not compile `workbench-core` (lib) due to 2 previous errors

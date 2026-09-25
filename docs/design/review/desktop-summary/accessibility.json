@@ -1,0 +1,1397 @@
+[
+  {
+    "width": 1440,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "tags": [
+          "cat.aria",
+          "wcag2a",
+          "wcag412",
+          "EN-301-549",
+          "EN-9.4.1.2",
+          "RGAAv4",
+          "RGAA-7.1.1"
+        ],
+        "description": "Ensure ARIA attributes are not prohibited for an element's role",
+        "help": "Elements must only use permitted ARIA attributes",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-prohibited-attr?application=playwright",
+        "nodes": [
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Account filter pages\">",
+            "target": [
+              "div[aria-label=\"Account filter pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Currency filter pages\">",
+            "target": [
+              "div[aria-label=\"Currency filter pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Comparison account pages\">",
+            "target": [
+              "div[aria-label=\"Comparison account pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Comparison currency pages\">",
+            "target": [
+              "div[aria-label=\"Comparison currency pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Analysis account pages\">",
+            "target": [
+              "div[aria-label=\"Analysis account pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Analysis currency pages\">",
+            "target": [
+              "div[aria-label=\"Analysis currency pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "tags": [
+          "cat.color",
+          "wcag2aa",
+          "wcag143",
+          "TTv5",
+          "TT13.c",
+          "EN-301-549",
+          "EN-9.1.4.3",
+          "ACT",
+          "RGAAv4",
+          "RGAA-3.2.1"
+        ],
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+        "nodes": [
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_0_-select\" aria-describedby=\"_r_0_-status _r_0_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+                    "target": [
+                      "#_r_0_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_0_-select\" aria-describedby=\"_r_0_-status _r_0_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+            "target": [
+              "#_r_0_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_1_-select\" aria-describedby=\"_r_1_-status _r_1_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+                    "target": [
+                      "#_r_1_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_1_-select\" aria-describedby=\"_r_1_-status _r_1_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+            "target": [
+              "#_r_1_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Review filter\"><option>all</option><option>pending</option><option>accepted</option><option>rejected</option><option>deferred</option></select>",
+                    "target": [
+                      "select[aria-label=\"Review filter\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Review filter\"><option>all</option><option>pending</option><option>accepted</option><option>rejected</option><option>deferred</option></select>",
+            "target": [
+              "select[aria-label=\"Review filter\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Ledger date order\"><option value=\"date_ascending\">Date ascending</option><option value=\"date_descending\">Date descending</option></select>",
+                    "target": [
+                      "select[aria-label=\"Ledger date order\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Ledger date order\"><option value=\"date_ascending\">Date ascending</option><option value=\"date_descending\">Date descending</option></select>",
+            "target": [
+              "select[aria-label=\"Ledger date order\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Ledger rows per request\"><option>25</option><option>50</option><option>100</option><option>200</option></select>",
+                    "target": [
+                      "select[aria-label=\"Ledger rows per request\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Ledger rows per request\"><option>25</option><option>50</option><option>100</option><option>200</option></select>",
+            "target": [
+              "select[aria-label=\"Ledger rows per request\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_2_-select\" aria-describedby=\"_r_2_-status _r_2_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+                    "target": [
+                      "#_r_2_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_2_-select\" aria-describedby=\"_r_2_-status _r_2_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+            "target": [
+              "#_r_2_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_3_-select\" aria-describedby=\"_r_3_-status _r_3_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+                    "target": [
+                      "#_r_3_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_3_-select\" aria-describedby=\"_r_3_-status _r_3_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+            "target": [
+              "#_r_3_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Comparison transfers\"><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+                    "target": [
+                      "select[aria-label=\"Comparison transfers\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Comparison transfers\"><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+            "target": [
+              "select[aria-label=\"Comparison transfers\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_4_-select\" aria-describedby=\"_r_4_-status _r_4_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+                    "target": [
+                      "#_r_4_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_4_-select\" aria-describedby=\"_r_4_-status _r_4_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+            "target": [
+              "#_r_4_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_5_-select\" aria-describedby=\"_r_5_-status _r_5_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+                    "target": [
+                      "#_r_5_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_5_-select\" aria-describedby=\"_r_5_-status _r_5_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+            "target": [
+              "#_r_5_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+                    "target": [
+                      "label:nth-child(5) > select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+            "target": [
+              "label:nth-child(5) > select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "width": 960,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "tags": [
+          "cat.aria",
+          "wcag2a",
+          "wcag412",
+          "EN-301-549",
+          "EN-9.4.1.2",
+          "RGAAv4",
+          "RGAA-7.1.1"
+        ],
+        "description": "Ensure ARIA attributes are not prohibited for an element's role",
+        "help": "Elements must only use permitted ARIA attributes",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-prohibited-attr?application=playwright",
+        "nodes": [
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Account filter pages\">",
+            "target": [
+              "div[aria-label=\"Account filter pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Currency filter pages\">",
+            "target": [
+              "div[aria-label=\"Currency filter pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Comparison account pages\">",
+            "target": [
+              "div[aria-label=\"Comparison account pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Comparison currency pages\">",
+            "target": [
+              "div[aria-label=\"Comparison currency pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Analysis account pages\">",
+            "target": [
+              "div[aria-label=\"Analysis account pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Analysis currency pages\">",
+            "target": [
+              "div[aria-label=\"Analysis currency pages\"]"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "tags": [
+          "cat.color",
+          "wcag2aa",
+          "wcag143",
+          "TTv5",
+          "TT13.c",
+          "EN-301-549",
+          "EN-9.1.4.3",
+          "ACT",
+          "RGAAv4",
+          "RGAA-3.2.1"
+        ],
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+        "nodes": [
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_0_-select\" aria-describedby=\"_r_0_-status _r_0_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+                    "target": [
+                      "#_r_0_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_0_-select\" aria-describedby=\"_r_0_-status _r_0_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+            "target": [
+              "#_r_0_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_1_-select\" aria-describedby=\"_r_1_-status _r_1_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+                    "target": [
+                      "#_r_1_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_1_-select\" aria-describedby=\"_r_1_-status _r_1_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+            "target": [
+              "#_r_1_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Review filter\"><option>all</option><option>pending</option><option>accepted</option><option>rejected</option><option>deferred</option></select>",
+                    "target": [
+                      "select[aria-label=\"Review filter\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Review filter\"><option>all</option><option>pending</option><option>accepted</option><option>rejected</option><option>deferred</option></select>",
+            "target": [
+              "select[aria-label=\"Review filter\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Ledger date order\"><option value=\"date_ascending\">Date ascending</option><option value=\"date_descending\">Date descending</option></select>",
+                    "target": [
+                      "select[aria-label=\"Ledger date order\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Ledger date order\"><option value=\"date_ascending\">Date ascending</option><option value=\"date_descending\">Date descending</option></select>",
+            "target": [
+              "select[aria-label=\"Ledger date order\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Ledger rows per request\"><option>25</option><option>50</option><option>100</option><option>200</option></select>",
+                    "target": [
+                      "select[aria-label=\"Ledger rows per request\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Ledger rows per request\"><option>25</option><option>50</option><option>100</option><option>200</option></select>",
+            "target": [
+              "select[aria-label=\"Ledger rows per request\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_2_-select\" aria-describedby=\"_r_2_-status _r_2_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+                    "target": [
+                      "#_r_2_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_2_-select\" aria-describedby=\"_r_2_-status _r_2_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+            "target": [
+              "#_r_2_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_3_-select\" aria-describedby=\"_r_3_-status _r_3_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+                    "target": [
+                      "#_r_3_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_3_-select\" aria-describedby=\"_r_3_-status _r_3_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+            "target": [
+              "#_r_3_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Comparison transfers\"><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+                    "target": [
+                      "select[aria-label=\"Comparison transfers\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Comparison transfers\"><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+            "target": [
+              "select[aria-label=\"Comparison transfers\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_4_-select\" aria-describedby=\"_r_4_-status _r_4_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+                    "target": [
+                      "#_r_4_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_4_-select\" aria-describedby=\"_r_4_-status _r_4_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+            "target": [
+              "#_r_4_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_5_-select\" aria-describedby=\"_r_5_-status _r_5_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+                    "target": [
+                      "#_r_5_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_5_-select\" aria-describedby=\"_r_5_-status _r_5_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+            "target": [
+              "#_r_5_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+                    "target": [
+                      "label:nth-child(5) > select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select><option value=\"include\">Include all rows</option><option value=\"exclude_reviewed_pairs\">Exclude verified reviewed pairs</option></select>",
+            "target": [
+              "label:nth-child(5) > select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "elmPartiallyObscured",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<section class=\"panel\">",
+                    "target": [
+                      "section:nth-child(7)"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined because it's partially obscured by another element"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<td class=\"numeric\">-2.00</td>",
+            "target": [
+              "section:nth-child(7) > .table-scroll > table > tbody > tr:nth-child(1) > .numeric:nth-child(4)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "elmPartiallyObscured",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<section class=\"panel\">",
+                    "target": [
+                      "section:nth-child(7)"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined because it's partially obscured by another element"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<td class=\"numeric\">-1.00</td>",
+            "target": [
+              "section:nth-child(7) > .table-scroll > table > tbody > tr:nth-child(2) > .numeric:nth-child(4)"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined because it's partially obscured by another element"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "width": 960,
+    "violations": [],
+    "incomplete": [
+      {
+        "id": "aria-prohibited-attr",
+        "impact": "serious",
+        "tags": [
+          "cat.aria",
+          "wcag2a",
+          "wcag412",
+          "EN-301-549",
+          "EN-9.4.1.2",
+          "RGAAv4",
+          "RGAA-7.1.1"
+        ],
+        "description": "Ensure ARIA attributes are not prohibited for an element's role",
+        "help": "Elements must only use permitted ARIA attributes",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/aria-prohibited-attr?application=playwright",
+        "nodes": [
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Transfer candidate account pages\">",
+            "target": [
+              "div[data-facet-label=\"Transfer candidate account\"] > .patterns-pager.facet-pager"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          },
+          {
+            "any": [],
+            "all": [],
+            "none": [
+              {
+                "id": "aria-prohibited-attr",
+                "data": {
+                  "role": null,
+                  "nodeName": "div",
+                  "messageKey": "noRoleSingular",
+                  "prohibited": [
+                    "aria-label"
+                  ]
+                },
+                "relatedNodes": [],
+                "impact": "serious",
+                "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+              }
+            ],
+            "impact": "serious",
+            "html": "<div class=\"patterns-pager facet-pager\" aria-label=\"Transfer candidate currency pages\">",
+            "target": [
+              "div[data-facet-label=\"Transfer candidate currency\"] > .patterns-pager.facet-pager"
+            ],
+            "failureSummary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute."
+          }
+        ]
+      },
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "tags": [
+          "cat.color",
+          "wcag2aa",
+          "wcag143",
+          "TTv5",
+          "TT13.c",
+          "EN-301-549",
+          "EN-9.1.4.3",
+          "ACT",
+          "RGAAv4",
+          "RGAA-3.2.1"
+        ],
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+        "nodes": [
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_6_-select\" aria-describedby=\"_r_6_-status _r_6_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+                    "target": [
+                      "#_r_6_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_6_-select\" aria-describedby=\"_r_6_-status _r_6_-scope\"><option value=\"\">All accounts</option><option value=\"0001\">0001 · 13 rows</option><option value=\"0002\">0002 · 12 rows</option></select>",
+            "target": [
+              "#_r_6_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.8pt (13px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select id=\"_r_7_-select\" aria-describedby=\"_r_7_-status _r_7_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+                    "target": [
+                      "#_r_7_-select"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select id=\"_r_7_-select\" aria-describedby=\"_r_7_-status _r_7_-scope\"><option value=\"\">All currencies</option><option value=\"AUD\">AUD · 16 rows</option><option value=\"USD\">USD · 9 rows</option></select>",
+            "target": [
+              "#_r_7_-select"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Transfer candidate date order\"><option value=\"date_ascending\">Date ascending</option><option value=\"date_descending\">Date descending</option></select>",
+                    "target": [
+                      "select[aria-label=\"Transfer candidate date order\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Transfer candidate date order\"><option value=\"date_ascending\">Date ascending</option><option value=\"date_descending\">Date descending</option></select>",
+            "target": [
+              "select[aria-label=\"Transfer candidate date order\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          },
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "contrastRatio": 0,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": "bgGradient",
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<select aria-label=\"Transfer counterpart\"><option value=\"\">Select a reviewed transaction</option><option value=\"9815489d64d3645131f00526e0efeaa966ae6f29f4e6a94ff6f97b67bfc83ba0:3\">0002 · Synthetic payment 001 · -2.00 AUD</option></select>",
+                    "target": [
+                      "select[aria-label=\"Transfer counterpart\"]"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element's background color could not be determined due to a background gradient"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<select aria-label=\"Transfer counterpart\"><option value=\"\">Select a reviewed transaction</option><option value=\"9815489d64d3645131f00526e0efeaa966ae6f29f4e6a94ff6f97b67bfc83ba0:3\">0002 · Synthetic payment 001 · -2.00 AUD</option></select>",
+            "target": [
+              "select[aria-label=\"Transfer counterpart\"]"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient"
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "scope": "Synthetic wheelhouse deterministic-staging regression repair",
+  "failed_source_commit": "8b94b1708ffc828b1318126c50e9730d604d4935",
+  "failed_hosted_run": 36176771759,
+  "failed_hosted_job": 108209167745,
+  "failed_check": "native (macos-15-intel) / synthetic Python tooling",
+  "cause": "The same-input determinism test created two separate synthetic ZIP archives. ZIP member timestamps can differ, so its inputs and therefore manifest hashes legitimately differed.",
+  "repair": "Construct one synthetic wheel and pass identical bytes to both staging operations. Production hash/byte checks are unchanged.",
+  "fixed_test_file": {
+    "path": "scripts/tests/test_python_wheelhouse_staging.py",
+    "bytes": 14804,
+    "sha256": "58882b6ce694b8faa2ec038a0477e9f889e3e441275e6811c43c9eac7b26dd93"
+  },
+  "local_checks": {
+    "forced_clock_before": {
+      "outcome": "failed as expected",
+      "synthetic_wheel_constructions": 2,
+      "mechanism": "Separate wheel constructions receive fixed ZIP clock seconds 0 and 2"
+    },
+    "forced_clock_after": {
+      "outcome": "passed",
+      "synthetic_wheel_constructions": 1,
+      "mechanism": "Same forced-clock driver; both staging operations receive the same retained bytes"
+    },
+    "wheelhouse_suite": {
+      "passed": 19,
+      "failed": 0
+    },
+    "full_python_suite": {
+      "total": 345,
+      "passed": 341,
+      "skipped": 4,
+      "failed": 0
+    }
+  },
+  "retained_private_artifacts": {
+    "intel-job.log": {
+      "bytes": 104381,
+      "sha256": "f2f18c9bfb69c21370844c5b806c4d68bab94e5a192714b0ba2728c6e6bc613c"
+    },
+    "forced-clock-reproduction.py": {
+      "bytes": 696,
+      "sha256": "0a35bb8a9c231cf01724c2a7656b542c996293f7e97c8358dd91ad6bf804b447"
+    },
+    "forced-clock-before.log": {
+      "bytes": 1357,
+      "sha256": "5835bac60d11acf6ce76285f64186e0c2f38fad31efea8dc13a7aae15842358f"
+    },
+    "forced-clock-after.log": {
+      "bytes": 327,
+      "sha256": "b5ef3e4d97270d96c3670ad4f0900d9fe590a345df9b39205f4af0b04b7b5913"
+    },
+    "wheelhouse.log": {
+      "bytes": 118,
+      "sha256": "30fef72c12f29cee7095d78b3723b53daa76e89cd754d0bbe843fbac24d63b61"
+    },
+    "python-all.log": {
+      "bytes": 974,
+      "sha256": "1d19baa8183c1efe8a303ac1463bcf6b0d1f2934f62b218000b3e81bcddabbe2"
+    }
+  },
+  "limits": [
+    "Native workers/interpreters were not executed",
+    "No Rust, Java, runtime assembly or production stager changed",
+    "Hosted verification of the repaired head remains required",
+    "Synthetic negative-fixture reports printed by the tooling suite are not real native campaigns"
+  ],
+  "release_gate_changed": false
+}

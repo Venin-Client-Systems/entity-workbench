@@ -17,6 +17,55 @@ fn demo() -> (TempDir, Workspace) {
     (temp, w)
 }
 #[test]
+fn demo_cannot_add_fictional_records_to_an_existing_entity_free_workspace() {
+    for existing in ["text", "statement", "report"] {
+        let (temp, mut w) = workspace();
+        match existing {
+            "text" => {
+                w.import("source.txt", b"Existing synthetic evidence")
+                    .unwrap();
+            }
+            "statement" => {
+                w.import(
+                    "statement.csv",
+                    include_bytes!("../../../fixtures/statement.csv"),
+                )
+                .unwrap();
+            }
+            "report" => {
+                w.save_report().unwrap();
+            }
+            _ => unreachable!(),
+        }
+        let before = w.view().unwrap();
+        assert!(before.entities.is_empty());
+        let originals = || {
+            let mut values: Vec<_> = std::fs::read_dir(temp.path().join("case/originals"))
+                .unwrap()
+                .map(|entry| {
+                    let path = entry.unwrap().path();
+                    (
+                        path.file_name().unwrap().to_owned(),
+                        std::fs::read(path).unwrap(),
+                    )
+                })
+                .collect();
+            values.sort();
+            values
+        };
+        let prior_originals = originals();
+        assert!(matches!(
+            w.seed_demo(),
+            Err(workbench_core::Error::Conflict(_))
+        ));
+        assert_eq!(
+            serde_json::to_value(w.view().unwrap()).unwrap(),
+            serde_json::to_value(before).unwrap()
+        );
+        assert_eq!(originals(), prior_originals);
+    }
+}
+#[test]
 fn decimal_and_calendar_validation_are_strict() {
     assert_eq!(
         (analytics::amount("0.10").unwrap() + analytics::amount("0.20").unwrap()).to_string(),
@@ -422,7 +471,7 @@ fn discovery_stops_at_first_budget_and_never_silently_expands() {
 }
 #[test]
 fn html_is_extracted_without_scripts_or_offsite_link_authority() {
-    let (text,links)=workbench_core::collection::extract_html("<p>Public fact</p><script>secret()</script><svg><text>active</text></svg><a href='/next'>Lead</a><a href='javascript:evil()'>bad</a>",&url::Url::parse("https://example.com/start").unwrap());
+    let (text,links)=workbench_core::collection::extract_html("<p>Public fact</p><script>secret()</script><svg><text>active</text></svg><a href='/next'>Lead</a><a href='javascript:evil()'>bad</a>",&url::Url::parse("https://example.com/start").unwrap()).unwrap();
     assert!(text.contains("Public fact"));
     assert!(!text.contains("secret"));
     assert!(!text.contains("active"));

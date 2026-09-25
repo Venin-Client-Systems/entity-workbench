@@ -1,0 +1,58 @@
+{
+  "attempts_are_completions": false,
+  "campaign_id": "ed8ab917-827a-4b02-9b7f-06bfc643679e",
+  "candidate_execution_count": 1,
+  "cause_established": false,
+  "complete_release": false,
+  "failure": "wall-time",
+  "inventory_labels_describe_assembly_not_campaign_execution": true,
+  "native_test_reported_seconds": 33.27,
+  "original_and_selected_post_inventory_verified_unchanged": true,
+  "paired_imports": {
+    "duckdb": {
+      "elapsed_ms": 736,
+      "process_cpu_ms": 24
+    },
+    "networkx": {
+      "elapsed_ms": 307,
+      "process_cpu_ms": 306
+    }
+  },
+  "passed": false,
+  "receipt_contract_valid": true,
+  "release_build_reported_seconds": 192,
+  "remaining_job_directories": 0,
+  "remaining_relocated_prefix": true,
+  "retained_files": {
+    "build.log": {
+      "bytes": 210283,
+      "sha256": "60b2274d61de6620f80db97030ce151a795b63a66e821c4d8f0dd36548f4e209"
+    },
+    "native-report.json": {
+      "bytes": 4926,
+      "sha256": "5f6fd8b2c28a2aac2ffb7c3e57dc6f6c1ee842c7f8d4cc46e45c0429801a746c"
+    },
+    "native-test.log": {
+      "bytes": 4016,
+      "sha256": "5d59afde74bfb54ebdb64c6193fe8720f68b98ad3fdc7404c849eb4112df0cd9"
+    },
+    "observation.json": {
+      "bytes": 10877,
+      "sha256": "111d063769297fe9fe44917a315becd5aa7cf423edef4c3adfd3da9786b2e5b5"
+    },
+    "stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "retry_count": 0,
+  "schema_version": 1,
+  "source_and_binary_unchanged_after_execution": true,
+  "source_commit": "4d76120a5fb918491db7aed8bdf04c0a31cd44f5",
+  "unpaired_top_level_import": "spacy",
+  "verification_scope": "Post-campaign read-only receipt, source, binary and parent-directory checks; prefix readback was independently completed by the runner after confirmed termination."
+}

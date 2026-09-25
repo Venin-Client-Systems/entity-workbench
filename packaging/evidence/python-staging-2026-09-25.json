@@ -1,0 +1,170 @@
+{
+  "actual_inventory": {
+    "exit_code": 1,
+    "report": {
+      "complete": false,
+      "complete_release": false,
+      "failure": null,
+      "generated": true,
+      "inventory_sha256": "dc5ea1f8b7527ba1c7ea7e53d2750045d3bbb095e70a926a6b4cc9b8d5ac4fee",
+      "plan_sha256": "45fa670a92e5267cb24346bcec0db3e6adbaa3737066b0773c663ec3eab16d19",
+      "published": true,
+      "requirements_sha256": "3ace9499c6a642dff600aa3490d544a96d699be0d828c494f113d940d7eff37b",
+      "schema_version": 1,
+      "target": "macos-aarch64",
+      "verification": {
+        "complete": false,
+        "errors": [
+          {
+            "code": "missing_components",
+            "detail": "Required runtimes or advertised assets are absent"
+          }
+        ],
+        "invalid_components": [],
+        "inventory_sha256": "dc5ea1f8b7527ba1c7ea7e53d2750045d3bbb095e70a926a6b4cc9b8d5ac4fee",
+        "missing_components": [
+          "application",
+          "chromium",
+          "document-parser",
+          "duckdb",
+          "duckdb-spatial",
+          "fonts",
+          "help",
+          "icons",
+          "java-runtime",
+          "lucene-search",
+          "networkx",
+          "ocr-language:eng",
+          "playwright",
+          "playwright-driver",
+          "pyarrow",
+          "sandbox-helper",
+          "spacy",
+          "splink",
+          "styles",
+          "synthetic-demo",
+          "tesseract",
+          "ui-assets"
+        ],
+        "requirements_sha256": "3ace9499c6a642dff600aa3490d544a96d699be0d828c494f113d940d7eff37b",
+        "schema_version": 1,
+        "target": "macos-aarch64",
+        "verified_bytes": 276208764,
+        "verified_files": 3333
+      }
+    },
+    "report_sha256": "704c8515cf1dc5dae1e5c594759d11ae1a11cadd1b2e1c27eba418cbdb2f4662"
+  },
+  "actual_stage": {
+    "exit_code": 0,
+    "report": {
+      "archive_sha256": "aa76e997b7bb159002dd38938e57ce06fc07bf73621131d3d126d459df4e9ac7",
+      "bytes": 276208764,
+      "complete_release": false,
+      "failure": null,
+      "files": 3333,
+      "interpreter_executed": false,
+      "manifest_sha256": "6b4edce6755094b4f8393d5553da9a6968ac18b761035616430aaed7dbb0be95",
+      "preceding_failure": null,
+      "schema_version": 1,
+      "staged": true,
+      "unmet_checks": [
+        "locked-wheelhouse-not-staged",
+        "native-loader-closure-unverified",
+        "relocated-interpreter-not-executed",
+        "worker-confinement-unverified",
+        "canonical-worker-not-enabled",
+        "complete-notices-unverified",
+        "upstream-metadata-references-absent-LICENSE.zlib-ng.txt",
+        "minimum-supported-os-not-established"
+      ]
+    },
+    "report_sha256": "1f79ccabc6e5a988cb0e3a3de8a3f8929045637d5344b466d11e4012b419b290"
+  },
+  "complete_release": false,
+  "historical_failed_attempts": [
+    {
+      "description": "Destination parent absent; no staged output created. Parent explicitly created before subsequent attempts.",
+      "exit_code": 1,
+      "report": {
+        "complete_release": false,
+        "failure": "Unreadable or invalid staging input/output",
+        "interpreter_executed": false,
+        "schema_version": 1,
+        "staged": false,
+        "unmet_checks": [
+          "locked-wheelhouse-not-staged",
+          "native-loader-closure-unverified",
+          "relocated-interpreter-not-executed",
+          "worker-confinement-unverified",
+          "canonical-worker-not-enabled",
+          "complete-notices-unverified",
+          "upstream-metadata-references-absent-LICENSE.zlib-ng.txt",
+          "minimum-supported-os-not-established"
+        ]
+      },
+      "report_sha256": "a83c3b49d1a323bb9993e0d458f4a3724c59122e4c48a292a1139815770366c5"
+    }
+  ],
+  "issue": "EW-07/#11",
+  "native_windows_test_execution": false,
+  "notes": [
+    "Source bindings are file digests of the reviewed uncommitted implementation; this is not clean-commit release evidence.",
+    "Actual archive has 3,691 members and 10 explicitly materialized links, including both independently hashed 70,101,872-byte static-library copies.",
+    "All 19 available upstream licence files and raw PYTHON.json retained; absent referenced zlib-ng notice remains unresolved.",
+    "POSIX filesystem tests skip on Windows; a separate portable test checks early unsupported-platform refusal.",
+    "No wheel installation, runtime launch, relocation, loader closure, confinement or minimum-OS acceptance was performed."
+  ],
+  "recorded_date_utc": "2026-09-25",
+  "release_gate_evidence": false,
+  "runtime_source": {
+    "asset": "cpython-3.13.15+20260924-aarch64-apple-darwin-pgo+lto-full.tar.zst",
+    "bytes": 59200647,
+    "release": "20260924",
+    "sha256": "aa76e997b7bb159002dd38938e57ce06fc07bf73621131d3d126d459df4e9ac7",
+    "source_commit": "6a729962cddc76630b59b1b895501b1539412524",
+    "upstream_sha256sums_sha256": "f4c51660f65ce980a1113028ce6cb751d6251e17550bc2252bfd2be878c2cc1e"
+  },
+  "schema_version": 1,
+  "scope": "Offline hash-bound file staging and inventory only; no staged interpreter execution",
+  "source": {
+    "base_commit": "57fe45184de072d9306377f0b46ed38ff1fc4286",
+    "executed_file_sha256": {
+      "packaging/PYTHON-STAGING.md": "905cf944bc6d0ee682669738b16a1fe983580d0f9e105283a453da9843b13f66",
+      "packaging/plans/development-macos-python.v1.json": "45fa670a92e5267cb24346bcec0db3e6adbaa3737066b0773c663ec3eab16d19",
+      "scripts/stage_python_runtime.py": "27e73847781debd137bb1b1052c502dae556d4f5827be8032690e243d7db808a",
+      "scripts/tests/test_python_runtime_staging.py": "ba98901ae224d87f82d3a30c5215e20c24308458c53387c2a8bbac4283f371b1"
+    },
+    "source_clean_when_run": false
+  },
+  "synthetic_tests": [
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.14.2",
+      "log_sha256": "24f5a1759652139e98cdf7993c7e5e99746d0b15ff4dde35d239e9cde8e3c933",
+      "optimized": false,
+      "tests": 20
+    },
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.14.2",
+      "log_sha256": "ea69db4d2cc47978b36291262095ed693276675ef42ac30e5b058e81cd6d3d19",
+      "optimized": true,
+      "tests": 20
+    },
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.13.11",
+      "log_sha256": "cfda70ff273cde2fa38ed21a57b7d26b805310b99bff8d26f842a790f40e99c2",
+      "optimized": false,
+      "tests": 20
+    },
+    {
+      "exit_code": 0,
+      "interpreter": "Python 3.13.11",
+      "log_sha256": "6399619e8d75533fcb8c42d701867c97732fe8b7f7aca70495c0c42b1e834cdf",
+      "optimized": true,
+      "tests": 20
+    }
+  ]
+}

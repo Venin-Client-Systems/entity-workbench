@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "targets": [
+    "windows-x86_64",
+    "macos-aarch64",
+    "macos-x86_64"
+  ],
+  "gates": {
+    "integrated_workflows": {
+      "issues": [
+        "EW-09",
+        "EW-33"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "installed_workflow",
+      "procedure": "Complete the ten linked investigation scenarios from an installed candidate.",
+      "procedure_id": "accept-integrated-workflows",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "release-verifier"
+    },
+    "windows_appcontainer": {
+      "issues": [
+        "EW-03",
+        "EW-34",
+        "EW-39"
+      ],
+      "targets": [
+        "windows-x86_64"
+      ],
+      "evidence_kind": "sandbox_probe",
+      "procedure": "Run benign and hostile AppContainer probes on Windows 11, including denied direct networking.",
+      "procedure_id": "accept-windows-appcontainer",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "security-reviewer"
+    },
+    "macos_signed_helpers": {
+      "issues": [
+        "EW-04",
+        "EW-34",
+        "EW-38",
+        "EW-39"
+      ],
+      "targets": [
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "sandbox_probe",
+      "procedure": "Run signed-helper benign and hostile probes on both Mac architectures.",
+      "procedure_id": "accept-macos-signed-helpers",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "security-reviewer"
+    },
+    "all_runtime_dependencies_bundled": {
+      "issues": [
+        "EW-01",
+        "EW-06",
+        "EW-07",
+        "EW-26",
+        "EW-38"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "runtime_inventory",
+      "procedure": "Verify complete per-target inventories, advertised assets and packaged engine compatibility.",
+      "procedure_id": "accept-all-runtime-dependencies-bundled",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "release-verifier"
+    },
+    "offline_clean_install_three_targets": {
+      "issues": [
+        "EW-09",
+        "EW-39"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "offline_install",
+      "procedure": "Install and exercise every advertised local feature on a clean offline system without developer tools.",
+      "procedure_id": "accept-offline-clean-install-three-targets",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "release-verifier"
+    },
+    "hostile_input_and_resource_exhaustion": {
+      "issues": [
+        "EW-32",
+        "EW-34"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "hostile_input",
+      "procedure": "Run hostile document, archive, IPC, injection and resource-limit cases against the installed candidate.",
+      "procedure_id": "accept-hostile-input-and-resource-exhaustion",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "security-reviewer"
+    },
+    "broad_local_web_coverage": {
+      "issues": [
+        "EW-05",
+        "EW-15",
+        "EW-22",
+        "EW-23",
+        "EW-24"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "live_discovery",
+      "procedure": "Run the frozen 30-task direct-web benchmark in-app with independent labels, explicit budgets and coverage measurements.",
+      "procedure_id": "accept-broad-local-web-coverage",
+      "procedure_version": "1",
+      "max_age_days": 7,
+      "reviewer_role": "release-verifier"
+    },
+    "recovery_and_migration_failures": {
+      "issues": [
+        "EW-10",
+        "EW-11",
+        "EW-35"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "recovery",
+      "procedure": "Exercise interrupted jobs, evidence-inclusive recovery, failed migrations and correction propagation.",
+      "procedure_id": "accept-recovery-and-migration-failures",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "release-verifier"
+    },
+    "benchmark_16gb_target": {
+      "issues": [
+        "EW-36"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "performance",
+      "procedure": "Measure the fixed 16 GiB workload: 100000 transactions, 10000 pages including 1000 scans, concurrent map/graph use and p95 search/filter latency.",
+      "procedure_id": "accept-benchmark-16gb-target",
+      "procedure_version": "1",
+      "max_age_days": 30,
+      "reviewer_role": "release-verifier"
+    },
+    "dependency_license_and_security_review": {
+      "issues": [
+        "EW-37"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "review",
+      "procedure": "Review the target SBOM, licences/notices, threat model, connector disclosures, security results and update procedure.",
+      "procedure_id": "accept-dependency-license-and-security-review",
+      "procedure_version": "1",
+      "max_age_days": 7,
+      "reviewer_role": "security-reviewer"
+    },
+    "signed_and_notarized_artifacts": {
+      "issues": [
+        "EW-08",
+        "EW-38"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "signature_verification",
+      "procedure": "Verify the actual Windows signature or Mac signature/notarization and candidate identity.",
+      "procedure_id": "accept-signed-and-notarized-artifacts",
+      "procedure_version": "1",
+      "max_age_days": 7,
+      "reviewer_role": "release-verifier"
+    },
+    "downloaded_artifact_verification": {
+      "issues": [
+        "EW-39",
+        "EW-40"
+      ],
+      "targets": [
+        "windows-x86_64",
+        "macos-aarch64",
+        "macos-x86_64"
+      ],
+      "evidence_kind": "download_verification",
+      "procedure": "Download the published candidate, verify its bytes/signatures, then exercise clean offline installation and advertised workflows.",
+      "procedure_id": "accept-downloaded-artifact-verification",
+      "procedure_version": "1",
+      "max_age_days": 7,
+      "reviewer_role": "release-verifier"
+    }
+  },
+  "scenarios": {
+    "clean_offline_installation": [
+      "offline_clean_install_three_targets",
+      "downloaded_artifact_verification"
+    ],
+    "discovery_from_incomplete_input": [
+      "broad_local_web_coverage",
+      "integrated_workflows"
+    ],
+    "difficult_document_import": [
+      "integrated_workflows",
+      "hostile_input_and_resource_exhaustion"
+    ],
+    "identity_ambiguity": [
+      "integrated_workflows"
+    ],
+    "statement_reconciliation": [
+      "integrated_workflows"
+    ],
+    "proximity_analysis": [
+      "integrated_workflows"
+    ],
+    "correction_propagation": [
+      "integrated_workflows",
+      "recovery_and_migration_failures"
+    ],
+    "hostile_input_and_networking": [
+      "windows_appcontainer",
+      "macos_signed_helpers",
+      "hostile_input_and_resource_exhaustion"
+    ],
+    "recovery_and_upgrades": [
+      "recovery_and_migration_failures"
+    ],
+    "broad_direct_web_local_search": [
+      "broad_local_web_coverage"
+    ]
+  },
+  "support_matrix": {
+    "windows-x86_64": {
+      "minimum_version": null,
+      "decision_reference": null,
+      "tested_versions": []
+    },
+    "macos-aarch64": {
+      "minimum_version": null,
+      "decision_reference": null,
+      "tested_versions": []
+    },
+    "macos-x86_64": {
+      "minimum_version": null,
+      "decision_reference": null,
+      "tested_versions": []
+    }
+  }
+}

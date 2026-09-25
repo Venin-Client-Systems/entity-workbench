@@ -1,0 +1,77 @@
+{
+  "format": "ew-access-search-integration-v1",
+  "source_commit": "fe8aad9d622ea17785caab21f33c9d36cdd86fee",
+  "post_source_documentation_commit": "439b772798e34e2d7f2b5352e7b167e9563b6813",
+  "source_commits": [
+    "e9d0e86f485db8933988bbf02cc9c37a387b201b",
+    "18ba1bb638487f5e6cb28d3413fa2b3ff38fd6db"
+  ],
+  "merge": "Only store.rs combines two private module declarations; all other increment bytes match their reviewed source commits.",
+  "ordinary_core_passed": 741,
+  "ignored_native_and_opt_in": 34,
+  "checks": [
+    {
+      "name": "core",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "workbench-core"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 90.954,
+      "log": {
+        "file": "core.log",
+        "bytes": 91622,
+        "sha256": "b3387d4cbacd2d3984a2435f9679c13cc79a8930b3f8fc3a4fe870b5ea30867d"
+      }
+    },
+    {
+      "name": "clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--offline",
+        "-p",
+        "workbench-core",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 17.199,
+      "log": {
+        "file": "clippy.log",
+        "bytes": 185,
+        "sha256": "5b2ef13a307b040ea5fe18512a4d424a031e4ae19c3d3ee6e7db27bff2b2c67b"
+      }
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.868,
+      "log": {
+        "file": "fmt.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "historical_schema_files_unchanged": 110,
+  "limits": [
+    "No UI source changed and no browser workflow rerun is claimed.",
+    "The access prefix remains a private synthetic source path with no network activation.",
+    "Source checks alone do not establish native worker, installer, performance or release acceptance."
+  ]
+}

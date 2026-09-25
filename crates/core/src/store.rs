@@ -9,13 +9,67 @@ use std::{
     path::{Path, PathBuf},
 };
 use uuid::Uuid;
+mod assessment;
+mod citation_catalogue;
+mod collection;
+mod collection_access;
+mod collection_jobs;
+pub(crate) use collection_jobs::{
+    CollectionCapture, CollectionOwnership, PreparedCollectionSettlement,
+};
+mod derivative_files;
+mod desktop_summary;
+mod docx_snapshots;
+mod evidence;
+use evidence::{all_evidence, find_evidence, get_evidence};
+pub(crate) mod file_identity;
+mod graph_api;
 mod identity;
+// Internal source seam only; no command/worker activation until separately reviewed.
+#[allow(dead_code)]
+pub(crate) mod graph_analysis;
+mod originals;
+use originals::read_original;
+mod account_flow;
+#[cfg(test)]
+mod evidence_identity_tests;
+pub(crate) mod local_exports;
+mod presentation;
+mod processing;
+mod processing_regions;
+mod recovery;
+mod report_snapshots;
+mod review_decision_page;
+mod search;
+mod search_capture;
+mod statements;
+mod transaction_analysis;
+mod transaction_balance;
+mod transaction_comparison;
+mod transaction_csv;
+mod transaction_export;
+mod transaction_export_selection;
+mod transaction_facets;
+mod transaction_page;
+mod transaction_search;
+mod transaction_sources;
+mod transfer_candidates;
+#[cfg(test)]
+mod view_tests;
 
-const SCHEMA: u32 = 1;
+const SCHEMA: u32 = 5;
+// Only workspace refresh responses vary. Direct reader/job responses are unchanged.
+#[derive(Clone, Copy)]
+enum ResponseMode {
+    Full,
+    Presentation,
+    Summary,
+}
 pub struct Workspace {
     root: PathBuf,
     conn: Connection,
     runtime: Option<crate::engines::Runtime>,
+    graph_capture_owner: Uuid,
 }
 pub fn hash(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
@@ -26,15 +80,32 @@ fn now() -> String {
 fn id() -> String {
     Uuid::new_v4().to_string()
 }
-fn private_dir(path: &Path) -> Result<()> {
+fn is_link(metadata: &fs::Metadata) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        metadata.file_attributes() & 0x400 != 0 // FILE_ATTRIBUTE_REPARSE_POINT, including junctions.
+    }
+    #[cfg(not(windows))]
+    {
+        metadata.file_type().is_symlink()
+    }
+}
+fn reject_link_ancestors(path: &Path) -> Result<()> {
     for ancestor in path.ancestors() {
-        if ancestor.exists() {
-            require(
-                !fs::symlink_metadata(ancestor)?.file_type().is_symlink(),
-                "Workspace path contains a symbolic link",
-            )?;
+        match fs::symlink_metadata(ancestor) {
+            Ok(metadata) => require(
+                !is_link(&metadata),
+                "Workspace path contains a link or reparse point",
+            )?,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error.into()),
         }
     }
+    Ok(())
+}
+fn private_dir(path: &Path) -> Result<()> {
+    reject_link_ancestors(path)?;
     fs::create_dir_all(path)?;
     #[cfg(unix)]
     {
@@ -129,7 +200,8 @@ impl Workspace {
                 CREATE TABLE records(sequence INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, id TEXT NOT NULL, body TEXT NOT NULL CHECK(json_valid(body)), UNIQUE(kind,id));
                 CREATE TABLE history(sequence INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT NOT NULL,id TEXT NOT NULL,body TEXT NOT NULL,revision INTEGER NOT NULL);
                 CREATE TABLE events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,revision INTEGER NOT NULL,action TEXT NOT NULL,at TEXT NOT NULL);
-                PRAGMA user_version=1;")?;
+                PRAGMA user_version=5;")?;
+            tx.execute_batch(derivative_files::CREATE_CATALOG)?;
             tx.commit()?;
         }
         conn.execute_batch(
@@ -141,7 +213,29 @@ impl Workspace {
             root,
             conn,
             runtime: None,
+            graph_capture_owner: Uuid::new_v4(),
         };
+        if (1..SCHEMA).contains(&version) {
+            // Older readers lack mapping or finding-review semantics. Retain a
+            // complete recovery point before changing records or compatibility.
+            workspace.backup()?;
+            workspace.change(None, "workspace.schema_v5", version < 3, |conn| {
+                conn.execute_batch(derivative_files::CREATE_CATALOG)?;
+                conn.pragma_update(None, "user_version", SCHEMA)?;
+                let actual: u32 = conn.pragma_query_value(None, "user_version", |r| r.get(0))?;
+                require(actual == SCHEMA, "Schema upgrade postcondition failed")
+            })?;
+        }
+        if workspace
+            .conn
+            .pragma_query_value::<u32, _>(None, "user_version", |r| r.get(0))?
+            == SCHEMA
+        {
+            let _: u64 =
+                workspace
+                    .conn
+                    .query_row("SELECT count(*) FROM derivative_objects", [], |r| r.get(0))?;
+        }
         let interrupted: Vec<CollectionJob> = all::<CollectionJob>(&workspace.conn, "job")?
             .into_iter()
             .filter(|j| matches!(j.state, JobState::Running))
@@ -196,45 +290,363 @@ impl Workspace {
         Ok(())
     }
     pub fn view(&self) -> Result<WorkspaceView> {
-        Ok(WorkspaceView {
+        self.view_with_reports(|conn| all(conn, "report"))
+    }
+    fn view_with_reports<R>(
+        &self,
+        reports: impl FnOnce(&Connection) -> Result<Vec<R>>,
+    ) -> Result<WorkspaceView<R>> {
+        // Pin the revision and every table to one SQLite read snapshot.
+        // A coordinator on another connection may commit while this view loads.
+        let transaction = self.conn.unchecked_transaction()?;
+        let view = WorkspaceView {
             schema_version: SCHEMA,
             revision: self.revision()?,
-            entities: all(&self.conn, "entity")?,
-            evidence: all(&self.conn, "evidence")?,
-            observations: all(&self.conn, "observation")?,
-            assertions: all(&self.conn, "assertion")?,
-            transactions: all(&self.conn, "transaction")?,
-            addresses: all(&self.conn, "address")?,
-            locations: all(&self.conn, "location")?,
-            leads: all(&self.conn, "lead")?,
-            jobs: all(&self.conn, "job")?,
-            findings: all(&self.conn, "finding")?,
-            hypotheses: all(&self.conn, "hypothesis")?,
-            decisions: all(&self.conn, "decision")?,
-            merges: all(&self.conn, "merge")?,
-            identity_decisions: all(&self.conn, "identity_decision")?,
-            reports: all(&self.conn, "report")?,
-        })
+            entities: all(&transaction, "entity")?,
+            evidence: all_evidence(&transaction)?,
+            observations: all(&transaction, "observation")?,
+            assertions: all(&transaction, "assertion")?,
+            transactions: all(&transaction, "transaction")?,
+            addresses: all(&transaction, "address")?,
+            locations: all(&transaction, "location")?,
+            leads: all(&transaction, "lead")?,
+            jobs: all(&transaction, "job")?,
+            findings: all(&transaction, "finding")?,
+            hypotheses: all(&transaction, "hypothesis")?,
+            decisions: all(&transaction, "decision")?,
+            merges: all(&transaction, "merge")?,
+            identity_decisions: all(&transaction, "identity_decision")?,
+            reports: reports(&transaction)?,
+            statement_profiles: all(&transaction, "statement_profile")?,
+            statement_imports: all(&transaction, "statement_import")?,
+        };
+        transaction.commit()?;
+        Ok(view)
     }
     pub fn dispatch(&mut self, command: Command) -> Result<Value> {
+        self.dispatch_with_view(command, ResponseMode::Full)
+    }
+    /// Desktop response mode: immutable report bodies are fetched on explicit export.
+    pub fn dispatch_presentation(&mut self, command: Command) -> Result<Value> {
+        self.dispatch_with_view(command, ResponseMode::Presentation)
+    }
+    /// Opt-in smaller refresh response; desktop callers still use presentation mode.
+    pub fn dispatch_summary(&mut self, command: Command) -> Result<Value> {
+        self.dispatch_with_view(command, ResponseMode::Summary)
+    }
+    fn dispatch_with_view(&mut self, command: Command, mode: ResponseMode) -> Result<Value> {
         match command {
+            Command::ResolveDocxCapture {
+                request_id,
+                captured_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.resolve_docx_capture(&request_id, captured_revision)?,
+                )?);
+            }
+            Command::SaveDocxSnapshot {
+                request_id,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.save_docx_snapshot(&request_id, expected_revision)?,
+                )?);
+            }
+            Command::PageDocxSnapshots {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_docx_snapshots(&request, expected_revision)?,
+                )?);
+            }
+            Command::InspectDocxSnapshot {
+                report_id,
+                expected_document_sha256,
+                expected_docx_sha256,
+            } => {
+                return Ok(serde_json::to_value(self.inspect_docx_snapshot(
+                    &report_id,
+                    &expected_document_sha256,
+                    &expected_docx_sha256,
+                )?)?);
+            }
+            Command::ExportTransactionCsv {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.export_transaction_csv(&request, expected_revision)?,
+                )?);
+            }
+            Command::ExportTransactions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.export_transactions(&request, expected_revision)?,
+                )?);
+            }
+            Command::PageTransferCandidates {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_transfer_candidates(&request, expected_revision)?,
+                )?);
+            }
+            Command::ReadTransactionBalances {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.read_transaction_balances(&request, expected_revision)?,
+                )?);
+            }
+            Command::PageCitationCatalogue {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_citation_catalogue(&request, expected_revision)?,
+                )?);
+            }
+            Command::ReadCitationSelections {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.read_citation_selections(&request, expected_revision)?,
+                )?);
+            }
+            Command::SearchTransactions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.search_transactions(&request, expected_revision)?,
+                )?);
+            }
+            Command::PageTransactionFacets {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_transaction_facets(&request, expected_revision)?,
+                )?)
+            }
+            Command::PageReviewDecisions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_review_decisions(&request, expected_revision)?,
+                )?);
+            }
+            Command::ReadTransactionSources {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.read_transaction_sources(&request, expected_revision)?,
+                )?)
+            }
+            Command::PageTransactions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_transactions(&request, expected_revision)?,
+                )?)
+            }
+            Command::InspectReportSnapshot {
+                report_id,
+                expected_sha256,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.inspect_report_snapshot(&report_id, &expected_sha256)?,
+                )?);
+            }
+            Command::QueuePdfPageOcr {
+                evidence_id,
+                request_key,
+                page_number,
+                dpi,
+            } => {
+                return Ok(serde_json::to_value(self.queue_pdf_page_ocr(
+                    &evidence_id,
+                    &request_key,
+                    page_number,
+                    dpi,
+                )?)?)
+            }
+            Command::InspectPdfExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(self.pdf_extraction(&extraction_id)?)?)
+            }
+            Command::QueueImageOcrRegions {
+                evidence_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.queue_image_ocr_regions(&evidence_id, &request_key)?,
+                )?);
+            }
+            Command::InspectImageRegionExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(
+                    self.inspect_image_region_extraction(&extraction_id)?,
+                )?);
+            }
+            Command::QueueImageOcr {
+                evidence_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.queue_image_ocr(&evidence_id, &request_key)?,
+                )?);
+            }
+            Command::InspectImageExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(
+                    self.image_extraction(&extraction_id)?,
+                )?);
+            }
+            Command::QueueGraphPath {
+                expected_revision,
+                source_id,
+                target_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(self.queue_graph_job(
+                    expected_revision,
+                    &source_id,
+                    &target_id,
+                    &request_key,
+                )?)?);
+            }
+            Command::PageGraphJobs {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_graph_jobs(&request, expected_revision)?,
+                )?);
+            }
+            Command::InspectGraphJob { job_id } => {
+                return Ok(serde_json::to_value(self.inspect_graph_job(&job_id)?)?);
+            }
+            Command::CancelGraphJob {
+                job_id,
+                expected_attempt,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.cancel_graph_job(&job_id, expected_attempt)?,
+                )?);
+            }
+            Command::InspectGraphAnalysis {
+                id,
+                expected_request_sha256,
+                expected_result_sha256,
+            } => {
+                return Ok(serde_json::to_value(self.inspect_graph_result(
+                    &id,
+                    &expected_request_sha256,
+                    &expected_result_sha256,
+                )?)?);
+            }
+            Command::RetryGraphPublication { .. } => {
+                return Err(Error::Blocked(
+                    "Graph publication retry requires its owning live coordinator".into(),
+                ));
+            }
+            Command::QueueDocumentParse {
+                evidence_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.queue_document_parse(&evidence_id, &request_key)?,
+                )?)
+            }
+            Command::ListProcessingJobs {} => {
+                return Ok(serde_json::to_value(self.processing_jobs()?)?)
+            }
+            Command::InspectExtraction { extraction_id } => {
+                return Ok(serde_json::to_value(self.extraction(&extraction_id)?)?)
+            }
+            Command::InspectProcessingJob { job_id } => {
+                return Ok(serde_json::to_value(self.processing_job(&job_id)?)?)
+            }
+            Command::CancelProcessingJob {
+                job_id,
+                expected_attempt,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.cancel_processing_job(&job_id, expected_attempt)?,
+                )?)
+            }
+            Command::RetryProcessingJob {
+                job_id,
+                expected_attempt,
+                reason,
+            } => {
+                return Ok(serde_json::to_value(self.retry_processing_job(
+                    &job_id,
+                    expected_attempt,
+                    &reason,
+                )?)?)
+            }
+            Command::AnalyzeAccountFlows {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.analyze_account_flows(&request, expected_revision)?,
+                )?);
+            }
+            Command::CompareTransactionPeriods {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.compare_transaction_periods(&request, expected_revision)?,
+                )?);
+            }
+            Command::AnalyzeTransactions {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.analyze_transactions(&request, expected_revision)?,
+                )?);
+            }
             Command::View {} => {}
             Command::InspectSource { anchor } => {
                 return Ok(serde_json::to_value(self.inspect_source(&anchor)?)?);
             }
             Command::Search { query } => {
-                let runtime = self.runtime.as_ref().ok_or_else(|| {
-                    Error::Blocked(
-                        "Packaged local search runtime is not available in this build".into(),
-                    )
-                })?;
-                let result = runtime.search(
-                    &self.root.join("indexes/lucene"),
-                    self.revision()?,
-                    &all::<Evidence>(&self.conn, "evidence")?,
-                    &query,
-                )?;
-                return Ok(serde_json::to_value(result)?);
+                return Ok(serde_json::to_value(self.search_standalone(&query)?)?);
+            }
+            Command::PreviewCollection { input } => {
+                return Ok(serde_json::to_value(crate::collection_api::preview(
+                    input,
+                )?)?)
+            }
+            Command::PageCollectionRuns {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_collection_runs(&request, expected_revision)?,
+                )?)
+            }
+            Command::InspectCollectionRun { job_id } => {
+                return Ok(serde_json::to_value(self.inspect_collection_run(&job_id)?)?)
+            }
+            Command::QueueCollection { .. }
+            | Command::CancelCollection { .. }
+            | Command::ResumeCollection { .. }
+            | Command::RetryCollectionSettlement { .. } => {
+                return Err(Error::Blocked(
+                    "Durable collection controls require an enabled persistent coordinator".into(),
+                ))
             }
             Command::CollectWeb {
                 urls,
@@ -242,9 +654,46 @@ impl Workspace {
                 max_requests,
                 max_seconds,
             } => self.collect_web(urls, max_hops, max_requests, max_seconds)?,
+            Command::InspectCollection { job_id } => {
+                return Ok(serde_json::to_value(self.collection_receipt(&job_id)?)?);
+            }
+            Command::ExportCollection { job_id } => {
+                return self.export_collection(&job_id);
+            }
             Command::SeedDemo {} => self.seed_demo()?,
             Command::Import { name, bytes } => {
                 self.import(&name, &bytes)?;
+            }
+            Command::InspectStatement { bytes, delimiter } => {
+                return Ok(serde_json::to_value(crate::statements::sample(
+                    &bytes, delimiter,
+                )?)?);
+            }
+            Command::PreviewStatement {
+                name,
+                bytes,
+                mapping,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.preview_statement(&name, &bytes, &mapping)?,
+                )?);
+            }
+            Command::ImportStatement {
+                name,
+                bytes,
+                mapping,
+                preview_token,
+                save_profile_name,
+                expected_revision,
+            } => {
+                self.import_statement(
+                    &name,
+                    &bytes,
+                    mapping,
+                    &preview_token,
+                    save_profile_name.as_deref(),
+                    expected_revision,
+                )?;
             }
             Command::AddEntity {
                 entity,
@@ -328,26 +777,56 @@ impl Workspace {
                 reason,
                 expected_revision,
             } => self.reverse_merge(&id, &reason, expected_revision)?,
+            Command::AddQuestion {
+                question,
+                reason,
+                expected_revision,
+            } => {
+                self.save_question(None, question, &reason, expected_revision)?;
+            }
+            Command::UpdateQuestion {
+                id,
+                question,
+                reason,
+                expected_revision,
+            } => {
+                self.save_question(Some(&id), question, &reason, expected_revision)?;
+            }
             Command::AddFinding {
                 title,
                 assessment,
                 supporting_ids,
                 contradicting_ids,
                 limitations,
+                hypothesis_ids,
                 expected_revision,
             } => {
-                reason(&title)?;
-                reason(&assessment)?;
-                reason(&limitations)?;
-                self.change(Some(expected_revision),"finding.add",false,|conn|{
-                    require(!supporting_ids.is_empty()||!contradicting_ids.is_empty(),"Cite at least one evidence item, observation or transaction")?;
-                    for key in supporting_ids.iter().chain(&contradicting_ids) {
-                        let count:u32=conn.query_row("SELECT count(*) FROM records WHERE id=? AND kind IN ('evidence','observation','transaction')",[key],|r|r.get(0))?;
-                        require(count==1,"Finding citation is unresolved")?;
-                    }
-                    let finding=Finding{id:id(),title,assessment,supporting_ids,contradicting_ids,limitations,needs_review:false};
-                    put(conn,"finding",&finding.id,&finding)
-                })?;
+                self.add_finding(
+                    FindingInput {
+                        title,
+                        assessment,
+                        supporting_ids,
+                        contradicting_ids,
+                        limitations,
+                        hypothesis_ids,
+                    },
+                    expected_revision,
+                )?;
+            }
+            Command::UpdateFinding {
+                id,
+                finding,
+                reason,
+                expected_revision,
+            } => {
+                self.update_finding(&id, finding, &reason, expected_revision)?;
+            }
+            Command::ReviewFinding {
+                id,
+                reason,
+                expected_revision,
+            } => {
+                self.review_finding(&id, &reason, expected_revision)?;
             }
             Command::SaveReport {} => {
                 self.save_report()?;
@@ -357,23 +836,20 @@ impl Workspace {
                 return Ok(json!({"backup":path.file_name().and_then(|s|s.to_str())}));
             }
         }
-        let view = self.view()?;
-        Ok(json!({"analysis":analytics::analyse(&view.transactions)?,"workspace":view}))
+        match mode {
+            ResponseMode::Full => workspace_response(self.view()?),
+            ResponseMode::Presentation => workspace_response(self.presentation()?),
+            ResponseMode::Summary => Ok(serde_json::to_value(self.desktop_summary()?)?),
+        }
     }
     pub fn import(&mut self, name: &str, bytes: &[u8]) -> Result<String> {
-        require(
-            !bytes.is_empty() && bytes.len() <= policy::MAX_IMPORT_BYTES,
-            "Import must contain 1 byte to 16 MiB",
-        )?;
-        require(
-            !name.is_empty()
-                && name.len() <= 180
-                && !name.contains(['/', '\\', ':'])
-                && !name.chars().any(char::is_control),
-            "Invalid display filename",
-        )?;
+        validate_import_input(name, bytes)?;
         let digest = hash(bytes);
-        if get::<Evidence>(&self.conn, "evidence", &digest).is_ok() {
+        let existing = find_evidence(&self.conn, &digest)?;
+        if existing
+            .as_ref()
+            .is_some_and(|e| e.extraction_status != "acquisition_only")
+        {
             return Ok(digest);
         }
         let extension = Path::new(name)
@@ -393,55 +869,13 @@ impl Workspace {
         };
         let mut transactions = vec![];
         if extension == "csv" {
-            let mut reader = csv::ReaderBuilder::new().from_reader(bytes);
-            let headers = reader.headers()?.clone();
-            let column = |field: &str| {
-                headers.iter().position(|h| h == field).ok_or_else(|| {
-                    Error::Validation(format!("CSV mapping requires column '{field}'"))
-                })
-            };
-            let (account, date, description, amount, currency) = (
-                column("account")?,
-                column("date")?,
-                column("description")?,
-                column("amount")?,
-                column("currency")?,
-            );
-            let optional = |record: &csv::StringRecord, field: &str| {
-                headers
-                    .iter()
-                    .position(|h| h == field)
-                    .and_then(|i| record.get(i))
-                    .filter(|s| !s.is_empty())
-                    .map(str::to_string)
-            };
-            for (index, row) in reader.records().enumerate() {
-                require(index < 100_000, "CSV row limit exceeded")?;
-                let row = row?;
-                let t = Transaction {
-                    id: format!("{digest}:{}", index + 2),
-                    account: row[account].into(),
-                    date: row[date].into(),
-                    posting_date: optional(&row, "posting_date"),
-                    description: row[description].into(),
-                    amount: row[amount].into(),
-                    currency: row[currency].into(),
-                    balance: optional(&row, "balance"),
-                    anchor: SourceAnchor::Cell {
-                        evidence_id: digest.clone(),
-                        sheet: "CSV".into(),
-                        row: (index + 2) as u32,
-                        column: "amount".into(),
-                    },
-                    review: ReviewState::Pending,
-                    duplicate_candidates: vec![],
-                    transfer_peer: None,
-                    merchant: None,
-                    version: 1,
-                };
-                analytics::validate_transaction(&t)?;
-                transactions.push(t);
-            }
+            let sample = crate::statements::sample(bytes, crate::statements::Delimiter::Comma)?;
+            let parsed = crate::statements::parse(bytes, &sample.suggested_mapping)?;
+            require(
+                parsed.invalid_rows == 0,
+                "Transaction CSV contains invalid rows; use statement preview for row details",
+            )?;
+            transactions = parsed.transactions;
         }
         let evidence = Evidence {
             id: digest.clone(),
@@ -458,28 +892,11 @@ impl Workspace {
             .into(),
             origin_group: digest.clone(),
             imported_at: now(),
-            extraction_status: if is_text {
-                "complete"
-            } else {
-                "unsupported_in_development_build"
-            }
-            .into(),
+            extraction_status: if is_text { "complete" } else { "unprocessed" }.into(),
             text,
-            acquisitions: vec![],
+            acquisitions: existing.map(|e| e.acquisitions).unwrap_or_default(),
         };
-        let path = self.root.join("originals").join(&digest);
-        if path.exists() {
-            self.verify_original(&evidence)?;
-        } else {
-            let mut file = OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(&path)?;
-            private_file(&path, 0o600)?;
-            file.write_all(bytes)?;
-            file.sync_all()?;
-            private_file(&path, 0o400)?;
-        }
+        retain_original(&self.root, &evidence, bytes)?;
         self.change(None, "evidence.import", true, |conn| {
             put(conn, "evidence", &digest, &evidence)?;
             for t in &transactions {
@@ -618,106 +1035,15 @@ impl Workspace {
         })
     }
     fn verify_original(&self, e: &Evidence) -> Result<()> {
-        require(
-            e.sha256.len() == 64 && e.sha256.bytes().all(|b| b.is_ascii_hexdigit()),
-            "Invalid evidence digest",
-        )?;
-        let path = self.root.join("originals").join(&e.sha256);
-        let meta = fs::symlink_metadata(&path)?;
-        require(
-            meta.is_file() && !meta.file_type().is_symlink() && meta.len() == e.bytes,
-            "Missing or altered original evidence",
-        )?;
-        require(
-            hash(&fs::read(path)?) == e.sha256,
-            "Original evidence checksum mismatch",
-        )
-    }
-    pub fn backup(&mut self) -> Result<PathBuf> {
-        let evidence = all::<Evidence>(&self.conn, "evidence")?;
-        for e in &evidence {
-            self.verify_original(e)?;
-        }
-        let path = self.root.join("backups").join(id());
-        private_dir(&path)?;
-        private_dir(&path.join("originals"))?;
-        self.conn.backup("main", path.join("workspace.db"), None)?;
-        private_file(&path.join("workspace.db"), 0o600)?;
-        for e in &evidence {
-            let target = path.join("originals").join(&e.sha256);
-            fs::copy(self.root.join("originals").join(&e.sha256), &target)?;
-            private_file(&target, 0o400)?;
-        }
-        fs::write(
-            path.join("manifest.json"),
-            serde_json::to_vec_pretty(
-                &json!({"schema_version":SCHEMA,"revision":self.revision()?,"evidence":evidence.iter().map(|e|&e.sha256).collect::<Vec<_>>()}),
-            )?,
-        )?;
-        private_file(&path.join("manifest.json"), 0o600)?;
-        Ok(path)
-    }
-    pub fn restore(backup: &Path, destination: &Path) -> Result<Self> {
-        require(!destination.exists(), "Restore destination must not exist")?;
-        let source = Self {
-            root: backup.to_path_buf(),
-            runtime: None,
-            conn: Connection::open_with_flags(
-                backup.join("workspace.db"),
-                rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
-            )?,
-        };
-        let version: u32 = source
-            .conn
-            .pragma_query_value(None, "user_version", |r| r.get(0))?;
-        require(version == SCHEMA, "Backup schema is unsupported")?;
-        let evidence = all::<Evidence>(&source.conn, "evidence")?;
-        for e in &evidence {
-            source.verify_original(e)?;
-        }
-        private_dir(destination)?;
-        private_dir(&destination.join("originals"))?;
-        source
-            .conn
-            .backup("main", destination.join("workspace.db"), None)?;
-        for e in &evidence {
-            let target = destination.join("originals").join(&e.sha256);
-            fs::copy(backup.join("originals").join(&e.sha256), &target)?;
-            private_file(&target, 0o400)?;
-        }
-        Self::open(destination)
-    }
-    pub fn save_report(&mut self) -> Result<String> {
-        let view = self.view()?;
-        for e in &view.evidence {
-            self.verify_original(e)?;
-        }
-        let report_id = id();
-        let html = report::html(&view, &report_id)?;
-        let snapshot = ReportSnapshot {
-            id: report_id.clone(),
-            workspace_revision: view.revision,
-            created_at: now(),
-            sha256: hash(html.as_bytes()),
-            html,
-        };
-        let path = self.root.join("exports").join(format!("{report_id}.html"));
-        let mut file = OpenOptions::new()
-            .create_new(true)
-            .write(true)
-            .open(&path)?;
-        private_file(&path, 0o600)?;
-        file.write_all(snapshot.html.as_bytes())?;
-        file.sync_all()?;
-        self.change(None, "report.snapshot", false, |conn| {
-            put(conn, "report", &report_id, &snapshot)
-        })?;
-        Ok(report_id)
+        verify_original(&self.root, e)
     }
     pub fn seed_demo(&mut self) -> Result<()> {
-        if !all::<Entity>(&self.conn, "entity")?.is_empty() {
+        let has_records: bool =
+            self.conn
+                .query_row("SELECT EXISTS(SELECT 1 FROM records)", [], |row| row.get(0))?;
+        if self.revision()? != 0 || has_records {
             return Err(Error::Conflict(
-                "Load the demonstration only into an empty entity workspace".into(),
+                "Load the demonstration only into a new, empty workspace".into(),
             ));
         }
         let evidence_id =
@@ -743,82 +1069,8 @@ impl Workspace {
             for (key,branch,lat,lon) in [("branch-a","Branch A",-34.921,138.607),("branch-b","Branch B",-34.887,138.63)] {
                 let m=MerchantLocation{id:key.into(),transaction_id:format!("{statement}:3"),merchant:"North Quay Market".into(),branch:Some(branch.into()),channel:Channel::InPerson,latitude:Some(lat),longitude:Some(lon),uncertainty_m:50.0,retrieved_at:"2025-03-10".into(),valid_from:None,valid_to:None,anchor:anchor(9),review:ReviewState::Pending};put(conn,"location",key,&m)?;
             }
-            let f=Finding{id:"finding-a".into(),title:"A café amount requires source review".into(),assessment:"The imported debit does not reconcile with the adjacent balances. The original remains unchanged.".into(),supporting_ids:vec![format!("{statement}:10")],contradicting_ids:vec![],limitations:"Synthetic demonstration; review the source before accepting any correction.".into(),needs_review:true};put(conn,"finding",&f.id,&f)?;
+            let f=Finding{id:"finding-a".into(),hypothesis_ids:vec!["question-a".into()],title:"A café amount requires source review".into(),assessment:"The imported debit does not reconcile with the adjacent balances. The original remains unchanged.".into(),supporting_ids:vec![format!("{statement}:10")],contradicting_ids:vec![],limitations:"Synthetic demonstration; review the source before accepting any correction.".into(),needs_review:true};put(conn,"finding",&f.id,&f)?;
             Ok(())
-        })
-    }
-}
-
-impl Workspace {
-    pub fn collect_web(
-        &mut self,
-        urls: Vec<String>,
-        hops: u32,
-        requests: u32,
-        seconds: u64,
-    ) -> Result<()> {
-        crate::collection::validate_seeds(&urls)?;
-        require(
-            hops <= 2 && requests > 0 && requests <= 50 && seconds > 0 && seconds <= 600,
-            "Collection limits exceed policy",
-        )?;
-        let mut job = CollectionJob {
-            id: id(),
-            queries: urls.clone(),
-            adapters: vec!["direct_web".into()],
-            max_hops: hops,
-            max_requests: requests,
-            max_seconds: seconds,
-            requests_used: 0,
-            state: JobState::Running,
-            detail: "Analyst selected direct website collection".into(),
-        };
-        self.change(None, "collection.start", false, |conn| {
-            put(conn, "job", &job.id, &job)
-        })?;
-        match crate::collection::collect(urls, hops, requests, seconds) {
-            Ok(result) => {
-                job.requests_used = result.requests;
-                job.state = result.state;
-                job.detail = format!(
-                    "{} pages retained. {}",
-                    result.pages.len(),
-                    result.notes.join("; ")
-                );
-                for page in result.pages {
-                    if let Err(error) = self.retain_page(&job.id, page) {
-                        job.state = JobState::Failed;
-                        job.detail = format!(
-                            "Collection storage failed; earlier evidence retained. {error}"
-                        );
-                        break;
-                    }
-                }
-            }
-            Err(error) => {
-                job.state = JobState::Failed;
-                job.detail = error.to_string();
-            }
-        }
-        self.change(None, "collection.finish", false, |conn| {
-            put(conn, "job", &job.id, &job)
-        })
-    }
-    fn retain_page(&mut self, job_id: &str, page: crate::collection::Page) -> Result<()> {
-        let digest = self.import("captured-page.html", &page.bytes)?;
-        self.change(None, "collection.derivative", true, |conn| {
-            let mut evidence: Evidence = get(conn, "evidence", &digest)?;
-            evidence.text = Some(page.text);
-            evidence.media_type = "text/html".into();
-            // Identical bytes do not become independent sources just because
-            // they were retrieved at another URL. Keep every acquisition.
-            evidence.acquisitions.push(Acquisition {
-                job_id: job_id.into(),
-                url: page.url,
-                retrieved_at: now(),
-            });
-            evidence.extraction_status = "static_text_only".into();
-            put(conn, "evidence", &digest, &evidence)
         })
     }
 }
@@ -862,30 +1114,41 @@ fn refresh_duplicates(conn: &Connection) -> Result<()> {
     Ok(())
 }
 
-#[cfg(test)]
-mod acquisition_tests {
-    use super::*;
-    #[test]
-    fn identical_captures_keep_both_urls_and_their_original_group() {
-        let temp = tempfile::TempDir::new_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
-        let mut w = Workspace::open(temp.path().join("case")).unwrap();
-        for host in ["one.example", "two.example"] {
-            w.retain_page(
-                "test-job",
-                crate::collection::Page {
-                    url: format!("https://{host}/"),
-                    bytes: b"<p>Copied synthetic source</p>".to_vec(),
-                    text: "Copied synthetic source".into(),
-                },
-            )
-            .unwrap();
-        }
-        let evidence = w.view().unwrap().evidence;
-        assert_eq!(evidence.len(), 1);
-        assert_eq!(evidence[0].origin_group, evidence[0].sha256);
-        assert_eq!(evidence[0].acquisitions.len(), 2);
-        assert_eq!(evidence[0].acquisitions[0].url, "https://one.example/");
-        assert_eq!(evidence[0].acquisitions[1].url, "https://two.example/");
-        assert!(!evidence[0].acquisitions[0].retrieved_at.is_empty());
+fn validate_import_input(name: &str, bytes: &[u8]) -> Result<()> {
+    require(
+        !bytes.is_empty() && bytes.len() <= policy::MAX_IMPORT_BYTES,
+        "Import must contain 1 byte to 16 MiB",
+    )?;
+    require(
+        !name.is_empty()
+            && name.len() <= 180
+            && !name.contains(['/', '\\', ':'])
+            && !name.chars().any(char::is_control),
+        "Invalid display filename",
+    )?;
+    Ok(())
+}
+
+fn verify_original(root: &Path, e: &Evidence) -> Result<()> {
+    read_original(root, e).map(|_| ())
+}
+
+fn retain_original(root: &Path, evidence: &Evidence, bytes: &[u8]) -> Result<()> {
+    let path = root.join("originals").join(&evidence.sha256);
+    reject_link_ancestors(&path)?;
+    if path.exists() {
+        return verify_original(root, evidence);
     }
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&path)?;
+    private_file(&path, 0o600)?;
+    file.write_all(bytes)?;
+    file.sync_all()?;
+    private_file(&path, 0o400)
+}
+
+fn workspace_response<R: Serialize>(view: WorkspaceView<R>) -> Result<Value> {
+    Ok(json!({"analysis":analytics::analyse(&view.transactions)?,"workspace":view}))
 }

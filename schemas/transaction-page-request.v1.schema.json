@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "TransactionPageFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReviewState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TransactionPageOrder": {
+      "enum": [
+        "date_ascending",
+        "date_descending"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "filter": {
+      "$ref": "#/$defs/TransactionPageFilter"
+    },
+    "order": {
+      "$ref": "#/$defs/TransactionPageOrder"
+    },
+    "page_size": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "filter",
+    "order",
+    "page_size"
+  ],
+  "title": "TransactionPageRequest",
+  "type": "object"
+}

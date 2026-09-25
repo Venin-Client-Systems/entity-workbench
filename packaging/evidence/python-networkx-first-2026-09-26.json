@@ -1,0 +1,266 @@
+{
+  "build_profile": "release",
+  "campaign_id": "f5588eac-2a62-48e9-bced-483db5d57614",
+  "candidate_started": true,
+  "case": "networkx",
+  "complete_release": false,
+  "failure": null,
+  "native": {
+    "architecture": "aarch64",
+    "assigned_files": {
+      "code/bootstrap.py": {
+        "bytes": 4318,
+        "sha256": "b4b5650fcf47dda9f5107ca522fd7536f3006d2dbe5c0e49a5ad34bddb07b6ac"
+      },
+      "code/compatibility.py": {
+        "bytes": 5769,
+        "sha256": "f94264e37c60e18231aebb33a81ffea5c637c3c71e8848d3b8cc4a1e144b52e1"
+      },
+      "code/engine_recipes.py": {
+        "bytes": 3834,
+        "sha256": "78feb6b34c66dba5917b08de588655ace8729680ac609f864d39ad52088a4769"
+      },
+      "input/assignment.json": {
+        "bytes": 313,
+        "sha256": "b0a9f88a05fef42c34cf583beb645dfee7999de80b2f4db6fbdeb503c1ee2b79"
+      },
+      "input/expected.json": {
+        "bytes": 2820,
+        "sha256": "6c88fcf93736dd8a2af9226d3f5317dfb1025ca14e2fe00f0c4cb5b8ebc74aff"
+      },
+      "input/fixture.json": {
+        "bytes": 6531,
+        "sha256": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85"
+      }
+    },
+    "campaign_id": "f5588eac-2a62-48e9-bced-483db5d57614",
+    "candidate_interpreter": {
+      "bytes": 18005560,
+      "path": "install/bin/python3.13",
+      "sha256": "3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc"
+    },
+    "complete_release": false,
+    "diagnostics_within_bound": true,
+    "engine_diagnostics": {
+      "checkpoints": [
+        {
+          "boundary": "before",
+          "elapsed_ms": 0,
+          "process_cpu_ms": 0,
+          "stage": "initialization"
+        },
+        {
+          "boundary": "ready",
+          "elapsed_ms": 401,
+          "process_cpu_ms": 387,
+          "stage": "initialization"
+        },
+        {
+          "boundary": "before",
+          "elapsed_ms": 401,
+          "process_cpu_ms": 387,
+          "stage": "operation"
+        },
+        {
+          "boundary": "after",
+          "elapsed_ms": 402,
+          "process_cpu_ms": 388,
+          "stage": "operation"
+        }
+      ],
+      "valid": true
+    },
+    "exit_code": 0,
+    "failure": null,
+    "import_diagnostics": null,
+    "job_id": "09ab2453-26ad-4572-b92d-e1cee03ad15e",
+    "last_import_checkpoint": null,
+    "last_worker_checkpoint": "complete",
+    "passed": true,
+    "phase": "complete",
+    "preparation_elapsed_ms": 3417,
+    "profile_sha256": "7b07d064f3557940f673eac88b11eefea4b52df435fdff1f3965645af5630a0c",
+    "quota_kind": null,
+    "recipe": "python-networkx-v1",
+    "result": {
+      "checks": {
+        "graph_assertions": [
+          "r1",
+          "r2"
+        ],
+        "graph_path": [
+          "a",
+          "b",
+          "c"
+        ],
+        "graph_unreachable": true,
+        "imported_modules": [
+          "networkx"
+        ],
+        "versions": {
+          "altair": "6.3.0",
+          "annotated-doc": "0.0.5",
+          "annotated-types": "0.8.0",
+          "attrs": "26.1.0",
+          "blis": "1.3.3",
+          "catalogue": "2.0.10",
+          "certifi": "2026.7.22",
+          "charset-normalizer": "3.5.1",
+          "click": "8.3.1",
+          "cloudpathlib": "0.25.0",
+          "confection": "0.1.5",
+          "cymem": "2.0.13",
+          "duckdb": "1.5.0",
+          "idna": "3.20",
+          "igraph": "1.0.0",
+          "jinja2": "3.1.6",
+          "jsonschema": "4.26.0",
+          "jsonschema-specifications": "2025.9.1",
+          "markdown-it-py": "4.2.0",
+          "markupsafe": "3.0.3",
+          "mdurl": "0.1.2",
+          "murmurhash": "1.0.15",
+          "narwhals": "2.26.0",
+          "networkx": "3.6.1",
+          "numpy": "2.5.3",
+          "packaging": "26.3",
+          "pandas": "3.0.6",
+          "preshed": "3.0.13",
+          "pyarrow": "23.0.1",
+          "pydantic": "2.13.5",
+          "pydantic-core": "2.46.5",
+          "pygments": "2.21.0",
+          "python-dateutil": "2.9.0.post0",
+          "referencing": "0.37.0",
+          "requests": "2.34.2",
+          "rich": "15.0.0",
+          "rpds-py": "2026.6.3",
+          "setuptools": "84.0.0",
+          "shellingham": "1.5.4",
+          "six": "1.17.0",
+          "smart-open": "7.7.1",
+          "spacy": "3.8.11",
+          "spacy-legacy": "3.0.12",
+          "spacy-loggers": "1.0.5",
+          "splink": "4.0.12",
+          "sqlglot": "30.18.0",
+          "srsly": "2.5.3",
+          "texttable": "1.7.0",
+          "thinc": "8.3.11",
+          "tqdm": "4.70.1",
+          "typer": "0.27.2",
+          "typer-slim": "0.24.0",
+          "typing-extensions": "4.16.0",
+          "typing-inspection": "0.4.4",
+          "urllib3": "2.8.0",
+          "wasabi": "1.1.3",
+          "weasel": "0.4.3",
+          "wrapt": "2.4.1"
+        }
+      },
+      "isolated": true,
+      "job_id": "09ab2453-26ad-4572-b92d-e1cee03ad15e",
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+      "no_bytecode": true,
+      "no_site": true,
+      "python_version": "3.13.15",
+      "recipe": "python-networkx-v1",
+      "schema_version": 1,
+      "verified_paths": true
+    },
+    "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "runtime_verified": true,
+    "schema_version": 1,
+    "supervised_elapsed_ms": 1192,
+    "termination_state": "confirmed"
+  },
+  "native_binary_sha256": "886fada938740eb467079fec7d26cafac0ad31277ee1f502006148a9e2f48bac",
+  "native_report_sha256": "0d124e55b98345454f1d8fe1490a0fdd65d53fc9f8dc7957905d2bd6efb8b73b",
+  "native_test": "engines::supervision::python_probe::engine_recipes::native_python_networkx",
+  "native_test_started": true,
+  "observed_at": "2026-09-25T15:49:18.726734+00:00",
+  "original_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "passed": true,
+  "phase": "complete",
+  "platform": {
+    "architecture": "arm64",
+    "os": "Darwin",
+    "version": "26.6.2"
+  },
+  "post_original_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "post_selected_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "schema_version": 1,
+  "source": {
+    "commit": "46e6c1e23d312f8e5e646441b3654635abb51b20",
+    "files": {
+      "Cargo.lock": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+      "Cargo.toml": "89847b7032161f966c912e89558392b084a9380c69b8a6185148909ef579d8c1",
+      "crates/core/src/engines/supervision.rs": "f597996166b4f709893a18fceafcbc65559953cce423c754fd214fc75df08bb8",
+      "crates/core/src/engines/supervision/python_probe.rs": "80d18957874e72457d846bda52ab2a908798137d27010e3b751a33c7f1a36527",
+      "crates/core/src/engines/supervision/python_probe/engine_recipes.rs": "c48ea13a8325e27bc1bc5a7bfb6c80ac79171486f1f7eb76bab62ff7ee8d54cd",
+      "crates/core/src/engines/supervision/python_probe/hostile.rs": "e224d3bfcb65186b456665562f6aee5412984ff10b3004e56985e85e06f55566",
+      "crates/core/src/engines/supervision/python_probe/import_diagnostics.rs": "84dfd7fda8cf1f6268650fcaa9abb7a0292e669050f796946be0bc8fcd6fb522",
+      "crates/core/src/engines/supervision/python_probe/listeners.rs": "0e42e0d9e36bdfde6fd12393be61119e9a2f7b8a805bc3b391f8caaa5874c502",
+      "scripts/install_python_offline.py": "ab9e13018b58959489841cefe49284262afe6456bdcbf86afb23bd0956f2d15d",
+      "scripts/python_engine_receipts.py": "c49ab7b802ace30a751545e27bab40619cf17d6e06ca7086ad934764ea82473a",
+      "scripts/relocate_python_prefix.py": "a38098d0b38ba1e5f939455e8b85522c12d47a417f83405b3d37a2a29c7841c5",
+      "scripts/stage_python_runtime.py": "27e73847781debd137bb1b1052c502dae556d4f5827be8032690e243d7db808a",
+      "scripts/test_python_compatibility.py": "639269b8420ae76f4dcdcb15e072ff0b25dd3bad51f7211bb90db81eb85566c7",
+      "scripts/test_python_isolation.py": "391266640edc8886b3e485c19d29d9ee5fd44a8a3ee77796b86d42879eb9fe08",
+      "scripts/verify_python_install.py": "0a91737064f1add1ebe36ee8e17bda9ba6b29d3afbf34126bbcc1001cd0a46bd",
+      "scripts/verify_runtime_bundle.py": "0e72dd2766c432e23093267ce2e831829f2a1b883df1cc581d16aaf54d27f327",
+      "workers/python/probe/bootstrap.py": "b4b5650fcf47dda9f5107ca522fd7536f3006d2dbe5c0e49a5ad34bddb07b6ac",
+      "workers/python/probe/compatibility.py": "f94264e37c60e18231aebb33a81ffea5c637c3c71e8848d3b8cc4a1e144b52e1",
+      "workers/python/probe/engine_recipes.py": "78feb6b34c66dba5917b08de588655ace8729680ac609f864d39ad52088a4769",
+      "workers/python/probe/expected.json": "6c88fcf93736dd8a2af9226d3f5317dfb1025ca14e2fe00f0c4cb5b8ebc74aff",
+      "workers/python/probe/fixture.json": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85",
+      "workers/python/probe/hostile.py": "a9bbe45f54da18c3e900ab00dff870df67558e3d639f3ef2e3cd17a583506555",
+      "workers/python/probe/import_diagnostics.py": "cb4a7986be418dd43e10907cad0c4f09c560c7fde7fc58d71ba641a497e0b9b9",
+      "workers/python/transaction_totals.py": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+    },
+    "parents": [
+      "64abbdae4547ffdef03f454f2cdb187f0a845f78"
+    ],
+    "tree": "9f1907f17a9f84a2c8cd93cc09eeb90111d253c3"
+  },
+  "termination_state": "confirmed",
+  "unverified": [
+    "Internet-and-DNS-and-IPv6-denial",
+    "hard-RSS-ceiling",
+    "supervisor-crash-termination",
+    "canonical-protocol",
+    "signing-clean-install-platform-matrix",
+    "complete-notices"
+  ]
+}

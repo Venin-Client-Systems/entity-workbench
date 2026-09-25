@@ -1,0 +1,14 @@
+    Checking uuid v1.26.1
+    Checking rusqlite v0.37.0
+    Checking workbench-windows-worker v0.1.0 (<worktree>/crates/windows-worker)
+    Checking workbench-core v0.1.0 (<worktree>/crates/core)
+error: using a non-octal value to set unix file permissions
+   --> crates/core/src/store/search_tests.rs:170:72
+    |
+170 |     fs::set_permissions(cache.join(INTENT), fs::Permissions::from_mode(0)).unwrap();
+    |                                                                        ^ help: consider using an octal literal instead: `0o0`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#non_octal_unix_permissions
+    = note: `#[deny(clippy::non_octal_unix_permissions)]` on by default
+
+error: could not compile `workbench-core` (lib test) due to 1 previous error

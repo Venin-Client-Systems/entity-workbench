@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-25T17:11:34.623333+00:00",
+  "agent_report": "Other agent confirmed its prior warm compile and focused tests ended before this observation.",
+  "observed_outer_phase": "compile-release-native-test",
+  "observed_native_test_started": false,
+  "root_reported_no_active_build": true,
+  "idle_host_benchmark_claim": false
+}

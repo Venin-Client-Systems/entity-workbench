@@ -1,0 +1,154 @@
+{
+  "candidate_executed": false,
+  "development_networkx_entrypoints": [
+    {
+      "distribution": "networkx-3.6.1.dist-info",
+      "networkx_groups": {
+        "networkx.backends": {
+          "nx_loopback": "networkx.classes.tests.dispatch_interface:backend_interface"
+        }
+      },
+      "sha256": "1f68d9683b0327f8bd1f64b05a9c2e15e97c06b67dc472aebe1f83400596f654"
+    }
+  ],
+  "kind": "static-networkx-entrypoint-inspection",
+  "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "prefix_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "primary_entrypoint_files": [
+    {
+      "networkx_groups": {},
+      "path": "annotated_doc-0.0.5.dist-info/entry_points.txt",
+      "sha256": "e8e62005c2f21425207aa2e09ef332389c4f096ce0cbbb1ee2b2cf2ad3689ccb"
+    },
+    {
+      "networkx_groups": {},
+      "path": "charset_normalizer-3.5.1.dist-info/entry_points.txt",
+      "sha256": "0034932ab91767786174e5458ba0dc5041d0452d317f10c813fa44cf8c0b2170"
+    },
+    {
+      "networkx_groups": {},
+      "path": "idna-3.20.dist-info/entry_points.txt",
+      "sha256": "ec7de718e1daa778e72c4e5eeeaed8c2bf55abc6b107b5888f9f82ff8376be1c"
+    },
+    {
+      "networkx_groups": {},
+      "path": "igraph-1.0.0.dist-info/entry_points.txt",
+      "sha256": "875002fae0dfaf5e14720a591498514b1e2ce958fe2cc41051703834a810565e"
+    },
+    {
+      "networkx_groups": {},
+      "path": "jinja2-3.1.6.dist-info/entry_points.txt",
+      "sha256": "38bf39818535783f1cb8f9629227c59e05e97818dac65eab209f0a902ff7afe2"
+    },
+    {
+      "networkx_groups": {},
+      "path": "jsonschema-4.26.0.dist-info/entry_points.txt",
+      "sha256": "bceeeb5f816cff1215272da99c0b4a8134b17e99e8cc0550d038c29a93319d61"
+    },
+    {
+      "networkx_groups": {},
+      "path": "markdown_it_py-4.2.0.dist-info/entry_points.txt",
+      "sha256": "4fcd65edf1d0de9965a50e3052d40ae9af20fe9eb0c506e78ca5470a4d96306e"
+    },
+    {
+      "networkx_groups": {
+        "networkx.backends": {
+          "nx_loopback": "networkx.classes.tests.dispatch_interface:backend_interface"
+        }
+      },
+      "path": "networkx-3.6.1.dist-info/entry_points.txt",
+      "sha256": "1f68d9683b0327f8bd1f64b05a9c2e15e97c06b67dc472aebe1f83400596f654"
+    },
+    {
+      "networkx_groups": {},
+      "path": "numpy-2.5.3.dist-info/entry_points.txt",
+      "sha256": "ec26fade0c8bdac211a6c1dd003a65eb16885b925395423e93fcaa115af4052c"
+    },
+    {
+      "networkx_groups": {},
+      "path": "pandas-3.0.6.dist-info/entry_points.txt",
+      "sha256": "3952ca3443ecf90ec85b2a5604be9fc6fe7aff3b78b119c423bcdac28eb2ff4c"
+    },
+    {
+      "networkx_groups": {},
+      "path": "pip-26.2.1.dist-info/entry_points.txt",
+      "sha256": "5617fcb34218817dfb9ad778bc62fbdc13dcc5d2a7a9e0853f3079f9ddf4c7ca"
+    },
+    {
+      "networkx_groups": {},
+      "path": "pygments-2.21.0.dist-info/entry_points.txt",
+      "sha256": "b945f0f9784c281117e2959c0ada6e4d39cf84bde1ece104da35a2e75550b1af"
+    },
+    {
+      "networkx_groups": {},
+      "path": "setuptools-84.0.0.dist-info/entry_points.txt",
+      "sha256": "ce482d8697ff15af4d544f69e85293dd793d0d1d5f680711538728820b15ee30"
+    },
+    {
+      "networkx_groups": {},
+      "path": "spacy-3.8.11.dist-info/entry_points.txt",
+      "sha256": "aba2087dd588a95e46fe7ccb0a17a3209a5bcd73448388aa1cbd3971304ef3cf"
+    },
+    {
+      "networkx_groups": {},
+      "path": "spacy_legacy-3.0.12.dist-info/entry_points.txt",
+      "sha256": "170757ea31e8e80fc4d7f0803b6eca13c5d3d51c45d400b05eafe68cae674a7b"
+    },
+    {
+      "networkx_groups": {},
+      "path": "spacy_loggers-1.0.5.dist-info/entry_points.txt",
+      "sha256": "c3ec99a3162a5673bb815566fe677f95fe6fab433660d591adb1f0896cc0947d"
+    },
+    {
+      "networkx_groups": {},
+      "path": "srsly-2.5.3.dist-info/entry_points.txt",
+      "sha256": "7a088eebbd38341671361233f7abff8a15cbd02df0459ced0aa7dcdcc3785727"
+    },
+    {
+      "networkx_groups": {},
+      "path": "thinc-8.3.11.dist-info/entry_points.txt",
+      "sha256": "5ca29dabf0925eaa3a250cba285170bd87e9c91fff4a4062450518c3f060f560"
+    },
+    {
+      "networkx_groups": {},
+      "path": "tqdm-4.70.1.dist-info/entry_points.txt",
+      "sha256": "45e2421fb522dd9ca1e8cd7a1383a1b19d6853b5ad31709f6eda3206118edbd6"
+    },
+    {
+      "networkx_groups": {},
+      "path": "typer-0.27.2.dist-info/entry_points.txt",
+      "sha256": "60ed770728aa59eb9ab3d5742400cb5004591547bf73053fef099336fc41610f"
+    },
+    {
+      "networkx_groups": {},
+      "path": "typer_slim-0.24.0.dist-info/entry_points.txt",
+      "sha256": "e8e62005c2f21425207aa2e09ef332389c4f096ce0cbbb1ee2b2cf2ad3689ccb"
+    },
+    {
+      "networkx_groups": {},
+      "path": "weasel-0.4.3.dist-info/entry_points.txt",
+      "sha256": "2aee9aca9d9efd41bd72783dfbb9d20ced837f21b1b1c3eb10e6f3b81400b23c"
+    }
+  ],
+  "schema_version": 1,
+  "source_files": [
+    {
+      "path": "networkx/__init__.py",
+      "sha256": "39537c0bec78e0b81e25629c6fbeeff96c1f315ec462a89e69f92841d9409791"
+    },
+    {
+      "path": "networkx/utils/backends.py",
+      "sha256": "2035cd26305639f72a3e6dc09f2e7e91fc14f616531f7dd1d7a82bdef67ac271"
+    }
+  ]
+}

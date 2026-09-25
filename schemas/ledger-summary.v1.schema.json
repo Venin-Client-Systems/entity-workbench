@@ -1,0 +1,117 @@
+{
+  "$defs": {
+    "ReviewedCurrencySummary": {
+      "additionalProperties": false,
+      "properties": {
+        "credits": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "debits": {
+          "type": "string"
+        },
+        "excluded_transfer_count": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "included_count": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "net": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "currency",
+        "credits",
+        "debits",
+        "net",
+        "included_count",
+        "excluded_transfer_count"
+      ],
+      "type": "object"
+    },
+    "TransactionReviewCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "deferred": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pending": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rejected": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "accepted",
+        "pending",
+        "rejected",
+        "deferred"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "balance_check_count": {
+      "description": "Source-order checks, including rows in every review state.",
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "balance_discrepancy_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "duplicate_candidate_row_count": {
+      "description": "Number of rows with candidate duplicates, not distinct pairs or confirmed duplicates.",
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "review_counts": {
+      "$ref": "#/$defs/TransactionReviewCounts"
+    },
+    "totals": {
+      "items": {
+        "$ref": "#/$defs/ReviewedCurrencySummary"
+      },
+      "type": "array"
+    },
+    "transaction_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "transaction_count",
+    "review_counts",
+    "duplicate_candidate_row_count",
+    "balance_check_count",
+    "balance_discrepancy_count",
+    "totals"
+  ],
+  "title": "LedgerSummary",
+  "type": "object"
+}

@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "account": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_from": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "date_to": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "title": "AccountFlowRequest",
+  "type": "object"
+}

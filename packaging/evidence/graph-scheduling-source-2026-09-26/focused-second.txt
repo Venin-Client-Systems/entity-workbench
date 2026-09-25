@@ -1,0 +1,23 @@
+   Compiling workbench-core v0.1.0 ($WORKSPACE/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.40s
+     Running unittests src/lib.rs ($CARGO_TARGET/debug/deps/workbench_core-3b02699a934d9ff3)
+
+running 16 tests
+test coordinator::graph::tests::drain_waits_for_registered_document_publication_and_cancel_does_not_stop_it ... ok
+test coordinator::graph::tests::failed_atomic_capture_rolls_back_running_and_releases_after_blocked_commit ... ok
+test coordinator::graph::tests::graph_owned_blocks_all_automatic_claims_but_analyst_write_stales_result ... ok
+test coordinator::graph::tests::capture_failure_followed_by_storage_failure_retains_unclaimed_drain_until_repaired ... ok
+test coordinator::graph::tests::exhausted_result_retries_allow_one_new_cancel_settlement ... ok
+test coordinator::graph::tests::preexisting_admitted_ticket_is_frozen_and_only_that_ticket_may_enter_drain ... ok
+test coordinator::graph::tests::exact_pending_retries_never_reexecute_and_success_releases_interval ... ok
+test coordinator::graph::tests::collection_fifo_and_non_draining_faults_are_resolved_before_graph_claim ... ok
+test coordinator::graph::tests::public_and_internal_resume_are_no_write_refusals_during_drain_but_prepared_cancel_works ... ok
+test coordinator::graph::tests::unavailable_blocks_before_drain_and_never_calls_executor ... ok
+test coordinator::graph::tests::stop_observed_before_first_publication_gets_no_extra_final_retry ... ok
+test coordinator::graph::tests::unknown_exit_quarantines_before_terminal_write_and_keeps_interval ... ok
+test coordinator::graph::tests::pending_shutdown_has_exactly_one_final_settlement_and_retains_known_stopped_authority ... ok
+test coordinator::graph::tests::two_real_coordinator_workers_serialize_graphs_without_self_invalidation ... ok
+test coordinator::graph::tests::actual_collection_run_drains_all_requests_before_graph_capture ... ok
+test coordinator::graph::tests::retained_collection_settlement_keeps_drain_until_exact_publication_retry ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 540 filtered out; finished in 1.22s

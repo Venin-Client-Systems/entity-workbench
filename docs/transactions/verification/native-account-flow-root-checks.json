@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "outcome": "passed",
+  "source_commit": "817d20032cf8a8d4a6b7cffc9f1ac334a1f92eea",
+  "native_receipt_sha256": "2602b5986a2c8ccfc82a34e0ded893dd28e3ad520af08774d3cedd91b940b1bf",
+  "private_raw_hashes_checked": 41,
+  "source_hashes_checked": 9,
+  "frontend_hashes_checked": 9,
+  "bundle_hashes_checked": 3,
+  "read_only_snapshots_byte_identical": true,
+  "post_correction_restart_snapshots_byte_identical": true,
+  "all_five_application_tables_match_current_database": true,
+  "current_database_integrity": "ok",
+  "current_database_bytes_match_final_snapshot": true,
+  "sqlite_sequence_current": [
+    [
+      "events",
+      13
+    ],
+    [
+      "history",
+      19
+    ],
+    [
+      "records",
+      42
+    ]
+  ],
+  "exact_three_existing_record_changes_and_one_decision_verified": true,
+  "retained_original_unchanged": true,
+  "independently_recomputed_selected_count": 6,
+  "independently_recomputed_before": {
+    "pairs": 2,
+    "support": 2,
+    "amount": "40.00",
+    "currency": "AUD"
+  },
+  "independently_recomputed_after": {
+    "pairs": 1,
+    "support": 1,
+    "amount": "20.00",
+    "currency": "AUD"
+  },
+  "final_app_process_absent": true,
+  "native_images_visually_inspected": 5,
+  "new_native_execution": false,
+  "complete_release": false
+}

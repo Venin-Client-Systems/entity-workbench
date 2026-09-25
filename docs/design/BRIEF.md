@@ -1,6 +1,12 @@
 # Entity Workbench product design brief
 
-Status: design work in progress. The running interface is a functional prototype, not an approved visual design. Figma was selected for editable screens, components and interaction prototypes; its connection is pending. No Figma artifact or design approval is claimed.
+Status: editable design study and first implementation comparison completed; full visual sign-off remains open. The signed-in Figma session contains native frames, shared colour/text styles and five reusable component sets. Transaction review, identity comparison and collection each have desktop and compact variants on the same canvas. Generated content was inspected and is not an approved product specification.
+
+- [Native Figma Design: design system and workflows](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO) — the editable design reference.
+- [Figma Make: interaction experiment](https://www.figma.com/make/wxFT4C8udxU0zW860eFBcz) — separate, synthetic prototype; known comparison-label errors remain.
+- [Implementation comparison and open discrepancies](HANDOFF.md) — exact frame IDs, applied tokens, screenshots and verification scope.
+
+Figma is a development design tool. The distributed application has no Figma, hosted font or generative-AI dependency. Rust remains authoritative for evidence and decisions; generated prototype calculations and fixtures were not imported into the application.
 
 ## Design deliverables
 
@@ -53,9 +59,9 @@ Use shared components and semantic tokens for text, surfaces, borders, focus, se
 
 - Prototype screenshots: `artifacts/ui-overview.png`, `artifacts/ui-locations.png` (generated locally; not design approval).
 - Native modal component: `ui/src/Dialog.tsx`; keyboard verification belongs in the existing real-workspace UI test.
-- Editable Figma file: pending connection; no placeholder URL.
-- Final palette, typography, icon family and layout density: pending tool-based design pass.
-- Source publication: explicitly labelled a development prototype. Final visual sign-off remains pending the editable design pass.
+- Editable Figma files: linked above; inspected exports and implementation comparisons are recorded in HANDOFF.md.
+- First palette, typography and layout pass: applied from native Figma foundations; status text darkened after measured contrast review. Broader component refinement remains open.
+- Source publication: explicitly labelled a development prototype. Final visual sign-off remains pending resolution of the handoff discrepancies.
 
 References: [W3C modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/), [text contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html), [target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html).
 
@@ -64,3 +70,7 @@ References: [W3C modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/
 The native macOS app was launched and its corpus phrase query returned the expected synthetic source. The 960 px browser capture retains the toolbar but wraps statement dates; table density and fixed-width date/amount columns need to be resolved in the editable design. Automated measurements found 40 overview contrast failures before targeted corrections and zero violations in the eight subsequently tested section states. Incomplete rules still require manual checks. No final visual sign-off is recorded.
 
 The next implementation pass replaced demonstration-specific identity actions with general entity/observation authoring and comparison using the existing provisional components. Namespaces, leading-zero references, cited excerpts, review states and decision history are now represented in the functional workflow. This is functional work, not a completed Figma design.
+
+## Current owner-selected direction — industrial / technical
+
+The first warm/teal pass was superseded by the industrial direction on 2026-09-22. The owner selected compact instruments, hard edges and utilitarian controls. The current [editable transaction frame 6:2](https://www.figma.com/design/O50ISV0LGG8nKDcFORNMbO?node-id=6-2) and [handoff](HANDOFF.md) define the revised graphite/amber palette, square 36 px controls, joined metric cells, 208 px rail, 56 px header, 360 px inspector and bundled Inter/JetBrains Mono typography. Earlier design observations above are historical. Final visual approval is still open.

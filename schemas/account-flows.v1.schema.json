@@ -1,0 +1,577 @@
+{
+  "$defs": {
+    "AccountFlowEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "description": "Sum of positive amounts, once per verified pair, not selected ledger net activity.",
+          "type": "string"
+        },
+        "credit_node_id": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "debit_node_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "pairs": {
+          "items": {
+            "$ref": "#/$defs/AccountFlowPair"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "currency",
+        "debit_node_id",
+        "credit_node_id",
+        "amount",
+        "pairs"
+      ],
+      "type": "object"
+    },
+    "AccountFlowNode": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_ledger": {
+          "$ref": "#/$defs/MoneyTotal",
+          "description": "All accepted selected rows, including the selected endpoints of mapped transfers."
+        },
+        "accepted_unmapped": {
+          "$ref": "#/$defs/MoneyTotal",
+          "description": "Accepted selected rows without a verified reciprocal transfer counterpart."
+        },
+        "account": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "deferred_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "duplicate_candidate_count": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "duplicate_candidate_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "pending_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "rejected_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "review_counts": {
+          "$ref": "#/$defs/TransactionReviewCounts"
+        },
+        "scope_count": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "support_ids": {
+          "description": "Out-of-scope sources supporting included edges; never included in selected totals/counts.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "support_only": {
+          "type": "boolean"
+        },
+        "unverified_transfer_count": {
+          "description": "These two overlapping annotations count selected rows in any review state.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "unverified_transfer_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "account",
+        "currency",
+        "support_only",
+        "scope_count",
+        "review_counts",
+        "accepted_ledger",
+        "accepted_unmapped",
+        "pending_ids",
+        "rejected_ids",
+        "deferred_ids",
+        "unverified_transfer_count",
+        "unverified_transfer_ids",
+        "duplicate_candidate_count",
+        "duplicate_candidate_ids",
+        "support_ids"
+      ],
+      "type": "object"
+    },
+    "AccountFlowPair": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "string"
+        },
+        "credit": {
+          "$ref": "#/$defs/TransactionVersion"
+        },
+        "credit_date": {
+          "type": "string"
+        },
+        "credit_in_scope": {
+          "type": "boolean"
+        },
+        "debit": {
+          "$ref": "#/$defs/TransactionVersion"
+        },
+        "debit_date": {
+          "type": "string"
+        },
+        "debit_in_scope": {
+          "type": "boolean"
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "debit",
+        "credit",
+        "debit_date",
+        "credit_date",
+        "debit_in_scope",
+        "credit_in_scope",
+        "amount"
+      ],
+      "type": "object"
+    },
+    "AccountFlowRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "FlowSource": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "amount": {
+          "description": "Exact canonical source spelling, not a newly rounded amount.",
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/SourceAnchor",
+          "description": "Retained location reference; quote/location validation remains source inspection's job."
+        },
+        "currency": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "has_duplicate_candidates": {
+          "type": "boolean"
+        },
+        "in_scope": {
+          "type": "boolean"
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "unverified_transfer_match": {
+          "type": "boolean"
+        },
+        "verified_transfer_peer": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TransactionVersion"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "version",
+        "account",
+        "currency",
+        "date",
+        "amount",
+        "anchor",
+        "review",
+        "in_scope",
+        "unverified_transfer_match",
+        "has_duplicate_candidates"
+      ],
+      "type": "object"
+    },
+    "MoneyTotal": {
+      "additionalProperties": false,
+      "properties": {
+        "credits": {
+          "type": "string"
+        },
+        "debits": {
+          "type": "string"
+        },
+        "net": {
+          "type": "string"
+        },
+        "transaction_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "credits",
+        "debits",
+        "net",
+        "transaction_ids"
+      ],
+      "type": "object"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "SourceAnchor": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "text",
+              "type": "string"
+            },
+            "line_end": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "line_start": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "line_start",
+            "line_end"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "page",
+              "type": "string"
+            },
+            "page": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "region": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4,
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "page"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "column": {
+              "type": "string"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "cell",
+              "type": "string"
+            },
+            "row": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sheet": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "sheet",
+            "row",
+            "column"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "message",
+              "type": "string"
+            },
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "message_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "capture",
+              "type": "string"
+            },
+            "selector": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "selector"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "TransactionReviewCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "deferred": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pending": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rejected": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "accepted",
+        "pending",
+        "rejected",
+        "deferred"
+      ],
+      "type": "object"
+    },
+    "TransactionVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "transaction_id": {
+          "type": "string"
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/AccountFlowEdge"
+      },
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/AccountFlowNode"
+      },
+      "type": "array"
+    },
+    "request": {
+      "$ref": "#/$defs/AccountFlowRequest"
+    },
+    "rules_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "scope_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/FlowSource"
+      },
+      "type": "array"
+    },
+    "support_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_transaction_count": {
+      "format": "uint",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "rules_version",
+    "workspace_revision",
+    "request",
+    "workspace_transaction_count",
+    "scope_transaction_count",
+    "support_transaction_count",
+    "nodes",
+    "edges",
+    "sources",
+    "limitations"
+  ],
+  "title": "AccountFlows",
+  "type": "object"
+}

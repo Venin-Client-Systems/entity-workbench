@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-25T12:08:17.425329+00:00",
+  "base_commit": "2fe5f7d93725bd6064221cd0c8f722c8d13ef985",
+  "scope": "EW-22 / GitHub #25: private synthetic collection lane in JobCoordinator with shared joined ownership, bounded settlement retry and cross-lane quarantine",
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "ordinary_core": {
+      "passed": 420,
+      "library_passed": 345,
+      "integration_passed": 75,
+      "failed": 0,
+      "specialized_ignored": 22,
+      "log": "core-verified.log"
+    },
+    "strict_clippy_debug": "passed",
+    "strict_clippy_release": "passed",
+    "new_regressions": {
+      "coordinator_lane": 14,
+      "poisoned_guard": 1,
+      "released_settlement_guard": 1
+    },
+    "schema_inventory_files_byte_unchanged": 85,
+    "json_schema_files_byte_unchanged": 83,
+    "unchanged_files": {
+      "Cargo.toml": true,
+      "Cargo.lock": true,
+      "crates/core/Cargo.toml": true,
+      "crates/core/src/domain.rs": true,
+      "crates/core/src/bin/ew-dev.rs": true,
+      "crates/core/src/store/recovery.rs": true,
+      "crates/core/src/store/collection.rs": true,
+      "crates/core/src/collection_transport.rs": true
+    }
+  },
+  "network_scope": {
+    "external_dns_requests": 0,
+    "external_http_requests": 0,
+    "synthetic_tls_only": true,
+    "fixture_name": "collection.invalid",
+    "socket": "ephemeral loopback",
+    "production_injected_constructor": false,
+    "os_trust_store_modified": false
+  },
+  "retained_failures": [
+    {
+      "log": "coordinator-third.log",
+      "result": "27 passed, 3 failed, 4 ignored: three existing tests expected successful shutdown for unverified-worker fixtures; assertions now require quarantine refusal, typed failure assertions retained"
+    },
+    {
+      "log": "core-final.log",
+      "result": "341 passed, 3 failed, 22 ignored library cases: same three historical shutdown expectations before repair"
+    }
+  ],
+  "peer_review": {
+    "scope": "Root read-only shared ownership, lane and cross-lane quarantine review",
+    "repair": "Document TerminationUnverified now quarantines both execution lanes without preventing typed failure or exact already-owned collection settlement; poisoned guard cannot release on Drop",
+    "final_review": "Root accepted final ownership distinction and scoped historical assertion repairs",
+    "platform_execution_claim": false
+  },
+  "limits": [
+    "Normal production JobCoordinator::start remains collection-disabled; synthetic executor entrypoint is cfg(test) only",
+    "No public Command/UI/schema/dependency or storage migration; existing CollectWebsite synchronous admission is unchanged",
+    "No live sources, native DNS cancellation campaign, browser or installed-package verification in this increment",
+    "Unverified document or collection operation may retain one ownership handle per affected workspace until process exit; no reset API",
+    "Publication retains one bounded response with at most3 explicit retries plus one final shutdown attempt; final failure leaves charged canonical uncertainty",
+    "Read-only inspection remains available under quarantine; new execution is denied, and released ownership cannot settle",
+    "Root integration must verify native/browser workflows because ordinary coordinator ownership and unknown-worker shutdown semantics changed",
+    "All existing complete-release gates remain unchanged"
+  ],
+  "file_sha256": {
+    "crates/core/src/collection_execution.rs": "ccbb88ecdc83e16ca2a97dae1a9961074cb7d3c4943622093737907d6eb25ac9",
+    "crates/core/src/coordinator.rs": "6f09f993a1d09707799392e90e6b13be4768493d9e1f6b73ac340aab7204712e",
+    "crates/core/src/coordinator_collection.rs": "aea88b05cc4eb51ac90a946cc846544f2dca418306edb28d5e8a553823de9ae3",
+    "crates/core/src/coordinator_collection_tests.rs": "2a3ad4e0b281a2489aa61278223c7c96f3546ec5c109da74423b69ab3354ec32",
+    "crates/core/src/coordinator_image_tests.rs": "8cc8a1f3100aab22f4b14856ea6a89248e3680a220dce099a9c3c295680b6948",
+    "crates/core/src/coordinator_pdf_tests.rs": "8119bcbda10d87a7e6156f20665cc963a7a045bf724cd98c94af3bfa8382b267",
+    "crates/core/src/store/collection_jobs.rs": "4286627d34101518109810aed3665d39228733126bff1d984e354afeaea21e20",
+    "crates/core/src/store/collection_jobs_tests.rs": "e618919a7494b6fb9242dd94f0e6b2e6106b60d50fbb2faa547a8ff0c7681491",
+    "crates/core/src/store/collection_transport_settlement.rs": "bf11e76ada346cd6bb4ccd37613ae86675e00abe2987e5e76e26d6ae89186b17",
+    "crates/core/src/store/collection_transport_settlement_tests.rs": "c5d49a6924f04b17e56631e9c194856da1c9b6730f26655ce260f34a386fe980",
+    "crates/core/src/store/processing.rs": "dcf7dd890a3978b66d490649264d435772301fefb813725a2a4fd2fb7b860b7b",
+    "docs/discovery/COLLECTION-COORDINATOR.md": "484dfdf67a6d223251196e1e07c7504086224c94ce38afe8f6733c0831e87cb5",
+    "docs/discovery/verification/transport-settlement.json": "0600c54b1c5d42733532c4842db0b3d0875f7f2dbc60e66d732aff9765e7c0c0"
+  },
+  "local_ignored_log_sha256": {
+    "clippy-debug-final.log": "2780c55a4b5d55909ee95c9c694254a916103f0c3bc3cceb8fe7229fa4ca6487",
+    "clippy-debug-first.log": "3ba8f05868802599507bdb096c5e48db0c2e174e959530dc01eca8870ec8e538",
+    "clippy-debug-verified.log": "335dff1fbf25bc7cc5b2e08aae24841c904d529e9581526581bc00e05462bfd5",
+    "clippy-release-final.log": "34887f38be7679dcd4401d01705078ba916aa8a2ba247a1b912637b4eff6b393",
+    "clippy-release-verified.log": "3ca8b8d1c3b6b15645efaa639b7fb64d551446b10ddc16b812005c8a162d6358",
+    "coordinator-first.log": "0366bf1a32c550d963c5c72cce5ee848d0f5d96d750ade98be68ccc7957af315",
+    "coordinator-second.log": "25a3a4c8c4b8eddec309c9d1b090ccf904d053ef6690ea6e64ab5e27f3aee525",
+    "coordinator-third.log": "15f78f488a2a403dfbd453825794fde748c1bef00a83a1e729d381b9285c4cc4",
+    "core-final.log": "4171d47c4a753a7069f487be55e1a6dd07c4145c3f1bf700eac02003e6d85d08",
+    "core-first.log": "59bd144f04c1109109b5532d14de0c28a4bb0af94569a8e0f80b6a9e1f271d2a",
+    "core-second.log": "97a4443e3d981f30cd4c079e30a6aca5800181ddd0d2cf0ef3bd1da9bdef69d5",
+    "core-verified.log": "6e64a79df6cca282b7949a53683e60735a894c8aab906f81e1dfd97a31906dd7"
+  },
+  "local_ignored_identity_checks_sha256": "a405aee7a4200678e3fc6c29f32472328297d9744482eb55c67f2582102f5097",
+  "prior_inventory_metadata_correction": "Preceding settlement evidence count corrected from84 JSON files to83 JSON schema files; the unchanged85-file inventory proof and original hashed artifact are retained."
+}

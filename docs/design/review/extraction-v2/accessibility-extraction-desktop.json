@@ -1,0 +1,9 @@
+{
+  "scope": "dialog[aria-label=\"Extraction review\"]",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21aa"
+  ],
+  "violations": []
+}

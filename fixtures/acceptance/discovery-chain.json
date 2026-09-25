@@ -1,0 +1,22 @@
+{
+  "synthetic": true,
+  "pages": [
+    {
+      "url": "https://publisher.example/seed",
+      "text": "North Quay Example names identifier HARBOR-017.",
+      "links": [
+        "https://publisher.example/harbor-017"
+      ]
+    },
+    {
+      "url": "https://publisher.example/harbor-017",
+      "text": "HARBOR-017 is connected with Harbor Ledger Example.",
+      "links": []
+    }
+  ],
+  "limits": {
+    "hops": 2,
+    "requests": 50,
+    "seconds": 600
+  }
+}

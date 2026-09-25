@@ -1,0 +1,4 @@
+   Compiling workbench-core v0.1.0 (<worktree>/crates/core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 41.12s
+     Running `target/debug/ew-dev schemas`
+{"schemas":57}

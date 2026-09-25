@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "scope": "Evidence local-index response consumption using real canonical synthetic evidence and explicitly injected index replies; existing industrial surface preserved",
+  "source": {
+    "commit": "d361dcc51b8e5a580e819792a184fa8844526e8b",
+    "tree": "9b8200fd51131bae7d91b545ef196642e373fb32",
+    "base_commit": "0d97a6e46730d4107d47147488b2b339790bc577",
+    "files_sha256": {
+      "docs/discovery/EVIDENCE-SEARCH-CONSUMPTION.md": "0c704c57849a9f3d806851fac7587cd2592c3b2ecd2eb20453778b469eda5e74",
+      "ui/src/evidence-search.ts": "ed645e92fe30447733da21d96285cd89f6b66f3c4e8655f854af4fd21627aa2e",
+      "ui/src/main.tsx": "7475b7c8536320aec2e784859f84b83723a07600a6e7863ef0fdd700381e673f",
+      "ui/tests/evidence-search.spec.ts": "f44e40288bab5d4d4f431cabc16558e350594fb3f611ea2988c14ba487f2902b"
+    },
+    "signature_verified": true,
+    "signing_key_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y"
+  },
+  "host": {
+    "system": "Darwin",
+    "version": "25.6.0",
+    "architecture": "arm64"
+  },
+  "results": {
+    "build": {
+      "command": "npm run build",
+      "passed": true,
+      "log": "05-build-final.log",
+      "note": "Existing bundle-size advisory remains; TypeScript and Vite completed."
+    },
+    "affected_browser": {
+      "command": "npx playwright test ui/tests/evidence-search.spec.ts ui/tests/workflow.spec.ts ui/tests/source-integrity.spec.ts ui/tests/document-jobs.spec.ts --trace retain-on-failure",
+      "passed": 21,
+      "failed": 0,
+      "log": "06-affected-browser.log",
+      "new_search_cases": 8,
+      "document_jobs_cases": 10,
+      "source_integrity_cases": 1,
+      "workflow_cases": 2,
+      "source_bytes_match_signed_commit": true
+    },
+    "initial_browser": {
+      "passed": 8,
+      "failed": 0,
+      "log": "04-browser.log",
+      "note": "Earlier source before restored explicit Search clearing of prior global error and queued-navigation assertion; retained separately."
+    },
+    "accessibility": {
+      "wide": {
+        "viewport": [
+          1440,
+          1000
+        ],
+        "violations": 0,
+        "log": "rank-wide-axe.json"
+      },
+      "compact": {
+        "viewport": [
+          960,
+          720
+        ],
+        "violations": 0,
+        "log": "rank-compact-axe.json"
+      },
+      "horizontal_overflow": false,
+      "scope": "Automated axe on this existing Evidence surface, not complete accessibility acceptance."
+    },
+    "visual_review": {
+      "performed": true,
+      "images": [
+        "rank-wide.png",
+        "rank-compact.png"
+      ],
+      "observation": "Returned reverse order is visible; existing toolbar, evidence rows and document panel remain aligned without clipping at both observed widths; no new design treatment or frame claimed."
+    },
+    "diff_check": {
+      "passed": true,
+      "log": "07-diff-check.log"
+    },
+    "source_public_audit": {
+      "passed": true,
+      "staged_files": 4,
+      "log": "08-source-audit.log"
+    },
+    "external_requests_observed": 0,
+    "formatter": {
+      "tool": "locally available Prettier",
+      "version": "3.6.2",
+      "runtime_dependencies_changed": false
+    },
+    "peer_review": "Root bounded source/lane/test review reported no actionable issue.",
+    "evidence_public_audit": {
+      "passed": true,
+      "staged_files": 1,
+      "log": "11-evidence-audit.log"
+    }
+  },
+  "regression_contract": [
+    "Canonical sources are imported through the actual Rust development API. All Search replies are explicitly injected and never sent to a native index worker.",
+    "Validated replies preserve returned rank by mapping hit IDs to canonical Evidence; rendered count is displayed rows, not reported total precision.",
+    "Query A-to-B-to-A and navigation invalidate old generations, errors and pending queued requests.",
+    "One active plus one latest pending request; rapid changes coalesce and an obsolete reply cannot clear newer pending/failure.",
+    "New attempts, failures, malformed responses and valid empty responses cannot leave prior ranked hits visible.",
+    "An actual canonical import revision invalidates a held response; old revision replies are refused on a new request.",
+    "A delayed actual import response keeps workspace mutation controls disabled despite old search completion.",
+    "Twelve malformed reply variants exercise missing/unknown fields, revision representation, total bounds, duplicate/unknown IDs, wrong names, nonnumeric scores and excess hits; no valid prefix is rendered."
+  ],
+  "artifacts": {
+    "location": "artifacts/evidence-search-state (retained locally; not committed)",
+    "files": {
+      "01-build.log": {
+        "bytes": 932,
+        "sha256": "03a2bcc4171ed2cc58a5960f39a178b986d3551df39d8aebd5d6f90944e53db2"
+      },
+      "02-format.log": {
+        "bytes": 166,
+        "sha256": "83b89d28e8974508f2bd2d04dbf76261a07f5065c96e443779fc2dba7e68229e"
+      },
+      "03-build.log": {
+        "bytes": 932,
+        "sha256": "ee9007b6ea8555a292940dba9c140ef25f5615549968b0e988f05d238db43a14"
+      },
+      "04-browser.log": {
+        "bytes": 1905,
+        "sha256": "85593cdd5c98ad9d5b3cc89da0395a1bb1745c5a2aac8d6223028549f7c37ed6"
+      },
+      "05-build-final.log": {
+        "bytes": 932,
+        "sha256": "d7e0a4161c93ddf373b5284f48361147bd52e673bb188c31b957cf9b5f696031"
+      },
+      "06-affected-browser.log": {
+        "bytes": 3513,
+        "sha256": "76c445147af88ce49b5000118f19d62f6c85db9f9bb7e9c66828c4141ba972c6"
+      },
+      "07-diff-check.log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "08-source-audit.log": {
+        "bytes": 39,
+        "sha256": "f32bf3a644665a385e05f6e8e28262342e8cafcb8c31e2b8dedcec4cc4ccbeae"
+      },
+      "09-source-commit.log": {
+        "bytes": 314,
+        "sha256": "ea9df15486f04a547f54d9bc20524f6cd901ceaba90e1353ab3c53e0c28a9767"
+      },
+      "10-source-signature.log": {
+        "bytes": 99,
+        "sha256": "31145e3d2a3745af2933cf698776934a97d3c4cb271929540892a170047327f3"
+      },
+      "rank-compact-axe.json": {
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      "rank-compact.png": {
+        "bytes": 164870,
+        "sha256": "f75b96076ea7d7d306da58f37f9681f8c9864d1b42f9650b1f843c9f8e65b7e3"
+      },
+      "rank-wide-axe.json": {
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      "rank-wide.png": {
+        "bytes": 162384,
+        "sha256": "f0b71887bc49161ef0b9c089b7f7e2ecbc0bdaca11216c13d9a348e63685ebe5"
+      },
+      "11-evidence-audit.log": {
+        "bytes": 39,
+        "sha256": "848cb50cecc61448de3008cf9bf44fd2d2ecea7a46c70a835ebb93cdcd7f575f"
+      }
+    }
+  },
+  "limits": [
+    "No Rust, Search schema/request/response, native runtime, CSS, layout or public-service change.",
+    "Native Lucene execution, index quality, total-hit precision and frozen benchmark eligibility remain unproven by this injected-response suite.",
+    "Query association is captured client request state: the current response does not echo a query or provide a search receipt.",
+    "Invalidation does not cancel an active backend worker; it clears queued work and prevents obsolete publication.",
+    "Existing editable industrial design is reused; no new Figma frame or design acceptance is claimed.",
+    "Build/test sources were dirty only with this final patch when verified, then signed with identical file hashes. No native or full-platform release acceptance is claimed."
+  ],
+  "native_search": "not_run",
+  "benchmark_campaign": "not_run",
+  "normal_native_activation_changed": false,
+  "release_acceptance": false
+}

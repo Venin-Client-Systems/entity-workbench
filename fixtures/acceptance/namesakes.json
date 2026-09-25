@@ -1,0 +1,29 @@
+{
+  "synthetic": true,
+  "entities": [
+    {
+      "id": "person-a",
+      "name": "Arden Example",
+      "birth_date": "1985-04-16",
+      "reference": {
+        "namespace": "demo-a",
+        "value": "000017"
+      }
+    },
+    {
+      "id": "person-b",
+      "name": "Arden Example",
+      "birth_date": "1992-11-03",
+      "reference": {
+        "namespace": "demo-b",
+        "value": "000017"
+      }
+    }
+  ],
+  "decision_sequence": [
+    "defer",
+    "keep-separate",
+    "mistaken-merge",
+    "reverse-merge"
+  ]
+}

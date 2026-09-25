@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T17:21:16.379501+00:00",
+  "scope": "Assessment citation UI against canonical Rust command v17; synthetic browser evidence only",
+  "base_commit": "22e1a4c6e464f50debc3985ef90729ebecd0d9fe",
+  "core_binary_sha256": "39db715dde9ff3017193b7272779b9fdb5cc4f0314070467046c513b18aad516",
+  "host": {
+    "os": "Darwin",
+    "os_version": "26.6.2",
+    "architecture": "arm64",
+    "node": "v26.7.0"
+  },
+  "results": {
+    "core_build": "passed",
+    "ui_type_and_production_build": "passed; existing large JavaScript chunk warning retained",
+    "existing_assessment_history_first": {
+      "passed": 9,
+      "failed": 0
+    },
+    "new_first": {
+      "passed": 6,
+      "failed": 1,
+      "failure": "Compact test assumed Escape closes a nonempty search field. Actual Chromium first Escape cleared search and retained modal. Test now explicitly verifies clearing, then modal Escape/focus restoration."
+    },
+    "compact_diagnostic": {
+      "passed": 1,
+      "failed": 0
+    },
+    "new_after_request_scheduling": {
+      "passed": 9,
+      "failed": 0
+    },
+    "final_full_browser_suite": {
+      "passed": 79,
+      "failed": 0,
+      "new_citation_cases": 9
+    },
+    "axe": {
+      "viewports": [
+        1440,
+        720
+      ],
+      "violations": 0,
+      "incomplete_checks_retained": true
+    },
+    "visual_review": "Populated final pages, successful zero result, selected-set unavailable and stale draft inspected; no horizontal modal overflow."
+  },
+  "peer_fix": "Keyed reads initially could accumulate active core calls. A modal-owned one-active/one-latest-pending lane now bounds each reader; real delayed-response tests prove coalescing and queued cancellation on close.",
+  "limitations": [
+    "No default workspace payload reduction or summary-mode activation.",
+    "Evidence text/acquisitions remain in the source inspector.",
+    "No new native Figma frame/export/remote-save claim; unsynced original tab untouched.",
+    "No native-platform, clean-installation, performance or complete-release gate claimed.",
+    "Only pending client work is cancelled on close; an already dispatched core read is not claimed cancelled."
+  ],
+  "retained_log_hashes": {
+    "core-build.log": "e092b506517632f25918c8114465d3e8f2394f2d44e181a711f1e2777a8d31a4",
+    "ui-build-final.log": "8e9267d7b1533cd7e5586034ed0b644e6a77ba3c310dd77c1ed4d124975e6016",
+    "existing-targeted-first.log": "1c98242d258b08b9f02f6e0d392403d0a4edcf86b2dff1e079c71dc281d2e9c1",
+    "new-tests-first.log": "96b1166afae33fac52b9cf1354357b7f8eeb792f0544ce34470257c0434438e1",
+    "compact-second.log": "c2ad1424a6d32b4ba6865a9d4fd5fb5b5e344792c52846183bfd0e292057fe39",
+    "new-tests-second.log": "9fe196454d42b6a802a92175486ce45c3c09f63b38cf67bf7988c3275302679a",
+    "full-suite-first.log": "91512ed22cfc4e70e251e9ad8932f8eef94d75f518a0bf238d203e2ee930c208"
+  },
+  "source_commit": "ec163589d0def6694490de63eeb8a858d3c5d03e",
+  "follow_up": "refresh-focus-verification.json"
+}

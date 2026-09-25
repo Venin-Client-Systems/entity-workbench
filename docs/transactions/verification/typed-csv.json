@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "scope": "EW-30 / issue #34 typed-literal transaction CSV backend only",
+  "complete_release": false,
+  "native_or_ui_activation": false,
+  "source_commit": "55b9a457dbcc24ae8e2bdcc48ca5ead09b38ebd8",
+  "source_tree": "686434418d2289606bbe6601de6faf64b1e29bc4",
+  "source_signature": {
+    "verified": true,
+    "key_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y"
+  },
+  "changed_source_file_sha256": {
+    "crates/core/src/bin/ew-dev.rs": "d327cc9e6dcb7194a9ede05677a8387fe73329e13181b7dfd19b013dbf83aa5d",
+    "crates/core/src/domain.rs": "22ed45c7839a22490535bf646a8393184416c5a06711fe96fba58dd57fe0e0d1",
+    "crates/core/src/lib.rs": "87fd791c000b95035186743c1e0caa06bf5654c46037c6af84c4c74ce401d25d",
+    "crates/core/src/store.rs": "ee6156bef0f7124faa01c47d3f61d47d5dfe862e5afad64fe97db0fb414fe974",
+    "crates/core/src/store/transaction_csv.rs": "5806cff84baf55be4359e574323147882666841591f93468f510caa13df73366",
+    "crates/core/src/store/transaction_csv_tests.rs": "b7f5f5d869478fa1ea16b8a550bd6f489e9d28da278e9a2e65a1f02ac06d833d",
+    "crates/core/src/store/transaction_export.rs": "e74c4af3ccbcc089794ef4f10ef19ad592b6e3a5bb42d41fd2b008bf9ce0a1b5",
+    "crates/core/src/store/transaction_export_selection.rs": "1cf503b47fe97cae41562d6ddad6ba345adbc292f0d5cb0e59bbf808589def07",
+    "crates/core/src/transaction_csv.rs": "f1784b25679893aed530465f83a52404c0dd4d799a94cea50f26d42ddd0ab150",
+    "docs/transactions/TYPED-CSV.md": "b7281782ef7c2d2c4da52f3c3c47661b5722d39c8cbe45dabab4ce2c763bf261",
+    "schemas/command.v24.schema.json": "4e2a9500c23599266c8e5da3c4532612e11d39e23d10a595ba7ff76381985e97",
+    "schemas/transaction-csv-export.v1.schema.json": "0d34c43e0294b9c46382c7ba5cd1c1223189679797fad344175887a4a1fc1479",
+    "schemas/transaction-csv-request.v1.schema.json": "340289aba5b4fa3d1db80d47ac1a4003885e743205acc1c996f7e9a1e662e110",
+    "scripts/tests/test_transaction_csv.py": "1c34199d6e22719b0bd78fadbe2059eeacf88abea5dbf02492eb8ee99e1c2be8",
+    "scripts/verify_transaction_csv.py": "401242ddde734d5253d560ce969b4652e7cd964068de488cff9d8599c46dae11"
+  },
+  "host": {
+    "system": "Darwin",
+    "architecture": "arm64",
+    "os_version": "26.6.2"
+  },
+  "rust_checks": {
+    "ordinary_passed": 459,
+    "failed": 0,
+    "native_opt_in_ignored": 23,
+    "new_focused_tests": 8,
+    "strict_all_targets_debug_clippy": "passed",
+    "strict_all_targets_release_clippy": "passed",
+    "fmt": "passed"
+  },
+  "python_checks": {
+    "normal_unit_tests": 6,
+    "optimized_unit_tests": 6,
+    "final_command": "python3 -O scripts/verify_transaction_csv.py --baseline <retained old binary> --output <fresh observation directory>",
+    "independent_reader": "Python standard csv.reader; no spreadsheet application"
+  },
+  "signed_clean_observation": {
+    "schema_version": 1,
+    "outcome": "passed",
+    "complete_release": false,
+    "scope": "synthetic Rust CLI to independent Python csv.reader",
+    "at": "2026-09-25T14:44:03.528751+00:00",
+    "checks": [
+      "scope_0_independent_round_trip_and_historical_json_bytes",
+      "scope_1_independent_round_trip_and_historical_json_bytes",
+      "scope_2_independent_round_trip_and_historical_json_bytes",
+      "scope_3_independent_round_trip_and_historical_json_bytes",
+      "scope_4_independent_round_trip_and_historical_json_bytes",
+      "scope_5_independent_round_trip_and_historical_json_bytes",
+      "scope_6_independent_round_trip_and_historical_json_bytes",
+      "scope_7_independent_round_trip_and_historical_json_bytes",
+      "mixed_review_reject_is_whole_selection_failure",
+      "explicit_accepted_selection_with_reject",
+      "stale_revision_refused",
+      "missing_nonaccepted_policy_refused",
+      "canonical_summary_original_binary_and_source_unchanged"
+    ],
+    "spreadsheet_application_executed": false,
+    "network_requests": 0,
+    "source_commit": "55b9a457dbcc24ae8e2bdcc48ca5ead09b38ebd8",
+    "source_dirty": false,
+    "source_sha256": {
+      "crates/core/src/transaction_csv.rs": "f1784b25679893aed530465f83a52404c0dd4d799a94cea50f26d42ddd0ab150",
+      "crates/core/src/store/transaction_csv.rs": "5806cff84baf55be4359e574323147882666841591f93468f510caa13df73366",
+      "crates/core/src/store/transaction_csv_tests.rs": "b7f5f5d869478fa1ea16b8a550bd6f489e9d28da278e9a2e65a1f02ac06d833d",
+      "crates/core/src/store/transaction_export.rs": "e74c4af3ccbcc089794ef4f10ef19ad592b6e3a5bb42d41fd2b008bf9ce0a1b5",
+      "crates/core/src/store/transaction_export_selection.rs": "1cf503b47fe97cae41562d6ddad6ba345adbc292f0d5cb0e59bbf808589def07",
+      "crates/core/src/domain.rs": "22ed45c7839a22490535bf646a8393184416c5a06711fe96fba58dd57fe0e0d1",
+      "crates/core/src/bin/ew-dev.rs": "d327cc9e6dcb7194a9ede05677a8387fe73329e13181b7dfd19b013dbf83aa5d",
+      "crates/core/src/lib.rs": "87fd791c000b95035186743c1e0caa06bf5654c46037c6af84c4c74ce401d25d",
+      "crates/core/src/store.rs": "ee6156bef0f7124faa01c47d3f61d47d5dfe862e5afad64fe97db0fb414fe974",
+      "Cargo.lock": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+      "Cargo.toml": "89847b7032161f966c912e89558392b084a9380c69b8a6185148909ef579d8c1",
+      "crates/core/Cargo.toml": "ee9e136f5504851d904598aa4254f18d605837bcdd50f5335e4651fc85015594",
+      "scripts/verify_transaction_csv.py": "401242ddde734d5253d560ce969b4652e7cd964068de488cff9d8599c46dae11",
+      "scripts/tests/test_transaction_csv.py": "1c34199d6e22719b0bd78fadbe2059eeacf88abea5dbf02492eb8ee99e1c2be8"
+    },
+    "binary_sha256": "3b6865228bd055d79cd69ac4aa18c335c38af6d4011260b504572f2bb39422e5",
+    "baseline_binary_sha256": "5583d513c383b8e2cf5057b9925a57900a1dfc9e1939ac6a0d6e945e3d65f8eb",
+    "fixture_sha256": "2e27727ef83552758d94b93eb9070a9160c67ec04a293c1d82de0c6501802b38",
+    "fixture_bytes": 1519,
+    "historical_json_artifact_and_envelope_byte_identity": true,
+    "command_count": 35
+  },
+  "prior_baseline_build": {
+    "source_commit": "89d5300498789d13e4d7ab1fa729440d415b039d",
+    "source_dirty": false,
+    "binary_sha256": "5583d513c383b8e2cf5057b9925a57900a1dfc9e1939ac6a0d6e945e3d65f8eb",
+    "build": "cargo build -p workbench-core --bin ew-dev --locked --offline; isolated CARGO_TARGET_DIR"
+  },
+  "historical_raw_json": {
+    "scope_cases": 8,
+    "embedded_artifact_bytes_identical": true,
+    "entire_cli_response_bytes_identical": true,
+    "same_synthetic_workspace": true
+  },
+  "full_scope_csv_artifact": {
+    "row_count": 32,
+    "bytes": 12740,
+    "sha256": "299e30c16bd16f18c0063284fd29f5943dfad7e9df41f27f416b88ba9c549715",
+    "format": "typed_literal_v1",
+    "format_sha256": "a79b97802d789b1aa0e6828823aa18f5826bc03ac7613369f8ec0d943bcb73c4",
+    "selection_sha256": "f23333a5ce5dc6c5bdf7cb64448b9c9e4f9548ee2f28e38f36922141d0b4f733",
+    "workspace_revision": 4
+  },
+  "historical_schemas": {
+    "base_commit": "89d5300498789d13e4d7ab1fa729440d415b039d",
+    "historical_files": 90,
+    "historical_json_schemas": 89,
+    "all_byte_identical": true
+  },
+  "historical_schema_inventory": {
+    "path": "artifacts/typed-csv/historical-schemas.json",
+    "bytes": 10527,
+    "sha256": "ca55f912a0115b0b9a7abb3d56bf7df0f731918c3de87b632d9fef3645cd2c2b"
+  },
+  "new_schemas": [
+    "schemas/command.v24.schema.json",
+    "schemas/transaction-csv-request.v1.schema.json",
+    "schemas/transaction-csv-export.v1.schema.json"
+  ],
+  "integration_note": "Equality is against89d5300. The independently approved unpublished v23 request_key DTO amendment belongs to the collection UI slice and must be merged separately; CSV does not rewrite that history.",
+  "retained_prior_observations": [
+    {
+      "path": "artifacts/typed-csv/independent-initial/report.json",
+      "bytes": 1660,
+      "sha256": "4ca9e96fc7a4239d8844cedf09ecc2f31a0ca35e1ce2db8400d6a4fcbfaf4e02",
+      "outcome": "failed",
+      "checks": 0,
+      "command_count": 1,
+      "explanation": "Runner read revision from the outer summary instead of its workspace member; harness corrected."
+    },
+    {
+      "path": "artifacts/typed-csv/independent-corrected/report.json",
+      "bytes": 1714,
+      "sha256": "bac3f48cedecf5d7787da158541d0a25edce176e5d43ba67c25aa00c95d7b054",
+      "outcome": "failed",
+      "checks": 0,
+      "command_count": 8,
+      "explanation": "Independent reader exposed dictionary hash dependence on DTO object field order; format hash changed to explicit sorted-key compact JSON and independent order regression added."
+    },
+    {
+      "path": "artifacts/typed-csv/independent-paired/report.json",
+      "bytes": 1805,
+      "sha256": "f53774e7b1b93c7ceb7c12294d9379823e65c6e95104fee5a493cf3c8cadbf8a",
+      "outcome": "failed",
+      "checks": 0,
+      "command_count": 9,
+      "explanation": "Shared isolated target reused the prior-source CLI binary after baseline build; unknown new command failed. Package was cleaned/rebuilt and runner now rejects identical old/new binaries. No production semantics were relaxed."
+    },
+    {
+      "path": "artifacts/typed-csv/independent-paired-corrected/report.json",
+      "bytes": 2430,
+      "sha256": "ee6ab7abc65933f07e3b455c61289d769b6f2b76e37b7ad35a0e3466e33718a2",
+      "outcome": "passed",
+      "checks": 13,
+      "command_count": 35,
+      "explanation": "Pre-signing run proved exact embedded JSON artifact plus parsed envelope equality. It did not compare entire response bytes; final signed run adds that separate check."
+    }
+  ],
+  "retained_logs": [
+    {
+      "path": "artifacts/typed-csv/core-tests.log",
+      "bytes": 56285,
+      "sha256": "fa302ca07ac2300060e53f47dbb1649205a58a19d46333b6e91964f0f2e1612b"
+    },
+    {
+      "path": "artifacts/typed-csv/clippy-debug.log",
+      "bytes": 425,
+      "sha256": "09ced4bece7ac45ebfb4160ea105b82a828ea910f31cdc9237e860a885f6d22d"
+    },
+    {
+      "path": "artifacts/typed-csv/clippy-release.log",
+      "bytes": 5912,
+      "sha256": "4c0e37862ac08c84b48466bbf27c29e9924a2b38445661ec9188e3cf411de6bc"
+    },
+    {
+      "path": "artifacts/typed-csv/fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/typed-csv/python-tests.log",
+      "bytes": 1156,
+      "sha256": "2efb00ae4457c45ca43cd8c1835cc75d7eac918af669e1419190b33c961dd213"
+    },
+    {
+      "path": "artifacts/typed-csv/python-optimized-tests.log",
+      "bytes": 1156,
+      "sha256": "2efb00ae4457c45ca43cd8c1835cc75d7eac918af669e1419190b33c961dd213"
+    },
+    {
+      "path": "artifacts/typed-csv/public-audit-source.log",
+      "bytes": 40,
+      "sha256": "0446adfa1251273e19aa35089af87156f1a1c99cff6fdb178a660d143c3bfd50"
+    },
+    {
+      "path": "artifacts/typed-csv/signature-source.log",
+      "bytes": 110,
+      "sha256": "bb3514ff9786724f2b565573e5d728aefdeda9d6742d890fa8115c5eb6dea636"
+    },
+    {
+      "path": "artifacts/typed-csv/signed-source-build.log",
+      "bytes": 211,
+      "sha256": "64526516c145709d360f8a49333881453285c7d19ce97914ced763ed708d2a67"
+    },
+    {
+      "path": "artifacts/typed-csv/signed-clean-paired.log",
+      "bytes": 52,
+      "sha256": "19ee193f96889cba1bfe1d50b6a3835fe2e77625a10dfe9afad32e152bbc423b"
+    }
+  ],
+  "retained_final_report": {
+    "path": "artifacts/typed-csv/signed-clean-paired/report.json",
+    "bytes": 3010,
+    "sha256": "552bd4699618a9fe364e4642789105968cc3423cc3b217b7fe31b5f2e564b855"
+  },
+  "unverified": [
+    "Actual Excel/LibreOffice interpretation or save/reopen",
+    "Universal spreadsheet formula safety",
+    "CSV desktop/native download lifecycle",
+    "CSV UI/design integration",
+    "Windows or Intel execution of this increment",
+    "100000-row CSV performance or total process memory bound",
+    "Complete release gates"
+  ]
+}

@@ -1,4 +1,16 @@
+import type { CollectionJob } from "./collection-types";
+import type {
+  StatementProfile,
+  StatementImportRecord,
+} from "./statement-types";
 export type ReviewState = "pending" | "accepted" | "rejected" | "deferred";
+export type ReviewDecision = {
+  id: string;
+  target_id: string;
+  state: ReviewState;
+  reason: string;
+  at: string;
+};
 export type Anchor = {
   kind: string;
   evidence_id: string;
@@ -86,7 +98,15 @@ export type Transaction = {
   transfer_peer: string | null;
   version: number;
 };
+export type Hypothesis = {
+  id: string;
+  question: string;
+  proposition: string;
+  alternatives: string[];
+  gaps: string[];
+};
 export type Finding = {
+  hypothesis_ids: string[];
   id: string;
   title: string;
   assessment: string;
@@ -97,6 +117,8 @@ export type Finding = {
 };
 export type Workspace = {
   revision: number;
+  statement_profiles: StatementProfile[];
+  statement_imports: StatementImportRecord[];
   entities: Entity[];
   evidence: Evidence[];
   transactions: Transaction[];
@@ -109,13 +131,7 @@ export type Workspace = {
     review: ReviewState;
   }[];
   findings: Finding[];
-  hypotheses: {
-    id: string;
-    question: string;
-    proposition: string;
-    alternatives: string[];
-    gaps: string[];
-  }[];
+  hypotheses: Hypothesis[];
   leads: {
     id: string;
     label: string;
@@ -138,15 +154,7 @@ export type Workspace = {
     longitude: number | null;
     review: ReviewState;
   }[];
-  jobs: {
-    id: string;
-    queries: string[];
-    adapters: string[];
-    state: string;
-    requests_used: number;
-    max_requests: number;
-    detail: string;
-  }[];
+  jobs: CollectionJob[];
   merges: {
     id: string;
     source: string;
@@ -167,15 +175,9 @@ export type Workspace = {
     workspace_revision: number;
     created_at: string;
     sha256: string;
-    html: string;
+    html_bytes: number;
   }[];
-  decisions: {
-    id: string;
-    target_id: string;
-    state: ReviewState;
-    reason: string;
-    at: string;
-  }[];
+  decisions: ReviewDecision[];
 };
 export type Analysis = {
   pending: number;
@@ -197,3 +199,29 @@ export type Analysis = {
   }[];
 };
 export type Response = { workspace: Workspace; analysis: Analysis };
+
+export type ReviewCounts = Record<ReviewState, number>;
+export type DesktopWorkspace = Omit<Workspace, "transactions" | "decisions"> & {
+  schema_version: number;
+  review_decision_count: number;
+};
+export type LedgerSummary = {
+  transaction_count: number;
+  review_counts: ReviewCounts;
+  duplicate_candidate_row_count: number;
+  balance_check_count: number;
+  balance_discrepancy_count: number;
+  totals: {
+    currency: string;
+    credits: string;
+    debits: string;
+    net: string;
+    included_count: number;
+    excluded_transfer_count: number;
+  }[];
+};
+export type DesktopSummaryResponse = {
+  schema_version: 1;
+  workspace: DesktopWorkspace;
+  analysis: LedgerSummary;
+};

@@ -1,0 +1,1014 @@
+{
+  "earlier_transcript_only_observations": [
+    {
+      "operation": "Initial cargo check",
+      "outcome": "failed before compilation",
+      "raw_log_retained": false,
+      "reason": "Incorrect package name entity-workbench-core; corrected to existing workbench-core"
+    },
+    {
+      "operation": "Draft cargo fmt",
+      "outcome": "failed",
+      "raw_log_retained": false,
+      "reason": "New test module path declared before file was created"
+    },
+    {
+      "operation": "First draft all-target check",
+      "outcome": "failed",
+      "raw_log_retained": false,
+      "reason": "Moved BTreeMap import not yet available to sibling collection tests; unused import/private interface warnings also repaired"
+    },
+    {
+      "operation": "First focused scheduling run",
+      "outcome": "passed11tests",
+      "raw_log_retained": false
+    }
+  ],
+  "evidence_kind": "graph_exclusive_scheduling_source_verification",
+  "evidence_preflight": {
+    "initial_diff_check": "Refused four public log copies with extra blank lines at EOF; normalized their terminal newlines and updated public hashes. Original retained logs and hashes are unchanged."
+  },
+  "historical_schemas": {
+    "all_byte_identical": true,
+    "compared_parent": "6ff65da7c35f5e1d84ce8d0f92ec02a4744ea849",
+    "compared_source": "d744550ba1821616e66cb5d85961979c1bf43fe4",
+    "count": 102,
+    "identities": [
+      {
+        "bytes": 3544,
+        "path": "schemas/README.md",
+        "sha256": "19e04046245de2fca9757349b53cfa9f0f9e7a32f4f6b8ada2c725b758cfe5ab",
+        "unchanged": true
+      },
+      {
+        "bytes": 498,
+        "path": "schemas/account-flow-request.v1.schema.json",
+        "sha256": "3c4baf019f54d6edfe2f8a13d149b5d1897d92c40e2473b48763a791b0df0564",
+        "unchanged": true
+      },
+      {
+        "bytes": 13002,
+        "path": "schemas/account-flows.v1.schema.json",
+        "sha256": "bab4a1961d68c2030fcd08b2e7fce94477efc8806adc4669a642f93396073a46",
+        "unchanged": true
+      },
+      {
+        "bytes": 736,
+        "path": "schemas/analysis-manifest.v1.schema.json",
+        "sha256": "65a749c8c10ea3a3c86b4982c99bff43cd82ca7e8872466381f3209df1908c63",
+        "unchanged": true
+      },
+      {
+        "bytes": 8965,
+        "path": "schemas/citation-catalogue-page.v1.schema.json",
+        "sha256": "75f95824f59a69e7f8ce836ab5e75a49c19446e662bd50abd3f3b9d6512c8ec4",
+        "unchanged": true
+      },
+      {
+        "bytes": 570,
+        "path": "schemas/citation-catalogue-request.v1.schema.json",
+        "sha256": "61c582c165ed3230bf2fc55dab8549d8b7da1d844681373fabb58950f0d650bd",
+        "unchanged": true
+      },
+      {
+        "bytes": 302,
+        "path": "schemas/citation-selections-request.v1.schema.json",
+        "sha256": "8c1e24de311e62ffbb9d4cda108d7d5eebbde6d40167371e216e4ed065a6dc96",
+        "unchanged": true
+      },
+      {
+        "bytes": 7915,
+        "path": "schemas/citation-selections.v1.schema.json",
+        "sha256": "f14a21642f5fbbab8aa2478b7cee104eb10ccb0159ba800f069daf8270b2f051",
+        "unchanged": true
+      },
+      {
+        "bytes": 2269,
+        "path": "schemas/collection-preview.v1.schema.json",
+        "sha256": "56b85de6ad0379f88931554e215a74d2737b25af544d117f7985f6999c944752",
+        "unchanged": true
+      },
+      {
+        "bytes": 5036,
+        "path": "schemas/collection-receipt.v1.schema.json",
+        "sha256": "227a93dc7446f32eddebf051f2a689c8032ed028756cc370ed9fd191554bab45",
+        "unchanged": true
+      },
+      {
+        "bytes": 17519,
+        "path": "schemas/collection-run-inspection.v1.schema.json",
+        "sha256": "1f84aca15f0e7427f5758cdf746e4f6daa888a1196d26ddabcbfe8f8c902ac0f",
+        "unchanged": true
+      },
+      {
+        "bytes": 390,
+        "path": "schemas/collection-run-page-request.v1.schema.json",
+        "sha256": "8e8d36fd4c269e4f693f0e018c838ac6240400dff892f1afd8441c3a99041163",
+        "unchanged": true
+      },
+      {
+        "bytes": 4452,
+        "path": "schemas/collection-run-page.v1.schema.json",
+        "sha256": "97a852dd0ff65ec8cf5f9f01316b9baa379b91d7b5d85111abd430a300cc1d5a",
+        "unchanged": true
+      },
+      {
+        "bytes": 16243,
+        "path": "schemas/command.v1.schema.json",
+        "sha256": "d8608ccd594c43202d4d8075ff25c62a9fe94aac808d531d02e8451b38fe9d6e",
+        "unchanged": true
+      },
+      {
+        "bytes": 34842,
+        "path": "schemas/command.v10.schema.json",
+        "sha256": "882799cb76f14f5713618dcde8aeafe8439c9ec36a69b02395e826aad34322e4",
+        "unchanged": true
+      },
+      {
+        "bytes": 35271,
+        "path": "schemas/command.v11.schema.json",
+        "sha256": "554ae9ac9308771ba53521037870f91d902cc6762343f543aab4ab2d629e5242",
+        "unchanged": true
+      },
+      {
+        "bytes": 37248,
+        "path": "schemas/command.v12.schema.json",
+        "sha256": "e1a52d89c8dd9544686d233548ec97d683d1621908da07ab97899e18e579383f",
+        "unchanged": true
+      },
+      {
+        "bytes": 38644,
+        "path": "schemas/command.v13.schema.json",
+        "sha256": "033c91cecdc7996c1c1a7dbea3de6447b22abc261a61aaa41b937323c2afacdc",
+        "unchanged": true
+      },
+      {
+        "bytes": 39636,
+        "path": "schemas/command.v14.schema.json",
+        "sha256": "2b113e80cab45f41fa5c7c6aaebcdaf946ef7e433a7dab3f4e1202a6d605f08f",
+        "unchanged": true
+      },
+      {
+        "bytes": 40763,
+        "path": "schemas/command.v15.schema.json",
+        "sha256": "48f296bdb45e08e6105626a6e63d28f11096940505380d2e6af9160b0bdc76e8",
+        "unchanged": true
+      },
+      {
+        "bytes": 41598,
+        "path": "schemas/command.v16.schema.json",
+        "sha256": "2bace5da1a0b964db9122e0cc668a75ed8a3ade947c0ec7d0a36471fb7d189ef",
+        "unchanged": true
+      },
+      {
+        "bytes": 43536,
+        "path": "schemas/command.v17.schema.json",
+        "sha256": "c85bed4f16f33fff522d24ed3bedb71d56b2ed0b07be47f21a3487121566fc93",
+        "unchanged": true
+      },
+      {
+        "bytes": 44743,
+        "path": "schemas/command.v18.schema.json",
+        "sha256": "432174a9c4c0ce814f2daf98b92c7b8e41dfdcf42d345e497975298f4535673a",
+        "unchanged": true
+      },
+      {
+        "bytes": 46727,
+        "path": "schemas/command.v19.schema.json",
+        "sha256": "12ec61dbb085cc3aa4538a45cfc078bc8ff078ba9d5af6f723524ee9531f5a93",
+        "unchanged": true
+      },
+      {
+        "bytes": 21949,
+        "path": "schemas/command.v2.schema.json",
+        "sha256": "3b181439ea5dfc8b4110672569a2a373b55688a87d012ddf93e70441d8069af3",
+        "unchanged": true
+      },
+      {
+        "bytes": 47661,
+        "path": "schemas/command.v20.schema.json",
+        "sha256": "b450d02c8ecd6a8c7485289eae9187d27f8430038339dbce88f0482a9757b066",
+        "unchanged": true
+      },
+      {
+        "bytes": 49599,
+        "path": "schemas/command.v21.schema.json",
+        "sha256": "ec0d508bdfdd617d1d4f2eaeae0e51d5f010c9ae27c6f3008a6897bc656896e6",
+        "unchanged": true
+      },
+      {
+        "bytes": 50086,
+        "path": "schemas/command.v22.schema.json",
+        "sha256": "851fa3e1b5354a715ce6977c46424fa965097f83c00d891c98eda873819c35f1",
+        "unchanged": true
+      },
+      {
+        "bytes": 54496,
+        "path": "schemas/command.v23.schema.json",
+        "sha256": "987474747ee8a54556e54bcd7f4762981ad4c79500f5fd281df7fc0d92274259",
+        "unchanged": true
+      },
+      {
+        "bytes": 55504,
+        "path": "schemas/command.v24.schema.json",
+        "sha256": "4e2a9500c23599266c8e5da3c4532612e11d39e23d10a595ba7ff76381985e97",
+        "unchanged": true
+      },
+      {
+        "bytes": 56554,
+        "path": "schemas/command.v25.schema.json",
+        "sha256": "3d581f2238abc74905b48d99abbdb09a7369290ec1e1cca35957860c34b9f4e4",
+        "unchanged": true
+      },
+      {
+        "bytes": 25942,
+        "path": "schemas/command.v3.schema.json",
+        "sha256": "5f238782302718eba8e869cfe3575cdb9e8727e33c194d919858e441593ae5e0",
+        "unchanged": true
+      },
+      {
+        "bytes": 26589,
+        "path": "schemas/command.v4.schema.json",
+        "sha256": "097fd9910aa5f0bb8fefda2c5c8b817fc78391b25278c3e153cdb8ea007907c1",
+        "unchanged": true
+      },
+      {
+        "bytes": 28958,
+        "path": "schemas/command.v5.schema.json",
+        "sha256": "d14aff6ba1251730419f9f9d99a9962c2db447510c6fc90ff5d1de6e30ebb886",
+        "unchanged": true
+      },
+      {
+        "bytes": 30801,
+        "path": "schemas/command.v6.schema.json",
+        "sha256": "f39ecb324514042a282f33363934ee59e65fc259db88925e0106a1d13c3bcc2d",
+        "unchanged": true
+      },
+      {
+        "bytes": 31562,
+        "path": "schemas/command.v7.schema.json",
+        "sha256": "7676d12e60cfec19a2d9d177f52650e26bb4328da287dfc3d89ffbd187e46d5e",
+        "unchanged": true
+      },
+      {
+        "bytes": 33038,
+        "path": "schemas/command.v8.schema.json",
+        "sha256": "1452c1472f9eace65983a01488db9ba8c23d28193f4b6dbe1532e90710cf73b4",
+        "unchanged": true
+      },
+      {
+        "bytes": 34066,
+        "path": "schemas/command.v9.schema.json",
+        "sha256": "9db44e411fde9f8197ddd86aca064cd3e4913afe665cc3fe325a8c0a382f4a56",
+        "unchanged": true
+      },
+      {
+        "bytes": 27248,
+        "path": "schemas/desktop-summary-response.v1.schema.json",
+        "sha256": "f65fb25adb13b0a082fdc9d886f6d0e15b5ad6d8e39871a14e34c69ef4e51d20",
+        "unchanged": true
+      },
+      {
+        "bytes": 6577,
+        "path": "schemas/discarded-export.v1.schema.json",
+        "sha256": "430392de33e526e6edb7e961fedbb02232afa9037f970c8e0cb8d0442a148efe",
+        "unchanged": true
+      },
+      {
+        "bytes": 10616,
+        "path": "schemas/discarded-export.v2.schema.json",
+        "sha256": "25f2c813c4821aa0a1c1fe42bdb0e17730e625b02be123488a11e358955af385",
+        "unchanged": true
+      },
+      {
+        "bytes": 3450,
+        "path": "schemas/docx-capture-resolution.v1.schema.json",
+        "sha256": "e13677b8c03e06af0eb9ba87e57054bbf31949ec7e079c1e6946bea2d72923a3",
+        "unchanged": true
+      },
+      {
+        "bytes": 18967,
+        "path": "schemas/docx-snapshot-inspection.v1.schema.json",
+        "sha256": "55cb9c76f588950032b076d266e9d7c3c167685d4fb3869a2b472cdfccde635c",
+        "unchanged": true
+      },
+      {
+        "bytes": 389,
+        "path": "schemas/docx-snapshot-page-request.v1.schema.json",
+        "sha256": "44524ca11c43eaa93e1b37907348e427a94c75ad1d927854cf3c8394605d8ba4",
+        "unchanged": true
+      },
+      {
+        "bytes": 2673,
+        "path": "schemas/docx-snapshot-page.v1.schema.json",
+        "sha256": "6697aad31ec9718ace88d2a6e2149a4cc0bd7ae37464fec7271b7c23800f183d",
+        "unchanged": true
+      },
+      {
+        "bytes": 1599,
+        "path": "schemas/docx-snapshot.v1.schema.json",
+        "sha256": "99ecebfe7907e03772bfd69231281190ebfe2f6846b09264bda3ae45ef4d12e0",
+        "unchanged": true
+      },
+      {
+        "bytes": 3771,
+        "path": "schemas/extraction.v1.schema.json",
+        "sha256": "802221db4e0b53333be9f1e25e3e96f6ea272acfbf35d495592fc0f4ff30c0e9",
+        "unchanged": true
+      },
+      {
+        "bytes": 3995,
+        "path": "schemas/extraction.v2.schema.json",
+        "sha256": "29af330d9b22671e7c68c312683b52db897655c4e5293a7fc512b0245a2ecc04",
+        "unchanged": true
+      },
+      {
+        "bytes": 14021,
+        "path": "schemas/graph-analysis.v1.schema.json",
+        "sha256": "f6093f6349aa22c6c0c3e5ea0e161c28a8ababbe1fa321919e7eb418092af20b",
+        "unchanged": true
+      },
+      {
+        "bytes": 6920,
+        "path": "schemas/identity-comparison.v1.schema.json",
+        "sha256": "a6eeb057dd88a7d10e7d0f10ca37fd2fe45f1657e797d32d8f9c46c25386da6f",
+        "unchanged": true
+      },
+      {
+        "bytes": 7501,
+        "path": "schemas/image-extraction.v1.schema.json",
+        "sha256": "ecf8eff2270b10f43ee1669a12817a9335f3d103481173c2edf50e67994c9cb9",
+        "unchanged": true
+      },
+      {
+        "bytes": 2414,
+        "path": "schemas/image-region-extraction.v1.schema.json",
+        "sha256": "6e18fe3b6989a9a392b176fbb6e5362b1a621e37d9fdcfb3f9c31087675b0225",
+        "unchanged": true
+      },
+      {
+        "bytes": 11644,
+        "path": "schemas/image-region-inspection.v1.schema.json",
+        "sha256": "0244915ae37a2a264378c3e579c8d05428abb1803f99de70534968f4481ff4fb",
+        "unchanged": true
+      },
+      {
+        "bytes": 8665,
+        "path": "schemas/image-region-result.v1.schema.json",
+        "sha256": "c078e654c7ba92b644309283f81ae79364db78d92a748dcd057b5b62d3ac9262",
+        "unchanged": true
+      },
+      {
+        "bytes": 2660,
+        "path": "schemas/ledger-summary.v1.schema.json",
+        "sha256": "652e82237816f0480ea2e3f55b6c09352284e24c3592b1059e50d8c37bfd38d0",
+        "unchanged": true
+      },
+      {
+        "bytes": 3990,
+        "path": "schemas/native-export-request.v1.schema.json",
+        "sha256": "4e194c1c1da927d47819326ae531f58803c94cd5ee0bb1a4b800b8ed93fa95c5",
+        "unchanged": true
+      },
+      {
+        "bytes": 5485,
+        "path": "schemas/native-export-request.v2.schema.json",
+        "sha256": "38e03a42cf7594e89f78ded5cb3373c4d2f040ec63dbbacef23a23cea06181ea",
+        "unchanged": true
+      },
+      {
+        "bytes": 9162,
+        "path": "schemas/pdf-extraction.v1.schema.json",
+        "sha256": "9f12c9e8d9e849524e14d7e11675254126e9bf74722158d93f1eccc372e6991a",
+        "unchanged": true
+      },
+      {
+        "bytes": 5749,
+        "path": "schemas/prepared-export.v1.schema.json",
+        "sha256": "96b32edb3907a6c46e6824aca90685c07c4a0b030f7f9ccf873d36e4afc21484",
+        "unchanged": true
+      },
+      {
+        "bytes": 9788,
+        "path": "schemas/prepared-export.v2.schema.json",
+        "sha256": "97f4337c6b0010ab1397a3ea3dc26f37f5dc9b5afb701f8894fcb85c31601b48",
+        "unchanged": true
+      },
+      {
+        "bytes": 3475,
+        "path": "schemas/processing-job.v1.schema.json",
+        "sha256": "9ee0f7498b53f73acb64a26ca88fd51cf9626ea29433e4e4798befc25cf89b92",
+        "unchanged": true
+      },
+      {
+        "bytes": 4150,
+        "path": "schemas/processing-job.v2.schema.json",
+        "sha256": "bec8c024a3411cb2d714eec423f03fd9291f7196e9a5d06ce46990d1494b37f9",
+        "unchanged": true
+      },
+      {
+        "bytes": 5170,
+        "path": "schemas/processing-job.v3.schema.json",
+        "sha256": "73a84aa15e1a0508adf68a99037845d8949746cba526652094956d6b5eecdc50",
+        "unchanged": true
+      },
+      {
+        "bytes": 5856,
+        "path": "schemas/processing-job.v4.schema.json",
+        "sha256": "7078484db3e7d677ad47c849c8aed3968eb268a1214b3ab79bcd99a854bb89b7",
+        "unchanged": true
+      },
+      {
+        "bytes": 6792,
+        "path": "schemas/processing-job.v5.schema.json",
+        "sha256": "5291744fe01992831a764bf7537126069cf42da883d65eb99dca2681143bdde8",
+        "unchanged": true
+      },
+      {
+        "bytes": 8518,
+        "path": "schemas/release-evidence.v1.schema.json",
+        "sha256": "4a4afebf10f8208547c59136d23f3e9cda4b8baa8556316dc387427f24eaae45",
+        "unchanged": true
+      },
+      {
+        "bytes": 6513,
+        "path": "schemas/release-ledger.v2.schema.json",
+        "sha256": "b240bf5ea8dad0f9830a810d8e8dce304b01eb6f12468fdc126a8a4d99025045",
+        "unchanged": true
+      },
+      {
+        "bytes": 1549,
+        "path": "schemas/release-review.v1.schema.json",
+        "sha256": "e0bb7d5ec24e5b58289d9bd8941beab11aa38cc76b4ee9045911b80b5bdc28bd",
+        "unchanged": true
+      },
+      {
+        "bytes": 457,
+        "path": "schemas/review-decision-page-request.v1.schema.json",
+        "sha256": "86bc68261c265240c87ea3510c9b85bd5ecb0b0ed5cd7564fee6a4ef9aa1778f",
+        "unchanged": true
+      },
+      {
+        "bytes": 2154,
+        "path": "schemas/review-decision-page.v1.schema.json",
+        "sha256": "d7f0591434c5f5c28b6e9f4fe5efa28d99f6bbfded92e9e80b2093c7c9b22930",
+        "unchanged": true
+      },
+      {
+        "bytes": 2393,
+        "path": "schemas/runtime-inventory.v1.json",
+        "sha256": "d9194436f5cb293a9846aa435ee16987ee8e1f4d7185180f29cec8b11c311861",
+        "unchanged": true
+      },
+      {
+        "bytes": 5845,
+        "path": "schemas/saved-export-receipt.v1.schema.json",
+        "sha256": "aaa9e1951fd4423fa32900f3bc62706e332ef93112af6a9d3374bac4e2ba321b",
+        "unchanged": true
+      },
+      {
+        "bytes": 9884,
+        "path": "schemas/saved-export-receipt.v2.schema.json",
+        "sha256": "6c08bee696c49dfcd82fe9d7f51fafa5bb78781fa85ca6a9bb1af744f03fec93",
+        "unchanged": true
+      },
+      {
+        "bytes": 576,
+        "path": "schemas/source-excerpt.v1.schema.json",
+        "sha256": "9af773ab3d70d3bcb63ec88adc2bc765a2497236fd010b4a19ab88b0e7a3826e",
+        "unchanged": true
+      },
+      {
+        "bytes": 3376,
+        "path": "schemas/statement-mapping.v1.schema.json",
+        "sha256": "ab8784833e8a28540d95aec813a6b1f2f16947c71111f61514e53f364b63482d",
+        "unchanged": true
+      },
+      {
+        "bytes": 7620,
+        "path": "schemas/statement-preview.v1.schema.json",
+        "sha256": "c1ccce8fc0adf3afbdb01728486101e977b40d6788852b8baf61827fc7f1b8da",
+        "unchanged": true
+      },
+      {
+        "bytes": 4133,
+        "path": "schemas/statement-sample.v1.schema.json",
+        "sha256": "695ee6c7de69307efb83183e333f97684af8e7f412c3aa82ea6210b640d26f86",
+        "unchanged": true
+      },
+      {
+        "bytes": 1209,
+        "path": "schemas/transaction-analysis-request.v1.schema.json",
+        "sha256": "64c500e020cc7023730a8aba6ae2534c439b54c59f98b46d40a8b33689883e88",
+        "unchanged": true
+      },
+      {
+        "bytes": 9071,
+        "path": "schemas/transaction-analysis.v1.schema.json",
+        "sha256": "bc378590e029c0f96ac6aff007aec1891312359544eab4a76107209b32080329",
+        "unchanged": true
+      },
+      {
+        "bytes": 720,
+        "path": "schemas/transaction-balances-request.v1.schema.json",
+        "sha256": "f3a4c489461634387645d12540b731afd7760a9db434e9880613a793abf12b72",
+        "unchanged": true
+      },
+      {
+        "bytes": 2954,
+        "path": "schemas/transaction-balances.v1.schema.json",
+        "sha256": "2f31f0853c9a8149e8e9a7d1c8a99f42e941e5595b43a21c73a1b8d0f89cd5ef",
+        "unchanged": true
+      },
+      {
+        "bytes": 1051,
+        "path": "schemas/transaction-comparison-request.v1.schema.json",
+        "sha256": "936b7414845e7bd6d41a1cbaca5990cab003508eca948c56fd9ff566c7f9a674",
+        "unchanged": true
+      },
+      {
+        "bytes": 10736,
+        "path": "schemas/transaction-comparison.v1.schema.json",
+        "sha256": "b06d6671e027e41558a4afad7bf76a27d705c2032445fd8a0d8d91d40047ade8",
+        "unchanged": true
+      },
+      {
+        "bytes": 6210,
+        "path": "schemas/transaction-csv-export.v1.schema.json",
+        "sha256": "0d34c43e0294b9c46382c7ba5cd1c1223189679797fad344175887a4a1fc1479",
+        "unchanged": true
+      },
+      {
+        "bytes": 1989,
+        "path": "schemas/transaction-csv-request.v1.schema.json",
+        "sha256": "340289aba5b4fa3d1db80d47ac1a4003885e743205acc1c996f7e9a1e662e110",
+        "unchanged": true
+      },
+      {
+        "bytes": 1471,
+        "path": "schemas/transaction-export-request.v1.schema.json",
+        "sha256": "1f80018d874b3d0c4746f8d973aa6d2de2b2f70a4712a33220b625907001a83a",
+        "unchanged": true
+      },
+      {
+        "bytes": 3418,
+        "path": "schemas/transaction-export.v1.schema.json",
+        "sha256": "2eea6854be8277f06a37a845d6f0c48b772855aafa561c77d6d0ce1cbba41ac5",
+        "unchanged": true
+      },
+      {
+        "bytes": 1794,
+        "path": "schemas/transaction-facet-page.v1.schema.json",
+        "sha256": "a0b307926383ce28fc20373b552e0851e35807abf2ce0bfef24c0706cc034c97",
+        "unchanged": true
+      },
+      {
+        "bytes": 609,
+        "path": "schemas/transaction-facet-request.v1.schema.json",
+        "sha256": "6a0523cd6f96e98027da516bb23c2ddc7a1dd88c3663e12de81ee06ae0037ccf",
+        "unchanged": true
+      },
+      {
+        "bytes": 1604,
+        "path": "schemas/transaction-page-request.v1.schema.json",
+        "sha256": "f7c6b74a797ef43d504f2b9cc4a96b5b126e9327153fa333c9673f484b7ad352",
+        "unchanged": true
+      },
+      {
+        "bytes": 6913,
+        "path": "schemas/transaction-page.v1.schema.json",
+        "sha256": "82840294aa2a5c20a3171986a3a0e3488f4cf44b4c21ed5818683a7d9da9dc1a",
+        "unchanged": true
+      },
+      {
+        "bytes": 8314,
+        "path": "schemas/transaction-search-page.v1.schema.json",
+        "sha256": "8669b70041ed56035c7731f062eb5dc573bf28b8529dc0e5c1d9acdce1bcab17",
+        "unchanged": true
+      },
+      {
+        "bytes": 1981,
+        "path": "schemas/transaction-search-request.v1.schema.json",
+        "sha256": "6cecadec322f8b3406ea3792c8140f88859f9c82f4436f0c9698985c8e0b8e76",
+        "unchanged": true
+      },
+      {
+        "bytes": 911,
+        "path": "schemas/transaction-sources-request.v1.schema.json",
+        "sha256": "0532ec9a611efe8b6344f9098e42a2c789cd59ca6403aeb397acb1c85ac7ef42",
+        "unchanged": true
+      },
+      {
+        "bytes": 5625,
+        "path": "schemas/transaction-sources.v1.schema.json",
+        "sha256": "b1dc19658e6a224fca532bdc830e1f74fcea7cf889350883a82bb624e11dbbf3",
+        "unchanged": true
+      },
+      {
+        "bytes": 8508,
+        "path": "schemas/transfer-candidates-page.v1.schema.json",
+        "sha256": "d03937352d98b21f557a6c88ab7ee3a5c11593741e4ed5f88a4f3a11a72e3259",
+        "unchanged": true
+      },
+      {
+        "bytes": 1528,
+        "path": "schemas/transfer-candidates-request.v1.schema.json",
+        "sha256": "d7577ce2d859c28a1c12ed6f18c09e6527a06afc069279fa8ffd92a7a575a979",
+        "unchanged": true
+      },
+      {
+        "bytes": 2006,
+        "path": "schemas/worker-request.v1.schema.json",
+        "sha256": "5d4b3af75397b5cc907dcae3b98b7d9d17b5f971576bcb7df2eb9eaff9781717",
+        "unchanged": true
+      },
+      {
+        "bytes": 25538,
+        "path": "schemas/workspace-presentation.v1.schema.json",
+        "sha256": "5141dcaa851478662e259c97c70f0fb5f9a307ceae026c7e33d5c5b7bf773637",
+        "unchanged": true
+      },
+      {
+        "bytes": 20255,
+        "path": "schemas/workspace.v1.schema.json",
+        "sha256": "e8a4c82b2f6fedf4b48124a2317654f49c4cd607d9634e6841b36e1e79216ea3",
+        "unchanged": true
+      },
+      {
+        "bytes": 25213,
+        "path": "schemas/workspace.v2.schema.json",
+        "sha256": "967cc4fbad79b10dd8b3f838cbdf4684cb0654e0cb0aa39e3ef0055f2173db24",
+        "unchanged": true
+      },
+      {
+        "bytes": 25366,
+        "path": "schemas/workspace.v3.schema.json",
+        "sha256": "0cebcc5770da82e93d089cda85af1fe195deff83a315603b25038cc9b0e17a9a",
+        "unchanged": true
+      }
+    ]
+  },
+  "logs": [
+    {
+      "bytes": 635,
+      "original_bytes": 714,
+      "original_log_basename": "focused-first.log",
+      "original_sha256": "5b7ce5e740e0fe3f3925ba14ef94eb427899d30fe17eac1102267cea7c2e5180",
+      "outcome": "failed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/focused-first.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "draft fixture field compile failure",
+      "sha256": "22d65b599c09a7b3f1ca44f14e06c1ac67c09de3fce8ef4f077fc554b4a0bf63"
+    },
+    {
+      "bytes": 2115,
+      "original_bytes": 2285,
+      "original_log_basename": "focused-second.log",
+      "original_sha256": "f22b8efb5c6619b9e6c32082acae8d4b32ac6b57bbf6693d54fe63051daf4e9f",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/focused-second.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Draft: 16 scheduling tests passed",
+      "sha256": "6356e99e3a5a1783c1761a2aa00509355bae495394cc649de6913e6229a7af02"
+    },
+    {
+      "bytes": 1953,
+      "original_bytes": 2111,
+      "original_log_basename": "clippy-first.log",
+      "original_sha256": "87427f6b76a5f2f062522313ae6468b630ce287009d6500870c8ddfd820c5ece",
+      "outcome": "failed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/clippy-first.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "draft enum size refusal",
+      "sha256": "764902972118dbff43f56ca07afc442fed83bf5a6c293aeac8d5c84ba77fe08a"
+    },
+    {
+      "bytes": 133,
+      "original_bytes": 212,
+      "original_log_basename": "clippy-second.log",
+      "original_sha256": "7466252d7ac062387d775e4e167e6821d8f8d83e8126c1e8f73a3aab96a0e9c4",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/clippy-second.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "draft strict Clippy",
+      "sha256": "4f34d59f5350e6f1e362c6c12e91bb26c61f8325bd958479b932346556163c73"
+    },
+    {
+      "bytes": 67098,
+      "original_bytes": 67267,
+      "original_log_basename": "core-first.log",
+      "original_sha256": "62fa6a5c4aabba816253285d261f48c52047fe6edaa942f186501b280df06799",
+      "outcome": "failed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/core-first.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Draft: 524 passed, one obsolete interleaving regression failed, 31 ignored",
+      "sha256": "e58522f76dc769c7b504df4205c2fcf47a433ecc1e528fcb906189ff167ecced"
+    },
+    {
+      "bytes": 736,
+      "original_bytes": 815,
+      "original_log_basename": "coordinator-repaired.log",
+      "original_sha256": "365af3f524d35a3fccca6c70a09f3c37877b120be8076dea8ae5c9128fcaf5fd",
+      "outcome": "failed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/coordinator-repaired.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "intermediate renamed variable compile error",
+      "sha256": "9fefa412ef87208785895edbd299f3903855c0b54c04fe2c0158eb92a14ee4bb"
+    },
+    {
+      "bytes": 9407,
+      "original_bytes": 9577,
+      "original_log_basename": "coordinator-second.log",
+      "original_sha256": "56f36d9cb3b5dfe7958d6abaa4b94d753986622c5192d975692451be7f12f987",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/coordinator-second.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Repaired draft: 67 coordinator tests passed, six native tests ignored",
+      "sha256": "8023346b24496a165e2cfa5a9798a82f80e941d93860430d5e494c5669bb9c12"
+    },
+    {
+      "bytes": 75467,
+      "original_bytes": 76627,
+      "original_log_basename": "core-second.log",
+      "original_sha256": "6042bc2f425a7a3c3ffda59fada081a383085c35e1c70353b2d7d79ae548d324",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/core-second.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Precommit: 528 unit and 79 integration tests passed, 31 native tests ignored",
+      "sha256": "8481a00307925ebb8632f60c599ef0e9a0374f6782d43cc6f393ad73b8247e10"
+    },
+    {
+      "bytes": 1104,
+      "original_bytes": 1183,
+      "original_log_basename": "clippy-final.log",
+      "original_sha256": "6b4c5ed367bcfca77f5db3437b9ef9d5137ec6cd6cd1277d21ec1873f5daef3c",
+      "outcome": "failed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/clippy-final.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "needless explicit lifetime after signature simplification",
+      "sha256": "5d9809aca4aee6eb7acb52449d331a95815e3988b73a8d500742512a194ef9cc"
+    },
+    {
+      "bytes": 132,
+      "original_bytes": 211,
+      "original_log_basename": "clippy-complete.log",
+      "original_sha256": "c46eea799955e7d957e58a061b5e80f2ccf45570109fbce8f41e067e58d183c2",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/clippy-complete.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "final source bytes precommit strict Clippy",
+      "sha256": "433a2bb38712d4098c0ba6fc5bec88284a2c39e31b3695a63bd01e0159600b0a"
+    },
+    {
+      "bytes": 75467,
+      "original_bytes": 76627,
+      "original_log_basename": "core-clean.log",
+      "original_sha256": "5819865f1ec7e3b2a20292cdf141a42501e36caee5680c332e80e2feed0de986",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/core-clean.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Exact clean signed source: 528 unit and 79 integration tests passed, 31 native tests ignored",
+      "sha256": "d22971ebf961ef1197bbb75538916f8fa2cd78751c5ea19226643b7e51eb2ad6"
+    },
+    {
+      "bytes": 72,
+      "original_bytes": 72,
+      "original_log_basename": "clippy-clean.log",
+      "original_sha256": "b72370be6a423448fe4693e88696de86a459b0aa13f82e81efea0a37f3eebc6f",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/clippy-clean.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "clean signed source strict all-target Clippy",
+      "sha256": "b72370be6a423448fe4693e88696de86a459b0aa13f82e81efea0a37f3eebc6f"
+    },
+    {
+      "bytes": 0,
+      "original_bytes": 0,
+      "original_log_basename": "fmt-clean.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/fmt-clean.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "clean signed source formatting",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 0,
+      "original_bytes": 0,
+      "original_log_basename": "diff-clean.log",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/diff-clean.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "clean signed source diff whitespace",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2365,
+      "original_bytes": 2365,
+      "original_log_basename": "python-normal.log",
+      "original_sha256": "df9fddb68a9f5a7125baf7155d33a2e52a327ef526e24f669015132ac67a59c8",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/python-normal.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Unchanged adapter: 13 stdlib contract tests",
+      "sha256": "df9fddb68a9f5a7125baf7155d33a2e52a327ef526e24f669015132ac67a59c8"
+    },
+    {
+      "bytes": 2365,
+      "original_bytes": 2365,
+      "original_log_basename": "python-optimized.log",
+      "original_sha256": "ab000e3ec77a2dd2646514849b96f772c599d396e8e82ba6947b1f66e3208e0a",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/python-optimized.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Unchanged adapter: 13 stdlib contract tests under optimization",
+      "sha256": "ab000e3ec77a2dd2646514849b96f772c599d396e8e82ba6947b1f66e3208e0a"
+    },
+    {
+      "bytes": 99,
+      "original_bytes": 99,
+      "original_log_basename": "python-engine.log",
+      "original_sha256": "e173149ae4a7d07bf2a0a59558af27878c827af0bd7e82bda6c485ccd7a63e9f",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/python-engine.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Unchanged adapter: 10 NetworkX tests in the locked development environment",
+      "sha256": "e173149ae4a7d07bf2a0a59558af27878c827af0bd7e82bda6c485ccd7a63e9f"
+    },
+    {
+      "bytes": 40,
+      "original_bytes": 40,
+      "original_log_basename": "audit-source.log",
+      "original_sha256": "0877d27b632e6214340266b598f89da0e9beeaacd8906f3f2477ce4e53dd51d9",
+      "outcome": "passed",
+      "path": "packaging/evidence/graph-scheduling-source-2026-09-26/audit-source.txt",
+      "sanitization": "Explicit local checkout, shared target and development-venv path replacements; terminal newline normalized. No test outcome edits.",
+      "scope": "Public audit of 10 staged source/documentation files",
+      "sha256": "0877d27b632e6214340266b598f89da0e9beeaacd8906f3f2477ce4e53dd51d9"
+    }
+  ],
+  "observed_date": "2026-09-26",
+  "operational_boundary": {
+    "automatic_rebase_or_engine_retry": false,
+    "capture_original_hashing_extreme_bytes": 67108864000,
+    "database_migration": false,
+    "exclusive_interval": "Ephemeral coordinator ownership; queued graph remains durable Queued while draining",
+    "native_candidate_executed": false,
+    "network_campaign_executed": false,
+    "new_public_command": false,
+    "production_graph_executor": "Unavailable",
+    "public_schema_change": false,
+    "release_gate_changed": false,
+    "runtime_discovery_from_environment_or_path": false,
+    "shutdown_retention": "Unpublished known-stopped authority retained only in memory; existing durable Running recovery remains conservative unknown-exit",
+    "synthetic_executor": "cfg(test) only",
+    "total_job_latency_or_native_release_claim": false
+  },
+  "remaining_work": [
+    "Explicit verified app-local native runtime attachment and source integration",
+    "Separately reviewed finite native coordinator lifecycle campaign",
+    "Native cancellation/termination/cleanup and packaging/platform acceptance",
+    "Capture aggregate original-byte/performance assessment without silently lowering evidence coverage",
+    "Human maintainer/security review and unchanged release gates"
+  ],
+  "review": {
+    "outcome": "No further blocker identified in reviewed source",
+    "post_review_differences": {
+      "crates/core/src/coordinator_graph.rs": "Mechanical elision of now-unnecessary explicit lifetime, as required by strict Clippy; no control-flow change.",
+      "docs/analysis/GRAPH-SCHEDULING.md": "Added verification counts and retained-negative-history appendix."
+    },
+    "reviewed_file_identities": [
+      {
+        "path": "crates/core/src/coordinator.rs",
+        "sha256": "7014f75cdd5b5b1b78be004e45135185cd0116e1bc947f1bb082e680ed968bd0"
+      },
+      {
+        "path": "crates/core/src/coordinator_collection.rs",
+        "sha256": "bcfc6b1832dd1c9be312d0346abe4f1e67dc260858247c14df6d983765995707"
+      },
+      {
+        "path": "crates/core/src/coordinator_collection_api.rs",
+        "sha256": "ccfbe72ee8dca57b39dd5e759d65019cddedf757f17c8c75ee10abf1265abd5a"
+      },
+      {
+        "path": "crates/core/src/coordinator_graph.rs",
+        "sha256": "53699d2dfb09fde71c7bfb9e87bf10c05ebc0cf7d677712b56c62e3ef74210ca"
+      },
+      {
+        "path": "crates/core/src/coordinator_graph_tests.rs",
+        "sha256": "06c4880f1396294b9d98f1ef264e2eab854edac2bc936e1ec7df60e7dedd9cbd"
+      },
+      {
+        "path": "crates/core/src/store/graph_analysis/job_attempt.rs",
+        "sha256": "18e4ad66c5d509a245a3703976862e65a1a736ec67174afcbc79f73286b81745"
+      },
+      {
+        "path": "crates/core/src/store/processing.rs",
+        "sha256": "6b45cb1125a4b7e5857914db04baaf7c004ba6446d7ba8257ec1c613da4666ff"
+      },
+      {
+        "path": "crates/core/src/store/processing_graph.rs",
+        "sha256": "988cd22d1fa69ff9ca361cc2aa2cddcf75edcd7498e933de0d464aa50f395aae"
+      },
+      {
+        "path": "crates/core/src/store/processing_scheduling.rs",
+        "sha256": "52d7e78e103108122e58c0b4e9e4eea4a2dd94df96d9d4284080dd97b4528357"
+      },
+      {
+        "path": "docs/analysis/GRAPH-SCHEDULING.md",
+        "sha256": "491f2adb42076b667ea92c15a719a17e0fb7bf3deb46537e53a62ae86a289b81"
+      }
+    ],
+    "reviewed_file_list_sha256": "aea235f737128b01a94faef7345cb51350014d7c7ca1edc6ec8da73e04be7a3c",
+    "scope": "Integrating agent bounded source/test review; no independent human security signoff"
+  },
+  "schema_version": 1,
+  "source": {
+    "clean_before_and_after_final_core_clippy_fmt_diff": true,
+    "commit": "d744550ba1821616e66cb5d85961979c1bf43fe4",
+    "file_count": 10,
+    "files": [
+      {
+        "bytes": 39173,
+        "path": "crates/core/src/coordinator.rs",
+        "sha256": "7014f75cdd5b5b1b78be004e45135185cd0116e1bc947f1bb082e680ed968bd0"
+      },
+      {
+        "bytes": 21195,
+        "path": "crates/core/src/coordinator_collection.rs",
+        "sha256": "bcfc6b1832dd1c9be312d0346abe4f1e67dc260858247c14df6d983765995707"
+      },
+      {
+        "bytes": 18059,
+        "path": "crates/core/src/coordinator_collection_api.rs",
+        "sha256": "ccfbe72ee8dca57b39dd5e759d65019cddedf757f17c8c75ee10abf1265abd5a"
+      },
+      {
+        "bytes": 18648,
+        "path": "crates/core/src/coordinator_graph.rs",
+        "sha256": "4389eb63aa5df9ad620a6749d964b3f316797b84ccc4e167cad7b7e8dda9c265"
+      },
+      {
+        "bytes": 27568,
+        "path": "crates/core/src/coordinator_graph_tests.rs",
+        "sha256": "06c4880f1396294b9d98f1ef264e2eab854edac2bc936e1ec7df60e7dedd9cbd"
+      },
+      {
+        "bytes": 7185,
+        "path": "crates/core/src/store/graph_analysis/job_attempt.rs",
+        "sha256": "18e4ad66c5d509a245a3703976862e65a1a736ec67174afcbc79f73286b81745"
+      },
+      {
+        "bytes": 51965,
+        "path": "crates/core/src/store/processing.rs",
+        "sha256": "6b45cb1125a4b7e5857914db04baaf7c004ba6446d7ba8257ec1c613da4666ff"
+      },
+      {
+        "bytes": 16537,
+        "path": "crates/core/src/store/processing_graph.rs",
+        "sha256": "988cd22d1fa69ff9ca361cc2aa2cddcf75edcd7498e933de0d464aa50f395aae"
+      },
+      {
+        "bytes": 2226,
+        "path": "crates/core/src/store/processing_scheduling.rs",
+        "sha256": "52d7e78e103108122e58c0b4e9e4eea4a2dd94df96d9d4284080dd97b4528357"
+      },
+      {
+        "bytes": 9614,
+        "path": "docs/analysis/GRAPH-SCHEDULING.md",
+        "sha256": "602772bbc915d37521b9050995deafc82c0636460057a57702f3b924147c0027"
+      }
+    ],
+    "parent": "6ff65da7c35f5e1d84ce8d0f92ec02a4744ea849",
+    "remote_published_by_this_agent": false,
+    "reviewed_cancellation_source": "4773b54cb3d34c8a75fca97e72c2e11917be0c6d",
+    "signed_local_commit": true,
+    "tree": "20a673ceb9044ef81ddc0822c0618d6c6b84b044"
+  },
+  "verification": {
+    "clean_signed_core": {
+      "failed": 0,
+      "integration_passed": 79,
+      "native_ignored": 31,
+      "new_scheduling_tests": 19,
+      "unit_passed": 528
+    },
+    "format_and_diff": "passed",
+    "precommit_coordinator": {
+      "native_ignored": 6,
+      "passed": 67
+    },
+    "staged_public_audit": {
+      "files": 10,
+      "passed": true
+    },
+    "strict_clippy": "passed all targets offline",
+    "unchanged_graph_adapter": {
+      "locked_development_networkx": 10,
+      "packaged_interpreter_executed": false,
+      "stdlib_normal": 13,
+      "stdlib_optimized": 13
+    }
+  }
+}

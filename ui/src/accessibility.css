@@ -1,8 +1,8 @@
-/* Measured prototype accessibility corrections. Final design tokens remain pending. */
+/* Contrast corrections to the editable Figma foundation palette. */
 :root {
-  --text-secondary: #52665a;
-  --text-warning: #795118;
-  --text-rejected: #8c3e34;
+  --text-secondary: var(--muted);
+  --text-warning: var(--warning);
+  --text-rejected: var(--danger);
 }
 .nav-index {
   opacity: 1;
@@ -86,7 +86,7 @@ nav button {
 }
 caption {
   text-align: left;
-  padding: 12px 0;
+  padding: 8px 0;
   color: var(--text-secondary);
 }
 
@@ -95,13 +95,13 @@ caption {
   overflow-wrap: anywhere;
 }
 .source-lines {
-  font:
-    12px/1.9 ui-monospace,
-    monospace;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.9;
   max-height: 40vh;
   overflow: auto;
   padding: 16px 16px 16px 64px;
-  background: #f0f3e9;
+  background: var(--subtle);
 }
 .source-lines li {
   white-space: pre-wrap;

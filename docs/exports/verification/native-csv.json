@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "scope": "Native CSV preparation and file publication backend",
+  "complete_release": false,
+  "source_parent": "55b9a457dbcc24ae8e2bdcc48ca5ead09b38ebd8",
+  "source_files": {
+    "crates/core/src/local_export.rs": "2bca535a7150e12bb74da3abb75ac57a9e451af2a268f0eeffe7d8d3cd24e037",
+    "crates/core/src/store/local_exports.rs": "fcae74d88549c04581687125984327970546d84679c15c2ff35fcb13c0b8fb35",
+    "crates/core/src/store/local_exports/tests.rs": "e4d3f28fdaad9fe028ea47c115f9a7691294a877e92a48ca6cf69b5eee06332d",
+    "crates/core/src/bin/ew-dev.rs": "96070fbdb1ab5d65dd99d99c61a06e5f8d91817b8ff16ab7656bce3433f77c1b"
+  },
+  "validation": {
+    "native_export_lifecycle_tests": 19,
+    "new_csv_tests": 3,
+    "failed": 0,
+    "strict_all_target_clippy": "passed",
+    "historical_schema_files_unchanged": 93,
+    "additive_schemas": [
+      "native-export-request.v2",
+      "prepared-export.v2",
+      "saved-export-receipt.v2",
+      "discarded-export.v2"
+    ],
+    "csv_envelope_version": 2,
+    "existing_artifact_envelope_version": 1
+  },
+  "retained_prior_results": [
+    {
+      "result": "compile_error",
+      "reason": "New negative matching fixture initially referred to a nonexistent profile field; changed to invalid unicode_version."
+    },
+    {
+      "result": "clippy_error",
+      "reason": "CSV artifact variant required boxed dictionary to avoid increasing every enum value size; JSON representation unchanged."
+    },
+    {
+      "result": "peer_review_repair",
+      "reason": "CSV uses a new version2 envelope; existing artifacts retain version1. Final lifecycle tests include both assertions."
+    }
+  ],
+  "logs": [
+    {
+      "path": "artifacts/native-csv/ew-native-csv-focused.log",
+      "bytes": 782,
+      "sha256": "e7e59feca39a4ebfbdd8f2cc802605b4454b30a414e4aff5f90dbcbf53a59d28"
+    },
+    {
+      "path": "artifacts/native-csv/ew-native-csv-focused-repaired.log",
+      "bytes": 851,
+      "sha256": "4e761502bb66c37460b9e650768e664c17158adeed657baadf136216969e583b"
+    },
+    {
+      "path": "artifacts/native-csv/ew-native-csv-lifecycle.log",
+      "bytes": 2551,
+      "sha256": "09d695a35c4226a4a33200722fdc252e5244860b11efadee5f527d0e2dfe05bd"
+    },
+    {
+      "path": "artifacts/native-csv/ew-native-csv-clippy.log",
+      "bytes": 1817,
+      "sha256": "5accdaccd465c14d04bdf8a7cbc98aa8804720bdf6babf8f9dcc5345fcaebd78"
+    },
+    {
+      "path": "artifacts/native-csv/ew-native-csv-lifecycle-final.log",
+      "bytes": 2692,
+      "sha256": "a58635a3a8c23b63cc6a8293907057d06edb56c7494712dc483634a1d0e6e2ac"
+    },
+    {
+      "path": "artifacts/native-csv/ew-native-csv-clippy-final.log",
+      "bytes": 213,
+      "sha256": "d34a7f986cbb68515cc3da46297dc21d681352b593c22bbf3b4f8e470af021b6"
+    },
+    {
+      "path": "artifacts/native-csv/ew-native-csv-schemas.log",
+      "bytes": 334,
+      "sha256": "0dfbf1f6be7cd3de28e64fc8bbb3fa4559fedffc1f22d19e3e75e5983ded24f6"
+    }
+  ],
+  "unverified": [
+    "CSV UI and editable design",
+    "Actual compiled native application save",
+    "Windows and Intel execution of this increment",
+    "Spreadsheet application interpretation",
+    "Complete release"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "complete_release": false,
+  "failed_source": "ecf84fe718e273f70afcd1e1b3d4a8889f31f72e",
+  "failed_run": 36158377430,
+  "failed_job": 108148473802,
+  "platform": "Windows Server 2022 hosted source check",
+  "failure": "Five subcases of the offline timeout contract test attempted to patch os.killpg, which is absent on Windows. The fixture also depended on SIGKILL.",
+  "fix_scope": "Only the mocked OS/signal boundary in the existing unit test; application, networking, confinement, limits and fixture assertions unchanged.",
+  "fixed_test_sha256": "a46efa6a3630905073d2d29239a21c118d15929e188f7621dc60863c8d39d6fe",
+  "local_verification": {
+    "missing_host_attributes_before": {
+      "test_methods": 1,
+      "subcase_errors": 5
+    },
+    "missing_host_attributes_after": {
+      "test_methods": 1,
+      "passed": true,
+      "all_five_outcomes_asserted": true
+    },
+    "focused_normal": {
+      "passed": 9
+    },
+    "focused_optimized": {
+      "passed": 9
+    },
+    "full_python": {
+      "run": 309,
+      "passed": 305,
+      "skipped": 4
+    },
+    "native_or_network_execution": false
+  },
+  "logs": {
+    "before": {
+      "bytes": 7827,
+      "sha256": "10b528ed2a1eb02cf029641c31b1859b73ffe09963a8fd3b1c1df045af7c2c2f"
+    },
+    "after": {
+      "bytes": 365,
+      "sha256": "b3be9e19b30f861f59537e70a1683fcef0ca0f951dabe1036df5db4a69a2f4f3"
+    },
+    "focused": {
+      "bytes": 1819,
+      "sha256": "ffbc0c78f714fd6121f12cc7867417ef5e7026c4b81f7d74f38986922b295c53"
+    },
+    "optimized": {
+      "bytes": 1819,
+      "sha256": "52e5f86d5acb6084b89425cf34001cac739d3328c128109eced5730e6e01df8b"
+    },
+    "full": {
+      "bytes": 52956,
+      "sha256": "829231a4d891a5c0c24e921c5f594c2f464b0b3fd736709ce519c9a86b1b8354"
+    }
+  },
+  "hosted_failed_log": {
+    "bytes": 106563,
+    "sha256": "7746fe8372331a9d0ecf9b1df01ee79b3b348758f6e9f6d8c283c4eed7e95811"
+  },
+  "corrected_windows_hosted_result": "pending"
+}

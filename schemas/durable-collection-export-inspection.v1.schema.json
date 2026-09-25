@@ -1,0 +1,986 @@
+{
+  "$defs": {
+    "Acquisition": {
+      "additionalProperties": false,
+      "properties": {
+        "job_id": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "url",
+        "retrieved_at"
+      ],
+      "type": "object"
+    },
+    "AcquisitionMode": {
+      "enum": [
+        "live",
+        "synthetic"
+      ],
+      "type": "string"
+    },
+    "CallerContextState": {
+      "enum": [
+        "released_after_completion",
+        "retained_pending_completion"
+      ],
+      "type": "string"
+    },
+    "CandidateSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "addresses": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "authoritative_complete_set": {
+          "type": "boolean"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "addresses",
+        "method",
+        "authoritative_complete_set"
+      ],
+      "type": "object"
+    },
+    "CollectionAvailability": {
+      "enum": [
+        "native_disabled",
+        "standalone_unavailable",
+        "synthetic_fixture",
+        "ready",
+        "recovery_required",
+        "execution_unavailable",
+        "stopping"
+      ],
+      "type": "string"
+    },
+    "CollectionControls": {
+      "additionalProperties": false,
+      "properties": {
+        "can_cancel": {
+          "type": "boolean"
+        },
+        "can_resume": {
+          "type": "boolean"
+        },
+        "can_retry_settlement": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "can_cancel",
+        "can_resume",
+        "can_retry_settlement"
+      ],
+      "type": "object"
+    },
+    "CollectionExecutionPhase": {
+      "enum": [
+        "unavailable",
+        "idle",
+        "running",
+        "settling",
+        "settlement_pending",
+        "faulted",
+        "recovery_required",
+        "stopped",
+        "unpublished"
+      ],
+      "type": "string"
+    },
+    "CollectionExecutionStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "$ref": "#/$defs/CollectionExecutionPhase"
+        },
+        "publication_retries": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "publication_retry_limit": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "request_sequence": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "phase",
+        "publication_retries",
+        "publication_retry_limit"
+      ],
+      "type": "object"
+    },
+    "CollectionExportFile": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    },
+    "CollectionInput": {
+      "additionalProperties": false,
+      "properties": {
+        "max_hops": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_requests": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_seconds": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "urls": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "urls",
+        "max_hops",
+        "max_requests",
+        "max_seconds"
+      ],
+      "type": "object"
+    },
+    "CollectionOriginalRef": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    },
+    "CollectionRequestView": {
+      "additionalProperties": false,
+      "properties": {
+        "entry": {
+          "$ref": "#/$defs/FrontierEntry"
+        },
+        "generation": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "original": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CollectionOriginalRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "progress": {
+          "$ref": "#/$defs/RequestProgress"
+        },
+        "reserved_at_ms": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "sequence": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "sequence",
+        "generation",
+        "entry",
+        "reserved_at_ms",
+        "progress"
+      ],
+      "type": "object"
+    },
+    "CollectionRunInspection": {
+      "additionalProperties": false,
+      "properties": {
+        "availability": {
+          "$ref": "#/$defs/CollectionAvailability"
+        },
+        "controls": {
+          "$ref": "#/$defs/CollectionControls"
+        },
+        "execution": {
+          "$ref": "#/$defs/CollectionExecutionStatus"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "native_execution_enabled": {
+          "type": "boolean"
+        },
+        "requests": {
+          "items": {
+            "$ref": "#/$defs/CollectionRequestView"
+          },
+          "type": "array"
+        },
+        "run": {
+          "$ref": "#/$defs/CollectionRunSummary"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "workspace_revision",
+        "availability",
+        "native_execution_enabled",
+        "run",
+        "execution",
+        "controls",
+        "requests",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "CollectionRunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "cancellation_requested": {
+          "type": "boolean"
+        },
+        "collector_policy": {
+          "type": "string"
+        },
+        "created_at_ms": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "deadline_at_ms": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "first_started_at_ms": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "frontier_remaining": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "generation": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input": {
+          "$ref": "#/$defs/CollectionInput"
+        },
+        "mode": {
+          "$ref": "#/$defs/AcquisitionMode"
+        },
+        "pages_retained": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "record_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "request_key": {
+          "type": "string"
+        },
+        "requests_used": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "state": {
+          "$ref": "#/$defs/CollectionState"
+        },
+        "updated_at_ms": {
+          "format": "int64",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "request_key",
+        "record_version",
+        "mode",
+        "collector_policy",
+        "input",
+        "created_at_ms",
+        "updated_at_ms",
+        "state",
+        "generation",
+        "cancellation_requested",
+        "requests_used",
+        "pages_retained",
+        "frontier_remaining"
+      ],
+      "type": "object"
+    },
+    "CollectionState": {
+      "enum": [
+        "queued",
+        "running",
+        "interrupted",
+        "recovery_required",
+        "cancelled",
+        "blocked",
+        "quota_exhausted",
+        "failed",
+        "partial",
+        "successful",
+        "successful_no_results"
+      ],
+      "type": "string"
+    },
+    "DurableCollectionExport": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_run_sha256": {
+          "type": "string"
+        },
+        "export_id": {
+          "type": "string"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "originals": {
+          "items": {
+            "$ref": "#/$defs/CollectionExportFile"
+          },
+          "type": "array"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "snapshot": {
+          "$ref": "#/$defs/CollectionExportFile"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "export_id",
+        "job_id",
+        "workspace_revision",
+        "canonical_run_sha256",
+        "snapshot",
+        "originals"
+      ],
+      "type": "object"
+    },
+    "DurableCollectionSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_run_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "canonical_run_json": {
+          "description": "Exact UTF-8 SQLite body. It is retained as inert JSON, including lease/history.",
+          "type": "string"
+        },
+        "canonical_run_sha256": {
+          "type": "string"
+        },
+        "inspection": {
+          "$ref": "#/$defs/CollectionRunInspection"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SnapshotSource"
+          },
+          "type": "array"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "workspace_revision",
+        "canonical_run_sha256",
+        "canonical_run_bytes",
+        "canonical_run_json",
+        "inspection",
+        "sources"
+      ],
+      "type": "object"
+    },
+    "FetchRecord": {
+      "description": "Sanitized acquisition facts; raw headers and incomplete body bytes are absent.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "kind": {
+              "const": "complete",
+              "type": "string"
+            },
+            "media_type": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "redirect_url": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "sha256": {
+              "type": "string"
+            },
+            "status": {
+              "format": "uint16",
+              "maximum": 65535,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "status",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "incomplete",
+              "type": "string"
+            },
+            "media_type": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "format": "uint16",
+              "maximum": 65535,
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "status"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "failed",
+              "type": "string"
+            },
+            "reason": {
+              "$ref": "#/$defs/TransportFailure"
+            }
+          },
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "FrontierEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "hop": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "parent": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "purpose": {
+          "$ref": "#/$defs/Purpose"
+        },
+        "redirects": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "hop",
+        "redirects",
+        "purpose"
+      ],
+      "type": "object"
+    },
+    "HttpDelivery": {
+      "enum": [
+        "definitively_before_http",
+        "may_have_been_sent"
+      ],
+      "type": "string"
+    },
+    "Phase": {
+      "enum": [
+        "before_request",
+        "pacing",
+        "dns",
+        "connect_tls_headers",
+        "body"
+      ],
+      "type": "string"
+    },
+    "Purpose": {
+      "enum": [
+        "robots",
+        "seed",
+        "link",
+        "redirect"
+      ],
+      "type": "string"
+    },
+    "ReceiptOutcome": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "head": {
+              "$ref": "#/$defs/ResponseHead"
+            },
+            "kind": {
+              "const": "complete",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "head",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "head": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ResponseHead"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "kind": {
+              "const": "stopped",
+              "type": "string"
+            },
+            "reason": {
+              "$ref": "#/$defs/StopReason"
+            }
+          },
+          "required": [
+            "kind",
+            "reason"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "RequestProgress": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "state": {
+              "const": "reserved",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "ended_at_ms": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "result": {
+              "$ref": "#/$defs/FetchRecord"
+            },
+            "state": {
+              "const": "settled",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "ended_at_ms",
+            "result"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "receipt": {
+              "$ref": "#/$defs/TransportReceipt"
+            },
+            "state": {
+              "const": "observed",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "receipt"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "recovered_at_ms": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "state": {
+              "const": "interrupted_unknown",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "recovered_at_ms"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ResolverUncertainty": {
+      "additionalProperties": false,
+      "properties": {
+        "caller_context": {
+          "$ref": "#/$defs/CallerContextState"
+        },
+        "method": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "caller_context"
+      ],
+      "type": "object"
+    },
+    "ResponseHead": {
+      "additionalProperties": false,
+      "properties": {
+        "identity_encoding": {
+          "type": "boolean"
+        },
+        "media_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "redirect_url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "format": "uint16",
+          "maximum": 65535,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "status",
+        "identity_encoding"
+      ],
+      "type": "object"
+    },
+    "SnapshotSource": {
+      "additionalProperties": false,
+      "properties": {
+        "acquisitions": {
+          "description": "Only acquisition identities for this exact run; duplicates are preserved.",
+          "items": {
+            "$ref": "#/$defs/Acquisition"
+          },
+          "type": "array"
+        },
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "canonical_metadata_sha256": {
+          "description": "Digest of source metadata at capture; unrelated metadata is not exported.",
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "sha256",
+        "bytes",
+        "canonical_metadata_sha256",
+        "acquisitions"
+      ],
+      "type": "object"
+    },
+    "StopReason": {
+      "enum": [
+        "cancelled",
+        "deadline",
+        "timeout",
+        "clock_changed",
+        "policy",
+        "network",
+        "body_limit",
+        "resolver_unavailable",
+        "quiescence_unverified",
+        "recovery_required",
+        "busy"
+      ],
+      "type": "string"
+    },
+    "TransportFailure": {
+      "enum": [
+        "network",
+        "policy",
+        "quota",
+        "interrupted"
+      ],
+      "type": "string"
+    },
+    "TransportReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "elapsed_milliseconds": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "http_delivery": {
+          "$ref": "#/$defs/HttpDelivery"
+        },
+        "locally_quiescent": {
+          "type": "boolean"
+        },
+        "observed_wall_ms": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "outcome": {
+          "$ref": "#/$defs/ReceiptOutcome"
+        },
+        "phase": {
+          "$ref": "#/$defs/Phase"
+        },
+        "resolved": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CandidateSnapshot"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resolver_uncertainty": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResolverUncertainty"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "stop_observed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StopReason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "outcome",
+        "phase",
+        "http_delivery",
+        "elapsed_milliseconds",
+        "observed_wall_ms",
+        "locally_quiescent"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "receipt": {
+      "$ref": "#/$defs/DurableCollectionExport"
+    },
+    "snapshot": {
+      "$ref": "#/$defs/DurableCollectionSnapshot"
+    }
+  },
+  "required": [
+    "receipt",
+    "snapshot"
+  ],
+  "title": "DurableCollectionExportInspection",
+  "type": "object"
+}

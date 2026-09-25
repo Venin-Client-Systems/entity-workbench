@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-25T11:43:37.771753+00:00",
+  "base_commit": "3ce80007de315c588157cfee319529dec407b75d",
+  "scope": "EW-22 / GitHub #25: private synthetic one-reserved-request driver and lossless v2 canonical settlement; no public activation",
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "focused_collection": {
+      "passed": 49,
+      "failed": 0,
+      "ignored": 1,
+      "log": "focused-fifth.log"
+    },
+    "ordinary_core": {
+      "passed": 404,
+      "library_passed": 329,
+      "integration_passed": 75,
+      "failed": 0,
+      "specialized_ignored": 22,
+      "log": "core-final.log"
+    },
+    "strict_clippy_debug": "passed",
+    "strict_clippy_release": "passed",
+    "schema_inventory_files_byte_unchanged": 85,
+    "json_schema_files_byte_unchanged": 83,
+    "unchanged_files": {
+      "Cargo.toml": true,
+      "Cargo.lock": true,
+      "crates/core/Cargo.toml": true,
+      "crates/core/src/bin/ew-dev.rs": true,
+      "crates/core/src/domain.rs": true,
+      "crates/core/src/store/recovery.rs": true
+    }
+  },
+  "new_cases": {
+    "driver_real_canonical_store": 9,
+    "store_receipt_validation": 5
+  },
+  "network_scope": {
+    "external_dns_requests": 0,
+    "external_http_requests": 0,
+    "synthetic_tls_only": true,
+    "fixture_name": "collection.invalid",
+    "socket": "ephemeral loopback",
+    "production_test_override": false,
+    "os_trust_store_modified": false
+  },
+  "retained_failures": [
+    {
+      "log": "focused-first.log",
+      "result": "43 passed, 1 failed, 1 ignored: relative Location was interpreted against the synthetic endpoint port and dropped; source URL now remains the resolution base"
+    },
+    {
+      "log": "lifecycle-second.log",
+      "result": "0 passed, 1 failed: diagnostic reproduction of the same relative-Location fixture mismatch"
+    },
+    {
+      "log": "focused-third.log",
+      "result": "Test compile refused comparing Vec<Evidence> without PartialEq; assertion now compares serialized canonical values"
+    },
+    {
+      "log": "focused-fourth.log",
+      "result": "Same test-only PartialEq compile failure retained before repair"
+    }
+  ],
+  "peer_review": {
+    "scope": "Root read-only execution/settlement/state review; ownership handover, body-complete cancellation, quarantine and raw-clock reopen cases required",
+    "platform_execution_claim": false
+  },
+  "limits": [
+    "Private synthetic records only; no Command, coordinator activation, UI, live source, current synchronous collector change, storage migration or dependency change",
+    "No actual native resolver cancellation was run in this increment; Windows and macOS resolver runtime acceptance remains open",
+    "Current schema5 backup/restore executed; base backup/recovery code inspected unchanged, no new older-binary v2 execution claim",
+    "Raw backwards clock sample retained; no invented continuous monotonic duration across process segments",
+    "Owned-operation completion does not prove remote processing or shared OS DNS daemon quiescence; unverified DNS blocks workspace and process transport",
+    "Trusted DNSService/Winsock calls are not forcibly preempted by cooperative polling",
+    "Historical source-access, broad-discovery relevance, native distribution and complete-release gates remain unpassed"
+  ],
+  "file_sha256": {
+    "crates/core/src/collection_execution.rs": "1cf96a75ca8c4cfdcb235800fe315d750064e0fdc7a990dc93e9295d7801f355",
+    "crates/core/src/collection_execution_tests.rs": "7eca2a1d12ed380ef220f1970cbf1f1ba9def75e8b2a4c9b61ab619ee545a2ae",
+    "crates/core/src/collection_jobs.rs": "85b73d1b718609ab1dafbf886b5d721f5e322a82bfe5112c22e7067f187d142a",
+    "crates/core/src/collection_machine.rs": "7af96a1e59bfd3c12c2f6f8b114c4af3d0d9b907efca5a880167a2bf0bb999c1",
+    "crates/core/src/collection_machine_transport.rs": "24f5bed82d791960b04e817f8c3b937d823432a3d9e494f9a44a94c001893235",
+    "crates/core/src/collection_settlement.rs": "f82a74916f344913eebcfac4de9f1c9b18a4a59c699ec99995508924901f4e1f",
+    "crates/core/src/collection_transport.rs": "95c2203bc11dbb9ebb58f4533a09c82b42c2b19ddf3bdec630e29afba2417580",
+    "crates/core/src/collection_transport/tests.rs": "c463f0ac5fdda964ec087b4ceb75093024a46134580f118ffa2761c980906f00",
+    "crates/core/src/lib.rs": "eac8943aed9a8aa3781b442091df66cd7a898106d4907ac40b27b7432e84d977",
+    "crates/core/src/store.rs": "5eabbe2105123bc24636d3b7d6d47f2d2e3729785cf5d32ce07dddf001e035bc",
+    "crates/core/src/store/collection_jobs.rs": "bcf5b3933d816ac2875c228bc8d75498c44d3d61f5c490ee03e38bf16fbbce59",
+    "crates/core/src/store/collection_transport_settlement.rs": "69e658cabb43b311b4ab70e0d277cc5186cd20869ad8bd8aab76bdd1f1650c09",
+    "crates/core/src/store/collection_transport_settlement_tests.rs": "512a10095c849c816cdb69321c9eb10dc2dc6dcc297af525f378a4348b8aaba7",
+    "docs/discovery/TRANSPORT-SETTLEMENT.md": "2a72cb232868f7ddd22d3802c86c592a4e92052af7c946968962afd9d08d1ec7"
+  },
+  "local_ignored_log_sha256": {
+    "check-first.log": "3d850392b842c7f06602aeabc8494dbf9a998c8df480803e76d0df6ebffb9fc6",
+    "clippy-debug-final.log": "2170369d1ccf875b6e6932fc7a809cd77d53e648b81d9e56231532aff2ebb927",
+    "clippy-release-final.log": "3eae1dd7fc9afcf443539fe3b4cdacc4ac56df22f8776e66f6d8e5ce7aa60cd9",
+    "core-final.log": "e4f7e19e87d104e0c0d726f268524d091767a95e3177917797d26f4d06d41ca2",
+    "focused-fifth.log": "4bf02c0c28ddf5d8f156305c6f1363d83005442b9dd6a98a60d75237960aff39",
+    "focused-first.log": "0828a8b0115c5b8c7ae2da9dab4107ce1f3ecbf5bd2de1c9b2e15e828ef106f0",
+    "focused-fourth.log": "d493da6a10e0264fa74863b0963e4b36a6f283be6a5fbaa26464199d9fdeb688",
+    "focused-second.log": "29418ce59bd010156221ee8894f9f03337cf46e60e7bf93f3e83a011e81ff241",
+    "focused-third.log": "d493da6a10e0264fa74863b0963e4b36a6f283be6a5fbaa26464199d9fdeb688",
+    "format-first.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-second.log": "78f77af856003aee8c078cdc24786493e0713512e5d83b31f4cca100c9764a9a"
+  },
+  "local_ignored_identity_checks_sha256": "5cdc66fbe0104e696eb637e63c027ca349972c557bca71d942c3873ab8de3221",
+  "inventory_count_correction": "The original value84 counted all JSON files, including runtime-inventory.v1.json. There are83 *.schema.json files; all85 tracked inventory files remain byte-identical. Original identity-check artifact/hash is retained as observed."
+}

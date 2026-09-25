@@ -1,0 +1,160 @@
+{
+  "artifact": {
+    "bytes": 45720,
+    "dictionary": {
+      "columns": [
+        {
+          "logical_type": "unsigned_integer",
+          "meaning": "Workspace revision captured in the same canonical read snapshot.",
+          "name": "workspace_revision",
+          "nullable": false,
+          "prefix": "uint:"
+        },
+        {
+          "logical_type": "text",
+          "meaning": "Stable canonical transaction identifier; never an account number.",
+          "name": "id",
+          "nullable": false,
+          "prefix": "text:"
+        },
+        {
+          "logical_type": "unsigned_integer",
+          "meaning": "Exact canonical transaction version.",
+          "name": "version",
+          "nullable": false,
+          "prefix": "uint:"
+        },
+        {
+          "logical_type": "text",
+          "meaning": "Original account text, including leading zeros.",
+          "name": "account",
+          "nullable": false,
+          "prefix": "text:"
+        },
+        {
+          "logical_type": "calendar_date_text",
+          "meaning": "Transaction calendar date YYYY-MM-DD; no time zone is implied.",
+          "name": "date",
+          "nullable": false,
+          "prefix": "date:"
+        },
+        {
+          "logical_type": "calendar_date_text",
+          "meaning": "Posting calendar date YYYY-MM-DD when available; no time zone is implied.",
+          "name": "posting_date",
+          "nullable": true,
+          "prefix": "date:"
+        },
+        {
+          "logical_type": "text",
+          "meaning": "Original transaction description; formulas remain literal text behind the visible prefix.",
+          "name": "description",
+          "nullable": false,
+          "prefix": "text:"
+        },
+        {
+          "logical_type": "exact_decimal_text",
+          "meaning": "Exact signed canonical amount string with up to eight decimal places; not a floating-point cell.",
+          "name": "amount",
+          "nullable": false,
+          "prefix": "decimal:"
+        },
+        {
+          "logical_type": "text",
+          "meaning": "Canonical three-letter currency; no currency conversion.",
+          "name": "currency",
+          "nullable": false,
+          "prefix": "text:"
+        },
+        {
+          "logical_type": "exact_decimal_text",
+          "meaning": "Exact available balance string; null is distinct from zero.",
+          "name": "balance",
+          "nullable": true,
+          "prefix": "decimal:"
+        },
+        {
+          "logical_type": "source_anchor_json",
+          "meaning": "Complete canonical SourceAnchor JSON; provenance reference, not an acceptance claim.",
+          "name": "anchor",
+          "nullable": false,
+          "prefix": "json:"
+        },
+        {
+          "logical_type": "text",
+          "meaning": "Canonical review state: pending, accepted, rejected or deferred.",
+          "name": "review",
+          "nullable": false,
+          "prefix": "text:"
+        },
+        {
+          "logical_type": "string_array_json",
+          "meaning": "Exact duplicate candidate ID array; no repeated transactions are removed.",
+          "name": "duplicate_candidates",
+          "nullable": false,
+          "prefix": "json:"
+        },
+        {
+          "logical_type": "text",
+          "meaning": "Canonical transfer peer ID when present; export does not change or exclude transfers.",
+          "name": "transfer_peer",
+          "nullable": true,
+          "prefix": "text:"
+        },
+        {
+          "logical_type": "text",
+          "meaning": "Canonical merchant value when present; null and empty text remain distinct.",
+          "name": "merchant",
+          "nullable": true,
+          "prefix": "text:"
+        }
+      ],
+      "delimiter": ",",
+      "encoding": "utf-8-bom",
+      "limitations": [
+        "Visible alphabetic type prefixes make this a literal presentation; amounts and dates are not spreadsheet numeric/date cells.",
+        "Remove only the declared prefix when decoding. The exact unprefixed token null means missing; text:null and text: mean present text.",
+        "Raw typed JSON remains the machine-readable canonical export. CSV has no native type system; downstream edits, prefix removal and re-import settings can change interpretation.",
+        "No universal spreadsheet safety or tested Excel/LibreOffice behavior is claimed. Do not strip prefixes and then open untrusted values as formulas.",
+        "Literal text cells reject controls except tab, CR and LF. JSON cells preserve JSON escapes; any remaining unsupported literal control is also refused."
+      ],
+      "null_literal": "null",
+      "quote_policy": "all_fields_double_quoted_with_doubled_internal_quotes",
+      "record_terminator": "CRLF",
+      "schema_version": 1
+    },
+    "format": "typed_literal_v1",
+    "format_sha256": "a79b97802d789b1aa0e6828823aa18f5826bc03ac7613369f8ec0d943bcb73c4",
+    "kind": "transaction_csv",
+    "matching": {
+      "algorithm": "unicode_default_lowercase_literal_v1",
+      "unicode_version": [
+        16,
+        0,
+        0
+      ]
+    },
+    "request": {
+      "non_accepted": "allow_selected",
+      "selection": {
+        "filter": {
+          "account": null,
+          "currency": null,
+          "date_from": null,
+          "date_to": null,
+          "review": null
+        },
+        "order": "date_ascending",
+        "query": ""
+      }
+    },
+    "row_count": 113,
+    "selection_sha256": "f23333a5ce5dc6c5bdf7cb64448b9c9e4f9548ee2f28e38f36922141d0b4f733",
+    "sha256": "4dc7ed16cf70dd36e9137ddfdff4d3f1a93ec37a0c6c41b5cad52f2117b4c7ed",
+    "workspace_revision": 4
+  },
+  "filename": "transactions-typed-v1-r4-4dc7ed16cf70dd36e9137ddfdff4d3f1a93ec37a0c6c41b5cad52f2117b4c7ed.csv",
+  "schema_version": 2,
+  "ticket": "51cd326a-21f3-48c2-87b2-4c14d0adca18",
+  "location_verified_by_test": true
+}

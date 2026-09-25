@@ -1,0 +1,44 @@
+{
+  "complete": false,
+  "errors": [
+    {
+      "code": "missing_components",
+      "detail": "Required runtimes or advertised assets are absent"
+    },
+    {
+      "code": "unlisted_file",
+      "detail": "File is absent from inventory",
+      "path": "development-only.json"
+    }
+  ],
+  "invalid_components": [],
+  "inventory_sha256": "c4c563582f106af6272f70dbc9688ee69ddfdbbdc054b58e9b7bab0a028a4c28",
+  "missing_components": [
+    "application",
+    "chromium",
+    "document-parser",
+    "duckdb",
+    "duckdb-spatial",
+    "fonts",
+    "help",
+    "icons",
+    "networkx",
+    "ocr-language:eng",
+    "playwright",
+    "playwright-driver",
+    "pyarrow",
+    "python-runtime",
+    "sandbox-helper",
+    "spacy",
+    "splink",
+    "styles",
+    "synthetic-demo",
+    "tesseract",
+    "ui-assets"
+  ],
+  "requirements_sha256": "3ace9499c6a642dff600aa3490d544a96d699be0d828c494f113d940d7eff37b",
+  "schema_version": 1,
+  "target": "macos-aarch64",
+  "verified_bytes": 168205077,
+  "verified_files": 269
+}

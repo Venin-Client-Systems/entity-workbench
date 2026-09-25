@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-25T12:15:59.974235+00:00",
+  "base_commit": "83cc8d4a4c3e7269d698721cdb73618eec6bc2b7",
+  "scope": "EW-22 / #25 follow-up: quarantine execution before potentially blocked collection receipt publication",
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "ordinary_core": {
+      "passed": 421,
+      "library_passed": 346,
+      "integration_passed": 75,
+      "failed": 0,
+      "specialized_ignored": 22,
+      "log": "quarantine-core.log"
+    },
+    "strict_clippy_debug": "passed",
+    "strict_clippy_release": "passed",
+    "schema_inventory_files_byte_unchanged": 85,
+    "json_schema_files_byte_unchanged": 83
+  },
+  "regression": {
+    "before": {
+      "passed": 0,
+      "failed": 1,
+      "log": "quarantine-before.log",
+      "finding": "Executable ownership remained held while an unknown collection receipt was blocked in settlement_pending"
+    },
+    "after": {
+      "passed": 1,
+      "failed": 0,
+      "log": "quarantine-after.log",
+      "cases": [
+        "Confirmed Interrupted document return",
+        "Late valid document result"
+      ]
+    },
+    "assertions": [
+      "Active document cancelled before retry/shutdown",
+      "Typed Interrupted and no document derivative",
+      "Queued document never launched",
+      "Exact pending retry remains permitted under quarantined publication ownership",
+      "Unknown receipt publishes exactly once after deliberate SQLite fault is removed",
+      "No repeat transport or refunded charge",
+      "Repeated shutdown/drop retain the ownership lock"
+    ]
+  },
+  "retained_setup_observations": [
+    {
+      "log": "quarantine-before-first.log",
+      "result": "Initial short filter with --exact selected0 tests; no proof claimed. Fully qualified test then reproduced the failure."
+    }
+  ],
+  "peer_review": {
+    "scope": "Root reviewed immediate quarantine, exact pending-only retry admission and completion precedence",
+    "result": "Accepted for signed handoff after checks"
+  },
+  "limits": [
+    "Synthetic canonical store and injected observation only; no external DNS/HTTP requests",
+    "No public command, schema, UI, dependency or live activation change",
+    "TerminationUnverified and Cleanup retain precedence over shared interruption",
+    "Normal production startup remains collection-disabled; root owns combined native/browser verification"
+  ],
+  "file_sha256": {
+    "crates/core/src/coordinator.rs": "19141b5e5473a79df0ca025d5b912aee0f3be70cf13dd1121ca90232bdca81be",
+    "crates/core/src/coordinator_collection.rs": "ee81f77c51fc56dfff5bd32b2a8ad6126a58c8279c31e977f211f11685194202",
+    "crates/core/src/coordinator_collection_tests.rs": "ce205eec7b6f434c3259a6e5cd4def8684a53712bab42429d393b3fbc200e0e8",
+    "crates/core/src/store/collection_jobs.rs": "c72860a70dc6a69080fda14b8d068aaa83ad7df739e1a27b85d4fe84b1bd38e3",
+    "docs/discovery/COLLECTION-COORDINATOR.md": "786c18cfd3b8a83828bcbad2349f9f55e65d8a147348cba03b8b5798e6434a6d"
+  },
+  "local_ignored_log_sha256": {
+    "quarantine-after.log": "03e4dfeb4480dc611ed5381f8b5f2897f1d958ad1f60931208a4b9278ddebc49",
+    "quarantine-before-first.log": "862880dcc2b72b5a1c55f10c3f51e2cacd4456e74b71cfde7987beb017921644",
+    "quarantine-before.log": "a900483c064ebe6ce491573597dae3a606e1cd8c1311f21f56070d32fa32735b",
+    "quarantine-clippy-debug.log": "6431a12f285a032bd164aa4992b2b2cab2c6bfd99e75e7ab65fe22430f280984",
+    "quarantine-clippy-release.log": "5a97b7657486caf53faba75ac076afda7ebad28e0f4f1b3baa24266e6a49106a",
+    "quarantine-core.log": "88c2ca1bd532af28c074195b03a3baaa3347263e8f70ad8fa72c1d3902e9a90e"
+  }
+}

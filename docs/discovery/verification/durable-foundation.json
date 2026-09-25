@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T18:49:38.365909+00:00",
+  "base_commit": "f2b1e9a",
+  "scope": "Private synthetic durable collection state/storage foundation plus shared bounded original reader; no live activation",
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "ordinary_core": {
+      "passed": 288,
+      "library_passed": 221,
+      "integration_passed": 67,
+      "failed": 0,
+      "specialized_ignored": 22,
+      "log": "core-all-verified.log"
+    },
+    "strict_clippy_debug": "passed",
+    "strict_clippy_release": "passed",
+    "prior_reader_compatibility": {
+      "passed": 1,
+      "failed": 0,
+      "log": "prior-reader-final.log",
+      "previous_binary_sha256": "2e2d59a493869726a45b50ff68440a287f0d7c4eaf6f8cf91e265ebf9104be59",
+      "source_evidence": "docs/design/review/desktop-summary/verification.json"
+    },
+    "historical_schema_files_unchanged": 73,
+    "cargo_lock_dependencies_and_backup_implementation": "unchanged"
+  },
+  "retained_failures": [
+    {
+      "scope": "incomplete-source initial invocation",
+      "result": "missing test file while being authored; compiler refused; no completed test claim"
+    },
+    {
+      "log": "collection-first.log",
+      "result": "test compilation failed because an import ID was treated as an Evidence value; test repaired"
+    },
+    {
+      "log": "core-library-final.log",
+      "result": "220 passed, 1 failed, 22 ignored; established source-inspection checksum error wording changed"
+    },
+    {
+      "log": "core-all-final.log",
+      "result": "same 220 passed, 1 failed, 22 ignored before wording repair; assertions unchanged"
+    }
+  ],
+  "peer_repairs": [
+    "Cancellation before crash no longer strands an interrupted run; charged unknown outcome retained",
+    "Single bounded no-follow original read replaces verification plus unbounded reread in new replay",
+    "Post-promotion Evidence JSON size checked before canonical publication"
+  ],
+  "limits": [
+    "Synthetic-only records and private methods; no public commands, new public schemas, live network or coordinator activation",
+    "Windows sharing regression is platform-specific and unexecuted locally; no cross-compiler installed for this task",
+    "Other legacy read/copy-after-verify call sites remain separate follow-up",
+    "No actual transport cancellation, secure monotonic clock across restart, access approval, relevance review or complete release claim"
+  ],
+  "file_sha256": {
+    "crates/core/src/collection.rs": "6f935a0b342fa53fedd8fceefb1d40c5e2f37b53f59f8f417d0dcae029372fa8",
+    "crates/core/src/collection_jobs.rs": "7f607013b0cd3a129bd95931274442b74661ae729f792d54b16e772c01799a14",
+    "crates/core/src/collection_machine.rs": "907a56a46eb220730e5f6372c9afe14c25764f8680b16dbfce1e0ebc8d0d43b7",
+    "crates/core/src/lib.rs": "c20200072f91f24e035855314a57a3ce4b2f0a5d48c6f54852e0ca35c4f08509",
+    "crates/core/src/store.rs": "0e42b08a2cb6ea52593415e0ee73186606483223c616888f9cb50382a4de0448",
+    "crates/core/src/store/collection_jobs.rs": "ad06607f9702e9e5e5501a24ebfd539638a561f388f3808c2bcb9749ca12599d",
+    "crates/core/src/store/collection_jobs_tests.rs": "712a209a412581f0fff099d0beb14eb9624b96f2de28747e24356faaf09b7fb3",
+    "crates/core/src/store/originals.rs": "30e57b6141807352a0f7b2bee52546401b00cc499e5acab196c632776b8b28c9",
+    "docs/discovery/DURABLE-JOBS.md": "8283999c0696a4bb008d3edcd305dd363fab2c8b354001229f44fc0256d1a78a"
+  },
+  "local_ignored_log_sha256": {
+    "clippy-debug-final.log": "1f910a27b8d400ba7f5f14218a060041abd79460d93dee5edb74d5723b0d3329",
+    "clippy-debug.log": "f799acf9976012734edba127cefa1506805d92c9f0f4ec34e3210caf5848ec2a",
+    "clippy-release.log": "825c0a2566e41bf40e229d206dbc32b269fb454e29f43e052903a0eaa4e54a6d",
+    "collection-first.log": "b97dccb230706ae2012a91b045b58d846e4bcd41a47734ca78bebb4b4cf7f856",
+    "collection-fourth.log": "9fe410f1d1e90d752fcbd12caa71cd9b649652295ab6cb29cc31b349bcccc36a",
+    "collection-second.log": "ee597574a2f0ae2063a409110175e3a34f8da778f28f317906b739bc1d977b14",
+    "collection-third.log": "ba197ae3a0cde7ddcb10017bb054a7540735a2054b297aa6c434cc8d826adc79",
+    "core-all-final.log": "548600c0ac7fbde30f16d13d165982ae6430cf3e131a131ad091886eb27d4707",
+    "core-all-verified.log": "607c98913ad9f7d8af593615d695c195ad08ae78ddd42b57855c1107f4f05cd5",
+    "core-all.log": "52472a6449d4ab3764e7020732bdf93d943e79edca23a21615d7c3e5ccccfcdd",
+    "core-library-final.log": "11d20251e6309cb0b5fba562b81af4fa59da8cf7fb5be8ef1562d3e5fbe7aa47",
+    "durable-final.log": "1d400551302a6cc5f9e0fdbb606745046bf4ef68109e5bbd09c47d12cb95291d",
+    "prior-reader-final.log": "9fcd5f9204795e74456cce59ed5accd836a72722dfefe175334557852876c055",
+    "prior-reader.log": "16295e409b61d7945cfbd213c2353b24d56458397497de9c6fa190777f2c7591"
+  }
+}

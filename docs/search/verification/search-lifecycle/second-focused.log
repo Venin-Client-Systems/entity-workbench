@@ -1,0 +1,54 @@
+   Compiling workbench-core v0.1.0 (<worktree>/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.97s
+     Running unittests src/lib.rs (target/debug/deps/workbench_core-3b02699a934d9ff3)
+
+running 26 tests
+test engines::search_lifecycle::tests::search_lifecycle_create_collision_is_never_deleted_as_owned ... ok
+test engines::search_lifecycle::tests::search_lifecycle_control_hardlinks_fail_without_altering_outside_bytes ... ok
+test engines::search_lifecycle::tests::search_lifecycle_existing_invalid_and_crash_left_intents_block_before_index_change ... FAILED
+test engines::search_lifecycle::tests::search_lifecycle_invalid_query_does_not_create_ownership ... ok
+test engines::search_lifecycle::tests::search_lifecycle_cleanup_error_cannot_publish_or_release_intent ... ok
+test coordinator::search::tests::search_lifecycle_coordinator_routes_search_using_its_exact_existing_owner ... ok
+test coordinator::search::tests::search_lifecycle_coordinator_unknown_exit_quarantines_and_cancels_other_owned_tokens ... ok
+test coordinator::search::tests::search_lifecycle_panicked_dispatch_retains_owner_and_shutdown_refuses_poisoned_barrier ... ok
+test engines::search_lifecycle::tests::search_lifecycle_known_failure_cleans_and_preserves_primary_error ... ok
+test engines::search_lifecycle::tests::search_lifecycle_linked_control_and_parent_fail_without_following ... ok
+test engines::search_lifecycle::tests::search_lifecycle_panic_retains_inputs_and_intent ... ok
+test coordinator::search::tests::search_lifecycle_bootstrap_quarantine_prevents_document_start_but_allows_view ... ok
+test coordinator::search::tests::search_lifecycle_shutdown_waits_for_admitted_dispatch_after_worker_registry_is_empty ... ok
+test engines::search_lifecycle::tests::search_lifecycle_success_releases_both_stages_without_canonical_writes ... ok
+test engines::search_lifecycle::tests::search_lifecycle_write_and_sync_failures_prevent_any_launch ... ok
+test engines::search_lifecycle::tests::search_lifecycle_unknown_exit_retains_every_input_and_never_attempts_cleanup ... ok
+test store::search::tests::search_lifecycle_collection_recovery_refuses_search_without_starting_runtime ... ok
+test store::search::tests::search_lifecycle_standalone_cannot_reacquire_current_coordinator_owner ... ok
+test store::search::tests::search_lifecycle_safe_completion_keeps_owner_and_panic_quarantines ... ok
+test store::search::tests::search_lifecycle_existing_processing_uncertainty_blocks_before_callback ... ok
+test store::search::tests::search_lifecycle_standalone_refuses_orphaned_running_or_legacy_interrupted_claims ... FAILED
+test store::search::tests::search_lifecycle_typed_disposition_quarantines_even_when_no_marker_can_be_read ... ok
+test store::search::tests::search_lifecycle_bootstrap_intent_quarantines_owner_but_preserves_reads_and_revision ... ok
+test store::search::tests::search_lifecycle_unreadable_marker_and_linked_ancestor_require_recovery ... ok
+test store::search::tests::search_lifecycle_workspace_owner_cannot_cross_workspaces_or_release_quarantine ... ok
+test engines::search_lifecycle::tests::search_lifecycle_finalization_failures_reject_success_and_retain_lock ... ok
+
+failures:
+
+---- engines::search_lifecycle::tests::search_lifecycle_existing_invalid_and_crash_left_intents_block_before_index_change stdout ----
+
+thread 'engines::search_lifecycle::tests::search_lifecycle_existing_invalid_and_crash_left_intents_block_before_index_change' panicked at crates/core/src/engines/search_lifecycle_tests.rs:177:9:
+assertion failed: matches!(outcome.result, Err(Error::Blocked(_)))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- store::search::tests::search_lifecycle_standalone_refuses_orphaned_running_or_legacy_interrupted_claims stdout ----
+
+thread 'store::search::tests::search_lifecycle_standalone_refuses_orphaned_running_or_legacy_interrupted_claims' panicked at crates/core/src/store/search_tests.rs:96:9:
+assertion failed: matches!(workspace.dispatch(Command::Search { query: "needle".into() }),
+    Err(Error::Blocked(_)))
+
+
+failures:
+    engines::search_lifecycle::tests::search_lifecycle_existing_invalid_and_crash_left_intents_block_before_index_change
+    store::search::tests::search_lifecycle_standalone_refuses_orphaned_running_or_legacy_interrupted_claims
+
+test result: FAILED. 24 passed; 2 failed; 0 ignored; 0 measured; 585 filtered out; finished in 0.32s
+
+error: test failed, to rerun pass `-p workbench-core --lib`

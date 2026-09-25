@@ -1,0 +1,57 @@
+{
+  "architecture": "aarch64",
+  "assigned_files": {
+    "code/bootstrap.py": {
+      "bytes": 3707,
+      "sha256": "ddc1b57e964fbf864cbdde88f31bf9ff0ebf8cc313235995193571987edc1b75"
+    },
+    "code/compatibility.py": {
+      "bytes": 5557,
+      "sha256": "4c0e3b4976c58b7bc3ed466f6c40901bafc5c999a5a5d9039c6bd8f7287815b2"
+    },
+    "code/transaction_totals.py": {
+      "bytes": 6219,
+      "sha256": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+    },
+    "input/assignment.json": {
+      "bytes": 321,
+      "sha256": "7aabd515aa0032383fb04e9b9c6ecb065b87ca2cd39dc769338109236f9095b9"
+    },
+    "input/fixture.json": {
+      "bytes": 6531,
+      "sha256": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85"
+    },
+    "input/reader.json": {
+      "bytes": 39,
+      "sha256": "81397bb1545f39b9289b7aaa1bab237930aea9921d0ece5dbdccd77255c3cc1a"
+    }
+  },
+  "campaign_id": "5e4039a9-0d9e-469d-ac52-165041609f08",
+  "candidate_interpreter": {
+    "bytes": 18005560,
+    "path": "install/bin/python3.13",
+    "sha256": "3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc"
+  },
+  "complete_release": false,
+  "diagnostics_within_bound": true,
+  "exit_code": null,
+  "failure": "quota-exhausted",
+  "job_id": "87379460-e187-4862-ab12-e6b67d84cf5e",
+  "last_import_checkpoint": {
+    "boundary": "before",
+    "module": "spacy"
+  },
+  "last_worker_checkpoint": "imports",
+  "passed": false,
+  "phase": "confined-compatibility",
+  "preparation_elapsed_ms": 3580,
+  "profile_sha256": "14ae52266cdd1dba265ea101c1a6c20148a74bdc849faaa65ffadaba60af93cb",
+  "quota_kind": "wall-time",
+  "recipe": "python-compatibility-v1",
+  "result": null,
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "runtime_verified": true,
+  "schema_version": 1,
+  "supervised_elapsed_ms": 30044,
+  "termination_state": "confirmed"
+}

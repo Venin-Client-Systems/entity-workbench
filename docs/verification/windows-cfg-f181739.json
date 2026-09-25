@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "source": "f1817391a1bf88a6c616b22efc9dc0de9d8e57a6",
+  "scope": "Windows cfg lint repair, local Mac verification",
+  "complete_release": false,
+  "changes": [
+    "write_new compiled only on macOS, matching its callers",
+    "mutable directory builder only on Unix where mode is configured"
+  ],
+  "passed": [
+    "669 ordinary Rust tests; 32 native/specialized tests excluded",
+    "formatting",
+    "host all-target strict Clippy",
+    "Intel Mac cross-target all-target strict Clippy"
+  ],
+  "windows_native_verified": false,
+  "preceding_windows_failure": {
+    "source": "61ad2aa4b6108cf0d4c82771fda63f1d6411dccf",
+    "run": "36180662909",
+    "log_sha256": "68f9fffcdf36903c8bcffb9d4f008691f2d63a09361c4af634ccb1ce3bf2c3ef"
+  },
+  "logs": {
+    "clippy-exit.json": {
+      "bytes": 131,
+      "sha256": "189fc7e5846ba7f19b80eb2bd6a7d9756e5165580c782686dc2ff91839ee4046"
+    },
+    "clippy.log": {
+      "bytes": 184,
+      "sha256": "513e59d99c10467f8807d65a5e091d550a9c1004bb6b568ccf5c61bca851fe8b"
+    },
+    "core-exit.json": {
+      "bytes": 88,
+      "sha256": "c5729bfda19982c6e28dd47e3ce4b53e1b73f6651e2b925b3f3bcec7f5d9ca82"
+    },
+    "core.log": {
+      "bytes": 82908,
+      "sha256": "3733c022a067a9e73ddf1d56f027e9c91906d042054b577610fe3a8378b53cf0"
+    },
+    "fmt-exit.json": {
+      "bytes": 64,
+      "sha256": "a911789105235bf8a989b446675b8b360e6bfa9b04d9bf2ee2d603f593ed5980"
+    },
+    "fmt.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "intel-clippy-exit.json": {
+      "bytes": 166,
+      "sha256": "69504b2a91a391166d084f80a7e26a8d4b5eecf30e65df7b4ee96ec22330185b"
+    },
+    "intel-clippy.log": {
+      "bytes": 185,
+      "sha256": "13e3175329c6b49206d9b7bfee460137de0dd3e5db1ecb271f9395f0a02a81c4"
+    }
+  }
+}

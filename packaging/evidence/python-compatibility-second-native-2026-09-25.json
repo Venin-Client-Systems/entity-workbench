@@ -1,0 +1,199 @@
+{
+  "architecture": "aarch64",
+  "assigned_files": {
+    "code/bootstrap.py": {
+      "bytes": 3707,
+      "sha256": "ddc1b57e964fbf864cbdde88f31bf9ff0ebf8cc313235995193571987edc1b75"
+    },
+    "code/compatibility.py": {
+      "bytes": 5557,
+      "sha256": "4c0e3b4976c58b7bc3ed466f6c40901bafc5c999a5a5d9039c6bd8f7287815b2"
+    },
+    "code/transaction_totals.py": {
+      "bytes": 6219,
+      "sha256": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+    },
+    "input/assignment.json": {
+      "bytes": 294,
+      "sha256": "568a23d86779df4990c48f926d704042b0e91562c7e73df9ee35749aceb4e5cc"
+    },
+    "input/fixture.json": {
+      "bytes": 6531,
+      "sha256": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85"
+    },
+    "input/reader.json": {
+      "bytes": 39,
+      "sha256": "81397bb1545f39b9289b7aaa1bab237930aea9921d0ece5dbdccd77255c3cc1a"
+    }
+  },
+  "campaign_id": "e6160102-acc6-4b80-ad8f-73394e4035c6",
+  "candidate_interpreter": {
+    "bytes": 18005560,
+    "path": "install/bin/python3.13",
+    "sha256": "3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc"
+  },
+  "complete_release": false,
+  "diagnostics_within_bound": true,
+  "exit_code": 0,
+  "failure": null,
+  "job_id": "4e2cee6e-a186-43aa-9f5b-abffa2275540",
+  "last_import_checkpoint": {
+    "boundary": "after",
+    "module": "pyarrow"
+  },
+  "last_worker_checkpoint": "complete",
+  "passed": true,
+  "phase": "complete",
+  "preparation_elapsed_ms": 46657,
+  "profile_sha256": "3f32bed856ed2c79043f3b2ed90413dc204866eb8c27254152bcdd93a49a26a4",
+  "quota_kind": null,
+  "recipe": "python-compatibility-v1",
+  "result": {
+    "checks": {
+      "graph_assertions": [
+        "r1",
+        "r2"
+      ],
+      "graph_path": [
+        "a",
+        "b",
+        "c"
+      ],
+      "graph_unreachable": true,
+      "imported_modules": [
+        "duckdb",
+        "networkx",
+        "spacy",
+        "click",
+        "splink",
+        "pyarrow"
+      ],
+      "phrase_empty": true,
+      "phrase_matches": [
+        {
+          "end": 10,
+          "review": "pending",
+          "start": 0,
+          "text": "Café North"
+        },
+        {
+          "end": 26,
+          "review": "pending",
+          "start": 15,
+          "text": "ALEX MORGAN"
+        },
+        {
+          "end": 39,
+          "review": "pending",
+          "start": 28,
+          "text": "Alex Morgan"
+        }
+      ],
+      "registry": {
+        "architecture": "spacy_legacy.architectures.tok2vec:Tok2Vec_v1",
+        "layer": "spacy_legacy.layers.staticvectors_v1:StaticVectors_v1",
+        "metadata_matched": true,
+        "reader": {
+          "reference": "000123",
+          "synthetic": true
+        }
+      },
+      "transaction_totals": {
+        "totals": [
+          {
+            "currency": "AUD",
+            "net": "1.123456788",
+            "transaction_ids": [
+              "aud-a",
+              "aud-b",
+              "aud-c"
+            ]
+          },
+          {
+            "currency": "USD",
+            "net": "5.00000000",
+            "transaction_ids": [
+              "usd-a",
+              "usd-b"
+            ]
+          }
+        ]
+      },
+      "transfer_rejected": true,
+      "versions": {
+        "altair": "6.3.0",
+        "annotated-doc": "0.0.5",
+        "annotated-types": "0.8.0",
+        "attrs": "26.1.0",
+        "blis": "1.3.3",
+        "catalogue": "2.0.10",
+        "certifi": "2026.7.22",
+        "charset-normalizer": "3.5.1",
+        "click": "8.3.1",
+        "cloudpathlib": "0.25.0",
+        "confection": "0.1.5",
+        "cymem": "2.0.13",
+        "duckdb": "1.5.0",
+        "idna": "3.20",
+        "igraph": "1.0.0",
+        "jinja2": "3.1.6",
+        "jsonschema": "4.26.0",
+        "jsonschema-specifications": "2025.9.1",
+        "markdown-it-py": "4.2.0",
+        "markupsafe": "3.0.3",
+        "mdurl": "0.1.2",
+        "murmurhash": "1.0.15",
+        "narwhals": "2.26.0",
+        "networkx": "3.6.1",
+        "numpy": "2.5.3",
+        "packaging": "26.3",
+        "pandas": "3.0.6",
+        "preshed": "3.0.13",
+        "pyarrow": "23.0.1",
+        "pydantic": "2.13.5",
+        "pydantic-core": "2.46.5",
+        "pygments": "2.21.0",
+        "python-dateutil": "2.9.0.post0",
+        "referencing": "0.37.0",
+        "requests": "2.34.2",
+        "rich": "15.0.0",
+        "rpds-py": "2026.6.3",
+        "setuptools": "84.0.0",
+        "shellingham": "1.5.4",
+        "six": "1.17.0",
+        "smart-open": "7.7.1",
+        "spacy": "3.8.11",
+        "spacy-legacy": "3.0.12",
+        "spacy-loggers": "1.0.5",
+        "splink": "4.0.12",
+        "sqlglot": "30.18.0",
+        "srsly": "2.5.3",
+        "texttable": "1.7.0",
+        "thinc": "8.3.11",
+        "tqdm": "4.70.1",
+        "typer": "0.27.2",
+        "typer-slim": "0.24.0",
+        "typing-extensions": "4.16.0",
+        "typing-inspection": "0.4.4",
+        "urllib3": "2.8.0",
+        "wasabi": "1.1.3",
+        "weasel": "0.4.3",
+        "wrapt": "2.4.1"
+      }
+    },
+    "isolated": true,
+    "job_id": "4e2cee6e-a186-43aa-9f5b-abffa2275540",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "no_bytecode": true,
+    "no_site": true,
+    "python_version": "3.13.15",
+    "recipe": "python-compatibility-v1",
+    "schema_version": 1,
+    "verified_paths": true
+  },
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "runtime_verified": true,
+  "schema_version": 1,
+  "supervised_elapsed_ms": 22844,
+  "termination_state": "confirmed"
+}

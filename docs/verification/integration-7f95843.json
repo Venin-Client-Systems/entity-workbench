@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "scope": "Integrated prepared v4 collection reservation and blocked durable graph-job publication foundation",
+  "source_commit": "7f95843cf61e0ef4181062299466957452497c4f",
+  "source_tree": "8cd0a9ed1229751f70025aa1cdbe8d93d9363473",
+  "host": {
+    "system": "macOS",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "rust": {
+      "passed": 577,
+      "library": 498,
+      "integration": 79,
+      "ignored_native_or_specialized": 31,
+      "failed": 0
+    },
+    "clippy": "strict all targets passed",
+    "formatting": "passed",
+    "python": {
+      "total": 340,
+      "passed": 336,
+      "skipped_platform": 4,
+      "failed": 0
+    },
+    "ui_build": "passed with existing large-chunk warning",
+    "browser": {
+      "file": "ui/tests/durable-collection.spec.ts",
+      "passed": 13,
+      "failed": 0,
+      "real_core": true
+    },
+    "release_policy": {
+      "valid": true,
+      "passed_gates": 0,
+      "unpassed_gates": 12
+    }
+  },
+  "independent_handoff_checks": {
+    "prepared_reservation": {
+      "source_files": 11,
+      "historical_schema_directory_files": 100,
+      "retained_artifacts_hash_and_size": 12,
+      "all_matched": true,
+      "signed_implementation": "c80913b780c5365baf81108386118282aa247bb2",
+      "signed_evidence": "377aa3e385e57583ad3b4f49184826f670aa221e",
+      "root_source_review": "Full source and regression review found no remaining concrete blocker",
+      "root_focused_test": {
+        "at_commit": "8c0adf99d9c0b8ca22ecdf647f3c1d74ce108c1b",
+        "passed": 154,
+        "ignored": 2,
+        "log_sha256": "6a5e5a8db3dacc77805d8565b163275fe8b63cf0da9e19a92baee700a2631b75"
+      }
+    },
+    "graph_jobs": {
+      "signed_implementation": "5891fa6b8b518c547ea00cfab754f2bacf9cf681",
+      "signed_evidence": "f79a7780dacce942167ea0d55a7eee06a7cab46e",
+      "source_identities_verified_at_signed_commit": 18,
+      "current_files_exact": 17,
+      "integration_difference": {
+        "path": "crates/core/src/lib.rs",
+        "change": "Preserved the previously integrated private collection_html module declaration; all other bytes match."
+      },
+      "historical_schema_directory_files": 100,
+      "public_and_raw_log_references_hash_and_size": 14,
+      "all_matched": true,
+      "peer_read_only_review": "No remaining concrete blocker after repairing atomic failed-claim rollback, recapture database-error retention, attempt/job/request binding, and transaction fault-injection tests; production execution remains blocked before Running",
+      "handoff_verifier_note": "First root comparison asserted the wrong insertion location for the known lib.rs integration difference. Inspection and corrected exact-byte assertion passed; this was a verifier error, not a source/test failure."
+    }
+  },
+  "local_logs": {
+    "browser": {
+      "sha256": "dadfbc0edce368c50f9cdcc9891d4813aac095637e2289d25686e2c482e4ffd0",
+      "bytes": 2478
+    },
+    "clippy": {
+      "sha256": "178ea21e9cd11f1cce5e9cbb8c8c6a65c8a957e9f9d939da777707810872c4be",
+      "bytes": 185
+    },
+    "core": {
+      "sha256": "37e20ebd62f4f41da4b5c5594d9b3b4bdd39293cf0f2e9dec625430624550014",
+      "bytes": 71904
+    },
+    "fmt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "python": {
+      "sha256": "16ae7ed2a273da76d7b9e5e813c4bf0b79735fef6f8c8fd264cbf2e9605bd531",
+      "bytes": 58907
+    },
+    "release-policy": {
+      "sha256": "e06ca70607453955d732a9e6dbee53c3e4e4a2a56d5116053ad95fd2101e3dee",
+      "bytes": 984
+    },
+    "ui-build": {
+      "sha256": "9dd05a6e705dc6d05f8c4563667ff8514db348b9565545d49d3fb2b10158977a",
+      "bytes": 932
+    }
+  },
+  "limits": [
+    "No native candidate or public-network campaign ran for this integration; the earlier canonical graph experiment retains its own source and receipts",
+    "V4 coordinator request reservation and settlement replay run outside the mutex; public inspect/cancel/resume, initial attach/start, startup recovery and direct store advance still replay under it",
+    "Bounded canonical capture, original rehash and transaction I/O remain mutex-held; parser calls are not cooperatively preemptible and no hard CPU/RSS/latency bound is established",
+    "Graph queue admission is internal only; production claim is explicitly blocked before Running/capture/worker until exclusive scheduling and supervised runtime integration exist",
+    "Private graph claim/publication lifecycle is tested with synthetic data; it does not attest actual worker execution or process stop",
+    "Normal native collection remains disabled; no schema migration or historical schema changes",
+    "Full 158-browser result belongs to prior source 73d25e2; only the 13 affected collection flows reran here"
+  ],
+  "complete_release": false
+}

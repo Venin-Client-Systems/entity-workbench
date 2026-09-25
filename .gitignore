@@ -16,4 +16,5 @@
 .env*
 /test-results/
 /playwright-report/
+/output/playwright/
 **/.pytest_cache/

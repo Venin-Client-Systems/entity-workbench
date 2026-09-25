@@ -1,0 +1,259 @@
+{
+  "$defs": {
+    "LiteralMatching": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/LiteralSearchAlgorithm"
+        },
+        "unicode_version": {
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "unicode_version"
+      ],
+      "type": "object"
+    },
+    "LiteralSearchAlgorithm": {
+      "enum": [
+        "unicode_default_lowercase_literal_v1"
+      ],
+      "type": "string"
+    },
+    "NonAcceptedCsvPolicy": {
+      "enum": [
+        "reject",
+        "allow_selected"
+      ],
+      "type": "string"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "TransactionCsvFormat": {
+      "enum": [
+        "typed_literal_v1"
+      ],
+      "type": "string"
+    },
+    "TransactionCsvRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "non_accepted": {
+          "$ref": "#/$defs/NonAcceptedCsvPolicy"
+        },
+        "selection": {
+          "$ref": "#/$defs/TransactionExportRequest"
+        }
+      },
+      "required": [
+        "selection",
+        "non_accepted"
+      ],
+      "type": "object"
+    },
+    "TransactionExportRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "filter": {
+          "$ref": "#/$defs/TransactionPageFilter"
+        },
+        "order": {
+          "$ref": "#/$defs/TransactionPageOrder"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query",
+        "filter",
+        "order"
+      ],
+      "type": "object"
+    },
+    "TransactionPageFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReviewState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TransactionPageOrder": {
+      "enum": [
+        "date_ascending",
+        "date_descending"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "expected_format": {
+          "$ref": "#/$defs/TransactionCsvFormat"
+        },
+        "expected_matching": {
+          "$ref": "#/$defs/LiteralMatching"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "expected_row_count": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "transaction_csv",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/TransactionCsvRequest"
+        }
+      },
+      "required": [
+        "kind",
+        "request",
+        "expected_revision",
+        "expected_row_count",
+        "expected_matching",
+        "expected_format"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "expected_document_sha256": {
+          "type": "string"
+        },
+        "expected_docx_sha256": {
+          "type": "string"
+        },
+        "kind": {
+          "const": "docx_report",
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "report_id",
+        "expected_document_sha256",
+        "expected_docx_sha256"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "expected_matching": {
+          "$ref": "#/$defs/LiteralMatching"
+        },
+        "expected_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "expected_row_count": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "transactions",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/TransactionExportRequest"
+        }
+      },
+      "required": [
+        "kind",
+        "request",
+        "expected_revision",
+        "expected_row_count",
+        "expected_matching"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "expected_sha256": {
+          "type": "string"
+        },
+        "kind": {
+          "const": "html_report",
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "report_id",
+        "expected_sha256"
+      ],
+      "type": "object"
+    }
+  ],
+  "title": "NativeExportRequest"
+}

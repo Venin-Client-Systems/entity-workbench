@@ -1,0 +1,49 @@
+{
+  "synthetic_only": true,
+  "tool": "axe-core via Playwright",
+  "scope": "Mapping and preview states; not a full accessibility conformance claim",
+  "results": [
+    {
+      "screen": "mapping",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "violations": [],
+      "manual_review_rule_ids": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "preview",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "violations": [],
+      "manual_review_rule_ids": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "compact-mapping",
+      "viewport": {
+        "width": 960,
+        "height": 640
+      },
+      "violations": [],
+      "manual_review_rule_ids": [
+        "color-contrast"
+      ]
+    },
+    {
+      "screen": "compact-preview",
+      "viewport": {
+        "width": 960,
+        "height": 640
+      },
+      "violations": [],
+      "manual_review_rule_ids": []
+    }
+  ]
+}

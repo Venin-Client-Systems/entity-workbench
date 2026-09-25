@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "kind": "source_only_owned_response_cancellation_verification",
+  "recorded_at": "2026-09-25T16:11:14.179401+00:00",
+  "task": "EW-22 / issue 25",
+  "source": {
+    "commit": "947be8996b808f8f55dcb0c877e035447b34cd4d",
+    "tree": "fc3d42459cbe10177ed004fa374f03b50c2d9842",
+    "base": "b15e184f9fc8d22362471ceda98493845b3a59cf",
+    "signature_verified": true,
+    "trusted_signing_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y",
+    "files": [
+      {
+        "path": "crates/core/src/collection_transport.rs",
+        "sha256": "5db71fbc4dc9c735fb385aa2a82a87af9bc696917a1ef0a83473b62fac3fd4b6"
+      },
+      {
+        "path": "crates/core/src/collection_transport/cancellation_probe.rs",
+        "sha256": "fdcf10c3df14b2fc2b7f5cfb5b63d615239549f08a0fc584c2c281ca6771e857"
+      },
+      {
+        "path": "crates/core/src/collection_transport/tests.rs",
+        "sha256": "18b2e177c9a81d6cbd8afe892d7ad904aff6248a89c7aea43780f8c815d9625b"
+      },
+      {
+        "path": "crates/core/src/coordinator_native_https_cancellation.rs",
+        "sha256": "e906c72026258b84634617ed42fbc4303e2080095a82be5ced3cb15d35b05f61"
+      },
+      {
+        "path": "crates/core/src/coordinator_native_https_proof.rs",
+        "sha256": "a1d34f80ca71455b6e419438d71cb73ff30f2af940ddd6b1363260e04a66da60"
+      },
+      {
+        "path": "docs/discovery/NATIVE-CANCELLATION-PROOF.md",
+        "sha256": "6a84afd0fe2e0ed5aad3a57ab5929831dc819471f7462a80fb9a9d971105c656"
+      },
+      {
+        "path": "scripts/native_cancellation_receipt.py",
+        "sha256": "33e69240a5ec3f8ccde0dd7f47bc41ecb97081ac6de7340e4e7bb70cd30374a8"
+      },
+      {
+        "path": "scripts/native_https_receipt.py",
+        "sha256": "623a1272dddfec0b73e1e5cc2f08462aee1eca0233dc4edf5030beb654bbf189"
+      },
+      {
+        "path": "scripts/test_native_collection_cancellation.py",
+        "sha256": "e7c19767366a8e14f2104d0ede1a47bc6554377bdb53a2db3fa530bda72f825e"
+      },
+      {
+        "path": "scripts/test_native_durable_https.py",
+        "sha256": "b2aa6627c47d63275e0694f91f760c9500a51cbdcbfaa47d61eaf0b7616a245e"
+      },
+      {
+        "path": "scripts/tests/test_native_cancellation_receipts.py",
+        "sha256": "2ef5d0fb8e80c64aebe63c5722dcca99e816c96e606794a1bd054c0e23d836c4"
+      }
+    ]
+  },
+  "host": {
+    "os": "macOS",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "verification": [
+    {
+      "command": "cargo test -p workbench-core --lib fixed_cancellation --locked --offline",
+      "passed": true,
+      "tests_passed": 4,
+      "evidence": "focused-initial.log"
+    },
+    {
+      "command": "cargo test -p workbench-core --lib fixed_ --locked --offline",
+      "passed": true,
+      "tests_passed": 18,
+      "evidence": "focused-final.log",
+      "scope": "Includes four new cancellation checks and existing positive/failure proof regressions; remaining matched tests are named in retained log."
+    },
+    {
+      "command": "cargo test -p workbench-core --locked --offline",
+      "passed": true,
+      "tests_passed": 501,
+      "tests_ignored": 28,
+      "evidence": "core-full.log"
+    },
+    {
+      "command": "cargo clippy -p workbench-core --all-targets --locked --offline -- -D warnings",
+      "passed": true,
+      "evidence": "clippy-debug.log"
+    },
+    {
+      "command": "cargo clippy -p workbench-core --all-targets --release --locked --offline -- -D warnings",
+      "passed": true,
+      "evidence": "clippy-release.log"
+    },
+    {
+      "command": "python3 -m unittest discover -s scripts/tests -p 'test_native_*receipts.py' -v",
+      "passed": true,
+      "tests_passed": 17,
+      "evidence": "python-final.log"
+    },
+    {
+      "command": "python3 -O -m unittest discover -s scripts/tests -p 'test_native_*receipts.py' -v",
+      "passed": true,
+      "tests_passed": 17,
+      "evidence": "python-optimized-final.log"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "passed": true,
+      "evidence": "fmt-check.log"
+    },
+    {
+      "check": "staged public audit against private exclusion policy",
+      "passed": true,
+      "files": 11,
+      "evidence": "public-audit-source.log"
+    }
+  ],
+  "compatibility": {
+    "historical_schema_files_byte_identical": 100,
+    "json_schema_files": 98,
+    "other_files": 2,
+    "additive_schema_files": 0,
+    "base": "b15e184f9fc8d22362471ceda98493845b3a59cf",
+    "evidence": "schema-compatibility.json",
+    "existing_actual_https_receipt_unchanged_and_offline_revalidated": true,
+    "existing_actual_https_receipt_sha256": "10e2f6ad95f2b24b746739aea587066215b149315f4720e1f1bb059f3638895d",
+    "commands_changed": false,
+    "dependencies_changed": false,
+    "normal_native_availability": false
+  },
+  "evidence_layers": {
+    "canonical_coordinator_tests": "Actual private queue/reserve/cancel/settle/join/reopen/backup/restore with explicitly synthetic transport; terminal resume refused without mutation.",
+    "local_tls_test": "Actual local TLS server, test-only fixed resolver and CA; real ordinary cancellation token stops body consumption and closes the owned connection. No public DNS or HTTPS.",
+    "python_tests": "Synthetic receipts and mocked process outcomes plus offline revalidation of retained earlier positive native receipt.",
+    "new_native_cancellation_campaign_executed": false,
+    "new_public_dns_or_https_requests": 0,
+    "native_windows_executed": false
+  },
+  "retained_logs": [
+    {
+      "name": "focused-initial.log",
+      "sha256": "b63d0c53990285d37d06f1dd4a8beb988ff67c4e05594b4d72b6e234bcb850da",
+      "bytes": 6681
+    },
+    {
+      "name": "focused-final.log",
+      "sha256": "fb375605e5a4240cb7cff054c4d994b77b552dc8a75a755b25361532e9e0dd12",
+      "bytes": 2636
+    },
+    {
+      "name": "core-full.log",
+      "sha256": "c9fbd781cefc17a433299c3058e93c38ff4d09ad78f78cf1b015c6b53bfce6ea",
+      "bytes": 62271
+    },
+    {
+      "name": "clippy-debug.log",
+      "sha256": "2e120d1e6e1594b41a337108a92ecc76d273a419f6dbb16c8b542bbd32f5f632",
+      "bytes": 5082
+    },
+    {
+      "name": "clippy-release.log",
+      "sha256": "58187d6301b3da6d16009f88b1b98805dde1fee0be04117eb5f8b2d7089646c3",
+      "bytes": 5942
+    },
+    {
+      "name": "python-initial.log",
+      "sha256": "d8f1648f9e9fe7b969f463d2f14bb30942a85ddf793bf8825f7666a6755b5219",
+      "bytes": 3498
+    },
+    {
+      "name": "python-optimized.log",
+      "sha256": "d8f1648f9e9fe7b969f463d2f14bb30942a85ddf793bf8825f7666a6755b5219",
+      "bytes": 3498
+    },
+    {
+      "name": "python-final.log",
+      "sha256": "1db5ef9aba49d62e9a4531ede9eb8440d348b8d95f8e3b01e1f7d73d6fa5f58f",
+      "bytes": 3498
+    },
+    {
+      "name": "python-optimized-final.log",
+      "sha256": "c567aeaebcf64765075160108f2d90b913abb37979c69ddfa0c5756a0591b089",
+      "bytes": 3498
+    },
+    {
+      "name": "fmt-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "name": "public-audit-source.log",
+      "sha256": "39379a20a71aeb051751f06b4b896bd29db8a6d2a624b491e08dd7b764ea2b81",
+      "bytes": 40
+    },
+    {
+      "name": "source-signature.log",
+      "sha256": "5f3f0d9f099255a8b0687a2dc0a0908eae975996f949d495203bf5e85992c355",
+      "bytes": 95
+    },
+    {
+      "name": "schema-compatibility.json",
+      "sha256": "994c5e70f3b00bd73f60c2fa8edb5af83ad0c99f0f209fb09708295d3688a5de",
+      "bytes": 15476
+    }
+  ],
+  "failures_observed": [],
+  "review": {
+    "root_read_only_source_review": "No remaining blocker in gate/controller/transport seam, canonical lifecycle, validators, runner, tests and documentation. No independent native execution in this review."
+  },
+  "limits": {
+    "future_campaign_requires_separate_signed_source_review": true,
+    "owned_response_before_application_body_consumption_only": true,
+    "body_may_already_be_buffered_by_os_or_http_client": true,
+    "does_not_prove_all_native_cancellation_phases": true,
+    "does_not_prove_provider_quiescence": true,
+    "production_activation": false,
+    "complete_release": false
+  }
+}

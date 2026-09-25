@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "TransactionFacetKind": {
+      "enum": [
+        "account",
+        "currency"
+      ],
+      "type": "string"
+    },
+    "TransactionFacetValue": {
+      "additionalProperties": false,
+      "properties": {
+        "transaction_count": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "transaction_count"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "distinct_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "facet": {
+      "$ref": "#/$defs/TransactionFacetKind"
+    },
+    "next_cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "query_sha256": {
+      "type": "string"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "transaction_count": {
+      "description": "Every transaction, irrespective of review state or applied ledger filters.",
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "values": {
+      "description": "Exact values in SQLite BINARY text order; no case or whitespace normalization.",
+      "items": {
+        "$ref": "#/$defs/TransactionFacetValue"
+      },
+      "type": "array"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "workspace_revision",
+    "facet",
+    "query_sha256",
+    "transaction_count",
+    "distinct_count",
+    "values"
+  ],
+  "title": "TransactionFacetPage",
+  "type": "object"
+}

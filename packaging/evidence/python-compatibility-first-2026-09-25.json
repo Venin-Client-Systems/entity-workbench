@@ -1,0 +1,111 @@
+{
+  "campaign_id": "b4672903-8182-4683-9eb3-ec38fd02de66",
+  "complete_release": false,
+  "failure": "native-test-process-failed",
+  "inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "native": {
+    "architecture": "aarch64",
+    "assigned_files": {
+      "code/bootstrap.py": {
+        "bytes": 3282,
+        "sha256": "83c31734ad13dbd603691995babac8e3b0be51d304b51d55b71198fbb144fb8c"
+      },
+      "code/compatibility.py": {
+        "bytes": 5431,
+        "sha256": "c26418535c87dc896b114493bc809a239fad789fa740876b6f5f272403fea84d"
+      },
+      "code/transaction_totals.py": {
+        "bytes": 6219,
+        "sha256": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+      },
+      "input/assignment.json": {
+        "bytes": 294,
+        "sha256": "368b83589ec9896ed424e6b952dbef02208242614bdfdeaf42ec903b59e9e9a3"
+      },
+      "input/fixture.json": {
+        "bytes": 6531,
+        "sha256": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85"
+      },
+      "input/reader.json": {
+        "bytes": 39,
+        "sha256": "81397bb1545f39b9289b7aaa1bab237930aea9921d0ece5dbdccd77255c3cc1a"
+      }
+    },
+    "campaign_id": "b4672903-8182-4683-9eb3-ec38fd02de66",
+    "candidate_interpreter": {
+      "bytes": 18005560,
+      "path": "install/bin/python3.13",
+      "sha256": "3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc"
+    },
+    "complete_release": false,
+    "diagnostics_within_bound": true,
+    "exit_code": null,
+    "failure": "quota-exhausted",
+    "job_id": "c17bd4db-914d-4eb5-8bab-13ee3bcc4a03",
+    "last_worker_checkpoint": "imports",
+    "passed": false,
+    "phase": "confined-compatibility",
+    "profile_sha256": "b9c1e3c83ced5d5b3cda676543f1a7699a1005557045310ef2f7e8023f3454c4",
+    "recipe": "python-compatibility-v1",
+    "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "runtime_verified": true,
+    "schema_version": 1,
+    "termination_state": "confirmed"
+  },
+  "native_binary_sha256": "dd63841baba3fb1f62fe8a5e2d5107061ebc61b3ef2dd499ef30ff67e8d443de",
+  "native_report_sha256": "c0ae88f59b2f2d65396ed35a0e19c7ee6e290e9411a2844bdeb22b96d4d0769f",
+  "native_started": true,
+  "observed_at": "2026-09-25T13:59:32.163367+00:00",
+  "passed": false,
+  "phase": "confined-compatibility",
+  "platform": {
+    "architecture": "arm64",
+    "os": "Darwin",
+    "version": "26.6.2"
+  },
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "schema_version": 1,
+  "scope": "test-only macOS arm64 confined Python compatibility",
+  "source": {
+    "commit": "fdf7265398535593f3001e60cc15ca125cb8bd29",
+    "files": {
+      "crates/core/src/engines/supervision.rs": "f597996166b4f709893a18fceafcbc65559953cce423c754fd214fc75df08bb8",
+      "crates/core/src/engines/supervision/python_probe.rs": "72b809ad2a99aeceff9aa5ec15ca0e03026f217f5201577c519a9ee397e9ce3f",
+      "scripts/install_python_offline.py": "ab9e13018b58959489841cefe49284262afe6456bdcbf86afb23bd0956f2d15d",
+      "scripts/stage_python_runtime.py": "27e73847781debd137bb1b1052c502dae556d4f5827be8032690e243d7db808a",
+      "scripts/test_python_compatibility.py": "a16733233e833e9634f2ae0ef2bb63d5172e65d7a90c55a56fa4a07099a5ca21",
+      "scripts/verify_python_install.py": "0a91737064f1add1ebe36ee8e17bda9ba6b29d3afbf34126bbcc1001cd0a46bd",
+      "scripts/verify_runtime_bundle.py": "0e72dd2766c432e23093267ce2e831829f2a1b883df1cc581d16aaf54d27f327",
+      "workers/python/probe/bootstrap.py": "83c31734ad13dbd603691995babac8e3b0be51d304b51d55b71198fbb144fb8c",
+      "workers/python/probe/compatibility.py": "c26418535c87dc896b114493bc809a239fad789fa740876b6f5f272403fea84d",
+      "workers/python/probe/expected.json": "6c88fcf93736dd8a2af9226d3f5317dfb1025ca14e2fe00f0c4cb5b8ebc74aff",
+      "workers/python/probe/fixture.json": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85",
+      "workers/python/transaction_totals.py": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+    },
+    "parents": [
+      "0654a29e56a7cee86ad47cdbfa034151da7dbd06"
+    ],
+    "tree": "a22bf462598f8f421b15714dba5d41228def46cf"
+  },
+  "termination_state": "confirmed",
+  "unverified": [
+    "hostile-file-network-controls",
+    "fresh-relocation",
+    "hard-resident-memory-ceiling",
+    "supervisor-crash-termination",
+    "canonical-worker-protocol",
+    "signing-clean-install-minimum-os",
+    "Intel-Mac-and-Windows",
+    "complete-notices"
+  ]
+}

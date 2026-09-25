@@ -1,0 +1,34 @@
+{
+  "observed_date": "2026-09-25",
+  "source_revision": "c2635c3e13fa6754b87e56d1740b91538a889c78",
+  "browser_toolbar": "Zoom: 200%",
+  "viewport": {
+    "width": 720,
+    "height": 361,
+    "devicePixelRatio": 4,
+    "clientWidth": 720,
+    "scrollWidth": 720
+  },
+  "capture_focus": {
+    "name": "Capture DOCX snapshot",
+    "visible": true,
+    "outline": "rgb(166, 72, 20) solid 3px"
+  },
+  "forward_tab": [
+    "Capture DOCX snapshot",
+    "Refresh DOCX catalogue",
+    "Next DOCX page"
+  ],
+  "next_enter_status": "21–21 of 21 DOCX snapshots",
+  "back_enter_status": "1–20 of 21 DOCX snapshots",
+  "reverse_tab_returned_to": "Capture DOCX snapshot",
+  "stale_capture": {
+    "request_id": "4f9b93cf-1661-4444-80ff-45d87cdea3e7",
+    "captured_revision": 22,
+    "later_canonical_revision": 23,
+    "lookup_absence_revision": 23,
+    "explicit_new_capture": true
+  },
+  "focus_notes": "Disabled capture and lookup actions temporarily moved activeElement to the document. Subsequent Tab retained a usable sequential position; lookup remount returned through Check outcome before Start new.",
+  "word_touched": false
+}

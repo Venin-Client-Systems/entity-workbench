@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "scope": "EW-22/#25: development Mac native resolver and prelaunch transport observations only",
+  "source_revision": "2a1d8d9399377b18ec263903104fa566d34114a7",
+  "source_clean_and_signature_verified": true,
+  "source_sha256": {
+    "crates/core/src/collection_transport/native_macos_proof.rs": "6add9e4be56b8c19c78dfc701a64fb758d6a9754d5f40209bc186dc25bb72cb9",
+    "crates/core/src/collection_transport/resolver_macos.rs": "453d6c741d423b72d34b26cb4c0fb9115ed21681637c128c0a9c03983136886a",
+    "docs/discovery/NATIVE-TRANSPORT-PROOF.md": "a182b4d917b650044a2aefebb88731fa0958f99a3514f112462acff05154625d",
+    "scripts/test_native_collection_transport.py": "ce474c1074fd6fe890e0285536ab8efff3471f0f6de5b7a73dd17759b1f10b9b",
+    "scripts/test_native_collection_transport_evidence.py": "72baf69fd30b2eea792ae8e966e31b226ae49ef87367cf74d786cf358f613489"
+  },
+  "ordinary_checks": {
+    "core_passed": 424,
+    "library_passed": 348,
+    "integration_passed": 76,
+    "specialised_ignored": 23,
+    "transport_subset_passed": 15,
+    "transport_native_ignored": 1,
+    "python_passed": 9,
+    "python_optimized_passed": 9,
+    "debug_and_release_strict_clippy": "passed",
+    "format": "passed",
+    "staged_public_audit_files": 5
+  },
+  "native_campaign_id": "0b59e8363703456e9705d1f9f6134858",
+  "native_report_sha256": "516d1339ee7bace2e3eef92c80f95a124f6fddf08e7220ae57c7397ef3252149",
+  "native_observation": {
+    "schema_version": 1,
+    "passed": false,
+    "outcome": "failed",
+    "observed_at": "2026-09-25T12:32:46.897225+00:00",
+    "phase": "native_campaign",
+    "limits": {
+      "native_subscriptions": 3,
+      "http_requests": 0,
+      "cooperative_campaign_seconds": 20,
+      "outer_native_process_seconds": 30,
+      "dns_stage_seconds": 5,
+      "retries": 0
+    },
+    "cases": [
+      {
+        "case": "transport_pre_cancel",
+        "elapsed_milliseconds": 0,
+        "hostname": "example.com",
+        "outcome": {
+          "locally_quiescent": true,
+          "observed_wall_ms": 1790339568274,
+          "phase": "before_request",
+          "reason": "cancelled",
+          "transport_elapsed_milliseconds": 0
+        },
+        "passed": true,
+        "probe": {
+          "attempted": 0,
+          "callbacks": [],
+          "created": 0,
+          "creation_status": null,
+          "deallocated": 0
+        }
+      },
+      {
+        "case": "transport_expired",
+        "elapsed_milliseconds": 0,
+        "hostname": "example.com",
+        "outcome": {
+          "locally_quiescent": true,
+          "observed_wall_ms": 1790339568274,
+          "phase": "before_request",
+          "reason": "deadline",
+          "transport_elapsed_milliseconds": 0
+        },
+        "passed": true,
+        "probe": {
+          "attempted": 0,
+          "callbacks": [],
+          "created": 0,
+          "creation_status": null,
+          "deallocated": 0
+        }
+      },
+      {
+        "case": "native_success",
+        "elapsed_milliseconds": 1537,
+        "hostname": "example.com",
+        "outcome": {
+          "authoritative_complete_set": false,
+          "candidate_count": 2,
+          "method": "macos_dns_service_observed_batch",
+          "result": "resolved"
+        },
+        "passed": true,
+        "probe": {
+          "attempted": 1,
+          "callbacks": [
+            [
+              3,
+              0
+            ],
+            [
+              2,
+              0
+            ]
+          ],
+          "created": 1,
+          "creation_status": 0,
+          "deallocated": 1
+        }
+      },
+      {
+        "case": "native_negative",
+        "elapsed_milliseconds": 5000,
+        "hostname": "ew-native-proof.invalid",
+        "outcome": {
+          "reason": "deadline",
+          "result": "stopped"
+        },
+        "passed": false,
+        "probe": {
+          "attempted": 1,
+          "callbacks": [],
+          "created": 1,
+          "creation_status": 0,
+          "deallocated": 1
+        }
+      },
+      {
+        "case": "native_active_deadline",
+        "elapsed_milliseconds": 1,
+        "hostname": "example.com",
+        "outcome": {
+          "reason": "deadline",
+          "result": "stopped"
+        },
+        "passed": true,
+        "probe": {
+          "attempted": 1,
+          "callbacks": [],
+          "created": 1,
+          "creation_status": 0,
+          "deallocated": 1
+        }
+      }
+    ],
+    "https": {
+      "state": "not_attempted",
+      "reason": "reviewed_access_not_established"
+    },
+    "windows_native": "not_run",
+    "complete_release": false,
+    "claims": {
+      "complete_dns_rrset": false,
+      "dns_daemon_quiescence": false,
+      "uncached_wire_dns": false,
+      "durable_live_activation": false
+    },
+    "platform": {
+      "os": "Darwin",
+      "version": "26.6.2",
+      "architecture": "arm64"
+    },
+    "source": {
+      "revision": "2a1d8d9399377b18ec263903104fa566d34114a7",
+      "tree": "9e75ad634d46d9c2c58534492a23d7741fd98896",
+      "signature_verified": true,
+      "allowed_signers_sha256": "c9195bf09289e6194c6d8ab57825d51c238e2a8e2e66b2c00cd36e2954ba6342",
+      "runner_sha256": "ce474c1074fd6fe890e0285536ab8efff3471f0f6de5b7a73dd17759b1f10b9b",
+      "lockfile_sha256": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32"
+    },
+    "compiler": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "dns_sd_header_sha256": "61871d4fc1ea6ebc5430e116739a55f9913458962d4c71e8924f2b2a802cbc88",
+    "test_binary_sha256": "d3bdcf29517508ffa130e8f333933b618ea2e55f4afc77cab4f462e914a68a2c",
+    "native_exit_code": 101,
+    "failure": "native_failure_or_incomplete_campaign",
+    "source_unchanged_after": true,
+    "binary_unchanged_after": true,
+    "logs": {
+      "build.log": {
+        "sha256": "9ab36df43c19848cf3d90f08638a4d341dbd17c7be871fbb469d9f4ef67e9edb",
+        "bytes": 204308
+      },
+      "native.log": {
+        "sha256": "060a86e2566285ddbf1fbfbcd9913be836eac931fb22be4be3f63ed29effd03e",
+        "bytes": 2196
+      }
+    }
+  },
+  "ordinary_log_sha256": {
+    "core.log": "bd5abf07733d81dd26b2969deb8f7af2f8d414365c806a38f6cad84f5b7c1213",
+    "clippy-debug.log": "6b6cbe49138c10c2120db118c81aa3e4d970dd0d6d27b846a4265e5c692e6dc7",
+    "python-postcheck-before.log": "a99870f0359c88a29a46d53f844817167579c37606c731a85b4cbb80b8cb3b54",
+    "clippy-release.log": "e4e3ec826a1391cfc0747db8aef829e3fe119ef15e09c2be0afc6ea66b8896bc",
+    "python-optimized.log": "3423998d6331ab752d6c0651167c426e2bd3a152d9a291b6770302d466b391a0",
+    "public-audit.log": "db8d6ed481e98d8b19622185736efea8163153c089e60baf4a22e45e03d8c563",
+    "python.log": "e0888d126a0d5eb87790d69dd2f362cf5f19d2709b04717f2360959f2d481931"
+  },
+  "historical_schema_inventory": {
+    "compared_to": "0e6d390",
+    "files": 85,
+    "json_schemas": 83,
+    "all_bytes_unchanged": true,
+    "sorted_path_hash_manifest_sha256": "5924bbb4a15700bcb548f4fd9eb9838d7a32fc6389939016170f583ee68158fb"
+  },
+  "retained_failures": [
+    {
+      "kind": "offline evidence-test fixture",
+      "log": "python-postcheck-before.log",
+      "passed": 6,
+      "errors": 1,
+      "explanation": "Adding unconditional final source verification required a third mocked identity response. The fixture was extended; production validation was retained."
+    },
+    {
+      "kind": "actual native campaign",
+      "campaign_id": "0b59e8363703456e9705d1f9f6134858",
+      "passed_cases": 4,
+      "failed_cases": 1,
+      "explanation": "Fixed negative name produced no callbacks before Deadline. The required NoSuchRecord callback was not observed. All three actual subscriptions deallocated; no repeat queries."
+    }
+  ],
+  "primary_contract_finding": {
+    "source": "installed macOS SDK usr/include/dns_sd.h",
+    "sha256": "61871d4fc1ea6ebc5430e116739a55f9913458962d4c71e8924f2b2a802cbc88",
+    "flag": "kDNSServiceFlagsReturnIntermediates",
+    "value": 4096,
+    "production_flags": 0,
+    "finding": "Header documents that NXDomain errors are not returned without ReturnIntermediates. Current zero-flag behavior explains absent negative callback; a query remains active until deallocated. No flags or acceptance criteria changed after observation."
+  },
+  "remaining": [
+    "Native negative-answer requirement remains unmet; review intermediate and dual-family semantics before any change or further observation.",
+    "No HTTPS fetch: reviewed source access has not been established.",
+    "Actual Windows native resolver execution and cancellation remain separate CI requirements.",
+    "No complete DNS RRset, uncached wire-query, shared DNS-daemon quiescence, live durable activation or complete-release proof."
+  ],
+  "complete_release": false
+}

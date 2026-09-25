@@ -1,0 +1,106 @@
+name: Opt-in Windows native DNS observation
+on:
+  push:
+    branches: ['verify/windows-native-dns-20260925']
+  workflow_dispatch:
+    inputs:
+      source_commit:
+        description: Exact reviewed signed commit; must equal the selected workflow ref HEAD
+        required: true
+        type: string
+      allow_fixed_dns:
+        description: Allow at most three fixed DNS lookups, no HTTP or retries
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  dns-observation:
+    # Actual Windows Server 2022 observation; never Windows 11 acceptance.
+    runs-on: windows-2022
+    timeout-minutes: 20
+    env:
+      REQUESTED_SOURCE: ${{ github.event_name == 'push' && github.sha || inputs.source_commit }}
+      ALLOW_FIXED_DNS: ${{ github.event_name == 'push' || inputs.allow_fixed_dns }}
+      PUSH_CREATED: ${{ github.event.created }}
+      PUSH_BEFORE: ${{ github.event.before }}
+      RUSTFLAGS: '-C target-feature=+crt-static'
+    steps:
+      - name: Retain initial receipt and validate explicit scope
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = Join-Path $env:RUNNER_TEMP 'ew-windows-dns-workflow'
+          New-Item -ItemType Directory -Force $evidence | Out-Null
+          @{
+            schema_version = 1
+            passed = $false
+            phase = 'not_started'
+            source_commit = $env:REQUESTED_SOURCE
+            workflow_source_commit = $env:GITHUB_SHA
+            workflow_run_id = $env:GITHUB_RUN_ID
+            workflow_run_attempt = $env:GITHUB_RUN_ATTEMPT
+            runner_image = 'windows-2022'
+            complete_release = $false
+            native_query_state = 'unknown_until_runner_receipt'
+          } | ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $evidence 'workflow.json')
+          if ($env:GITHUB_REPOSITORY -cne 'Venin-Client-Systems/entity-workbench') { throw 'Unexpected repository.' }
+          if ($env:GITHUB_RUN_ATTEMPT -cne '1') { throw 'Rerunning this observation is not authorized.' }
+          if ($env:GITHUB_EVENT_NAME -ceq 'push') {
+            if ($env:GITHUB_REF -cne 'refs/heads/verify/windows-native-dns-20260925') { throw 'Unexpected verification branch.' }
+            if ($env:PUSH_CREATED -cne 'true' -or $env:PUSH_BEFORE -cne ('0' * 40)) { throw 'Only the first creation of the fixed verification branch is authorized.' }
+          } elseif ($env:GITHUB_EVENT_NAME -cne 'workflow_dispatch') {
+            throw 'Unexpected workflow event.'
+          }
+          if ($env:ALLOW_FIXED_DNS -cne 'true') { throw 'Explicit fixed-DNS opt-in required.' }
+          if ($env:REQUESTED_SOURCE -cnotmatch '^[0-9a-f]{40}$') { throw 'An exact lowercase commit is required.' }
+          if ($env:REQUESTED_SOURCE -cne $env:GITHUB_SHA) { throw 'Workflow and requested source must be the same reviewed commit.' }
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ env.REQUESTED_SOURCE }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Verify source with the existing trusted public signing key
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ((git rev-parse HEAD).Trim() -cne $env:REQUESTED_SOURCE) { throw 'Checkout identity mismatch.' }
+          $signers = Join-Path $env:RUNNER_TEMP 'ew-windows-dns-allowed-signers'
+          # Fixed existing public key. Never trust a key downloaded from the requested source.
+          'entity-workbench namespaces="git" ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL1LMFqArxyxN0cJm3TyqVhcX/UccEtD+jP407U19k3g' | Set-Content -Encoding ascii $signers
+          & git -c "gpg.ssh.allowedSignersFile=$signers" verify-commit HEAD
+          if ($LASTEXITCODE -ne 0) { throw 'Trusted commit signature verification failed.' }
+          & python -c "import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)"
+          if ($LASTEXITCODE -ne 0) { throw 'Preinstalled Python 3.11 or later is required.' }
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+        with:
+          toolchain: '1.90.0'
+      - name: Fetch locked build dependencies before the offline campaign
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $log = Join-Path $env:RUNNER_TEMP 'ew-windows-dns-workflow/build-preparation.log'
+          & cargo fetch --locked --target x86_64-pc-windows-msvc *> $log
+          if ($LASTEXITCODE -ne 0) { throw 'Locked dependency preparation failed; no campaign launched.' }
+      - name: Validate synthetic receipts and run the exact offline-built probe
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python -m unittest discover -s scripts/tests -p test_windows_dns_receipts.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Synthetic receipt validation failed.' }
+          & python -O -m unittest discover -s scripts/tests -p test_windows_dns_receipts.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Optimized receipt validation failed.' }
+          $signers = Join-Path $env:RUNNER_TEMP 'ew-windows-dns-allowed-signers'
+          & python scripts/test_windows_native_dns.py --allow-fixed-dns --allowed-signers $signers
+          if ($LASTEXITCODE -ne 0) { throw 'Native observation failed or was incomplete; preserve all receipts.' }
+      - name: Preserve build, partial native output and receipts
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: windows-native-dns-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/ew-windows-dns-workflow/
+            artifacts/windows-native-dns/
+          if-no-files-found: error
+          retention-days: 30

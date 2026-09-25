@@ -1,0 +1,65 @@
+.ledger-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.ledger-controls label {
+  margin: 0;
+  min-width: 0;
+}
+.transaction-ledger-panel {
+  min-width: 0;
+}
+.transaction-ledger-panel .context-note,
+.transaction-review code {
+  overflow-wrap: anywhere;
+}
+.transaction-ledger-panel td .pill {
+  margin: 2px 0;
+}
+.transaction-ledger-panel .cell-button {
+  overflow-wrap: anywhere;
+}
+.transfer-candidates {
+  border-top: 1px solid var(--line, #bfc8c4);
+  padding-top: 16px;
+}
+.transfer-candidates .actions {
+  flex-wrap: wrap;
+}
+.transfer-candidates label {
+  min-width: 0;
+}
+
+.transaction-export-options {
+  border: 1px solid var(--border);
+  padding: 1rem;
+  margin: 1rem 0;
+  min-width: 0;
+}
+.transaction-export-options > h3 {
+  background: var(--ink);
+  color: var(--surface);
+  margin: -1rem -1rem 1rem;
+  padding: 0.75rem 1rem;
+}
+.ledger-export-selectors {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+.ledger-export-selectors label {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.ledger-export-selectors select {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.4rem;
+}
+.transaction-export-options code {
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "sources": [
+    {
+      "id": "origin-a",
+      "origin_group": "publication-a",
+      "text": "North Quay Example uses Harbor Ledger Example as supplier."
+    },
+    {
+      "id": "copy-a",
+      "origin_group": "publication-a",
+      "copied_from": "origin-a",
+      "text": "North Quay Example uses Harbor Ledger Example as supplier."
+    },
+    {
+      "id": "independent-b",
+      "origin_group": "publication-b",
+      "text": "Harbor Ledger Example records a North Quay Example invoice."
+    }
+  ]
+}

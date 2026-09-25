@@ -1,3 +1,4 @@
+import { registerImageRegionBridge } from "./image-region-bridge.ts";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { spawn } from "node:child_process";
@@ -10,6 +11,7 @@ export default defineConfig({
     {
       name: "synthetic-workspace-bridge",
       configureServer(server) {
+        registerImageRegionBridge(server);
         server.middlewares.use("/api/workbench", (req, res) => {
           if (
             req.method !== "POST" ||
@@ -46,7 +48,7 @@ export default defineConfig({
             }
             const child = spawn(
               resolve("target/debug/ew-dev"),
-              [resolve("artifacts/synthetic-ui-workspace")],
+              [resolve("artifacts/synthetic-ui-workspace"), "--summary"],
               { stdio: ["pipe", "pipe", "pipe"] },
             );
             let output = "";

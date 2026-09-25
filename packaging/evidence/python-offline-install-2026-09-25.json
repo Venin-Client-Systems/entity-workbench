@@ -1,0 +1,647 @@
+{
+  "actual_assembly": {
+    "exit_code": 0,
+    "report": {
+      "assembled": true,
+      "bytes": 601821300,
+      "complete_release": false,
+      "failure": null,
+      "files": 11320,
+      "immutable_source_recheck": true,
+      "independent_verification": {
+        "bytes": 601821300,
+        "complete_release": false,
+        "files": 11320,
+        "installation_state": "assembled-unexecuted",
+        "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+        "package_code_executed": false,
+        "runtime_components_satisfied": [],
+        "verified": true,
+        "wheels": 58
+      },
+      "installation_plan_sha256": "849ad7b775879f7e8f213af11f1421ad75d30019ed6aab3c35e047a8a50b9b59",
+      "installation_state": "assembled-unexecuted",
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+      "package_code_executed": false,
+      "preceding_failure": null,
+      "runtime_components_satisfied": [],
+      "schema_version": 1,
+      "unmet_checks": [
+        "interpreter-and-packages-not-executed",
+        "native-loader-behaviour-unverified",
+        "required-plugin-behaviour-unverified",
+        "isolated-launch-bootstrap-not-staged",
+        "worker-confinement-unverified",
+        "canonical-worker-not-enabled",
+        "signing-and-relocation-unverified",
+        "minimum-supported-os-not-established",
+        "complete-notices-unverified",
+        "upstream-metadata-references-absent-LICENSE.zlib-ng.txt"
+      ],
+      "wheels": 58
+    },
+    "report_sha256": "17f0e7e2ed1da174afa0c3301b1fb2695a2a20428d8860995437e34691af699c"
+  },
+  "build_interpreter": {
+    "executable_sha256": "2f474ddf576be46e1ecc940407cbb80728e7ebf7d27a47e05572c970524c0487",
+    "implementation": "CPython",
+    "role": "Existing development Python, not candidate interpreter",
+    "version": "3.14.2"
+  },
+  "candidate_interpreter_executed": false,
+  "complete_release": false,
+  "immutable_source_and_member_comparison": {
+    "method": "Separate build-Python stdlib readback: hash every CPython source and destination against the original manifest; compare each ordinary wheel member byte-for-byte with its planned destination or retained original RECORD; rehash every original wheel archive.",
+    "report": {
+      "complete_release": false,
+      "ordinary_wheel_members_preserved": 7705,
+      "original_runtime_manifest_retained": true,
+      "package_code_executed": false,
+      "record_replacements": 58,
+      "source_runtime_files_unchanged": 3332,
+      "source_wheel_archives_unchanged": 58,
+      "verified": true,
+      "wheel_member_bytes": 319470877,
+      "wheels": [
+        {
+          "archive_sha256": "7defb6ca730676dfc99a299768e2769f51585fcb3dc960ea71aacc368929d65e",
+          "installed_record_sha256": "fee69ab47f058d6cabe73e58ffcce214f60596d793501154136f4a52ee918002",
+          "name": "altair",
+          "original_record_sha256": "6cc65c0c2fa06187a179490ca901a7a7e80fbd4865b686663db4b39b1823cc27",
+          "source_members": 67,
+          "version": "6.3.0"
+        },
+        {
+          "archive_sha256": "117bac03a25ede5df5440e855b32d556049ca169ead221505badf432fed4b101",
+          "installed_record_sha256": "9a346c2f30a549c64a0d90bba5a9f11e97c2564d7198c19851af5598020bc0f1",
+          "name": "annotated-doc",
+          "original_record_sha256": "f956b04f14d28135b1f30d6343816b47db2d1aa1eb2ecd027f6c428ea0575f04",
+          "source_members": 8,
+          "version": "0.0.5"
+        },
+        {
+          "archive_sha256": "f072f4d804ea359e4eaf198b1af7a8b0943881a87f31bb764f8bf219bb9419e0",
+          "installed_record_sha256": "68348a25e54d3d1986bcfc528d48b8e75c57efef4f3efcc140f8aafd89cafc56",
+          "name": "annotated-types",
+          "original_record_sha256": "114b36a7ba292e2b78ecd901d104c3fade4699ccfb684a5d9179749cbaeaeaaa",
+          "source_members": 7,
+          "version": "0.8.0"
+        },
+        {
+          "archive_sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+          "installed_record_sha256": "6d49413a4e10f17148bc0b930eb55d83f85dc03547a1d1918d213aa6ff730cc2",
+          "name": "attrs",
+          "original_record_sha256": "ece8bf0367609a064951bcf56a1697d8c61b674d0ce7a7d57e0a93777d86b4af",
+          "source_members": 35,
+          "version": "26.1.0"
+        },
+        {
+          "archive_sha256": "d563160f874abb78a57e346f07312c5323f7ad67b6370052b6b17087ef234a8e",
+          "installed_record_sha256": "569085a618a2bb4e00aab824129c797a37cc68998ce246ce55fc0354398543dc",
+          "name": "blis",
+          "original_record_sha256": "cf3a7346d59ab8939a9323e9f9d8b3db3a2ab2e2f3084f0a71c04e93aca53505",
+          "source_members": 18,
+          "version": "1.3.3"
+        },
+        {
+          "archive_sha256": "58c2de0020aa90f4a2da7dfad161bf7b3b054c86a5f09fcedc0b2b740c109a9f",
+          "installed_record_sha256": "c5344b470e7841647c0bab2b7627d4357ebd4c1f57284010b1619f7ec0452759",
+          "name": "catalogue",
+          "original_record_sha256": "a2592c757f2d321b1b95a6f7469dda5db6ef2b9b7df7d76258b9f57f7106fe15",
+          "source_members": 11,
+          "version": "2.0.10"
+        },
+        {
+          "archive_sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+          "installed_record_sha256": "3a2492e99596a0d467761b622f41162ffd339284c00709c56071e898b6cd6a74",
+          "name": "certifi",
+          "original_record_sha256": "ffbaaaa116c13b3c0337a451c316aab71c19aec40b67f4fc971e4685565bddc5",
+          "source_members": 12,
+          "version": "2026.7.22"
+        },
+        {
+          "archive_sha256": "e90251c0c7bdd54a100a0dce3c07b7e637278c93af29dbf78ebb89a58c4bac7d",
+          "installed_record_sha256": "d653b183b2a126a6b6f33bb1c0de5b52f6b23b5d500623af30b44be125cd225b",
+          "name": "charset-normalizer",
+          "original_record_sha256": "ef597730130293264d69b38a267954ba272c1e4943c09b819d35b8267040c872",
+          "source_members": 21,
+          "version": "3.5.1"
+        },
+        {
+          "archive_sha256": "981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6",
+          "installed_record_sha256": "999a1299616723d8ff85b31e9c6c9ba2a835e646f60a575e59dfb6c5e250ab27",
+          "name": "click",
+          "original_record_sha256": "5bfa7aa423fff77916f0cbe388ba5b4c8eeb54124962f75542517102294ead39",
+          "source_members": 22,
+          "version": "8.3.1"
+        },
+        {
+          "archive_sha256": "8faef3ed3a0dd71d134e8617b4fdc5ce56a12a6b485c080cfe80106e5f1d1f5d",
+          "installed_record_sha256": "eda865adf760be61a27cc3bdb190fb2c08611422d84e1977a8992cddacb69c44",
+          "name": "cloudpathlib",
+          "original_record_sha256": "f7e8438288066541f0fc0f550562dcd101e0eb1c97105c85a2a63e77f31e3f93",
+          "source_members": 34,
+          "version": "0.25.0"
+        },
+        {
+          "archive_sha256": "e29d3c3f8eac06b3f77eb9dfb4bf2fc6bcc9622a98ca00a698e3d019c6430b14",
+          "installed_record_sha256": "3c1f1ed52e6370e84e5c645eaf98ecb8b468548c294274ced9a174e1dbfafcd5",
+          "name": "confection",
+          "original_record_sha256": "1b13fa215e4e95fd1ed6b1069b456e1e7cb53955ef27d2e9fd40bbbe6c4e8072",
+          "source_members": 14,
+          "version": "0.1.5"
+        },
+        {
+          "archive_sha256": "89c4889bd16513ce1644ccfe1e7c473ba7ca150f0621e66feac3a571bde09e7e",
+          "installed_record_sha256": "77c9080afb20fc5228656ce7596a967c6c569a95a626b947c6552152f515b3b7",
+          "name": "cymem",
+          "original_record_sha256": "87a34d18eef7e9a0b7170a7a624d6f8b94c3565d174b8d0455f70a56b2231bab",
+          "source_members": 13,
+          "version": "2.0.13"
+        },
+        {
+          "archive_sha256": "0ee4dabe03ed810d64d93927e0fd18cd137060b81ee75dcaeaaff32cbc816656",
+          "installed_record_sha256": "a925bef8817f32fd41349635cde998404ab17118fc70805365d3da282663dc5d",
+          "name": "duckdb",
+          "original_record_sha256": "f5256191c96ae9b497a9c608e73f593c07d2b38354945fc8341d5f2876fa5c4b",
+          "source_members": 51,
+          "version": "1.5.0"
+        },
+        {
+          "archive_sha256": "ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c",
+          "installed_record_sha256": "b26df9e972699c2f7095c31a499f23265313f4b5c085444aa7a5794b9e1856d4",
+          "name": "idna",
+          "original_record_sha256": "8e2670b3fc1bbf1e2cf99050b062fda50203881e43420bbc6772dad2cde2d548",
+          "source_members": 16,
+          "version": "3.20"
+        },
+        {
+          "archive_sha256": "1a27753cd80680a8f676c2d5a467aaa4a95e510b30748398ec4e4aeb982130e8",
+          "installed_record_sha256": "8db2c261fecb74c52db8e51f3e97bc96fe0ec7db58f43e962f29f995f51924e3",
+          "name": "igraph",
+          "original_record_sha256": "b614efd9accca6a96df7011f16cac7fdcd5302f167b5d96026fce2fd53863a0c",
+          "source_members": 83,
+          "version": "1.0.0"
+        },
+        {
+          "archive_sha256": "85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67",
+          "installed_record_sha256": "6dd58b4913a1190b40112c4c21f9856f957c48f1670bbbe1c0ec521f7fe117c4",
+          "name": "jinja2",
+          "original_record_sha256": "2e9f60b12e1a436c1ac6fdbded6090b6b791eb8d6753935c49941846e05a294d",
+          "source_members": 31,
+          "version": "3.1.6"
+        },
+        {
+          "archive_sha256": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce",
+          "installed_record_sha256": "d1061f34e8ab479c6f89b10769043dff1f10783a25204edb7144863c1454e4db",
+          "name": "jsonschema",
+          "original_record_sha256": "382a461bc5151888cac603114697e4522c3cd6ee2622e4c23929e372556ae180",
+          "source_members": 43,
+          "version": "4.26.0"
+        },
+        {
+          "archive_sha256": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+          "installed_record_sha256": "1f8f780234e6a7e1e917c77222d2af9c71b4b6e0c81195011037318c1a8e813b",
+          "name": "jsonschema-specifications",
+          "original_record_sha256": "497d6b8e47548e7fb8e66a8fcefcb717ed1458602e09662719066ce7dfc017dd",
+          "source_members": 28,
+          "version": "2025.9.1"
+        },
+        {
+          "archive_sha256": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
+          "installed_record_sha256": "ffd8a2508c1c4b5f581c65da753cff3576366faf9097e704daa57442aa3d026d",
+          "name": "markdown-it-py",
+          "original_record_sha256": "83ac63dc42bcfcb56bee31a39046dcefc187b2da6870471e8e3fdf8e6ae6e958",
+          "source_members": 74,
+          "version": "4.2.0"
+        },
+        {
+          "archive_sha256": "116bb52f642a37c115f517494ea5feb03889e04df47eeff5b130b1808ce7c219",
+          "installed_record_sha256": "8b0c34ec57661aff71accc055ecb44647e556d0e0ec281505a01e8562667f5bd",
+          "name": "markupsafe",
+          "original_record_sha256": "2ab0777314dbaa9e07efbefdc61af10c75025f1c3ce40cbc5b080abfef04444e",
+          "source_members": 11,
+          "version": "3.0.3"
+        },
+        {
+          "archive_sha256": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8",
+          "installed_record_sha256": "1ee183093ecc8aed2449a98db8cb46786bcbaa3ab223a630ad44004c1851cdab",
+          "name": "mdurl",
+          "original_record_sha256": "72e8c94bf8f6a74a6a9a113a56ae3e9cade7dcb3ce2591fe60eb161f2948167f",
+          "source_members": 11,
+          "version": "0.1.2"
+        },
+        {
+          "archive_sha256": "1349a7c23f6092e7998ddc5bd28546cc31a595afc61e9fdb3afc423feec3d7ad",
+          "installed_record_sha256": "4ce4bdecd76655d78e3deedf3742f87dd9109e252653b057a598bcb8d3b830da",
+          "name": "murmurhash",
+          "original_record_sha256": "1d53454736176812bfa8cbbdcb15edc79e53b5431dc042040160759723944823",
+          "source_members": 16,
+          "version": "1.0.15"
+        },
+        {
+          "archive_sha256": "29326d74f107c347fd1009bd58e38d9f7c7c5b51e6de97bc93dbc325d9038b54",
+          "installed_record_sha256": "9f1c7e2a4a586fb125ea5ed7765ebe57b054e7d2d348ae88490a4d5f4de79873",
+          "name": "narwhals",
+          "original_record_sha256": "a226a43d9d90dbb7b2a2a4886f4979d2e92495604b49740c7fef5633fac2df6d",
+          "source_members": 167,
+          "version": "2.26.0"
+        },
+        {
+          "archive_sha256": "d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762",
+          "installed_record_sha256": "519cea02de757c22861d1510c14353add918a4ddb339df724e5c37f15959cc6a",
+          "name": "networkx",
+          "original_record_sha256": "7dce35480131c54374d1752b7a27c51d964209c16ba88dce2ff686148fe4989e",
+          "source_members": 601,
+          "version": "3.6.1"
+        },
+        {
+          "archive_sha256": "92f30e89b8ee0ecf363033576c422b2f58fed6a80bed0aa48dff6d14c654663e",
+          "installed_record_sha256": "f88e426b179e4ee22c99313cf6f07db1957d00f8a2ca7035ee88398db36ce125",
+          "name": "numpy",
+          "original_record_sha256": "a55c219fb221a136cbc304dd84d03bd9ef00d7f78c4e5de5e4955de1cf52fd4b",
+          "source_members": 927,
+          "version": "2.5.3"
+        },
+        {
+          "archive_sha256": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+          "installed_record_sha256": "53321abc3e8951a8ca74f7d8885202fe5ad8195f870d99cab495ab84c11a3360",
+          "name": "packaging",
+          "original_record_sha256": "49910a2cb1de4511589f678097f0fd771a2b4266f944806edb1b846f11af324c",
+          "source_members": 29,
+          "version": "26.3"
+        },
+        {
+          "archive_sha256": "60d81f9e1799b36f3739e7fff44d1fbb2e8fd5a271b3863e03de9715fccda0fa",
+          "installed_record_sha256": "ac8bf475a402e6300dc5dd71bb2ca81ce861a8a9be7f3dc87c1dbce34501cbc7",
+          "name": "pandas",
+          "original_record_sha256": "8b24e738720f8f58a2a2c04b0746b6f84eaed5c7be4cf6f38ea320f3a2a6401a",
+          "source_members": 1521,
+          "version": "3.0.6"
+        },
+        {
+          "archive_sha256": "7770987c2e57497cd26124a9be5f652b5b3ccd0def89859ab0da8bca6144a3de",
+          "installed_record_sha256": "14eaf3b5f2e95960a57eaa0ea7947fafaa55db2887f79d9e45daf21ac0028000",
+          "name": "preshed",
+          "original_record_sha256": "100cdf0d37249aaebde711ac03e07005f81736d34457a6c9e7d5f9803a47781d",
+          "source_members": 23,
+          "version": "3.0.13"
+        },
+        {
+          "archive_sha256": "6b8fda694640b00e8af3c824f99f789e836720aa8c9379fb435d4c4953a756b8",
+          "installed_record_sha256": "f27a53e61268df25f7b145eb0302d6299073fc8938b318bd3ba760cbf1190606",
+          "name": "pyarrow",
+          "original_record_sha256": "7459e46fd217ee6b891791060541f876ce972cfe1840abe83e0ef6f70014d4a9",
+          "source_members": 750,
+          "version": "23.0.1"
+        },
+        {
+          "archive_sha256": "346a034f080da3755d8e9cb5e00e8b07de1d39e4f6e2c87d8ab7cafa0b269a73",
+          "installed_record_sha256": "e3176c55a11c681266b198e7b252167708c2514e164de07743456b76f092813e",
+          "name": "pydantic",
+          "original_record_sha256": "5bc5a9f4e6cc10a7340d5d4272c21201435a36e3e2d5fae55a7af2c66645ad7b",
+          "source_members": 111,
+          "version": "2.13.5"
+        },
+        {
+          "archive_sha256": "f332f0e72a5a0400141f830744e141bf9f97917878dbe968669e8a7fefea78ff",
+          "installed_record_sha256": "308f6aa89241f25df73fffaddbe9290aa893c7bd1787beedfc3fdc45b672c8b7",
+          "name": "pydantic-core",
+          "original_record_sha256": "81fdd9f6ce5f57422038cc11d0d495cbab664bb69ca87264b2846c29e7e4a51f",
+          "source_members": 10,
+          "version": "2.46.5"
+        },
+        {
+          "archive_sha256": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9",
+          "installed_record_sha256": "31f6b9fc8238dc8904aff8069abfdc0a38bdda44c6b1a458eb5e68aae5030188",
+          "name": "pygments",
+          "original_record_sha256": "1ca0a14983b717b3728988a152d217ce938b6286e10c8176212e2ff9c5e85f0a",
+          "source_members": 349,
+          "version": "2.21.0"
+        },
+        {
+          "archive_sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+          "installed_record_sha256": "1ea78a2e43819247b5e2c97ce519a5fe61531ac4e97ff7a0f463a576959a239c",
+          "name": "python-dateutil",
+          "original_record_sha256": "fc7aa54068c354d522c07153aad6d77b2d8625ec21e45442dc6056682ef3c74a",
+          "source_members": 25,
+          "version": "2.9.0.post0"
+        },
+        {
+          "archive_sha256": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+          "installed_record_sha256": "7f48272d57844a5b9e12d20fd97e55536e3bbbcde3c8b65a4efe961eeb37b7e4",
+          "name": "referencing",
+          "original_record_sha256": "4cff26d74dfce1cd571ccbee5f58e2dabf748bbe7de1fcc8e4ff487b3a1711f1",
+          "source_members": 19,
+          "version": "0.37.0"
+        },
+        {
+          "archive_sha256": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+          "installed_record_sha256": "8d0a3fd3be541e81a3ea830a7cf6fda1b5dfa2c64e1d5a5185aa6db6545c8fc0",
+          "name": "requests",
+          "original_record_sha256": "6c12f50645e5a7f6080e69eb18a4b7bd52329be9cb47f8bc29b62b24b303c89c",
+          "source_members": 26,
+          "version": "2.34.2"
+        },
+        {
+          "archive_sha256": "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb",
+          "installed_record_sha256": "3706988b5f6f9f30a50bd64c66d1087cd0ebb72abe9a29d6a8c073c8c84406cf",
+          "name": "rich",
+          "original_record_sha256": "4df2d4633403b39b320d055b22acd8ee1517b18e7c4bc76dc9fd56220ec1d1e6",
+          "source_members": 105,
+          "version": "15.0.0"
+        },
+        {
+          "archive_sha256": "f4d78253f6996be4901669ad25319f842f740eccf4d58e3c7f3dd39e6dde1d8f",
+          "installed_record_sha256": "846f42e945edab3d1de7318f8f695e63505ad9cbbc4a36fad8c12e15bb46477e",
+          "name": "rpds-py",
+          "original_record_sha256": "4464ca59755e4b9dcc4c6ee2875fc1e772a16b530134eb26fe793aa213353dcd",
+          "source_members": 9,
+          "version": "2026.6.3"
+        },
+        {
+          "archive_sha256": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+          "installed_record_sha256": "ddedf149e6ddbac36f40499f24517d00cc8b8e8c3aa2cfe9655ae00151efc479",
+          "name": "setuptools",
+          "original_record_sha256": "8e50621059df808724912520d74765c1384bdb36be51ec3a92342dbbea30d630",
+          "source_members": 343,
+          "version": "84.0.0"
+        },
+        {
+          "archive_sha256": "7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686",
+          "installed_record_sha256": "d8c33ff9b4f74d4f26e766c4572a408f7c622213a6b61bd6ab7643b7a9e9ae81",
+          "name": "shellingham",
+          "original_record_sha256": "8a597e3b2d3670074d11918c80d30f3c1694ccd7ae30e9d1e7c784b800e98010",
+          "source_members": 13,
+          "version": "1.5.4"
+        },
+        {
+          "archive_sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+          "installed_record_sha256": "7e56ccc8b2dd55424197d86e1f30561c198afc7b30791bb504fd4da097702e77",
+          "name": "six",
+          "original_record_sha256": "5067d83422e8d7118fdca18230fc735d9f9afabf72647606bacc7a70d5f6901d",
+          "source_members": 6,
+          "version": "1.17.0"
+        },
+        {
+          "archive_sha256": "cb62dc45f519bf39b612564d326d2a17556f3a6056e3c3a86a07215d670d45bc",
+          "installed_record_sha256": "f6feb5c9bfd76c1910c98f9e7e13ff67ecb46d7ce6fd490896cfb82e62676c0b",
+          "name": "smart-open",
+          "original_record_sha256": "47c12eac44fef767c2a105beedfbfa0a62bf25a46988b6743206dc0db91cc628",
+          "source_members": 23,
+          "version": "7.7.1"
+        },
+        {
+          "archive_sha256": "dd785e6bd85a58fa037da0c18fcd7250e2daecdfc30464d3882912529d1ad588",
+          "installed_record_sha256": "2a01dc3c99d3f0b3c0fa2f00ebaaef9260cef7468641949e9fe02e5e9f022695",
+          "name": "spacy",
+          "original_record_sha256": "bbdb1ce152f70f464b4eeecd4406b39b4d3dfc44e6648855a83b2e37faf1ab10",
+          "source_members": 1038,
+          "version": "3.8.11"
+        },
+        {
+          "archive_sha256": "476e3bd0d05f8c339ed60f40986c07387c0a71479245d6d0f4298dbd52cda55f",
+          "installed_record_sha256": "a6afad502c103c7198ede5f9de838bacd286599e5a00f23e75e599b0fdfaa471",
+          "name": "spacy-legacy",
+          "original_record_sha256": "31df58578ce569201f7be891eede4fae301cfdb1fa439b2235081e4dca4fadda",
+          "source_members": 31,
+          "version": "3.0.12"
+        },
+        {
+          "archive_sha256": "196284c9c446cc0cdb944005384270d775fdeaf4f494d8e269466cfa497ef645",
+          "installed_record_sha256": "f00ddcce841973d9e603fe22db7b15942b27e1ba5d8986e4b7761ed0a0b220e8",
+          "name": "spacy-loggers",
+          "original_record_sha256": "3e512424064da7d43ed8016999b8efbc649b9b170f5cb38bdbe971a88153c0a1",
+          "source_members": 22,
+          "version": "1.0.5"
+        },
+        {
+          "archive_sha256": "7d415e532596e5a696b7b622701e86a6ec6cc3b8d406b725c0aefc9479a7b118",
+          "installed_record_sha256": "dff487675f152702e64a270f6cb5967c856c05f032fe96618439d328b39ba67f",
+          "name": "splink",
+          "original_record_sha256": "22fc33287f4844ab368c80b7d65985bacfb924ffe340249ae1b8069f7e222fa1",
+          "source_members": 164,
+          "version": "4.0.12"
+        },
+        {
+          "archive_sha256": "ee0f9a9f3e2193e763c326e52dfb377b96fdb4292f6305c3ff2d9a220e71c601",
+          "installed_record_sha256": "c43361115d086e1416ab38e8aebc864a8f303e9dc314e9c632e0a47490d35047",
+          "name": "sqlglot",
+          "original_record_sha256": "0859a618eada1771a7fe1e763409f9ebd4716088b956cfa24c07b8db41708200",
+          "source_members": 189,
+          "version": "30.18.0"
+        },
+        {
+          "archive_sha256": "348c231b4477d8fe86603131d0f166d2feac9c372704dfc4398be71cc5b6fb07",
+          "installed_record_sha256": "278e160d1068ee6b154404c9287c4b5c08808ecc9724e5fece273c84a91ac114",
+          "name": "srsly",
+          "original_record_sha256": "1c6231a31b5f5c1aaca197a7c36fa19229daa01ab5b71687b03f441e04401f2b",
+          "source_members": 146,
+          "version": "2.5.3"
+        },
+        {
+          "archive_sha256": "72227d592c82b3d7f672731ae73e4d1f88cd8e2ef5b075a7a7f01a23a3743917",
+          "installed_record_sha256": "73c84fb9ee8fbdd63d347bfc58108913f74270e552ae4f50d854c6aa81e48dfc",
+          "name": "texttable",
+          "original_record_sha256": "ea2744f7a313ea2deb28936a93d6677b433a3d76baed7cd5273e99c5b1c7e3b8",
+          "source_members": 6,
+          "version": "1.7.0"
+        },
+        {
+          "archive_sha256": "9bb35d037e40653c10364b08b58c35dc64d4291b5b8168d3d6a9080cd634d79c",
+          "installed_record_sha256": "ae3a3ddb4a31e912b58c44f71570bef1ef50340ae8b059ac8cff36092c7a4ccf",
+          "name": "thinc",
+          "original_record_sha256": "1e5072742630f236b145fa3917f5936aa55c76c2b5079626e4feaa811dbaab63",
+          "source_members": 198,
+          "version": "8.3.11"
+        },
+        {
+          "archive_sha256": "c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73",
+          "installed_record_sha256": "5f17d908eac566bec26410bd4c24e55c984fe670b30bfd00822231e0220978a3",
+          "name": "tqdm",
+          "original_record_sha256": "a09accd5190caec98e08df6bd39d60015b8c56faa0cb6e032d88323430264dd4",
+          "source_members": 39,
+          "version": "4.70.1"
+        },
+        {
+          "archive_sha256": "b3a5fc4342d5fc8fda8fc3010b1cf117e9249aab7fae800c2eff62fd3842d97d",
+          "installed_record_sha256": "58d1a3ae33f22b4d5a7f72fc47e919280e42410a9bd7156abdc2f3b1c68a5db9",
+          "name": "typer",
+          "original_record_sha256": "f7b06e06954d338a50f369002affffad73755718b0552488fe39b4059f82869e",
+          "source_members": 41,
+          "version": "0.27.2"
+        },
+        {
+          "archive_sha256": "d5d7ee1ee2834d5020c7c616ed5e0d0f29b9a4b1dd283bdebae198ec09778d0e",
+          "installed_record_sha256": "8544d83ffd12f5d69ded2ccc7ef981eb54afe9e76b64dc83ed9d0e379f022e95",
+          "name": "typer-slim",
+          "original_record_sha256": "bdba85c398ff5629d3428c0d6ba119478e8dd0c9de026884e562e669beebc88d",
+          "source_members": 5,
+          "version": "0.24.0"
+        },
+        {
+          "archive_sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "installed_record_sha256": "200f8fda9df97d9d2936ecbcc1db5a072b62ea711c6ec4d5fe055b9f5e91c8c9",
+          "name": "typing-extensions",
+          "original_record_sha256": "44dcf97810bea7b84bcd83890b6674bbcc2f4c5ef899a4887f15d524bdf6bb97",
+          "source_members": 5,
+          "version": "4.16.0"
+        },
+        {
+          "archive_sha256": "65b8397ba37ccbce054456aaccddfc91e6e3083c92824df348d96ca832f3f147",
+          "installed_record_sha256": "c87062d3d3e58d1ff3d51d23a8b4c60928152394096d92e788d80e5d4a7b45f3",
+          "name": "typing-inspection",
+          "original_record_sha256": "9bb32e43a7b1ef8c82b8f855089cecfea282157ab49728812a464e41200fee6a",
+          "source_members": 9,
+          "version": "0.4.4"
+        },
+        {
+          "archive_sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+          "installed_record_sha256": "336bf46f4aef0c221a26e4efbba6adc93d49218f17bd9a8b4d48cb2c53d77b8b",
+          "name": "urllib3",
+          "original_record_sha256": "04e66961a9e3616bd8d221103dc1c9cdca4a23dc86c71bbfa9e8dc4022b3009e",
+          "source_members": 42,
+          "version": "2.8.0"
+        },
+        {
+          "archive_sha256": "f76e16e8f7e79f8c4c8be49b4024ac725713ab10cd7f19350ad18a8e3f71728c",
+          "installed_record_sha256": "15c1c2c0cee454a8fc5578e8b62e7d23dae031fd88fe3868611ecf7a30664eeb",
+          "name": "wasabi",
+          "original_record_sha256": "7c19eb4dea902fcfa251d438bcd85c362aacc0adab59611f9a63cf23157f7740",
+          "source_members": 22,
+          "version": "1.1.3"
+        },
+        {
+          "archive_sha256": "08f65b5d0dbded4879e08a64882de9b9514753d9eaa4c4e2a576e33666ac12cf",
+          "installed_record_sha256": "48ffea0f6baebb372ba8c026cab7a74b3518bef2fba683109cc7408076694399",
+          "name": "weasel",
+          "original_record_sha256": "7570b553aa1b75feabc6967b9882d269362be56c556e2eb7f9322f42fd4da70b",
+          "source_members": 44,
+          "version": "0.4.3"
+        },
+        {
+          "archive_sha256": "53e15cd74bd6b84d7fa90b93dda7334d85f4641fae97632de8aa61d268dfd145",
+          "installed_record_sha256": "ab350c74437f47caa3e40dc494a1c25ef91349b01dc0b0e0fff5063209ce28be",
+          "name": "wrapt",
+          "original_record_sha256": "b2b62cbbd1fc50fbd7637138d9d397cffd2c4f4c8d46f5c428cc504c62307400",
+          "source_members": 21,
+          "version": "2.4.1"
+        }
+      ]
+    },
+    "report_sha256": "9d0b00d8d246933d260a429ba18c3befa934f22b767d1ce1a48dfe0480a09d34"
+  },
+  "independent_verification": {
+    "exit_code": 0,
+    "invocation": "Separate build-Python process: verify_python_install.py --prefix <assembled-prefix> --expected-manifest-sha256 <assembly-manifest-digest>",
+    "report": {
+      "bytes": 601821300,
+      "complete_release": false,
+      "files": 11320,
+      "installation_state": "assembled-unexecuted",
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+      "package_code_executed": false,
+      "runtime_components_satisfied": [],
+      "verified": true,
+      "wheels": 58
+    },
+    "report_sha256": "1b922e3201e78fdf03e87a9adaa0d03190c608eaaa3933f38b8d60cc973d780b"
+  },
+  "inputs": {
+    "installation_plan_sha256": "849ad7b775879f7e8f213af11f1421ad75d30019ed6aab3c35e047a8a50b9b59",
+    "runtime_manifest_sha256": "6b4edce6755094b4f8393d5553da9a6968ac18b761035616430aaed7dbb0be95",
+    "wheel_archives": 58,
+    "wheel_bytes": 94887529,
+    "wheel_selection_sha256": "983ac846a79e4985218b3f2582445abeac18de90fc3108c06fcb29b60928580e"
+  },
+  "issue": "EW-07/#11",
+  "limitations": [
+    "Complete file integrity and installed RECORDs do not establish imports, dynamic loading, required plugins, signing, isolation or supported OS.",
+    "No pip/uv/package installer scripts/subprocess or candidate interpreter was invoked. Original wheel archive containers remain external immutable inputs; member bytes and original RECORDs are retained.",
+    "The .pth file is preserved but never processed,12 primary console wrappers remain ungenerated, and no bootstrap is staged.",
+    "POSIX tests ran on the development Mac; Windows/Intel Mac/minimum macOS support is unverified.",
+    "Runtime metadata still references absent LICENSE.zlib-ng.txt; available notices are preserved without a completeness claim.",
+    "Proposed confined execution remains a separate reviewed task; no canonical worker adapter activation."
+  ],
+  "network_used": false,
+  "output": {
+    "additional_notice_copies": 105,
+    "bootstrap_staged": false,
+    "bytes": 601821300,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_bytes": 3048533,
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "new_bytecode_generated": 0,
+    "new_wrappers_generated": 0,
+    "original_primary_metadata_files": 174,
+    "provenance_bytes": 1014797,
+    "provenance_sha256": "f8b07e29705ec9af33d7f5506eabc361dc40a069a544de3db1858b0774cd6659",
+    "pth_sha256": "2638ce9e2500e572a5e0de7faed6661eb569d1b696fcba07b0dd223da5f5d224",
+    "runtime_licence_files": 19,
+    "source_member_rows": 7705,
+    "wheels": 58
+  },
+  "package_code_executed": false,
+  "primary_source_anchor": {
+    "role": "Retained upstream pip source describing installation paths and RECORD mapping; inspected as data, not imported.",
+    "runtime_relative_path": "install/lib/python3.13/site-packages/pip/_internal/operations/install/wheel.py",
+    "sha256": "aa11702524a12e6e2ab98f3322cb3fb7e6df7f4615e3d1d334029fbb87d2a627"
+  },
+  "recorded_date_utc": "2026-09-25",
+  "release_gate_evidence": false,
+  "runtime_components_satisfied": [],
+  "schema_version": 1,
+  "scope": "Finite offline prefix assembly; no candidate interpreter or package execution",
+  "source": {
+    "base_commit": "2de51486c525161d8a5c21ec5bf1f232ec5f3116",
+    "binding": "Uncommitted installer/verifier/tests are bound to exact source-file digests; this is not clean-commit release evidence.",
+    "files": {
+      "packaging/plans/python-install-macos-arm64.v1.json": "849ad7b775879f7e8f213af11f1421ad75d30019ed6aab3c35e047a8a50b9b59",
+      "packaging/plans/python-macos-arm64-wheels.v1.json": "983ac846a79e4985218b3f2582445abeac18de90fc3108c06fcb29b60928580e",
+      "scripts/inspect_python_native_layout.py": "faee5b7d4afa9c8ea1bb4976ae4e2e5d2a3230a565c1c3927cb03aaa1dd9a940",
+      "scripts/install_python_offline.py": "ab9e13018b58959489841cefe49284262afe6456bdcbf86afb23bd0956f2d15d",
+      "scripts/stage_python_runtime.py": "27e73847781debd137bb1b1052c502dae556d4f5827be8032690e243d7db808a",
+      "scripts/stage_python_wheelhouse.py": "4710287d53efa5e1f4af71419e7a2e6b8fd5cce6cdebd027f82e8fd141716d2b",
+      "scripts/tests/test_python_offline_install.py": "b9fec40ce0d3fe229d2a0cc6bbf4782cf9f29898816ac9d8d5ae42ff99327ebf",
+      "scripts/verify_python_install.py": "0a91737064f1add1ebe36ee8e17bda9ba6b29d3afbf34126bbcc1001cd0a46bd",
+      "scripts/verify_runtime_bundle.py": "0e72dd2766c432e23093267ce2e831829f2a1b883df1cc581d16aaf54d27f327",
+      "workers/python/pyproject.toml": "a6b11f5ca5d427d963be6f63dd62c4c40f602c14e3252447a04be109de0b5375",
+      "workers/python/uv.lock": "5fe63f3b0597df585840b9e6757c87a76754b52aa1570cb401cb48113ac81eb4"
+    }
+  },
+  "tests": [
+    {
+      "exit_code": 0,
+      "optimized": false,
+      "passed": 21,
+      "python": "3.13.11",
+      "skipped": 0,
+      "tests": 21
+    },
+    {
+      "exit_code": 0,
+      "optimized": true,
+      "passed": 21,
+      "python": "3.13.11",
+      "skipped": 0,
+      "tests": 21
+    },
+    {
+      "exit_code": 0,
+      "optimized": false,
+      "passed": 21,
+      "python": "3.14.2",
+      "skipped": 0,
+      "tests": 21
+    },
+    {
+      "exit_code": 0,
+      "optimized": true,
+      "passed": 21,
+      "python": "3.14.2",
+      "skipped": 0,
+      "tests": 21
+    }
+  ]
+}

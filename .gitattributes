@@ -2,3 +2,7 @@
 *.png binary
 *.ico binary
 *.icns binary
+# Retain the exact downloaded Windows receipt bytes for its published SHA-256.
+/docs/security/verification/windows-parser-coordinator-2026-09-25.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/docs/security/verification/windows-parser-coordinator-bdc15be-2026-09-25.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/docs/security/verification/windows-parser-coordinator-dbec31f-2026-09-25.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

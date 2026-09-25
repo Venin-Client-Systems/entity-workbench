@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "complete_release": false,
+  "campaign_id": "18aefa1f-e1f6-49e8-8210-38f3c5a9fda6",
+  "native_source": "439b772798e34e2d7f2b5352e7b167e9563b6813",
+  "native_report_sha256": "3ff6b6e1ec437990b766ea8cb584f8b12f1ff01ac0b69678181e7799acdcc2b4",
+  "native_root_audit_sha256": "6545dbab5256085614ddc142ed469db1d08f95a054fd68d3bec0acecbfee6134",
+  "native_elapsed_ms": 17688,
+  "runtime_inventory_sha256": "a34ea61a64a823ea77180079126c9eba9b2da801ab3c48fc4962acad23c35570",
+  "preparation_source": "5a5b92e63edbed835d66eb0e2eb68bd67149ece5",
+  "preparation_receipt_sha256": "668d0b14e870bcab2ea70053a74cf5d50bd6dc9f31852d0f3fcfcca74dca4de4",
+  "producer_source": "6c467bd894356553fbca60f0d580006be9e50dd1",
+  "producer_receipt_sha256": "77ffde0f390bb06bf40be906f324ded6acabf3ea7124f5cc0a507575af597ad8",
+  "worker": {
+    "bytes": 74334,
+    "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+  },
+  "both_producer_outputs_equal_executed_worker": true,
+  "java_source_files_equal_at_producer_and_native_source": 20,
+  "jre_and_dependencies_rebuilt_from_source": false,
+  "only_replaced_runtime_path": "search/workers-0.1.0.jar",
+  "limits": {
+    "recipe_entries": 5,
+    "worker_seconds": 30,
+    "outer_native_seconds": 180,
+    "offline_build_seconds": 600,
+    "owned_process_stop_seconds": 5,
+    "retries": 0
+  },
+  "scope": "One bounded-capture development Mac campaign; no complete package, ranking, broad-web or release claim",
+  "source_files_checked": 413,
+  "binary_sha256": "032d664e8876b15797e11619fb7662eb54c3728314714ca571bdf4058ad0990a"
+}

@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "direct-discovery-v1",
+  "material": "public_reference",
+  "frozen_at": "2026-09-24T00:00:00Z",
+  "collection_window_days": 14,
+  "limits": {
+    "max_hops": 2,
+    "max_requests": 50,
+    "max_seconds": 600
+  },
+  "thresholds": {
+    "relevant_percent": 60,
+    "expansion_percent": 30
+  },
+  "publishers": [
+    {
+      "id": "nasa",
+      "name": "NASA",
+      "domain": "nasa.gov",
+      "independence_group": "nasa",
+      "seed_url": "https://www.nasa.gov/missions/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "esa",
+      "name": "European Space Agency",
+      "domain": "esa.int",
+      "independence_group": "esa",
+      "seed_url": "https://www.esa.int/Science_Exploration",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "noaa",
+      "name": "National Oceanic and Atmospheric Administration",
+      "domain": "noaa.gov",
+      "independence_group": "noaa",
+      "seed_url": "https://www.noaa.gov/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "usgs",
+      "name": "United States Geological Survey",
+      "domain": "usgs.gov",
+      "independence_group": "usgs",
+      "seed_url": "https://www.usgs.gov/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "cern",
+      "name": "CERN",
+      "domain": "home.cern",
+      "independence_group": "cern",
+      "seed_url": "https://home.cern/science/experiments",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "eso",
+      "name": "European Southern Observatory",
+      "domain": "eso.org",
+      "independence_group": "eso",
+      "seed_url": "https://www.eso.org/public/teles-instr/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "british-museum",
+      "name": "British Museum",
+      "domain": "britishmuseum.org",
+      "independence_group": "british-museum",
+      "seed_url": "https://www.britishmuseum.org/collection",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "australian-museum",
+      "name": "Australian Museum",
+      "domain": "australian.museum",
+      "independence_group": "australian-museum",
+      "seed_url": "https://australian.museum/learn/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "royal-society",
+      "name": "Royal Society",
+      "domain": "royalsociety.org",
+      "independence_group": "royal-society",
+      "seed_url": "https://royalsociety.org/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "national-gallery",
+      "name": "National Gallery",
+      "domain": "nationalgallery.org.uk",
+      "independence_group": "national-gallery",
+      "seed_url": "https://www.nationalgallery.org.uk/",
+      "access_review": "required_before_each_run"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "discovery-01",
+      "publisher_id": "nasa",
+      "input_kind": "organisation",
+      "query": "Artemis",
+      "question": "Identify the organisation and stated purpose of the Artemis programme.",
+      "relevance_criterion": "An official NASA source explicitly identifies Artemis and its exploration purpose.",
+      "expansion_criterion": "Follow a discovered mission or spacecraft identifier to a separate official programme or mission page."
+    },
+    {
+      "id": "discovery-02",
+      "publisher_id": "nasa",
+      "input_kind": "name",
+      "query": "Webb",
+      "question": "Resolve the name Webb in the context of a space observatory.",
+      "relevance_criterion": "An official NASA source identifies the James Webb Space Telescope rather than an unrelated use of Webb.",
+      "expansion_criterion": "Follow a discovered instrument, mission partner or observing programme identifier to a distinct supporting page."
+    },
+    {
+      "id": "discovery-03",
+      "publisher_id": "nasa",
+      "input_kind": "domain",
+      "query": "nasa.gov",
+      "question": "Discover a NASA Earth-observation mission and a further programme lead.",
+      "relevance_criterion": "An official NASA source names an Earth-observation mission and explains its role.",
+      "expansion_criterion": "Follow the newly identified mission, instrument or data programme to a separate official source."
+    },
+    {
+      "id": "discovery-04",
+      "publisher_id": "esa",
+      "input_kind": "organisation",
+      "query": "Euclid",
+      "question": "Identify the Euclid mission and its organising agency.",
+      "relevance_criterion": "An official ESA source identifies Euclid as a space mission and states its scientific purpose.",
+      "expansion_criterion": "Follow a discovered instrument or project identifier to a separate official source."
+    },
+    {
+      "id": "discovery-05",
+      "publisher_id": "esa",
+      "input_kind": "name",
+      "query": "Gaia",
+      "question": "Resolve Gaia in the context of astronomical observation.",
+      "relevance_criterion": "An official ESA source identifies the Gaia mission and distinguishes it from unrelated uses of the name.",
+      "expansion_criterion": "Follow an identified data release, instrument or science programme to a distinct official page."
+    },
+    {
+      "id": "discovery-06",
+      "publisher_id": "esa",
+      "input_kind": "domain",
+      "query": "esa.int",
+      "question": "Discover an ESA planetary mission and a related lead.",
+      "relevance_criterion": "An official ESA source names a planetary exploration mission and its target.",
+      "expansion_criterion": "Follow a discovered mission instrument or operation identifier to a separate source."
+    },
+    {
+      "id": "discovery-07",
+      "publisher_id": "noaa",
+      "input_kind": "organisation",
+      "query": "Ocean Exploration",
+      "question": "Identify the NOAA ocean-exploration programme and its purpose.",
+      "relevance_criterion": "An official NOAA source identifies its ocean-exploration programme and its responsibilities.",
+      "expansion_criterion": "Follow a discovered vessel, expedition or project identifier to a distinct official page."
+    },
+    {
+      "id": "discovery-08",
+      "publisher_id": "noaa",
+      "input_kind": "name",
+      "query": "Coral Reef Watch",
+      "question": "Resolve the name Coral Reef Watch and its monitoring purpose.",
+      "relevance_criterion": "An official NOAA source names Coral Reef Watch and describes its monitoring function.",
+      "expansion_criterion": "Follow a discovered product or monitoring programme identifier to a separate official source."
+    },
+    {
+      "id": "discovery-09",
+      "publisher_id": "noaa",
+      "input_kind": "domain",
+      "query": "noaa.gov",
+      "question": "Discover a NOAA weather-observation programme and a further lead.",
+      "relevance_criterion": "An official NOAA source names a weather-observation programme and explains what it observes.",
+      "expansion_criterion": "Follow a discovered platform, product or observing network identifier to another official page."
+    },
+    {
+      "id": "discovery-10",
+      "publisher_id": "usgs",
+      "input_kind": "organisation",
+      "query": "Earthquake Hazards",
+      "question": "Identify the USGS earthquake-hazards programme and its role.",
+      "relevance_criterion": "An official USGS source identifies the Earthquake Hazards Program and its responsibilities.",
+      "expansion_criterion": "Follow a discovered monitoring network, product or project identifier to a separate official source."
+    },
+    {
+      "id": "discovery-11",
+      "publisher_id": "usgs",
+      "input_kind": "name",
+      "query": "Landsat",
+      "question": "Resolve Landsat in the context of Earth observation.",
+      "relevance_criterion": "An official USGS source identifies the Landsat programme and its role in Earth observation.",
+      "expansion_criterion": "Follow a discovered satellite, sensor or data product identifier to a distinct official page."
+    },
+    {
+      "id": "discovery-12",
+      "publisher_id": "usgs",
+      "input_kind": "domain",
+      "query": "usgs.gov",
+      "question": "Discover a USGS water-observation programme and a further lead.",
+      "relevance_criterion": "An official USGS source names a water-observation programme or network and its role.",
+      "expansion_criterion": "Follow a discovered station, network or dataset identifier to a separate official page."
+    },
+    {
+      "id": "discovery-13",
+      "publisher_id": "cern",
+      "input_kind": "organisation",
+      "query": "ATLAS",
+      "question": "Identify the ATLAS experiment and its institutional context.",
+      "relevance_criterion": "An official CERN source identifies ATLAS as a particle-physics experiment and locates it in the CERN context.",
+      "expansion_criterion": "Follow a discovered accelerator, detector or collaboration identifier to a separate official source."
+    },
+    {
+      "id": "discovery-14",
+      "publisher_id": "cern",
+      "input_kind": "name",
+      "query": "ALICE",
+      "question": "Resolve ALICE in the context of particle physics.",
+      "relevance_criterion": "An official CERN source identifies the ALICE experiment and its scientific purpose.",
+      "expansion_criterion": "Follow a discovered detector, accelerator or programme identifier to a distinct official page."
+    },
+    {
+      "id": "discovery-15",
+      "publisher_id": "cern",
+      "input_kind": "domain",
+      "query": "home.cern",
+      "question": "Discover a CERN accelerator programme and a further lead.",
+      "relevance_criterion": "An official CERN source identifies an accelerator programme and its purpose.",
+      "expansion_criterion": "Follow a discovered experiment, facility or accelerator identifier to a separate source."
+    },
+    {
+      "id": "discovery-16",
+      "publisher_id": "eso",
+      "input_kind": "organisation",
+      "query": "Extremely Large Telescope",
+      "question": "Identify the Extremely Large Telescope project and its organisation.",
+      "relevance_criterion": "An official ESO source identifies the telescope project and its institutional context.",
+      "expansion_criterion": "Follow a discovered instrument, site or project identifier to a separate official source."
+    },
+    {
+      "id": "discovery-17",
+      "publisher_id": "eso",
+      "input_kind": "name",
+      "query": "Paranal",
+      "question": "Resolve Paranal in the context of astronomical facilities.",
+      "relevance_criterion": "An official ESO source identifies Paranal as an observatory site and describes its role.",
+      "expansion_criterion": "Follow a discovered telescope or instrument identifier to a distinct official page."
+    },
+    {
+      "id": "discovery-18",
+      "publisher_id": "eso",
+      "input_kind": "domain",
+      "query": "eso.org",
+      "question": "Discover an ESO instrument and a related telescope lead.",
+      "relevance_criterion": "An official ESO source names an instrument and describes its observational purpose.",
+      "expansion_criterion": "Follow the newly identified telescope, instrument programme or facility to another official page."
+    },
+    {
+      "id": "discovery-19",
+      "publisher_id": "british-museum",
+      "input_kind": "organisation",
+      "query": "British Museum collection",
+      "question": "Identify the museum collection and one documented collection area.",
+      "relevance_criterion": "An official museum source identifies a collection area and describes its scope.",
+      "expansion_criterion": "Follow a discovered collection, object or research project identifier to a separate official source."
+    },
+    {
+      "id": "discovery-20",
+      "publisher_id": "british-museum",
+      "input_kind": "name",
+      "query": "Rosetta Stone",
+      "question": "Resolve the Rosetta Stone as an object in a museum collection.",
+      "relevance_criterion": "An official British Museum source identifies the object and its collection context.",
+      "expansion_criterion": "Follow a discovered collection identifier, related object or research topic to a distinct official page."
+    },
+    {
+      "id": "discovery-21",
+      "publisher_id": "british-museum",
+      "input_kind": "domain",
+      "query": "britishmuseum.org",
+      "question": "Discover a museum research programme and a further lead.",
+      "relevance_criterion": "An official museum source names a research programme or project and its purpose.",
+      "expansion_criterion": "Follow a discovered project, collection or institutional partner identifier to another official page."
+    },
+    {
+      "id": "discovery-22",
+      "publisher_id": "australian-museum",
+      "input_kind": "organisation",
+      "query": "Australian Museum Research Institute",
+      "question": "Identify the research institute and its institutional role.",
+      "relevance_criterion": "An official Australian Museum source identifies its research institute and its purpose.",
+      "expansion_criterion": "Follow a discovered research programme or collection identifier to a separate official source."
+    },
+    {
+      "id": "discovery-23",
+      "publisher_id": "australian-museum",
+      "input_kind": "name",
+      "query": "FrogID",
+      "question": "Resolve FrogID as a named scientific programme.",
+      "relevance_criterion": "An official Australian Museum source identifies FrogID and describes its scientific purpose.",
+      "expansion_criterion": "Follow a discovered project, dataset or related research identifier to a distinct official page."
+    },
+    {
+      "id": "discovery-24",
+      "publisher_id": "australian-museum",
+      "input_kind": "domain",
+      "query": "australian.museum",
+      "question": "Discover a museum biodiversity programme and a related lead.",
+      "relevance_criterion": "An official museum source names a biodiversity research or collection programme.",
+      "expansion_criterion": "Follow a discovered project, collection or public resource identifier to a separate official source."
+    },
+    {
+      "id": "discovery-25",
+      "publisher_id": "royal-society",
+      "input_kind": "organisation",
+      "query": "Royal Society grants",
+      "question": "Identify a Royal Society research-funding scheme and its purpose.",
+      "relevance_criterion": "An official Royal Society source identifies a named funding scheme and its research purpose.",
+      "expansion_criterion": "Follow a discovered scheme, institutional partner or related programme identifier to a separate official source."
+    },
+    {
+      "id": "discovery-26",
+      "publisher_id": "royal-society",
+      "input_kind": "name",
+      "query": "Summer Science Exhibition",
+      "question": "Resolve Summer Science Exhibition in the Royal Society context.",
+      "relevance_criterion": "An official Royal Society source identifies the exhibition and its public-science purpose.",
+      "expansion_criterion": "Follow a discovered exhibit, programme or participating institution identifier to a distinct official page."
+    },
+    {
+      "id": "discovery-27",
+      "publisher_id": "royal-society",
+      "input_kind": "domain",
+      "query": "royalsociety.org",
+      "question": "Discover a Royal Society scientific programme and a related lead.",
+      "relevance_criterion": "An official Royal Society source names a scientific programme, meeting series or research initiative.",
+      "expansion_criterion": "Follow a discovered programme or project identifier to another official source."
+    },
+    {
+      "id": "discovery-28",
+      "publisher_id": "national-gallery",
+      "input_kind": "organisation",
+      "query": "National Gallery research",
+      "question": "Identify a National Gallery research programme and its role.",
+      "relevance_criterion": "An official gallery source identifies a research programme or project and explains its purpose.",
+      "expansion_criterion": "Follow a discovered project, collection or research partner identifier to a separate official source."
+    },
+    {
+      "id": "discovery-29",
+      "publisher_id": "national-gallery",
+      "input_kind": "name",
+      "query": "Scientific Department",
+      "question": "Resolve Scientific Department in the National Gallery context.",
+      "relevance_criterion": "An official gallery source identifies its scientific research department and its responsibilities.",
+      "expansion_criterion": "Follow a discovered research technique, programme or project identifier to a distinct official page."
+    },
+    {
+      "id": "discovery-30",
+      "publisher_id": "national-gallery",
+      "input_kind": "domain",
+      "query": "nationalgallery.org.uk",
+      "question": "Discover a gallery collection resource and a further research lead.",
+      "relevance_criterion": "An official gallery source identifies a collection resource and its subject.",
+      "expansion_criterion": "Follow a discovered collection, conservation or research project identifier to another official page."
+    }
+  ]
+}

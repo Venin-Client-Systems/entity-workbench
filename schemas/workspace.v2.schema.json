@@ -1,0 +1,1254 @@
+{
+  "$defs": {
+    "Acquisition": {
+      "additionalProperties": false,
+      "properties": {
+        "job_id": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "url",
+        "retrieved_at"
+      ],
+      "type": "object"
+    },
+    "AddressAssociation": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "$ref": "#/$defs/SourceAnchor"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "latitude": {
+          "format": "double",
+          "type": "number"
+        },
+        "longitude": {
+          "format": "double",
+          "type": "number"
+        },
+        "uncertainty_m": {
+          "format": "double",
+          "type": "number"
+        },
+        "valid_from": {
+          "type": "string"
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "entity_id",
+        "label",
+        "latitude",
+        "longitude",
+        "valid_from",
+        "uncertainty_m",
+        "anchor"
+      ],
+      "type": "object"
+    },
+    "AmountMapping": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "column": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "signed",
+              "type": "string"
+            },
+            "positive_is_debit": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "kind",
+            "column",
+            "positive_is_debit"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "credit": {
+              "type": "string"
+            },
+            "debit": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "debit_credit",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "debit",
+            "credit"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Assertion": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "observation_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "predicate": {
+          "type": "string"
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "subject_id": {
+          "type": "string"
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "subject_id",
+        "predicate",
+        "object_id",
+        "observation_ids",
+        "confidence",
+        "review"
+      ],
+      "type": "object"
+    },
+    "Channel": {
+      "enum": [
+        "in_person",
+        "online",
+        "unknown"
+      ],
+      "type": "string"
+    },
+    "CollectionJob": {
+      "additionalProperties": false,
+      "properties": {
+        "adapters": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "max_hops": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_requests": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_seconds": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "queries": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "requests_used": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "state": {
+          "$ref": "#/$defs/JobState"
+        }
+      },
+      "required": [
+        "id",
+        "queries",
+        "adapters",
+        "max_hops",
+        "max_requests",
+        "max_seconds",
+        "requests_used",
+        "state",
+        "detail"
+      ],
+      "type": "object"
+    },
+    "DateFormat": {
+      "enum": [
+        "iso",
+        "day_first",
+        "month_first"
+      ],
+      "type": "string"
+    },
+    "Delimiter": {
+      "enum": [
+        "comma",
+        "semicolon",
+        "tab"
+      ],
+      "type": "string"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "identifiers": {
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/EntityKind"
+        },
+        "merged_into": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "identifiers"
+      ],
+      "type": "object"
+    },
+    "EntityKind": {
+      "enum": [
+        "person",
+        "organisation",
+        "group",
+        "account",
+        "place",
+        "digital_identifier"
+      ],
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "acquisitions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Acquisition"
+          },
+          "type": "array"
+        },
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "extraction_status": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "imported_at": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "origin_group": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sha256",
+        "bytes",
+        "media_type",
+        "origin_group",
+        "imported_at",
+        "extraction_status"
+      ],
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment": {
+          "type": "string"
+        },
+        "contradicting_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limitations": {
+          "type": "string"
+        },
+        "needs_review": {
+          "type": "boolean"
+        },
+        "supporting_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "assessment",
+        "supporting_ids",
+        "contradicting_ids",
+        "limitations",
+        "needs_review"
+      ],
+      "type": "object"
+    },
+    "Hypothesis": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "gaps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "proposition": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "question",
+        "proposition",
+        "alternatives",
+        "gaps"
+      ],
+      "type": "object"
+    },
+    "Identifier": {
+      "additionalProperties": false,
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "value"
+      ],
+      "type": "object"
+    },
+    "IdentityDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "left_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/IdentityOutcome"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "right_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "left_id",
+        "right_id",
+        "outcome",
+        "reason",
+        "at"
+      ],
+      "type": "object"
+    },
+    "IdentityOutcome": {
+      "enum": [
+        "keep_separate",
+        "defer"
+      ],
+      "type": "string"
+    },
+    "JobState": {
+      "enum": [
+        "queued",
+        "running",
+        "blocked",
+        "quota_exhausted",
+        "failed",
+        "successful_no_results",
+        "successful",
+        "cancelled"
+      ],
+      "type": "string"
+    },
+    "Lead": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "identifier": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/ReviewState"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "identifier",
+        "state"
+      ],
+      "type": "object"
+    },
+    "MerchantLocation": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "$ref": "#/$defs/SourceAnchor"
+        },
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel"
+        },
+        "id": {
+          "type": "string"
+        },
+        "latitude": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "longitude": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "merchant": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "type": "string"
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "uncertainty_m": {
+          "format": "double",
+          "type": "number"
+        },
+        "valid_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "valid_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "transaction_id",
+        "merchant",
+        "channel",
+        "uncertainty_m",
+        "retrieved_at",
+        "anchor",
+        "review"
+      ],
+      "type": "object"
+    },
+    "MergeDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reversed": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "target",
+        "reason",
+        "reversed"
+      ],
+      "type": "object"
+    },
+    "NumberFormat": {
+      "enum": [
+        "dot_decimal",
+        "comma_decimal"
+      ],
+      "type": "string"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "$ref": "#/$defs/SourceAnchor"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "extraction_quality": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "entity_id",
+        "field",
+        "value",
+        "anchor",
+        "review"
+      ],
+      "type": "object"
+    },
+    "ReportSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "html": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "workspace_revision",
+        "created_at",
+        "sha256",
+        "html"
+      ],
+      "type": "object"
+    },
+    "ReviewDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "target_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "target_id",
+        "state",
+        "reason",
+        "at"
+      ],
+      "type": "object"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "RowOrder": {
+      "enum": [
+        "oldest_first",
+        "newest_first"
+      ],
+      "type": "string"
+    },
+    "SourceAnchor": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "text",
+              "type": "string"
+            },
+            "line_end": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "line_start": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "line_start",
+            "line_end"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "page",
+              "type": "string"
+            },
+            "page": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "region": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4,
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "page"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "column": {
+              "type": "string"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "cell",
+              "type": "string"
+            },
+            "row": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sheet": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "sheet",
+            "row",
+            "column"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "message",
+              "type": "string"
+            },
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "message_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "capture",
+              "type": "string"
+            },
+            "selector": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "selector"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "StatementImport": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "type": "string"
+        },
+        "imported_at": {
+          "type": "string"
+        },
+        "mapping": {
+          "$ref": "#/$defs/StatementMapping"
+        },
+        "profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "transaction_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "mapping",
+        "transaction_ids",
+        "imported_at"
+      ],
+      "type": "object"
+    },
+    "StatementMapping": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "$ref": "#/$defs/ValueMapping"
+        },
+        "amount": {
+          "$ref": "#/$defs/AmountMapping"
+        },
+        "balance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "$ref": "#/$defs/ValueMapping"
+        },
+        "date": {
+          "type": "string"
+        },
+        "date_format": {
+          "$ref": "#/$defs/DateFormat"
+        },
+        "delimiter": {
+          "$ref": "#/$defs/Delimiter"
+        },
+        "description": {
+          "type": "string"
+        },
+        "number_format": {
+          "$ref": "#/$defs/NumberFormat"
+        },
+        "posting_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "row_order": {
+          "$ref": "#/$defs/RowOrder"
+        }
+      },
+      "required": [
+        "delimiter",
+        "date_format",
+        "number_format",
+        "row_order",
+        "date",
+        "description",
+        "amount",
+        "account",
+        "currency"
+      ],
+      "type": "object"
+    },
+    "StatementProfile": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "mapping": {
+          "$ref": "#/$defs/StatementMapping"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "mapping",
+        "created_at"
+      ],
+      "type": "object"
+    },
+    "Transaction": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/SourceAnchor"
+        },
+        "balance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "duplicate_candidates": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "merchant": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "posting_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "transfer_peer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "account",
+        "date",
+        "description",
+        "amount",
+        "currency",
+        "anchor",
+        "review",
+        "duplicate_candidates",
+        "version"
+      ],
+      "type": "object"
+    },
+    "ValueMapping": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "column": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "column",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "column"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "kind": {
+              "const": "constant",
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "value"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "addresses": {
+      "items": {
+        "$ref": "#/$defs/AddressAssociation"
+      },
+      "type": "array"
+    },
+    "assertions": {
+      "items": {
+        "$ref": "#/$defs/Assertion"
+      },
+      "type": "array"
+    },
+    "decisions": {
+      "items": {
+        "$ref": "#/$defs/ReviewDecision"
+      },
+      "type": "array"
+    },
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/Entity"
+      },
+      "type": "array"
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "type": "array"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "type": "array"
+    },
+    "hypotheses": {
+      "items": {
+        "$ref": "#/$defs/Hypothesis"
+      },
+      "type": "array"
+    },
+    "identity_decisions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/IdentityDecision"
+      },
+      "type": "array"
+    },
+    "jobs": {
+      "items": {
+        "$ref": "#/$defs/CollectionJob"
+      },
+      "type": "array"
+    },
+    "leads": {
+      "items": {
+        "$ref": "#/$defs/Lead"
+      },
+      "type": "array"
+    },
+    "locations": {
+      "items": {
+        "$ref": "#/$defs/MerchantLocation"
+      },
+      "type": "array"
+    },
+    "merges": {
+      "items": {
+        "$ref": "#/$defs/MergeDecision"
+      },
+      "type": "array"
+    },
+    "observations": {
+      "items": {
+        "$ref": "#/$defs/Observation"
+      },
+      "type": "array"
+    },
+    "reports": {
+      "items": {
+        "$ref": "#/$defs/ReportSnapshot"
+      },
+      "type": "array"
+    },
+    "revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "statement_imports": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StatementImport"
+      },
+      "type": "array"
+    },
+    "statement_profiles": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/StatementProfile"
+      },
+      "type": "array"
+    },
+    "transactions": {
+      "items": {
+        "$ref": "#/$defs/Transaction"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "revision",
+    "entities",
+    "evidence",
+    "observations",
+    "assertions",
+    "transactions",
+    "addresses",
+    "locations",
+    "leads",
+    "jobs",
+    "findings",
+    "hypotheses",
+    "decisions",
+    "merges",
+    "reports"
+  ],
+  "title": "WorkspaceView",
+  "type": "object"
+}

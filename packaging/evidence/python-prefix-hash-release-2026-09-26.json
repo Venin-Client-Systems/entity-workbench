@@ -1,0 +1,84 @@
+{
+  "build_profile": "release",
+  "campaign_id": "83358d82-6ac2-4af1-a6df-893e37129e6d",
+  "candidate_started": false,
+  "case": "measure",
+  "complete_release": false,
+  "failure": null,
+  "native": {
+    "build_profile": "release",
+    "campaign_id": "83358d82-6ac2-4af1-a6df-893e37129e6d",
+    "candidate_executed": false,
+    "complete_release": false,
+    "debug_assertions": false,
+    "elapsed_ms": 7432,
+    "failure": null,
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "measurement_id": "d8f02a43-cd77-4e27-9004-46e4c4445139",
+    "passed": true,
+    "recipe": "trusted-prefix-hash-v1",
+    "schema_version": 1
+  },
+  "native_binary_sha256": "e2b40682fe1891163bca734080483dfc52fd46261ec6393db2e032029fecb28f",
+  "native_report_sha256": "238cfaaf36caadb96fcf9087bc907a780e3a014604eb3eea46310e4cf8413661",
+  "native_test": "engines::supervision::python_probe::native_python_prefix_hash_measurement",
+  "native_test_started": true,
+  "observed_at": "2026-09-25T14:35:05.898148+00:00",
+  "original_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "passed": true,
+  "phase": "complete",
+  "platform": {
+    "architecture": "arm64",
+    "os": "Darwin",
+    "version": "26.6.2"
+  },
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "schema_version": 1,
+  "source": {
+    "commit": "b502d987c5caa30e5c6cb16f75040cee69639437",
+    "files": {
+      "Cargo.lock": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+      "Cargo.toml": "89847b7032161f966c912e89558392b084a9380c69b8a6185148909ef579d8c1",
+      "crates/core/src/engines/supervision.rs": "f597996166b4f709893a18fceafcbc65559953cce423c754fd214fc75df08bb8",
+      "crates/core/src/engines/supervision/python_probe.rs": "052cfbc2a15dfb8ca77c2e76701c0eb997031baa2054e8aa8686445401caf521",
+      "crates/core/src/engines/supervision/python_probe/hostile.rs": "e224d3bfcb65186b456665562f6aee5412984ff10b3004e56985e85e06f55566",
+      "crates/core/src/engines/supervision/python_probe/listeners.rs": "0e42e0d9e36bdfde6fd12393be61119e9a2f7b8a805bc3b391f8caaa5874c502",
+      "scripts/install_python_offline.py": "ab9e13018b58959489841cefe49284262afe6456bdcbf86afb23bd0956f2d15d",
+      "scripts/relocate_python_prefix.py": "a38098d0b38ba1e5f939455e8b85522c12d47a417f83405b3d37a2a29c7841c5",
+      "scripts/stage_python_runtime.py": "27e73847781debd137bb1b1052c502dae556d4f5827be8032690e243d7db808a",
+      "scripts/test_python_compatibility.py": "70b4a597a5c72cf6645afa4fc5c73c1bcb677d509929d40d4a3ac57dcefe08d9",
+      "scripts/test_python_isolation.py": "e3255d993d8299076132ede9c6c866ef6bb3a634a021529d820b537e2ce8167c",
+      "scripts/verify_python_install.py": "0a91737064f1add1ebe36ee8e17bda9ba6b29d3afbf34126bbcc1001cd0a46bd",
+      "scripts/verify_runtime_bundle.py": "0e72dd2766c432e23093267ce2e831829f2a1b883df1cc581d16aaf54d27f327",
+      "workers/python/probe/bootstrap.py": "ddc1b57e964fbf864cbdde88f31bf9ff0ebf8cc313235995193571987edc1b75",
+      "workers/python/probe/compatibility.py": "4c0e3b4976c58b7bc3ed466f6c40901bafc5c999a5a5d9039c6bd8f7287815b2",
+      "workers/python/probe/expected.json": "6c88fcf93736dd8a2af9226d3f5317dfb1025ca14e2fe00f0c4cb5b8ebc74aff",
+      "workers/python/probe/fixture.json": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85",
+      "workers/python/probe/hostile.py": "a9bbe45f54da18c3e900ab00dff870df67558e3d639f3ef2e3cd17a583506555",
+      "workers/python/transaction_totals.py": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+    },
+    "parents": [
+      "99bc497a53dca31e8c3f70c27d7dbddacd164bd9"
+    ],
+    "tree": "539a2bb398af32fe535865c3e93d7ea9cf7061e5"
+  },
+  "termination_state": "not-applicable",
+  "unverified": [
+    "Internet-and-DNS-and-IPv6-denial",
+    "hard-RSS-ceiling",
+    "supervisor-crash-termination",
+    "canonical-protocol",
+    "signing-clean-install-platform-matrix",
+    "complete-notices"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "$defs": {
+    "TransactionFacetKind": {
+      "enum": [
+        "account",
+        "currency"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "facet": {
+      "$ref": "#/$defs/TransactionFacetKind"
+    },
+    "page_size": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "facet",
+    "page_size"
+  ],
+  "title": "TransactionFacetRequest",
+  "type": "object"
+}

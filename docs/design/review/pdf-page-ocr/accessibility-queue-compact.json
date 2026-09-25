@@ -1,0 +1,9 @@
+{
+  "scope": "section[aria-label=\"Document jobs\"]",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21aa"
+  ],
+  "violations": []
+}

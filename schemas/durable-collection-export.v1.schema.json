@@ -1,0 +1,69 @@
+{
+  "$defs": {
+    "CollectionExportFile": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "canonical_run_sha256": {
+      "type": "string"
+    },
+    "export_id": {
+      "type": "string"
+    },
+    "job_id": {
+      "type": "string"
+    },
+    "originals": {
+      "items": {
+        "$ref": "#/$defs/CollectionExportFile"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "snapshot": {
+      "$ref": "#/$defs/CollectionExportFile"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "export_id",
+    "job_id",
+    "workspace_revision",
+    "canonical_run_sha256",
+    "snapshot",
+    "originals"
+  ],
+  "title": "DurableCollectionExport",
+  "type": "object"
+}

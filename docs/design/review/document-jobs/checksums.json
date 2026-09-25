@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "purpose": "Synthetic editable-design exports and real-core UI comparison evidence; no release acceptance claim",
+  "files": [
+    {
+      "file": "accessibility-extraction-compact.json",
+      "bytes": 139,
+      "sha256": "36f6f2d1379f04b10c10dbaf7696aad859cebfb7474c361faafb04871d62c7d5"
+    },
+    {
+      "file": "accessibility-extraction-desktop.json",
+      "bytes": 139,
+      "sha256": "36f6f2d1379f04b10c10dbaf7696aad859cebfb7474c361faafb04871d62c7d5"
+    },
+    {
+      "file": "accessibility-job-compact.json",
+      "bytes": 134,
+      "sha256": "01a8de103e66f6b119edc98070086bd86c285463befddf843a43e6fc185b36f6"
+    },
+    {
+      "file": "accessibility-jobs-desktop.json",
+      "bytes": 116,
+      "sha256": "9d35bec93e5f353545a85c9f24a723c3d094f013178a8e1c85990626149bd750"
+    },
+    {
+      "file": "accessibility-retry-desktop.json",
+      "bytes": 140,
+      "sha256": "5bb94f7d4448ffe0ffa5b240db0a13d5edaaa7d84889d5a1bfe594902760db8d"
+    },
+    {
+      "file": "extraction-compact.png",
+      "bytes": 62826,
+      "sha256": "afc77fce9948c25f281e504626090723a8bca8f9205d0326c33e32ac436cd3d4"
+    },
+    {
+      "file": "extraction-desktop.png",
+      "bytes": 84645,
+      "sha256": "f48bc51a697b54f6f0aa5c10223fb68345870eb8802c9f98b1b77bc67eccfc88"
+    },
+    {
+      "file": "extraction-full-surface.png",
+      "bytes": 123210,
+      "sha256": "09f36ba6abd65c434c5172959c5bff3c2ebf9eaf79dfe4c5dc6b61eb937dc240"
+    },
+    {
+      "file": "figma-attempt-controls.png",
+      "bytes": 57012,
+      "sha256": "9e67a335dd13b63b31252270d68ca80769fc341c370cf89cc7363e8cb19ae741"
+    },
+    {
+      "file": "figma-document-jobs.png",
+      "bytes": 67149,
+      "sha256": "eb1acd9e437419611df7f7d956c3433860da1fdb168613e949dbe9d559bb80c7"
+    },
+    {
+      "file": "figma-extraction-review.png",
+      "bytes": 76469,
+      "sha256": "6ad59206f929440606429b73fe357c23015c86defa679a9144fbbc0071fd1da2"
+    },
+    {
+      "file": "job-compact.png",
+      "bytes": 53131,
+      "sha256": "551c3918556b5a7690ba0bcc1cefe2d48a7e86f786a8846feb59e1ab6ab5c059"
+    },
+    {
+      "file": "job-desktop.png",
+      "bytes": 86149,
+      "sha256": "d4273cf59acc2887d53edeb02178f825b53ea3de4ddbe34d26473dd1d5d0df2e"
+    },
+    {
+      "file": "job-recovery-required.txt.png",
+      "bytes": 89555,
+      "sha256": "666fac3e0cd264c0108ca3a4e0670c202a0d97b564cda84828c8ea292d7a7d6c"
+    },
+    {
+      "file": "job-unverified-exit.txt.png",
+      "bytes": 91926,
+      "sha256": "3ab4300637630f444b07e42f79b758fa16126f0f6edf729701a30fcf28dbf98a"
+    },
+    {
+      "file": "jobs-compact.png",
+      "bytes": 85037,
+      "sha256": "3651487ac40903b56d3b71de1405545527834bbb92bf3c02f7c054c378e4cfee"
+    },
+    {
+      "file": "jobs-desktop.png",
+      "bytes": 79979,
+      "sha256": "c2e76e405d6b8fe95a9ee32ac4f5190d60934e1f5562052730c04bbb7e2dbc22"
+    },
+    {
+      "file": "jobs-full-surface.png",
+      "bytes": 167095,
+      "sha256": "fbcd149d39fd7b55d0909f54f82daba3f021cc75a1a70f3d2ee4871308ffc401"
+    },
+    {
+      "file": "retry-desktop.png",
+      "bytes": 20478,
+      "sha256": "ee1fcbaa18a8df32f9cc39ea99be7929c4369c07005e52717356bd93e3b237a4"
+    }
+  ]
+}

@@ -1,0 +1,4052 @@
+{
+  "schema_version": 1,
+  "scope": "development canonical transaction baseline only",
+  "observed_at": "2026-09-24T14:28:28.448584+00:00",
+  "mode": "baseline",
+  "rows": 100000,
+  "host": {
+    "os": "Darwin",
+    "architecture": "arm64",
+    "os_version": "26.6.2",
+    "logical_cpus": 8,
+    "physical_memory_bytes": 17179869184,
+    "cpu_model": "Apple M1",
+    "power_thermal_state": "not_controlled_or_measured",
+    "exclusive_reservation": false
+  },
+  "source_revision": "07ee9cf75d5bd7d8f4391dda1aeaf3c6d224a3c6",
+  "source_dirty": true,
+  "source_sha256": {
+    "Cargo.toml": "3e04d486bf293907e3567aaad4ba96376d5aa45ee091c32f8955c233c38141af",
+    "Cargo.lock": "d70523cf36c9acf90b9fa08bef855392a6a855502a36b97eb4b7c5ba593d1a6e",
+    "crates/core/Cargo.toml": "58f079d0439841c5869ddd88d7e170db7b5c812cdf1d5512a26632497ef2c05a",
+    "crates/core/src/analytics.rs": "820b42639d62b97b93791fa8355803e2fc314444fd32fd71921d6f8ef2e38e0d",
+    "crates/core/src/bin/ew-dev.rs": "1df37fcb548b3596d7844f266343476029eaa3e079c690454828d97d1dd2befc",
+    "crates/core/src/collection.rs": "210fa59766dd5421b1ffad93b8638b9f999f1d83aa2786ef5f5fcb0144bec0f0",
+    "crates/core/src/collection_receipt.rs": "167cbb9104e778c52ba6c502280bc0238a44181268016594abd8f070ac176bf0",
+    "crates/core/src/collection_tests.rs": "037a03a08ce18e991563e09ebd16d7a418be63b873893603789b431b7b591bb3",
+    "crates/core/src/coordinator.rs": "b5e3575c045668f8ed12fea898c361d71e05f37085d43fda251ffdf7d3b35ee9",
+    "crates/core/src/coordinator_image_tests.rs": "923554695a34aa2f6aa41940960c3f63af0de39fdc3e56d24730f5cf03139772",
+    "crates/core/src/coordinator_pdf_tests.rs": "26086e76643637f19ac6f7339871f51136f8414b263a6cff8cb25d8db91cee73",
+    "crates/core/src/domain.rs": "3173332dc1748b70527b90faac3072ba3a372dc95ce3392bc85d7f8878c3cc87",
+    "crates/core/src/engines/image/tests.rs": "69121d90e5c537baef1b5edcb946cc28baf6b22179511ce954c529e56f8b1fda",
+    "crates/core/src/engines/image.rs": "3329e137dcc45f15af223617faa3d57d185e578b6825b44f554afff85aa89cc9",
+    "crates/core/src/engines/ocr/tests.rs": "e34044decc51f342bb2a253bb7c8b1aed8b2e3264b3156f080d68960cf197f1c",
+    "crates/core/src/engines/ocr.rs": "d8108cea564c82e55fe27c11c8d314374b7f6690ddebda0a6f74d36f6811e077",
+    "crates/core/src/engines/parser/tests.rs": "85a4446aa985abc276a1724555c87acb2fed4cee3823807abfdb9f5a02d2334e",
+    "crates/core/src/engines/parser.rs": "4c5d66b8cce10c485d6a9829739de7eef5358827b8e7043db908cb1bb71b9e5c",
+    "crates/core/src/engines/pdf_render/runtime.rs": "531c65765ebb57dd978fd90a8d89aa4e02c48b814feccfb740cc37c250bdb045",
+    "crates/core/src/engines/pdf_render/tests.rs": "f1ba55ccf2a5fee9f7b6471fe1b0768cc4bfa18615edfac25c8ab0724d25ea5d",
+    "crates/core/src/engines/pdf_render.rs": "096cca5807a403b92680c48fcbf73a2256915e360495be47906bd3fefe5fe863",
+    "crates/core/src/engines/supervision/image_tests.rs": "5232e9128c75e2fb7add211f5a813f27e3248a3b57564359e9316deb8fa9ddd9",
+    "crates/core/src/engines/supervision/ocr/tests.rs": "95c2d58a0b49ae57e2acf750b7c62149f2a87314ae1e0170eb3ccb7113831140",
+    "crates/core/src/engines/supervision/ocr.rs": "d86a5cd5214ac1454c54014e9c7b3c895cb59662e334376d4c8c063da64e568a",
+    "crates/core/src/engines/supervision/pdf_tests.rs": "00453c0ea7d50b75d1f3296a05d53eae0c0cf68ad20a2e9464528626b6763c72",
+    "crates/core/src/engines/supervision/tests.rs": "5bf48ba9a0c81d35e330e7417e86560572d8b8ba74e4d6f17e8ae3fd7608df4f",
+    "crates/core/src/engines/supervision.rs": "ded9677efb7f86389603ddfce677eb50e90309d5b31bb94727f984f4aa2a312f",
+    "crates/core/src/engines.rs": "ae7144c7715831507cff08f270850e3dd83cd7b65c052465402a1d0f56a2de45",
+    "crates/core/src/lib.rs": "41f3fcf8db0af4f96e14d40e3f329b81bb389706de884d954688215de57d0f0d",
+    "crates/core/src/policy.rs": "9a3c728da7ff43a3e9b2ca53b24c56640db87079c2df6342c4dfc5031d7f3636",
+    "crates/core/src/processing.rs": "0df01e16b38297f3e96b8d1610ab83e953ea98fc5bf924db21b406024c2c3b10",
+    "crates/core/src/report.rs": "0aeb63a6253dee04bec8f9d128ef663135b71a8c3153854bf6f8ee3fdcfa30f1",
+    "crates/core/src/statements.rs": "13c3037affe77f44889c7d58610e2de45cbcf47b6c89f5680747ab0260c4e2c2",
+    "crates/core/src/store/assessment.rs": "15bb90f1486771f94097e3fce148b3b23ea18b7945951f1a6e7efde6e9dd347f",
+    "crates/core/src/store/collection.rs": "aa1492fba8e89c3f2b2e136a3f81a810b5772a656c1be45d65d2ed08860c5d20",
+    "crates/core/src/store/collection_demo.rs": "e891c4063b2cd115408f04ca454d0b3cb23edea7d5260900aea39478d702679c",
+    "crates/core/src/store/collection_tests.rs": "dddf5d67c8c40103e303887ef7665cd930af2246acac52e1cc1c5564a9216fbf",
+    "crates/core/src/store/identity.rs": "234d34c09cba7e6b4ab61a56bf447ed9961571029b55a8840129895d07795995",
+    "crates/core/src/store/processing.rs": "33a1b887cae49e51c77390547b3080be4666613740a93fa1a693be851fc31c8c",
+    "crates/core/src/store/processing_demo.rs": "b743cf0877c01c792eee6d345a93c92e66e8cb95762e489590606c1ff9aa847e",
+    "crates/core/src/store/processing_image_demo.rs": "d8d11323c4423206b86b38cbcdcfda5a5d6030ef5e631eeb6747f4504464e7e0",
+    "crates/core/src/store/processing_image_fixtures.rs": "6f96b34c2740ea8a33df22ec1745ebdf3d57858d3f7aa303c83846c0b27d09ce",
+    "crates/core/src/store/processing_image_tests.rs": "3d00f3901eb6c4defd80d897e4140ce57d460c984800902d2bf5d26f5bdc1411",
+    "crates/core/src/store/processing_pdf_demo.rs": "5fbc62e89b0d154a655bec5ed9a38403da7aef619d8d3beebe295e774526b6a9",
+    "crates/core/src/store/processing_pdf_fixtures.rs": "7db1f7ab1df79330ee3f4f444a45cb497d536d332f734914048728f2dde47567",
+    "crates/core/src/store/processing_pdf_publication.rs": "f3c52ed0ebda8a49c51c85b70001074138190b51718268cd918357519249729b",
+    "crates/core/src/store/processing_pdf_tests.rs": "d50ded5d61351dfcf3e1d78578fbfaf9ae981cfdb0848852824b9b3a43b4b4bc",
+    "crates/core/src/store/processing_publication.rs": "1ecf23a3dfd0c02cb4f93cc3e65179ec455d1eb4ed8b0e006c68b0211ee1ebdd",
+    "crates/core/src/store/report_snapshots.rs": "cf672da35256a500971e5155efd9c34b341a14d7fe1f47cd4955611725bf8d8b",
+    "crates/core/src/store/statements.rs": "5ecbf9b264cc7bdc290ae0711703e2216015a6202755b3042042b47fbd6fbf4a",
+    "crates/core/src/store/transaction_analysis.rs": "8eed1ea284b29e9a96602c5705c1c0790f65f7f4dc7e1bb72c42dd01c3bc913c",
+    "crates/core/src/store/transaction_comparison.rs": "b2d222e5a6d46908b7d0fb9b3dac79d776b78383be0298d9482ad3cec71b241b",
+    "crates/core/src/store.rs": "78231f3438a1bebba33f4af7f6bdcf482f26e1dfdcc1553cbaaae678680ae41c",
+    "crates/core/src/transaction_analysis.rs": "d7ecd825d7f01da74c26fc2f76ad54e565996b49c1b60411a1da73149a46e376",
+    "crates/core/src/transaction_comparison.rs": "0d041d6de8173fb608c16bdc4c1cd78cae7096ab11eb06ebca2ea2f572d5372f",
+    "crates/core/examples/performance_baseline/fixture.rs": "f4ecfb416734aa1389ef2839cb0656bbbc542c4b7bb1e755e9fd7a8cc4107e54",
+    "crates/core/examples/performance_baseline.rs": "c4061a6970ca34bf55cdc3bc63bd9fd99cc0bd2710d4a6b4f967a1e11053603e"
+  },
+  "runner_sha256": "d6513bfcbddbe2a6d618b07c6b185c74921cc4685825199d0eff0d335a337964",
+  "phase": "complete",
+  "outcome": "measured",
+  "complete_release": false,
+  "operations": {
+    "view": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 4941.765042021871,
+      "child_lifetime_peak_rss_bytes": 911294464,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "view.stdout.jsonl",
+      "stdout_sha256": "df08993dfcc890cd1c05809161ea7e5e149de318b095dab0df7a279b3402f131",
+      "stderr": "view.stderr.txt",
+      "stderr_sha256": "e60213569c2515086504f072b742658997f3bdc0428bde0a8640b8e327b30538",
+      "events": [
+        {
+          "event": "started",
+          "operation": "view",
+          "phase": "restore"
+        },
+        {
+          "event": "started",
+          "operation": "view",
+          "phase": "operation",
+          "sample": 0
+        },
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 781.160833,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 547.9571669999999,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "view",
+          "phase": "operation",
+          "sample": 1
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 709.1425,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "view",
+          "phase": "operation",
+          "sample": 2
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 727.265625,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "view",
+          "phase": "operation",
+          "sample": 3
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 747.128959,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "complete",
+          "operation": "view",
+          "samples": 4
+        }
+      ],
+      "measurement_complete": true,
+      "samples": [
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 781.160833,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 547.9571669999999,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 709.1425,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 727.265625,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 747.128959,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "view",
+          "oracle_passed": true,
+          "output_bytes": 83986629,
+          "output_sha256": "cfe324a5e3984292dc8d21b1ea186ac623e95481f5593a1f09aace77e711af34",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        }
+      ],
+      "first_call_ms": 781.160833,
+      "warm_sample_count": 3,
+      "warm_max_ms": 747.128959,
+      "warm_p95_nearest_rank_ms": 747.128959,
+      "p95_qualified": false,
+      "under_two_seconds_gate_passed": false,
+      "outcome": "measured"
+    },
+    "patterns_all": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 3409.222958027385,
+      "child_lifetime_peak_rss_bytes": 584761344,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "patterns_all.stdout.jsonl",
+      "stdout_sha256": "ec1c624fe59be097a652dda4eceaceb3a64f5eeb6ecacab3866f9d7a1a4f3872",
+      "stderr": "patterns_all.stderr.txt",
+      "stderr_sha256": "d91e354d2e27f52fc7d589758d6ee1dbf35ebae793e818385c21e66d25ef74b4",
+      "events": [
+        {
+          "event": "started",
+          "operation": "patterns_all",
+          "phase": "restore"
+        },
+        {
+          "event": "started",
+          "operation": "patterns_all",
+          "phase": "operation",
+          "sample": 0
+        },
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 467.270625,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 516.1610840000001,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_all",
+          "phase": "operation",
+          "sample": 1
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 455.825833,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_all",
+          "phase": "operation",
+          "sample": 2
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 444.94379200000003,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_all",
+          "phase": "operation",
+          "sample": 3
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 465.195417,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "complete",
+          "operation": "patterns_all",
+          "samples": 4
+        }
+      ],
+      "measurement_complete": true,
+      "samples": [
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 467.270625,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 516.1610840000001,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 455.825833,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 444.94379200000003,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 465.195417,
+          "event": "sample",
+          "merchant_group_count": 849,
+          "operation": "patterns_all",
+          "oracle_passed": true,
+          "output_bytes": 58002467,
+          "output_sha256": "e52ed8b002c69fbd0259d5f08989640b2f857b4e8c65cc766d07385a58493dc3",
+          "recurring_candidate_count": 648,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 56600,
+                "deferred": 3400,
+                "pending": 3300,
+                "rejected": 3300,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "counts": {
+                "accepted_included": 28400,
+                "deferred": 1600,
+                "pending": 1700,
+                "rejected": 1700,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        }
+      ],
+      "first_call_ms": 467.270625,
+      "warm_sample_count": 3,
+      "warm_max_ms": 465.195417,
+      "warm_p95_nearest_rank_ms": 465.195417,
+      "p95_qualified": false,
+      "under_two_seconds_gate_passed": false,
+      "outcome": "measured"
+    },
+    "patterns_filtered": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 1804.8733749892563,
+      "child_lifetime_peak_rss_bytes": 213303296,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "patterns_filtered.stdout.jsonl",
+      "stdout_sha256": "47cec8246ee457d05e32d504598669a93db02109df85077e426add3fbb5cff0d",
+      "stderr": "patterns_filtered.stderr.txt",
+      "stderr_sha256": "cd5a2174c11e24d6a94d40923e2d45d564ba2eb3320840825197f28b56197e21",
+      "events": [
+        {
+          "event": "started",
+          "operation": "patterns_filtered",
+          "phase": "restore"
+        },
+        {
+          "event": "started",
+          "operation": "patterns_filtered",
+          "phase": "operation",
+          "sample": 0
+        },
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 278.26574999999997,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 500.858334,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_filtered",
+          "phase": "operation",
+          "sample": 1
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 281.36620800000003,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_filtered",
+          "phase": "operation",
+          "sample": 2
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 278.909792,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_filtered",
+          "phase": "operation",
+          "sample": 3
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 281.932959,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "complete",
+          "operation": "patterns_filtered",
+          "samples": 4
+        }
+      ],
+      "measurement_complete": true,
+      "samples": [
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 278.26574999999997,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 500.858334,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 281.36620800000003,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 278.909792,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 281.932959,
+          "event": "sample",
+          "merchant_group_count": 65,
+          "operation": "patterns_filtered",
+          "oracle_passed": true,
+          "output_bytes": 588673,
+          "output_sha256": "d3e3836ce95bd1a63f7b6616073456633bd82713fe29afdd2359218ce9eeb35e",
+          "recurring_candidate_count": 49,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "counts": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        }
+      ],
+      "first_call_ms": 278.26574999999997,
+      "warm_sample_count": 3,
+      "warm_max_ms": 281.932959,
+      "warm_p95_nearest_rank_ms": 281.932959,
+      "p95_qualified": false,
+      "under_two_seconds_gate_passed": false,
+      "outcome": "measured"
+    },
+    "patterns_empty": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 1761.5446250420064,
+      "child_lifetime_peak_rss_bytes": 203800576,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "patterns_empty.stdout.jsonl",
+      "stdout_sha256": "7623905e6ec359b695b71164e2896510115aa6765d8cf1281dbb80a1a17287c9",
+      "stderr": "patterns_empty.stderr.txt",
+      "stderr_sha256": "3195e7900c126aa4b0f52bc1b3267b130ef4f47087f2136960ddbdb28583a606",
+      "events": [
+        {
+          "event": "started",
+          "operation": "patterns_empty",
+          "phase": "restore"
+        },
+        {
+          "event": "started",
+          "operation": "patterns_empty",
+          "phase": "operation",
+          "sample": 0
+        },
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 270.135042,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 506.05325,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_empty",
+          "phase": "operation",
+          "sample": 1
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 265.96312500000005,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 0.0,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_empty",
+          "phase": "operation",
+          "sample": 2
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 264.50591699999995,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 0.0,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "patterns_empty",
+          "phase": "operation",
+          "sample": 3
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 286.845709,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 0.0,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "complete",
+          "operation": "patterns_empty",
+          "samples": 4
+        }
+      ],
+      "measurement_complete": true,
+      "samples": [
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 270.135042,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 506.05325,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 265.96312500000005,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 0.0,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 264.50591699999995,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 0.0,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 286.845709,
+          "event": "sample",
+          "merchant_group_count": 0,
+          "operation": "patterns_empty",
+          "oracle_passed": true,
+          "output_bytes": 1672,
+          "output_sha256": "bf48f0fa944dcab3777b199039d9b0c1b94198bba4c615a7995149261efbb391",
+          "recurring_candidate_count": 0,
+          "restore_ms": 0.0,
+          "review_denominators": [],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        }
+      ],
+      "first_call_ms": 270.135042,
+      "warm_sample_count": 3,
+      "warm_max_ms": 286.845709,
+      "warm_p95_nearest_rank_ms": 286.845709,
+      "p95_qualified": false,
+      "under_two_seconds_gate_passed": false,
+      "outcome": "measured"
+    },
+    "comparison": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 2670.1937499456108,
+      "child_lifetime_peak_rss_bytes": 285556736,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "comparison.stdout.jsonl",
+      "stdout_sha256": "216aebf05f055468af942328614f35ced056f0c6475c7bfc5d5c4223c4467936",
+      "stderr": "comparison.stderr.txt",
+      "stderr_sha256": "1d5787159141f8390b473c4311544088b503720eebce3bc2d0ec3b4a2ea137e1",
+      "events": [
+        {
+          "event": "started",
+          "operation": "comparison",
+          "phase": "restore"
+        },
+        {
+          "event": "started",
+          "operation": "comparison",
+          "phase": "operation",
+          "sample": 0
+        },
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 408.755541,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 529.1822080000001,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "comparison",
+          "phase": "operation",
+          "sample": 1
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 439.35324999999995,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "comparison",
+          "phase": "operation",
+          "sample": 2
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 415.682542,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "comparison",
+          "phase": "operation",
+          "sample": 3
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 417.573917,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "complete",
+          "operation": "comparison",
+          "samples": 4
+        }
+      ],
+      "measurement_complete": true,
+      "samples": [
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 408.755541,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 529.1822080000001,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 439.35324999999995,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 415.682542,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 417.573917,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "comparison",
+          "oracle_passed": true,
+          "output_bytes": 16050241,
+          "output_sha256": "fd10f54eff37971c238f95633e8d0f5955810b9c8be322d89cef426000e243b5",
+          "recurring_candidate_count": null,
+          "restore_ms": 0.0,
+          "review_denominators": [
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 192,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0000",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 0,
+                "pending": 108,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 204,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0001",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 96,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0002",
+              "baseline": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 396,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0003",
+              "baseline": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 504,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 792,
+                "deferred": 0,
+                "pending": 204,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0004",
+              "baseline": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 420,
+                "deferred": 0,
+                "pending": 96,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 804,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 192,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0005",
+              "baseline": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 384,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 108,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 780,
+                "deferred": 204,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0006",
+              "baseline": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 408,
+                "deferred": 96,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "comparison": {
+                "accepted_included": 996,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 12
+              },
+              "currency": "AUD"
+            },
+            {
+              "account": "0007",
+              "baseline": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "comparison": {
+                "accepted_included": 492,
+                "deferred": 0,
+                "pending": 0,
+                "rejected": 0,
+                "reviewed_transfer_excluded": 0
+              },
+              "currency": "USD"
+            }
+          ],
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        }
+      ],
+      "first_call_ms": 408.755541,
+      "warm_sample_count": 3,
+      "warm_max_ms": 439.35324999999995,
+      "warm_p95_nearest_rank_ms": 439.35324999999995,
+      "p95_qualified": false,
+      "under_two_seconds_gate_passed": false,
+      "outcome": "measured"
+    },
+    "html_export": {
+      "returncode": 0,
+      "timed_out": false,
+      "process_elapsed_ms": 13931.898624985479,
+      "child_lifetime_peak_rss_bytes": 2172977152,
+      "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+      "stdout": "html_export.stdout.jsonl",
+      "stdout_sha256": "d5b5ce15320ce8de44ee65817e3cb320604da7c1b7a8ecf35eee90c9feb91eef",
+      "stderr": "html_export.stderr.txt",
+      "stderr_sha256": "4d631d2bd9938fa156cfd6cd04034cf759921b35e5f9b6e925372e674f121090",
+      "events": [
+        {
+          "event": "started",
+          "operation": "html_export",
+          "phase": "restore"
+        },
+        {
+          "event": "started",
+          "operation": "html_export",
+          "phase": "operation",
+          "sample": 0
+        },
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 1660.386417,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "3be44e386ec0dea70c7ccf715f48ce23daf93b7fd8df06977507ccf5bc158f0d",
+          "recurring_candidate_count": null,
+          "restore_ms": 507.5160829999999,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "html_export",
+          "phase": "operation",
+          "sample": 1
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 1561.2662500000001,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "a583f02b15d250dc8ce904147a9a83c392b3083f921925bfd9476f8cc6332e1e",
+          "recurring_candidate_count": null,
+          "restore_ms": 517.202167,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "html_export",
+          "phase": "operation",
+          "sample": 2
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 1563.448125,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "2ae03c798b29df8c7116ce478fe2b98ccf352bfb9298d6ad75f431c5e84bb789",
+          "recurring_candidate_count": null,
+          "restore_ms": 513.918333,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "started",
+          "operation": "html_export",
+          "phase": "operation",
+          "sample": 3
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 1752.265166,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "43b9136e108cd4349edd7374b5c50a95eaaad6c3f95a8afd49bca6b3e1f6f62b",
+          "recurring_candidate_count": null,
+          "restore_ms": 525.648042,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        },
+        {
+          "event": "complete",
+          "operation": "html_export",
+          "samples": 4
+        }
+      ],
+      "measurement_complete": true,
+      "samples": [
+        {
+          "cache_label": "first_call_fresh_process_os_cache_uncontrolled",
+          "elapsed_ms": 1660.386417,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "3be44e386ec0dea70c7ccf715f48ce23daf93b7fd8df06977507ccf5bc158f0d",
+          "recurring_candidate_count": null,
+          "restore_ms": 507.5160829999999,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 0,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 1561.2662500000001,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "a583f02b15d250dc8ce904147a9a83c392b3083f921925bfd9476f8cc6332e1e",
+          "recurring_candidate_count": null,
+          "restore_ms": 517.202167,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 1,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 1563.448125,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "2ae03c798b29df8c7116ce478fe2b98ccf352bfb9298d6ad75f431c5e84bb789",
+          "recurring_candidate_count": null,
+          "restore_ms": 513.918333,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 2,
+          "workspace_revision": 95101
+        },
+        {
+          "cache_label": "repeated_call_same_process_os_cache_uncontrolled",
+          "elapsed_ms": 1752.265166,
+          "event": "sample",
+          "merchant_group_count": null,
+          "operation": "html_export",
+          "oracle_passed": true,
+          "output_bytes": 113592530,
+          "output_sha256": "43b9136e108cd4349edd7374b5c50a95eaaad6c3f95a8afd49bca6b3e1f6f62b",
+          "recurring_candidate_count": null,
+          "restore_ms": 525.648042,
+          "review_denominators": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "rows": 100000,
+          "sample": 3,
+          "workspace_revision": 95101
+        }
+      ],
+      "first_call_ms": 1660.386417,
+      "warm_sample_count": 3,
+      "warm_max_ms": 1752.265166,
+      "warm_p95_nearest_rank_ms": 1752.265166,
+      "p95_qualified": false,
+      "under_two_seconds_gate_passed": false,
+      "outcome": "measured"
+    }
+  },
+  "limits": {
+    "setup_seconds": 300,
+    "each_operation_process_seconds": 60,
+    "total_samples_per_operation": 4
+  },
+  "unverified": [
+    "OS page-cache cold measurements",
+    "ordinary JavaScript ledger filtering and UI responsiveness",
+    "10,000 pages including 1,000 scans",
+    "concurrent maps/graphs and workers",
+    "OCR/search throughput",
+    "cancel latency",
+    "minimum-host or clean installation qualification",
+    "whole-application peak memory",
+    "statistically qualified p95"
+  ],
+  "build": {
+    "source_sha256": {
+      "Cargo.toml": "3e04d486bf293907e3567aaad4ba96376d5aa45ee091c32f8955c233c38141af",
+      "Cargo.lock": "d70523cf36c9acf90b9fa08bef855392a6a855502a36b97eb4b7c5ba593d1a6e",
+      "crates/core/Cargo.toml": "58f079d0439841c5869ddd88d7e170db7b5c812cdf1d5512a26632497ef2c05a",
+      "crates/core/src/analytics.rs": "820b42639d62b97b93791fa8355803e2fc314444fd32fd71921d6f8ef2e38e0d",
+      "crates/core/src/bin/ew-dev.rs": "1df37fcb548b3596d7844f266343476029eaa3e079c690454828d97d1dd2befc",
+      "crates/core/src/collection.rs": "210fa59766dd5421b1ffad93b8638b9f999f1d83aa2786ef5f5fcb0144bec0f0",
+      "crates/core/src/collection_receipt.rs": "167cbb9104e778c52ba6c502280bc0238a44181268016594abd8f070ac176bf0",
+      "crates/core/src/collection_tests.rs": "037a03a08ce18e991563e09ebd16d7a418be63b873893603789b431b7b591bb3",
+      "crates/core/src/coordinator.rs": "b5e3575c045668f8ed12fea898c361d71e05f37085d43fda251ffdf7d3b35ee9",
+      "crates/core/src/coordinator_image_tests.rs": "923554695a34aa2f6aa41940960c3f63af0de39fdc3e56d24730f5cf03139772",
+      "crates/core/src/coordinator_pdf_tests.rs": "26086e76643637f19ac6f7339871f51136f8414b263a6cff8cb25d8db91cee73",
+      "crates/core/src/domain.rs": "3173332dc1748b70527b90faac3072ba3a372dc95ce3392bc85d7f8878c3cc87",
+      "crates/core/src/engines/image/tests.rs": "69121d90e5c537baef1b5edcb946cc28baf6b22179511ce954c529e56f8b1fda",
+      "crates/core/src/engines/image.rs": "3329e137dcc45f15af223617faa3d57d185e578b6825b44f554afff85aa89cc9",
+      "crates/core/src/engines/ocr/tests.rs": "e34044decc51f342bb2a253bb7c8b1aed8b2e3264b3156f080d68960cf197f1c",
+      "crates/core/src/engines/ocr.rs": "d8108cea564c82e55fe27c11c8d314374b7f6690ddebda0a6f74d36f6811e077",
+      "crates/core/src/engines/parser/tests.rs": "85a4446aa985abc276a1724555c87acb2fed4cee3823807abfdb9f5a02d2334e",
+      "crates/core/src/engines/parser.rs": "4c5d66b8cce10c485d6a9829739de7eef5358827b8e7043db908cb1bb71b9e5c",
+      "crates/core/src/engines/pdf_render/runtime.rs": "531c65765ebb57dd978fd90a8d89aa4e02c48b814feccfb740cc37c250bdb045",
+      "crates/core/src/engines/pdf_render/tests.rs": "f1ba55ccf2a5fee9f7b6471fe1b0768cc4bfa18615edfac25c8ab0724d25ea5d",
+      "crates/core/src/engines/pdf_render.rs": "096cca5807a403b92680c48fcbf73a2256915e360495be47906bd3fefe5fe863",
+      "crates/core/src/engines/supervision/image_tests.rs": "5232e9128c75e2fb7add211f5a813f27e3248a3b57564359e9316deb8fa9ddd9",
+      "crates/core/src/engines/supervision/ocr/tests.rs": "95c2d58a0b49ae57e2acf750b7c62149f2a87314ae1e0170eb3ccb7113831140",
+      "crates/core/src/engines/supervision/ocr.rs": "d86a5cd5214ac1454c54014e9c7b3c895cb59662e334376d4c8c063da64e568a",
+      "crates/core/src/engines/supervision/pdf_tests.rs": "00453c0ea7d50b75d1f3296a05d53eae0c0cf68ad20a2e9464528626b6763c72",
+      "crates/core/src/engines/supervision/tests.rs": "5bf48ba9a0c81d35e330e7417e86560572d8b8ba74e4d6f17e8ae3fd7608df4f",
+      "crates/core/src/engines/supervision.rs": "ded9677efb7f86389603ddfce677eb50e90309d5b31bb94727f984f4aa2a312f",
+      "crates/core/src/engines.rs": "ae7144c7715831507cff08f270850e3dd83cd7b65c052465402a1d0f56a2de45",
+      "crates/core/src/lib.rs": "41f3fcf8db0af4f96e14d40e3f329b81bb389706de884d954688215de57d0f0d",
+      "crates/core/src/policy.rs": "9a3c728da7ff43a3e9b2ca53b24c56640db87079c2df6342c4dfc5031d7f3636",
+      "crates/core/src/processing.rs": "0df01e16b38297f3e96b8d1610ab83e953ea98fc5bf924db21b406024c2c3b10",
+      "crates/core/src/report.rs": "0aeb63a6253dee04bec8f9d128ef663135b71a8c3153854bf6f8ee3fdcfa30f1",
+      "crates/core/src/statements.rs": "13c3037affe77f44889c7d58610e2de45cbcf47b6c89f5680747ab0260c4e2c2",
+      "crates/core/src/store/assessment.rs": "15bb90f1486771f94097e3fce148b3b23ea18b7945951f1a6e7efde6e9dd347f",
+      "crates/core/src/store/collection.rs": "aa1492fba8e89c3f2b2e136a3f81a810b5772a656c1be45d65d2ed08860c5d20",
+      "crates/core/src/store/collection_demo.rs": "e891c4063b2cd115408f04ca454d0b3cb23edea7d5260900aea39478d702679c",
+      "crates/core/src/store/collection_tests.rs": "dddf5d67c8c40103e303887ef7665cd930af2246acac52e1cc1c5564a9216fbf",
+      "crates/core/src/store/identity.rs": "234d34c09cba7e6b4ab61a56bf447ed9961571029b55a8840129895d07795995",
+      "crates/core/src/store/processing.rs": "33a1b887cae49e51c77390547b3080be4666613740a93fa1a693be851fc31c8c",
+      "crates/core/src/store/processing_demo.rs": "b743cf0877c01c792eee6d345a93c92e66e8cb95762e489590606c1ff9aa847e",
+      "crates/core/src/store/processing_image_demo.rs": "d8d11323c4423206b86b38cbcdcfda5a5d6030ef5e631eeb6747f4504464e7e0",
+      "crates/core/src/store/processing_image_fixtures.rs": "6f96b34c2740ea8a33df22ec1745ebdf3d57858d3f7aa303c83846c0b27d09ce",
+      "crates/core/src/store/processing_image_tests.rs": "3d00f3901eb6c4defd80d897e4140ce57d460c984800902d2bf5d26f5bdc1411",
+      "crates/core/src/store/processing_pdf_demo.rs": "5fbc62e89b0d154a655bec5ed9a38403da7aef619d8d3beebe295e774526b6a9",
+      "crates/core/src/store/processing_pdf_fixtures.rs": "7db1f7ab1df79330ee3f4f444a45cb497d536d332f734914048728f2dde47567",
+      "crates/core/src/store/processing_pdf_publication.rs": "f3c52ed0ebda8a49c51c85b70001074138190b51718268cd918357519249729b",
+      "crates/core/src/store/processing_pdf_tests.rs": "d50ded5d61351dfcf3e1d78578fbfaf9ae981cfdb0848852824b9b3a43b4b4bc",
+      "crates/core/src/store/processing_publication.rs": "1ecf23a3dfd0c02cb4f93cc3e65179ec455d1eb4ed8b0e006c68b0211ee1ebdd",
+      "crates/core/src/store/report_snapshots.rs": "cf672da35256a500971e5155efd9c34b341a14d7fe1f47cd4955611725bf8d8b",
+      "crates/core/src/store/statements.rs": "5ecbf9b264cc7bdc290ae0711703e2216015a6202755b3042042b47fbd6fbf4a",
+      "crates/core/src/store/transaction_analysis.rs": "8eed1ea284b29e9a96602c5705c1c0790f65f7f4dc7e1bb72c42dd01c3bc913c",
+      "crates/core/src/store/transaction_comparison.rs": "b2d222e5a6d46908b7d0fb9b3dac79d776b78383be0298d9482ad3cec71b241b",
+      "crates/core/src/store.rs": "78231f3438a1bebba33f4af7f6bdcf482f26e1dfdcc1553cbaaae678680ae41c",
+      "crates/core/src/transaction_analysis.rs": "d7ecd825d7f01da74c26fc2f76ad54e565996b49c1b60411a1da73149a46e376",
+      "crates/core/src/transaction_comparison.rs": "0d041d6de8173fb608c16bdc4c1cd78cae7096ab11eb06ebca2ea2f572d5372f",
+      "crates/core/examples/performance_baseline/fixture.rs": "f4ecfb416734aa1389ef2839cb0656bbbc542c4b7bb1e755e9fd7a8cc4107e54",
+      "crates/core/examples/performance_baseline.rs": "c4061a6970ca34bf55cdc3bc63bd9fd99cc0bd2710d4a6b4f967a1e11053603e"
+    },
+    "binary_sha256": "826914c6a3c732a8048baf4adb891b629dd740e6b48c190d4fceae4f030cfb9c",
+    "profile": "release",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "command": "cargo build --locked --release -p workbench-core --example performance_baseline",
+    "reused": true
+  },
+  "setup": {
+    "returncode": 0,
+    "timed_out": false,
+    "process_elapsed_ms": 66121.85816699639,
+    "child_lifetime_peak_rss_bytes": 252919808,
+    "memory_method": "time_child_lifetime_maximum_rss_including_restore_and_oracle",
+    "stdout": "setup.stdout.jsonl",
+    "stdout_sha256": "bd7aa4204eb8bd0769a00cc4960f968930d39a4fead0b8e497726552334449a2",
+    "stderr": "setup.stderr.txt",
+    "stderr_sha256": "7cb3a827a36ceb43cf65f7607abfeaf30b4e816223b511f4107f3b48ba6102b6",
+    "events": [
+      {
+        "event": "started",
+        "phase": "canonical_import"
+      },
+      {
+        "elapsed_ms": 1566.944875,
+        "event": "phase",
+        "phase": "canonical_import"
+      },
+      {
+        "event": "started",
+        "phase": "canonical_review"
+      },
+      {
+        "elapsed_ms": 4554.484708,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 10000
+      },
+      {
+        "elapsed_ms": 11344.32275,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 20000
+      },
+      {
+        "elapsed_ms": 17339.521583,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 30000
+      },
+      {
+        "elapsed_ms": 24729.798875,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 40000
+      },
+      {
+        "elapsed_ms": 32621.024749999997,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 50000
+      },
+      {
+        "elapsed_ms": 39023.63925,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 60000
+      },
+      {
+        "elapsed_ms": 43875.366458000004,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 70000
+      },
+      {
+        "elapsed_ms": 48635.161375,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 80000
+      },
+      {
+        "elapsed_ms": 54675.334583,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 90000
+      },
+      {
+        "elapsed_ms": 63494.073041999996,
+        "event": "progress",
+        "phase": "canonical_review",
+        "rows": 100000
+      },
+      {
+        "event": "setup_complete",
+        "fixture": {
+          "backup": "case/backups/61a60dac-b866-4142-80e9-c9beb5533021",
+          "backup_ms": 335.38041699999997,
+          "canonical_review_ms": 63644.108708,
+          "fixture_bytes": 5010041,
+          "fixture_sha256": "c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7",
+          "fixture_version": "synthetic-transactions-v1",
+          "import_ms": 1566.944875,
+          "review_counts": {
+            "accepted": 85000,
+            "deferred": 5000,
+            "pending": 5000,
+            "rejected": 5000
+          },
+          "reviewed_transfer_pairs": 100,
+          "rows": 100000,
+          "workspace_revision": 95101
+        }
+      }
+    ]
+  },
+  "fixture": {
+    "backup": "case/backups/61a60dac-b866-4142-80e9-c9beb5533021",
+    "backup_ms": 335.38041699999997,
+    "canonical_review_ms": 63644.108708,
+    "fixture_bytes": 5010041,
+    "fixture_sha256": "c587e3ad59c11445f780306b9aef370e4d97310cf66728b1aabe5f9819c5aef7",
+    "fixture_version": "synthetic-transactions-v1",
+    "import_ms": 1566.944875,
+    "review_counts": {
+      "accepted": 85000,
+      "deferred": 5000,
+      "pending": 5000,
+      "rejected": 5000
+    },
+    "reviewed_transfer_pairs": 100,
+    "rows": 100000,
+    "workspace_revision": 95101
+  },
+  "retained_logical_bytes_after_setup": 363781483,
+  "finished_at": "2026-09-24T14:30:03.143120+00:00",
+  "retained_logical_bytes_at_end": 2890993827
+}

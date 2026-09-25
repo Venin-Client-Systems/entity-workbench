@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "scope": "Supplemental inventory for directly bundled assets; dependency release review remains open",
+  "assets": [
+    {
+      "name": "Inter Variable",
+      "version": "4.1",
+      "path": "ui/public/fonts/InterVariable.woff2",
+      "sha256": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3",
+      "license": "OFL-1.1",
+      "license_path": "ui/public/fonts/Inter-LICENSE.txt",
+      "source": "https://github.com/rsms/inter/releases/download/v4.1/Inter-4.1.zip",
+      "modified": false
+    },
+    {
+      "name": "JetBrains Mono Regular",
+      "version": "2.304",
+      "path": "ui/public/fonts/JetBrainsMono-Regular.woff2",
+      "sha256": "a9cb1cd82332b23a47e3a1239d25d13c86d16c4220695e34b243effa999f45f2",
+      "license": "OFL-1.1",
+      "license_path": "ui/public/fonts/JetBrainsMono-LICENSE.txt",
+      "source": "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip",
+      "modified": false
+    },
+    {
+      "name": "JetBrains Mono Bold",
+      "version": "2.304",
+      "path": "ui/public/fonts/JetBrainsMono-Bold.woff2",
+      "sha256": "c503cc5ec5f8b2c7666b7ecda1adf44bd45f2e6579b2eba0fc292150416588a2",
+      "license": "OFL-1.1",
+      "license_path": "ui/public/fonts/JetBrainsMono-LICENSE.txt",
+      "source": "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip",
+      "modified": false
+    }
+  ]
+}

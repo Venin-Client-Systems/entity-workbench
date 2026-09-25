@@ -8,6 +8,13 @@ test.beforeEach(() =>
     force: true,
   }),
 );
+test.afterEach(async ({ page }, info) => {
+  if (info.status !== info.expectedStatus)
+    console.log(
+      "Workspace alerts:",
+      await page.getByRole("alert").allTextContents(),
+    );
+});
 test("synthetic investigation flows through the real Rust workspace", async ({
   page,
 }) => {
@@ -51,22 +58,61 @@ test("synthetic investigation flows through the real Rust workspace", async ({
     .first()
     .click();
   await page.getByRole("button", { name: "Harbour Cafe OCR review" }).click();
+  const review = page.getByRole("complementary", {
+    name: "Transaction review",
+  });
+  await expect(review).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Close review" }),
+  ).toBeFocused();
+  await expect(
+    review.getByRole("region", { name: "Original transaction excerpt" }),
+  ).toContainText("-180.00");
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.screenshot({ path: "artifacts/ui-transaction-review-1440.png" });
+  await page
+    .getByLabel("Transaction decision reason")
+    .fill("Unsaved review draft");
+  await page.setViewportSize({ width: 960, height: 640 });
   await expect(
     page.getByRole("dialog", { name: "Transaction review" }),
   ).toBeVisible();
+  await expect(page.getByLabel("Transaction decision reason")).toHaveValue(
+    "Unsaved review draft",
+  );
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await expect(review).toBeVisible();
+  await expect(page.getByLabel("Transaction decision reason")).toHaveValue(
+    "Unsaved review draft",
+  );
+  await page.getByLabel("Transaction decision reason").fill("");
+  await page.getByLabel("Currency filter", { exact: true }).selectOption("USD");
+  await page.getByRole("button", { name: "Apply ledger filters" }).click();
   await expect(
-    page.getByRole("button", { name: "Close review" }),
-  ).toBeFocused();
-  await page.keyboard.press("Shift+Tab");
-  await expect(page.getByLabel("Transfer counterpart")).toBeFocused();
-  await page.keyboard.press("Tab");
+    review
+      .getByRole("status")
+      .filter({ hasText: "outside the current filters" }),
+  ).toContainText("outside the current filters");
+  await expect(review).toContainText("Harbour Cafe OCR review");
+  await page.getByLabel("Currency filter", { exact: true }).selectOption("");
+  await page.getByRole("button", { name: "Apply ledger filters" }).click();
   await expect(
-    page.getByRole("button", { name: "Close review" }),
-  ).toBeFocused();
+    review.getByText("Selected transaction is outside the current filters."),
+  ).not.toBeVisible();
   await page.getByRole("button", { name: "Inspect preserved source" }).click();
   await expect(
     page.getByRole("button", { name: "Close source" }),
   ).toBeFocused();
+  await expect(
+    page.getByRole("region", { name: "Source anchor excerpt" }),
+  ).toContainText("-180.00");
   await page.keyboard.press("Escape");
   await expect(
     page.getByRole("dialog", { name: "Evidence source" }),
@@ -76,7 +122,7 @@ test("synthetic investigation flows through the real Rust workspace", async ({
   ).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(
-    page.getByRole("dialog", { name: "Transaction review" }),
+    page.getByRole("complementary", { name: "Transaction review" }),
   ).not.toBeVisible();
   await expect(
     page.getByRole("button", { name: "Harbour Cafe OCR review" }),
@@ -89,6 +135,8 @@ test("synthetic investigation flows through the real Rust workspace", async ({
   await page
     .getByRole("button", { name: "Save correction for review" })
     .click();
+  // Reopening is a new action after the submitted review has completed.
+  await expect(review).not.toBeVisible();
   await page.getByRole("button", { name: "Harbour Cafe OCR review" }).click();
   await expect(page.getByLabel("Corrected amount")).toHaveValue("-18.00");
   await page
@@ -183,9 +231,40 @@ test("synthetic investigation flows through the real Rust workspace", async ({
     .getByRole("navigation")
     .getByRole("button", { name: /Transactions/ })
     .click();
+  await page
+    .getByRole("button", { name: "Export JSON" })
+    .scrollIntoViewIfNeeded();
   await expect(
     page.getByRole("button", { name: "Export JSON" }),
   ).toBeInViewport();
+  await page.getByRole("button", { name: "Harbour Cafe OCR review" }).click();
+  const compactReview = page.getByRole("dialog", {
+    name: "Transaction review",
+  });
+  await expect(compactReview).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Close review" }),
+  ).toBeFocused();
+  await expect(page.getByLabel("Transfer counterpart")).toBeEnabled();
+  await page.keyboard.press("Shift+Tab");
+  await expect(page.getByLabel("Transfer counterpart")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(
+    page.getByRole("button", { name: "Close review" }),
+  ).toBeFocused();
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+        .analyze()
+    ).violations,
+  ).toEqual([]);
+  await page.screenshot({ path: "artifacts/ui-transaction-review-960.png" });
+  await page.keyboard.press("Escape");
+  await expect(compactReview).not.toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Harbour Cafe OCR review" }),
+  ).toBeFocused();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -217,13 +296,11 @@ test("analyst-authored identities retain sources, decisions and corrections", as
   await expect(
     page.getByRole("button", { name: "Load synthetic investigation" }),
   ).toBeVisible();
-  await page
-    .locator("input[type=file]")
-    .setInputFiles({
-      name: "identities.txt",
-      mimeType: "text/plain",
-      buffer: Buffer.from("Avery Vale born 1982\nAvery Vale born 1990\n"),
-    });
+  await page.locator("input[type=file]").setInputFiles({
+    name: "identities.txt",
+    mimeType: "text/plain",
+    buffer: Buffer.from("Avery Vale born 1982\nAvery Vale born 1990\n"),
+  });
   await expect(
     page.getByRole("button", { name: /TXT identities.txt/ }),
   ).toBeVisible();
@@ -313,21 +390,51 @@ test("analyst-authored identities retain sources, decisions and corrections", as
   await expect(
     page.getByText("1 source groups among accepted observations"),
   ).toBeVisible();
+  // Keep the next real comparison response in flight while a decision changes
+  // the workspace revision. A previous comparison must not enable a new action.
+  let releaseComparison!: () => void;
+  let heldComparison = false;
+  const comparisonGate = new Promise<void>((resolve) => {
+    releaseComparison = resolve;
+  });
+  await page.route("**/api/workbench", async (route) => {
+    if (route.request().postDataJSON()?.action === "compare_entities") {
+      const response = await route.fetch();
+      heldComparison = true;
+      await comparisonGate;
+      await route.fulfill({ response });
+    } else await route.continue();
+  });
   await page
     .getByLabel("Identity decision reason")
     .fill("Conflicting birth years; retain namesakes");
   await page
     .getByRole("button", { name: "Keep separate", exact: true })
     .click();
+  const decisionHistory = page.getByRole("region", {
+    name: "Identity decision history",
+  });
   await expect(
-    page.getByText("Conflicting birth years; retain namesakes"),
+    decisionHistory.getByText("Conflicting birth years; retain namesakes"),
   ).toBeVisible();
   await page
     .getByLabel("Identity decision reason")
     .fill("Await an independent confirming record");
+  await expect.poll(() => heldComparison).toBe(true);
+  await expect(
+    page.getByRole("button", { name: "Defer identity decision" }),
+  ).toBeDisabled();
+  releaseComparison();
+  await expect(
+    page.getByRole("button", { name: "Defer identity decision" }),
+  ).toBeEnabled();
+  await expect(page.getByLabel("Identity decision reason")).toHaveValue(
+    "Await an independent confirming record",
+  );
+  await page.unrouteAll({ behavior: "wait" });
   await page.getByRole("button", { name: "Defer identity decision" }).click();
   await expect(
-    page.getByText("Await an independent confirming record"),
+    decisionHistory.getByText("Await an independent confirming record"),
   ).toBeVisible();
   const second = page.getByRole("region", {
     name: "Avery Vale · CASE:000022",
@@ -378,10 +485,10 @@ test("analyst-authored identities retain sources, decisions and corrections", as
     .getByRole("button", { name: /Entities/ })
     .click();
   await expect(
-    page.getByText("Conflicting birth years; retain namesakes"),
+    decisionHistory.getByText("Conflicting birth years; retain namesakes"),
   ).toBeVisible();
   await expect(
-    page.getByText("Await an independent confirming record"),
+    decisionHistory.getByText("Await an independent confirming record"),
   ).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Avery Vale · CASE:000021", exact: true }),

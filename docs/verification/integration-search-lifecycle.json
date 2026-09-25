@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "rust_source_commit": "121fcc32d024122e4f2d984a711dab60ae933a6b",
+  "browser_source_commit": "c35bb1d44562a8e8daf78e14e843d6d43786387a",
+  "scope": "Integrated search lifecycle, atomic collection retry, UI result consumption and Intel compile boundary",
+  "results": {
+    "rust": {
+      "library_passed": 584,
+      "integration_passed": 79,
+      "ignored": 31
+    },
+    "host_clippy": "passed all targets, warnings denied",
+    "intel_cross_clippy": "passed all targets, warnings denied; compilation only",
+    "format": "passed",
+    "browser": {
+      "passed": 23,
+      "failed": 0,
+      "files": [
+        "ui/tests/evidence-search.spec.ts",
+        "ui/tests/durable-collection.spec.ts"
+      ]
+    },
+    "source_handoff": {
+      "verified_source_files": 14,
+      "unchanged_schema_directory_files": 105,
+      "raw_public_log_pairs": 34,
+      "ordinary_test_binary": 1
+    }
+  },
+  "retained_private_artifacts": {
+    "core.log": {
+      "bytes": 82011,
+      "sha256": "62c38cf2879340ab77dc59275ffc22bb29378318618144a9a73e628353c2796c"
+    },
+    "core-exit.json": {
+      "bytes": 83,
+      "sha256": "32461e6197cc5e8cebf469eaf0bc9e3b4af5a76fe1703aa057ce00552ac9f0e2"
+    },
+    "clippy.log": {
+      "bytes": 185,
+      "sha256": "e5b05819ebab184f08e5e158b32de6aacd92ac74ba773f8cc8c0296e47f4edae"
+    },
+    "clippy-exit.json": {
+      "bytes": 126,
+      "sha256": "8ff44d03c0207b86bbf0a3f438cf5e03c3da9e990b988b822b4392f4f9120a32"
+    },
+    "intel-clippy.log": {
+      "bytes": 185,
+      "sha256": "3bcace1dfdf7e369f1f8396bae7ba0577645451f3d5ce6722848ae808f9fe44b"
+    },
+    "intel-clippy-exit.json": {
+      "bytes": 161,
+      "sha256": "b59f48542d349d67835af67c93455801948c1a801fa50093a77ef634b5e1de8d"
+    },
+    "fmt.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fmt-exit.json": {
+      "bytes": 66,
+      "sha256": "12973e3fced5be98013acb132f5e8ad765a8415deaf453daceeedf490c5d34b5"
+    },
+    "browser.log": {
+      "bytes": 3731,
+      "sha256": "22a3c033012f25249ff1e46707ae8b5cce773d11fb928f839ac4e34f9474a8e8"
+    },
+    "browser-exit.json": {
+      "bytes": 166,
+      "sha256": "d4a1192c2ce41b63b73f9f0ca5424e161222f1c1046602de6dc7203c0b54ee82"
+    },
+    "handoff-check.json": {
+      "bytes": 363,
+      "sha256": "f35e8e83c0a06586ac79dc65d6ee2c8205c572e709a0dfb02ebc7dc94378d651"
+    }
+  },
+  "limits": [
+    "No native worker, public-network collection or new design invocation",
+    "Search browser responses are explicitly injected; canonical evidence and collection state are real Rust",
+    "Earlier failed Windows retry and Intel Clippy runs remain retained; new hosted checks required",
+    "No release candidate or accepted gate"
+  ],
+  "complete_release": false
+}

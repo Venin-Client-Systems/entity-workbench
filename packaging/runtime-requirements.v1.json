@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "common": [
+    "application",
+    "ui-assets",
+    "sandbox-helper",
+    "java-runtime",
+    "document-parser",
+    "lucene-search",
+    "python-runtime",
+    "spacy",
+    "splink",
+    "networkx",
+    "pyarrow",
+    "duckdb",
+    "duckdb-spatial",
+    "tesseract",
+    "playwright",
+    "playwright-driver",
+    "chromium",
+    "fonts",
+    "icons",
+    "styles",
+    "help",
+    "synthetic-demo"
+  ],
+  "targets": {
+    "windows-x86_64": [
+      "webview2-fixed"
+    ],
+    "macos-aarch64": [],
+    "macos-x86_64": []
+  },
+  "minimum_ocr_languages": [
+    "eng"
+  ],
+  "asset_prefixes": {
+    "ocr_languages": "ocr-language:",
+    "regions": "region:"
+  },
+  "limits": {
+    "manifest_bytes": 16777216,
+    "files": 100000,
+    "file_bytes": 8589934592,
+    "total_bytes": 34359738368,
+    "path_depth": 64,
+    "errors": 200
+  },
+  "version_prefixes": {
+    "java-runtime": "21."
+  }
+}

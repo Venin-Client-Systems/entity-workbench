@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "description": "Fixed synthetic legacy extraction captured through the pre-v2 development canonical publisher; no worker ran.",
+  "original_name": "synthetic-partial.pdf",
+  "original_utf8": "Fixed synthetic document: synthetic-partial.pdf\n<script>window.extractionExecuted = true</script>\n<img src=\"https://unrequested.example/image\">\n",
+  "job": {
+    "schema_version": 4,
+    "id": "da57bbf9-5059-46d7-afc2-3b858601763a",
+    "request_key": "9369aa64-ec52-4bd4-982e-24c5f81feba8",
+    "input": {
+      "operation": "parse_document",
+      "evidence_id": "9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290",
+      "sha256": "9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290",
+      "bytes": 144
+    },
+    "state": "partial",
+    "attempt": 1,
+    "retry": {
+      "automatic": false,
+      "max_attempts": 3
+    },
+    "cancellation_requested": false,
+    "created_at": "2026-09-24T20:05:13.369665+00:00",
+    "updated_at": "2026-09-24T20:05:13.372165+00:00",
+    "started_at": "2026-09-24T20:05:13.370394+00:00",
+    "finished_at": "2026-09-24T20:05:13.372165+00:00",
+    "failure": null,
+    "detail": "Partial extraction retained with explicit limitations; review is required",
+    "result_ids": [
+      "3b9212e62d21efefccc03a452f52b346004b6b2922121a1b5cd1fffb0968270a"
+    ],
+    "lease": "f9d79e5c-e4d8-4ecf-a22d-d827a02cb5d3"
+  },
+  "extraction": {
+    "schema_version": 1,
+    "id": "3b9212e62d21efefccc03a452f52b346004b6b2922121a1b5cd1fffb0968270a",
+    "job_id": "da57bbf9-5059-46d7-afc2-3b858601763a",
+    "attempt": 1,
+    "input": {
+      "operation": "parse_document",
+      "evidence_id": "9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290",
+      "sha256": "9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290",
+      "bytes": 144
+    },
+    "created_at": "2026-09-24T20:05:13.371909+00:00",
+    "result_sha256": "6575bbe090bd16700f72e8a485064ed836520aa1ada2b3b762eabf183a546a84",
+    "result": {
+      "protocol_version": 1,
+      "job_id": "2cdcde21-d7cf-46d7-be87-17c3fb687a9d",
+      "content_sha256": "9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290",
+      "source_bytes": 144,
+      "parser": "pdfbox-3.0.8",
+      "media_type": "application/pdf",
+      "status": "partial",
+      "text": "Fixed synthetic document: synthetic-partial.pdf\n<script>window.extractionExecuted = true</script>\n<img src=\"https://unrequested.example/image\">\n",
+      "metadata": {
+        "Synthetic markup": [
+          "<svg onload=\"window.metadataExecuted=true\">"
+        ],
+        "Synthetic page count": [
+          "2"
+        ]
+      },
+      "limitations": [
+        "no_source_anchors",
+        "embedded_documents_excluded",
+        "ocr_not_performed"
+      ],
+      "error": null
+    }
+  },
+  "extraction_json": "{\"schema_version\":1,\"id\":\"3b9212e62d21efefccc03a452f52b346004b6b2922121a1b5cd1fffb0968270a\",\"job_id\":\"da57bbf9-5059-46d7-afc2-3b858601763a\",\"attempt\":1,\"input\":{\"operation\":\"parse_document\",\"evidence_id\":\"9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290\",\"sha256\":\"9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290\",\"bytes\":144},\"created_at\":\"2026-09-24T20:05:13.371909+00:00\",\"result_sha256\":\"6575bbe090bd16700f72e8a485064ed836520aa1ada2b3b762eabf183a546a84\",\"result\":{\"protocol_version\":1,\"job_id\":\"2cdcde21-d7cf-46d7-be87-17c3fb687a9d\",\"content_sha256\":\"9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290\",\"source_bytes\":144,\"parser\":\"pdfbox-3.0.8\",\"media_type\":\"application/pdf\",\"status\":\"partial\",\"text\":\"Fixed synthetic document: synthetic-partial.pdf\\n<script>window.extractionExecuted = true</script>\\n<img src=\\\"https://unrequested.example/image\\\">\\n\",\"metadata\":{\"Synthetic markup\":[\"<svg onload=\\\"window.metadataExecuted=true\\\">\"],\"Synthetic page count\":[\"2\"]},\"limitations\":[\"no_source_anchors\",\"embedded_documents_excluded\",\"ocr_not_performed\"],\"error\":null}}",
+  "job_json": "{\"schema_version\":4,\"id\":\"da57bbf9-5059-46d7-afc2-3b858601763a\",\"request_key\":\"9369aa64-ec52-4bd4-982e-24c5f81feba8\",\"input\":{\"operation\":\"parse_document\",\"evidence_id\":\"9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290\",\"sha256\":\"9827d0de11af192f454f5188164ac06101fb56ff07e48f23c0f6c49c9235a290\",\"bytes\":144},\"state\":\"partial\",\"attempt\":1,\"retry\":{\"automatic\":false,\"max_attempts\":3},\"cancellation_requested\":false,\"created_at\":\"2026-09-24T20:05:13.369665+00:00\",\"updated_at\":\"2026-09-24T20:05:13.372165+00:00\",\"started_at\":\"2026-09-24T20:05:13.370394+00:00\",\"finished_at\":\"2026-09-24T20:05:13.372165+00:00\",\"failure\":null,\"detail\":\"Partial extraction retained with explicit limitations; review is required\",\"result_ids\":[\"3b9212e62d21efefccc03a452f52b346004b6b2922121a1b5cd1fffb0968270a\"],\"lease\":\"f9d79e5c-e4d8-4ecf-a22d-d827a02cb5d3\"}"
+}

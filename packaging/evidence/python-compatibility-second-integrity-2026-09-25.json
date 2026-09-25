@@ -1,0 +1,19 @@
+{
+  "campaign_id": "e6160102-acc6-4b80-ad8f-73394e4035c6",
+  "candidate_executed_in_this_verification": false,
+  "interpretation": "Inventory verifier state describes assembly provenance; the separately recorded second native campaign executed and passed its fixed compatibility assertions.",
+  "observed_at": "2026-09-25T14:15:31.432482+00:00",
+  "schema_version": 1,
+  "scope": "post-campaign read-only prefix integrity",
+  "verification": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  }
+}

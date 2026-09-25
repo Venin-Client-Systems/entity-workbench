@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "scope": "Intel compilation boundary for the fixed ARM64 Python graph runner",
+  "failed_source_commit": "0d97a6e46730d4107d47147488b2b339790bc577",
+  "failed_hosted_run": 36177541527,
+  "failed_hosted_job": 108211696671,
+  "source_fix": "432c658273063816264eed90deab88f8d2a584b9",
+  "integrated_source": "2f8e5131a330c5a7be0cd701ae1c26c54881c076",
+  "repair": "Compile shared support for ARM64 production or test consumers; gate the application graph executor and its ARM64 inventory constants to ARM64. No blanket warning suppression or Intel activation.",
+  "source_files": {
+    "crates/core/src/engines/supervision.rs": {
+      "bytes": 20551,
+      "sha256": "3e1519abc636b0c9f651d5d6ae24e0e6d1dbe9e5d45289b282b6e190f0290913"
+    },
+    "crates/core/src/engines/supervision/python.rs": {
+      "bytes": 14839,
+      "sha256": "4dbfa070c792a1762a46836e99772dabbd44e3eb30c3b7cf8298bf6eca5fd43a"
+    }
+  },
+  "checks": {
+    "hosted_before": "Python tools and Rust tests passed; strict Clippy failed with18 production unused-code errors and3 test-build errors",
+    "local_cross_before": "Same18 production errors reproduced",
+    "local_cross_after": "Strict all-target Clippy for x86_64-apple-darwin passed",
+    "arm_helper_source_tests": 8,
+    "native_execution": "not_run",
+    "tooling": "Installed the x86_64-apple-darwin Rust standard library for compilation; no Intel interpreter/runtime execution"
+  },
+  "retained_private_artifacts": {
+    "intel-job.log": {
+      "bytes": 272878,
+      "sha256": "a2db73a71fbc260d6bf967e00d3a3981c08e27e615f20464fcfa642a372fc0bf"
+    },
+    "intel-cross-before.log": {
+      "bytes": 9955,
+      "sha256": "97836c0a782a0217e38cd8d8fa21ce4f7bb5ce17aabc15c58a7fb7b801c38302"
+    },
+    "intel-cross-before-exit.json": {
+      "bytes": 163,
+      "sha256": "345d000feffda99e45bc8a1710e5dc2ad2be466cbfca289404f84e0b4a172a95"
+    },
+    "intel-cross-after.log": {
+      "bytes": 185,
+      "sha256": "98f83b944bb7538e0f7f3f28621f5475310675dda06c8ca588acc6f235801575"
+    },
+    "intel-cross-after-exit.json": {
+      "bytes": 161,
+      "sha256": "b59f48542d349d67835af67c93455801948c1a801fa50093a77ef634b5e1de8d"
+    }
+  },
+  "arm_source_log": {
+    "bytes": 1561,
+    "sha256": "c0cd3767eb737c1cb3ae082249f4b1503bcb5ad86811f91a5536232d52dd7fb6"
+  },
+  "limits": [
+    "Cross-compilation is not native Intel execution, confinement or installed-package acceptance",
+    "No Python runtime inventory or normal activation changed",
+    "Exact repaired-head hosted verification remains required"
+  ],
+  "complete_release": false
+}

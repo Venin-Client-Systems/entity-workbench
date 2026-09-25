@@ -1,0 +1,77 @@
+{
+  "desktop-default": {
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "entity-workbench"
+    ],
+    "exit": 0,
+    "seconds": 29.51197041699197,
+    "log": {
+      "bytes": 1632,
+      "sha256": "286fd942405642bcbb460014c83994f28024eebd1acada17de886d78474253bc"
+    }
+  },
+  "desktop-proof": {
+    "command": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-p",
+      "entity-workbench",
+      "--features",
+      "development-graph-startup-proof"
+    ],
+    "exit": 0,
+    "seconds": 5.1437121669296175,
+    "log": {
+      "bytes": 1519,
+      "sha256": "a236230243030e3f1e7eae215cb104005baaf454d359f842b19ccb0650783f19"
+    }
+  },
+  "clippy": {
+    "command": [
+      "cargo",
+      "clippy",
+      "--offline",
+      "--locked",
+      "-p",
+      "entity-workbench",
+      "--all-targets",
+      "--features",
+      "development-graph-startup-proof",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 15.208883499959484,
+    "log": {
+      "bytes": 325,
+      "sha256": "e489489c60a57affef27c6f07bbbb57615bcc0a068dcc58804336da76077974d"
+    }
+  },
+  "fmt": {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.8025279589928687,
+    "log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "source": "0cf52f720259890f1395275f271fc8d94486e65c",
+  "schema_version": 1,
+  "complete_release": false,
+  "scope": "Desktop source integration; build-only empty-resource override. Actual package startup is separately recorded."
+}

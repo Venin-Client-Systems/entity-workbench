@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "passed": true,
+  "complete_release": false,
+  "source": "b680d4bcf6a6dbf2200ca5c455b4daf85024d983",
+  "source_files_verified": 1388,
+  "campaign_id": "930e1d3b-37a6-4939-9362-02ce786f04c5",
+  "outer_report_sha256": "4bd6a9a3d0c6227976aef2a01766ed9360ca89c53ba3a4334a1c1d14b7be8535",
+  "receipt_sha256": "e3f60a5e22e0d9fe709382d9ce768ad6a9325986639c17e4d11273575131954d",
+  "binary_sha256": "690eb0eb5ef75a8a32e213685adda67771f189e869a6bd639fb87cd420507c88",
+  "database_sha256": "8c6e3eeedb6f9ae663d47d5297bc97909385d1882819c6b33907308b6b953ac5",
+  "full_database_matches": true,
+  "database_integrity": "ok",
+  "canonical_before": {
+    "bytes": 8700,
+    "sha256": "ce39ad143957b17c6d39dd9f2f46d143945828530ec1a6079007929866580403"
+  },
+  "canonical_after": {
+    "bytes": 22369,
+    "sha256": "6ddd66cff9f3fec152de937a4383a35a6325380bacc65f1d9feefe2343d76c0f"
+  },
+  "records_before": 25,
+  "records_after": 28,
+  "originals_verified": 1,
+  "independent_bfs": [
+    "a",
+    "b",
+    "c"
+  ],
+  "single_call_and_launch": true,
+  "runtime_inventories": [
+    {
+      "prefix": "original",
+      "files": 11320,
+      "bytes": 601821300,
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822"
+    },
+    {
+      "prefix": "resources",
+      "files": 11320,
+      "bytes": 601821300,
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822"
+    }
+  ],
+  "replayed_and_reopened_immutable_result": true,
+  "scope": "Retained evidence audit without worker execution; host constructor and public commands on this development Mac; no packaged Tauri or release approval"
+}

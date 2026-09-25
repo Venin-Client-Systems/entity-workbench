@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="1200" viewBox="0 0 1120 1200">
+<rect x="0" y="0" width="1120" height="1200" fill="#f7f8f4"/>
+<rect x="0" y="0" width="1120" height="7" fill="#a64814"/>
+<text x="28" y="37" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">EVIDENCE / IMMUTABLE DERIVATIVE</text>
+<text x="28" y="75" font-family="Inter" font-size="29" font-weight="650" fill="#202729">Word-region workflow states</text>
+<text x="28" y="101" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">Explicit new method · local derivatives · honest unavailable states</text>
+<rect x="1020" y="28" width="72" height="34" fill="#f7f8f4" stroke="#cbd0ca" stroke-width="1"/>
+<text x="1032" y="50" font-family="Inter" font-size="12" font-weight="600" fill="#202729">Close</text>
+<rect x="28" y="123" width="1064" height="1" fill="#cbd0ca"/>
+<text x="28" y="158" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">01 / OPT-IN QUEUE</text>
+<rect x="28" y="176" width="1064" height="257" fill="#fff" stroke="#cbd0ca" stroke-width="1"/>
+<text x="44" y="205" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">PROCESSING METHOD</text>
+<rect x="44" y="217" width="488" height="39" fill="#f7f8f4" stroke="#cbd0ca" stroke-width="1"/>
+<text x="57" y="241" font-family="Inter" font-size="15" font-weight="600" fill="#202729">Image OCR + word regions · English</text>
+<text x="556" y="205" font-family="JetBrains Mono" font-size="10" font-weight="600" fill="#4f5c60">RETAINED ORIGINAL</text>
+<rect x="556" y="217" width="520" height="39" fill="#f7f8f4" stroke="#cbd0ca" stroke-width="1"/>
+<text x="570" y="241" font-family="JetBrains Mono" font-size="14" font-weight="400" fill="#202729">synthetic-statement.png</text>
+<rect x="44" y="275" width="1032" height="79" fill="#fef3c7"/>
+<text x="58" y="299" font-family="Inter" font-size="13" font-weight="400" fill="#202729">This method retains the canonical grayscale raster, TSV and immutable recognition result locally.</text>
+<text x="58" y="320" font-family="Inter" font-size="13" font-weight="400" fill="#202729">It adds unreviewed word boxes. Existing text-only image OCR remains a separate method.</text>
+<text x="58" y="341" font-family="Inter" font-size="13" font-weight="400" fill="#202729">Raster coordinates describe encoded pixels; EXIF orientation is not applied.</text>
+<rect x="44" y="375" width="242" height="34" fill="#202729" stroke="#202729" stroke-width="1"/>
+<text x="56" y="397" font-family="Inter" font-size="12" font-weight="600" fill="#f7f8f4">Queue word-region OCR</text>
+<text x="308" y="397" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">One source image · English · no automatic acceptance</text>
+<text x="28" y="474" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">02 / NO TEXT RECOGNIZED</text>
+<rect x="28" y="492" width="1064" height="268" fill="#fff" stroke="#cbd0ca" stroke-width="1"/>
+<text x="44" y="524" font-family="Inter" font-size="21" font-weight="600" fill="#202729">No text recognized · unreviewed</text>
+<text x="44" y="550" font-family="JetBrains Mono" font-size="11" font-weight="500" fill="#a64814">0 WORDS / RETAINED RASTER AND TSV AVAILABLE</text>
+<rect x="44" y="570" width="612" height="126" fill="#202729"/>
+<rect x="60" y="592" width="580" height="80" fill="#fff" stroke="#cbd0ca" stroke-width="1"/>
+<text x="677" y="594" font-family="Inter" font-size="14" font-weight="600" fill="#202729">No word boxes were returned.</text>
+<text x="677" y="625" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">An empty OCR result does not establish</text>
+<text x="677" y="645" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">that the original contains no relevant</text>
+<text x="677" y="665" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">information. Inspect the local raster.</text>
+<rect x="44" y="710" width="116" height="34" fill="#e8ebe5" stroke="#cbd0ca" stroke-width="1"/>
+<text x="56" y="732" font-family="Inter" font-size="12" font-weight="600" fill="#4f5c60">Copy text</text>
+<text x="178" y="732" font-family="Inter" font-size="12" font-weight="400" fill="#4f5c60">Whitespace-only recognition stays in the immutable result.</text>
+<text x="28" y="803" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">03 / STORED DERIVATIVE UNAVAILABLE</text>
+<rect x="28" y="821" width="1064" height="226" fill="#fff" stroke="#cbd0ca" stroke-width="1"/>
+<rect x="28" y="821" width="4" height="226" fill="#a64814"/>
+<text x="46" y="855" font-family="Inter" font-size="21" font-weight="600" fill="#202729">Derivative could not be verified</text>
+<text x="46" y="886" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">A previously published raster, TSV or result is missing or altered.</text>
+<text x="46" y="909" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">Preview, recognized text and region controls are hidden. No cached result is substituted.</text>
+<text x="46" y="932" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">The failure does not alter earlier report snapshots or accept any extracted text.</text>
+<rect x="46" y="983" width="145" height="34" fill="#f7f8f4" stroke="#cbd0ca" stroke-width="1"/>
+<text x="58" y="1005" font-family="Inter" font-size="12" font-weight="600" fill="#202729">Retry inspection</text>
+<rect x="205" y="983" width="113" height="34" fill="#f7f8f4" stroke="#cbd0ca" stroke-width="1"/>
+<text x="217" y="1005" font-family="Inter" font-size="12" font-weight="600" fill="#202729">Inspect job</text>
+<text x="340" y="1005" font-family="Inter" font-size="12" font-weight="600" fill="#a64814">Read failure · not an empty recognition result</text>
+<text x="28" y="1089" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#a64814">04 / DECODER REJECTION</text>
+<text x="28" y="1118" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">Unsupported, failed or quota-limited decoding retains its typed result only: no raster, TSV or word boxes.</text>
+<text x="28" y="1140" font-family="Inter" font-size="13" font-weight="400" fill="#4f5c60">Worker-exit-unverified and recovery-required remain explicit job failures; do not claim a stopped worker.</text>
+<text x="28" y="1175" font-family="JetBrains Mono" font-size="10" font-weight="500" fill="#a64814">ILLUSTRATIVE SYNTHETIC DESIGN / QUEUEING DOES NOT MODIFY THE ORIGINAL OR CREATE ACCEPTED ANCHORS</text>
+</svg>

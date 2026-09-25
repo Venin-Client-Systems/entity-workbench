@@ -2,7 +2,7 @@
   "tool": "axe-core/playwright 4.13.0",
   "date": "2026-09-22",
   "fixture": "synthetic investigation",
-  "states": "Main section after reviewed transaction, merge reversal and saved report; overview captured before those actions",
+  "states": "Eight main sections; review layouts additionally asserted by the workflow test",
   "screens": [
     {
       "screen": "Overview",
@@ -19,26 +19,26 @@
     {
       "screen": "Entities",
       "violation_count": 0,
-      "manual_review_rules": []
+      "manual_review_rules": [
+        "color-contrast"
+      ]
     },
     {
       "screen": "Transactions",
       "violation_count": 0,
-      "manual_review_rules": []
+      "manual_review_rules": [
+        "color-contrast"
+      ]
     },
     {
       "screen": "Relationships",
       "violation_count": 0,
-      "manual_review_rules": [
-        "aria-prohibited-attr"
-      ]
+      "manual_review_rules": []
     },
     {
       "screen": "Locations",
       "violation_count": 0,
-      "manual_review_rules": [
-        "aria-prohibited-attr"
-      ]
+      "manual_review_rules": []
     },
     {
       "screen": "Discovery",
@@ -48,13 +48,11 @@
     {
       "screen": "Assessment",
       "violation_count": 0,
-      "manual_review_rules": []
+      "manual_review_rules": [
+        "color-contrast"
+      ]
     }
   ],
-  "limits": "Automated results do not establish WCAG conformance or visual design approval.",
-  "additional_workflow": {
-    "state": "Authored namesakes after accepted source review, keep-separate/defer decisions and a correction returned to pending",
-    "violation_count": 0,
-    "manual_review_rules": []
-  }
+  "limitations": "Automated checks do not establish accessibility conformance; native and assistive-technology review remains open.",
+  "design_revision": "Industrial / technical \u2014 Figma 6:2"
 }

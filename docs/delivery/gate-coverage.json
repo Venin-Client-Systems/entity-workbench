@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "gates": {
+    "integrated_workflows": [
+      "EW-09",
+      "EW-33"
+    ],
+    "windows_appcontainer": [
+      "EW-03",
+      "EW-34",
+      "EW-39"
+    ],
+    "macos_signed_helpers": [
+      "EW-04",
+      "EW-34",
+      "EW-38",
+      "EW-39"
+    ],
+    "all_runtime_dependencies_bundled": [
+      "EW-01",
+      "EW-06",
+      "EW-07",
+      "EW-26",
+      "EW-38"
+    ],
+    "offline_clean_install_three_targets": [
+      "EW-09",
+      "EW-39"
+    ],
+    "hostile_input_and_resource_exhaustion": [
+      "EW-32",
+      "EW-34"
+    ],
+    "broad_local_web_coverage": [
+      "EW-05",
+      "EW-15",
+      "EW-22",
+      "EW-23",
+      "EW-24"
+    ],
+    "recovery_and_migration_failures": [
+      "EW-10",
+      "EW-11",
+      "EW-35"
+    ],
+    "benchmark_16gb_target": [
+      "EW-36"
+    ],
+    "dependency_license_and_security_review": [
+      "EW-37"
+    ],
+    "signed_and_notarized_artifacts": [
+      "EW-08",
+      "EW-38"
+    ],
+    "downloaded_artifact_verification": [
+      "EW-39",
+      "EW-40"
+    ]
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "DocxCaptureOutcome": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "snapshot": {
+              "$ref": "#/$defs/DocxSnapshotRecord"
+            },
+            "state": {
+              "const": "saved",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "snapshot"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Absence at this read snapshot. At the same revision, a previously sent\ncapture may still publish; only a strictly later revision precludes it.",
+          "properties": {
+            "state": {
+              "const": "not_recorded",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "DocxSnapshotRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "document": {
+          "$ref": "#/$defs/ReportArtifactRef"
+        },
+        "docx": {
+          "$ref": "#/$defs/ReportArtifactRef"
+        },
+        "generator_version": {
+          "type": "string"
+        },
+        "id": {
+          "description": "Also the caller's stable request identity. Reuse binds the same source revision.",
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "template_version": {
+          "type": "string"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "workspace_revision",
+        "created_at",
+        "template_version",
+        "generator_version",
+        "document",
+        "docx"
+      ],
+      "type": "object"
+    },
+    "ReportArtifactKind": {
+      "enum": [
+        "report_document_json_v1",
+        "report_docx_v1"
+      ],
+      "type": "string"
+    },
+    "ReportArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "kind": {
+          "$ref": "#/$defs/ReportArtifactKind"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Explicit request recovery, separate from the metadata-only catalogue.",
+  "properties": {
+    "captured_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "outcome": {
+      "$ref": "#/$defs/DocxCaptureOutcome"
+    },
+    "request_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "captured_revision",
+    "workspace_revision",
+    "outcome"
+  ],
+  "title": "DocxCaptureResolution",
+  "type": "object"
+}

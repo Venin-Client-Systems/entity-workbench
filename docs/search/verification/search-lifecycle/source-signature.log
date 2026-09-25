@@ -1,0 +1,1 @@
+error: gpg.ssh.allowedSignersFile needs to be configured and exist for ssh signature verification

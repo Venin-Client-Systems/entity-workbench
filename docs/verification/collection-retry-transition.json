@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "scope": "Atomic collection publication retry consumption",
+  "failed_source_commit": "0d97a6e46730d4107d47147488b2b339790bc577",
+  "failed_hosted_run": 36177541527,
+  "failed_hosted_job": 108211696804,
+  "cause": "The retry consumer cleared retry_requested while leaving SettlementPending visible until a separate lock acquisition. Readers could offer and accept another retry while publication was starting.",
+  "repair": "Set Settling and consume retry_requested atomically under the lane mutex. A one-shot test-only observer holds the former race window open.",
+  "source_files": {
+    "crates/core/src/coordinator_collection.rs": {
+      "bytes": 21855,
+      "sha256": "e1c431a5afe41761bf16923f62f196f7fd3c2379a68e7719a1888b9741c8a433"
+    },
+    "crates/core/src/coordinator_collection_api_tests.rs": {
+      "bytes": 37429,
+      "sha256": "5b8f186cc8b03b94d88649f50e6ead8ad97c20da7a901f5d1492fefbcd0239ef"
+    }
+  },
+  "verification": {
+    "deterministic_before": "failed as expected: observed SettlementPending instead of Settling",
+    "deterministic_after": "passed; public and internal retry refused during consumption, canonical requests and revision unchanged, one synthetic transport invocation",
+    "collection_tests": 30,
+    "full_core": {
+      "library_passed": 555,
+      "integration_passed": 79,
+      "ignored": 31
+    },
+    "strict_all_target_clippy": "passed",
+    "format": "passed",
+    "initial_invocation": "Short filter plus --exact selected zero tests; retained and replaced by the matching library filter before any pass claim"
+  },
+  "retained_private_artifacts": {
+    "windows-job.log": {
+      "bytes": 188291,
+      "sha256": "6390aa96910c7b4ecb078d4ac5338106a49be9d024e72e423614373e4beaeaee"
+    },
+    "retry-before-initial.log": {
+      "bytes": 2672,
+      "sha256": "11dbc507b1af1f76752c59c1f6dd44e5608008167acc99795f22ff58a6cb1276"
+    },
+    "retry-before.log": {
+      "bytes": 1218,
+      "sha256": "cf04b288016391a0e16ef5fbfda31a45dd8a5e1409f0dc4f26c5cc688659a732"
+    },
+    "retry-before-exit.json": {
+      "bytes": 159,
+      "sha256": "cb83c61755b6171fed0ac50f436213af9a46a688b430af24cc73fc5fc2dfd70c"
+    },
+    "retry-after.log": {
+      "bytes": 515,
+      "sha256": "4efba5a5188e02198dde67ab1d23268e9dfe3a2501eea17c600ad3fd5efece5c"
+    },
+    "retry-after-exit.json": {
+      "bytes": 157,
+      "sha256": "009bf8720211387829296f28483e1dccb2232a5abb9075f91ca3c97b32f21a1b"
+    },
+    "collection.log": {
+      "bytes": 4212,
+      "sha256": "c23bd4e0d05bf91c33e3e78e085e4f7f283f6a7c841e1d75c60dc9925e44201d"
+    },
+    "collection-exit.json": {
+      "bytes": 107,
+      "sha256": "3f16414c647aaa00967e48d9733fc44cb5bdcdda0d6b7b9be07d18b8bf0081e7"
+    },
+    "core.log": {
+      "bytes": 78715,
+      "sha256": "5ddcafc2d1a59233da8606018020ccb789aac3aee004a9656230726605e17303"
+    },
+    "core-exit.json": {
+      "bytes": 71,
+      "sha256": "05368e3f74375faa7ed566600fbea09e6797b278dbea81cd61493210ff474f53"
+    },
+    "clippy.log": {
+      "bytes": 185,
+      "sha256": "b94c624e4a3e436bb5cad6f1e7cad65700379650ab225ac76324b36b0754e3be"
+    },
+    "clippy-exit.json": {
+      "bytes": 114,
+      "sha256": "a46eb0e6aaa7441c9979adf1a2f102cbb8db6c0f830e1bf1793db48fb442f28f"
+    },
+    "fmt.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "fmt-exit.json": {
+      "bytes": 66,
+      "sha256": "12973e3fced5be98013acb132f5e8ad765a8415deaf453daceeedf490c5d34b5"
+    }
+  },
+  "limits": [
+    "Synthetic transport only; no native worker or public-web collection invocation",
+    "Existing retry budget and exact settlement ownership remain unchanged",
+    "Hosted verification of the repaired source remains required",
+    "No normal runtime activation or release gate change"
+  ],
+  "complete_release": false,
+  "peer_review": {
+    "scope": "Read-only review of the two changed Rust files; no additional execution",
+    "result": "No actionable issue found in phase transition, public/internal admission, one-shot observer or regression assertions",
+    "source_files_match": true
+  }
+}

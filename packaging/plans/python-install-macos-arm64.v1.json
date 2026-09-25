@@ -1,0 +1,27 @@
+{
+  "bootstrap": "not-staged",
+  "bytecode": "not-generated",
+  "console_wrappers": "omitted",
+  "id": "python-macos-arm64-installed-v1",
+  "limits": {
+    "entries": 40000,
+    "file_bytes": 83886080,
+    "files": 20000,
+    "metadata_bytes": 16777216,
+    "path_depth": 16,
+    "total_bytes": 805306368,
+    "wheel_expanded_bytes": 536870912
+  },
+  "ordinary_wheel_prefix": "install/lib/python3.13/site-packages",
+  "pth": "bytes-preserved-not-executed",
+  "python": "3.13.15-standard-gil",
+  "runtime_manifest_destination": "review/cpython/manifest.json",
+  "runtime_manifest_sha256": "6b4edce6755094b4f8393d5553da9a6968ac18b761035616430aaed7dbb0be95",
+  "schema_version": 1,
+  "spread": {
+    "igraph-1.0.0.data/headers/igraphmodule_api.h": "install/include/python3.13/igraph/igraphmodule_api.h"
+  },
+  "target": "macos-aarch64",
+  "wheel_selection_sha256": "983ac846a79e4985218b3f2582445abeac18de90fc3108c06fcb29b60928580e",
+  "wheels": 58
+}

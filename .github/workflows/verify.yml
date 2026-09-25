@@ -1,6 +1,7 @@
 name: Synthetic source verification
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -23,18 +24,47 @@ jobs:
         with:
           toolchain: '1.90.0'
           components: rustfmt, clippy
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: native-${{ runner.os }}-${{ runner.arch }}-rust-1.90-${{ hashFiles('Cargo.lock') }}
       - run: npm ci
+      - name: Verify runtime inventory contract with synthetic fixtures
+        run: python -m unittest discover -s scripts/tests -p 'test_*.py' -v
+      - name: Verify OCR failure evidence replaces stale success
+        run: python scripts/test_ocr_evidence.py
+      - name: Verify OCR region failure and history evidence
+        run: python scripts/test_ocr_regions_evidence.py
+      - name: Verify image decoder failure and history evidence
+        run: python scripts/test_image_evidence.py
+      - name: Verify PDF renderer failure and history evidence
+        run: python scripts/test_pdf_evidence.py
+      - name: Verify PDF job failure and history evidence
+        run: python scripts/test_pdf_jobs_evidence.py
+      - name: Verify retained image region failure and history evidence
+        run: python scripts/test_image_region_jobs_evidence.py
+      - name: Verify native DNS evidence handling without network requests
+        run: python scripts/test_native_collection_transport_evidence.py
       - run: cargo fmt --all -- --check
       - run: cargo test -p workbench-core --locked
       - run: cargo clippy -p workbench-core --all-targets --locked -- -D warnings
       - run: npm run build
+      - name: Verify native export policy and completion tracking
+        env:
+          TAURI_CONFIG: '{"bundle":{"active":false,"resources":[]}}'
+        run: cargo test -p entity-workbench --locked
       - name: Compile native development binary (not a complete distribution)
         working-directory: desktop
         run: npx tauri build --no-bundle --config tauri.ci.conf.json
       - name: Confirm release status remains explicit
         run: python scripts/release_gate.py --check-policy
   browser:
-    runs-on: ubuntu-24.04
+    # Keep Chromium's sandbox enabled on a supported application target.
+    # Ubuntu's hosted AppArmor policy blocks this browser's user namespace.
+    runs-on: macos-15
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -44,7 +74,16 @@ jobs:
       - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
         with:
           toolchain: '1.90.0'
+      - uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target/debug
+          key: browser-${{ runner.os }}-${{ runner.arch }}-rust-1.90-${{ hashFiles('Cargo.lock') }}
       - run: npm ci
       - run: cargo build -p workbench-core --bin ew-dev --locked
+      - name: Check literal search against the JavaScript runtime
+        run: node scripts/test_transaction_search_case.mjs
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ui

@@ -1,0 +1,26 @@
+[
+  {
+    "screen": "Finding editor 1440",
+    "violations": [],
+    "manual_review_rules": [
+      "color-contrast"
+    ]
+  },
+  {
+    "screen": "Finding editor 960",
+    "violations": [],
+    "manual_review_rules": [
+      "color-contrast"
+    ]
+  },
+  {
+    "screen": "Finding review 1440",
+    "violations": [],
+    "manual_review_rules": []
+  },
+  {
+    "screen": "Finding review 960",
+    "violations": [],
+    "manual_review_rules": []
+  }
+]

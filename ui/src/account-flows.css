@@ -1,0 +1,186 @@
+.flow-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: start;
+}
+.flow-fields label {
+  min-width: 0;
+  margin: 0;
+}
+.flow-fields input {
+  width: 100%;
+  min-width: 0;
+}
+.flow-applied {
+  background: #202729;
+  color: #fff;
+  padding: 16px;
+  overflow-wrap: anywhere;
+}
+.flow-applied > span,
+.flow-applied > strong {
+  display: block;
+}
+.flow-applied .eyebrow {
+  color: #e5c266;
+  margin-bottom: 10px;
+}
+.flow-applied p {
+  margin-bottom: 0;
+}
+.flow-counts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid #bcc3c0;
+}
+.flow-counts > div {
+  padding: 14px;
+  border-right: 1px solid #bcc3c0;
+}
+.flow-counts > div:last-child {
+  border-right: 0;
+}
+.flow-counts span {
+  display: block;
+  font: 11px var(--mono);
+  text-transform: uppercase;
+}
+.flow-counts strong {
+  display: block;
+  font: 700 28px var(--mono);
+  margin-top: 12px;
+}
+.flow-empty {
+  padding: 16px;
+  border: 1px solid #bcc3c0;
+}
+.flow-lane {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr);
+  border: 1px solid #9facaa;
+  background: #fff;
+  margin: 12px 0;
+}
+.flow-endpoint,
+.flow-link {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.flow-endpoint {
+  background: #e8ece7;
+}
+.flow-endpoint > span {
+  font: 11px var(--mono);
+}
+.flow-endpoint > strong {
+  font: 700 22px var(--mono);
+}
+.flow-link {
+  align-items: center;
+  text-align: center;
+}
+.flow-link > strong {
+  font: 700 20px var(--mono);
+}
+.flow-link > span[aria-hidden] {
+  font-size: 26px;
+  line-height: 1;
+}
+.flow-node {
+  border: 1px solid #bcc3c0;
+  background: #fff;
+  padding: 16px;
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+}
+.flow-node header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.flow-node h4 {
+  font: 700 20px var(--mono);
+  margin: 0;
+}
+.flow-node header > span {
+  font: 11px var(--mono);
+  background: #e8ece7;
+  padding: 8px;
+}
+.flow-totals {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid #bcc3c0;
+}
+.flow-money {
+  padding: 12px;
+  background: #f1f3ee;
+}
+.flow-money + .flow-money {
+  border-left: 1px solid #bcc3c0;
+}
+.flow-money h5 {
+  font: 12px/1.5 var(--mono);
+  margin: 0 0 14px;
+}
+.flow-money dl {
+  margin: 0;
+}
+.flow-money dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.flow-money dt {
+  font-size: 12px;
+}
+.flow-money dd {
+  font: 700 15px var(--mono);
+  margin: 0;
+}
+.flow-money small {
+  font-size: 11px;
+}
+.flow-pair {
+  border: 1px solid #bcc3c0;
+  padding: 16px;
+  margin: 12px 0;
+}
+.flow-source-context {
+  border-left: 3px solid #a64b0a;
+  padding-left: 10px;
+  font-weight: 600;
+}
+@media (max-width: 1000px) {
+  .flow-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 750px) {
+  .flow-lane,
+  .flow-totals {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .flow-link > span[aria-hidden] {
+    transform: rotate(90deg);
+  }
+  .flow-money + .flow-money {
+    border-left: 0;
+    border-top: 1px solid #bcc3c0;
+  }
+  .flow-counts > div {
+    padding: 10px;
+  }
+  .flow-counts span {
+    font-size: 10px;
+  }
+}

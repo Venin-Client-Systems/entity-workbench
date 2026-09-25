@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "campaign_nonce": "e4f62d1c-1652-45b0-b889-eadabf0995a1",
+  "source_commit": "8262223166b5aa51a65c06960e33f2e5af012627",
+  "receipt_sha256": "10e2f6ad95f2b24b746739aea587066215b149315f4720e1f1bb059f3638895d",
+  "root_read_only_checks": {
+    "validated_exact_log_events": true,
+    "retained_log_digests_and_lengths": true,
+    "sqlite_integrity_checks": 3,
+    "all_six_table_contents_equal_across_workspace_backup_restore": true,
+    "originals_per_workspace": 2,
+    "all_original_filenames_match_sha256": true,
+    "all_fixture_bytes_equal_checked_in_fixture": true
+  },
+  "table_row_counts": {
+    "derivative_objects": 0,
+    "events": 7,
+    "history": 6,
+    "meta": 1,
+    "records": 4,
+    "sqlite_sequence": 3
+  },
+  "complete_release": false
+}

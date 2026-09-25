@@ -28,8 +28,8 @@ fn validate_entity(input: &EntityInput) -> Result<()> {
     Ok(())
 }
 
-fn validate_anchor(conn: &Connection, anchor: &SourceAnchor) -> Result<()> {
-    let e: Evidence = get(conn, "evidence", anchor.evidence_id())?;
+pub(super) fn validate_anchor(conn: &Connection, anchor: &SourceAnchor) -> Result<()> {
+    let e = get_evidence(conn, anchor.evidence_id())?;
     match anchor {
         SourceAnchor::Text { line_start, line_end, .. } => {
             let text = e.text.as_deref().ok_or_else(|| Error::Validation("Source has no text derivative".into()))?;
@@ -38,7 +38,7 @@ fn validate_anchor(conn: &Connection, anchor: &SourceAnchor) -> Result<()> {
         SourceAnchor::Cell { sheet, row, column, .. } => {
             require(e.media_type == "text/csv" && sheet == "CSV" && *row >= 2, "Cell anchors currently require an imported CSV data row")?;
             let text = e.text.as_deref().ok_or_else(|| Error::Validation("CSV source has no text".into()))?;
-            let mut reader = csv::Reader::from_reader(text.as_bytes());
+            let mut reader = crate::statements::reader(text.as_bytes(), super::statements::source_delimiter(conn, &e.id)?)?;
             require(reader.headers()?.iter().any(|h| h == column), "Source column does not exist")?;
             let record = reader.records().nth((*row - 2) as usize).transpose()?;
             require(record.is_some(), "Source row does not exist")
@@ -64,8 +64,15 @@ fn invalidate_assertions(conn: &Connection, observation_id: &str) -> Result<()> 
 impl Workspace {
     pub fn inspect_source(&self, anchor: &SourceAnchor) -> Result<SourceExcerpt> {
         let tx = self.conn.unchecked_transaction()?;
-        validate_anchor(&tx, anchor)?;
         let e: Evidence = get(&tx, "evidence", anchor.evidence_id())?;
+        require(
+            e.id == anchor.evidence_id() && e.id == e.sha256,
+            "Canonical source identity is invalid",
+        )?;
+        // A retained derivative is not proof that its original is still intact.
+        // Verify before returning a quote advertised as preserved source evidence.
+        self.verify_original(&e)?;
+        validate_anchor(&tx, anchor)?;
         let text = e.text.as_deref().unwrap_or_default();
         let (location, quote) = match anchor {
             SourceAnchor::Text {
@@ -84,7 +91,10 @@ impl Workspace {
             SourceAnchor::Cell {
                 sheet, row, column, ..
             } => {
-                let mut reader = csv::Reader::from_reader(text.as_bytes());
+                let mut reader = crate::statements::reader(
+                    text.as_bytes(),
+                    super::statements::source_delimiter(&tx, &e.id)?,
+                )?;
                 let column_index = reader
                     .headers()?
                     .iter()
@@ -267,7 +277,7 @@ impl Workspace {
         let tx = self.conn.unchecked_transaction()?;
         let a: Entity = get(&tx, "entity", left)?;
         let b: Entity = get(&tx, "entity", right)?;
-        let evidence: BTreeMap<_, _> = all::<Evidence>(&tx, "evidence")?
+        let evidence: BTreeMap<_, _> = all_evidence(&tx)?
             .into_iter()
             .map(|e| (e.id, e.origin_group))
             .collect();
@@ -329,6 +339,10 @@ impl Workspace {
         })
     }
 }
+
+#[cfg(test)]
+#[path = "source_inspection_tests.rs"]
+mod source_inspection_tests;
 
 #[cfg(test)]
 mod tests {

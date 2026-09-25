@@ -1,0 +1,65 @@
+{
+  "base_commit": "0654a29e56a7cee86ad47cdbfa034151da7dbd06",
+  "candidate_interpreter_executed": false,
+  "complete_release": false,
+  "native_compatibility": "not-started",
+  "observed_on": "2026-09-25",
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "schema_version": 1,
+  "scope": "EW-07 test-only Python compatibility source verification",
+  "source_binding": "individual-file-sha256-before-commit",
+  "source_files": {
+    "crates/core/src/engines/supervision.rs": "f597996166b4f709893a18fceafcbc65559953cce423c754fd214fc75df08bb8",
+    "crates/core/src/engines/supervision/python_probe.rs": "72b809ad2a99aeceff9aa5ec15ca0e03026f217f5201577c519a9ee397e9ce3f",
+    "docs/security/PYTHON-COMPATIBILITY-PROBE.md": "8e88f1ce146b8dce3e303be94bd823ed94e94d4400368f3090364a3b0301778c",
+    "packaging/PYTHON-NATIVE-PROBE-PROPOSAL.md": "be5ad973f887068249b5656f4ac692924092ba11b459cef91661e57167d26c90",
+    "scripts/test_python_compatibility.py": "a16733233e833e9634f2ae0ef2bb63d5172e65d7a90c55a56fa4a07099a5ca21",
+    "scripts/tests/test_python_probe_contracts.py": "d193d5c0920d5a4a54e58ae004c6eb3c05ccb28abe3dd19d139c2df8ab76b837",
+    "workers/python/probe/bootstrap.py": "83c31734ad13dbd603691995babac8e3b0be51d304b51d55b71198fbb144fb8c",
+    "workers/python/probe/compatibility.py": "c26418535c87dc896b114493bc809a239fad789fa740876b6f5f272403fea84d",
+    "workers/python/probe/expected.json": "6c88fcf93736dd8a2af9226d3f5317dfb1025ca14e2fe00f0c4cb5b8ebc74aff",
+    "workers/python/probe/fixture.json": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85",
+    "workers/python/transaction_totals.py": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+  },
+  "tests": {
+    "Python_contracts": [
+      {
+        "host_version": "3.13.11",
+        "optimized": false,
+        "passed": 13
+      },
+      {
+        "host_version": "3.13.11",
+        "optimized": true,
+        "passed": 13
+      },
+      {
+        "host_version": "3.14.2",
+        "optimized": false,
+        "passed": 13
+      },
+      {
+        "host_version": "3.14.2",
+        "optimized": true,
+        "passed": 13
+      }
+    ],
+    "cargo_fmt_check": "passed",
+    "ordinary_Rust_contracts": {
+      "ignored_native": 1,
+      "passed": 4
+    },
+    "strict_core_all_targets_clippy": "passed"
+  },
+  "unverified": [
+    "native-import-and-analysis-compatibility",
+    "hostile-file-and-network-controls",
+    "fresh-prefix-relocation",
+    "hard-resident-memory-ceiling",
+    "supervisor-crash-recovery",
+    "canonical-worker-protocol",
+    "signing-clean-install-minimum-os",
+    "Intel-Mac-and-Windows",
+    "complete-notices"
+  ]
+}

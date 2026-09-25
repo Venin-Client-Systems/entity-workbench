@@ -1,0 +1,10 @@
+[test/native-coordinator-search 6c56d39] Add fixed native coordinator Search campaign source
+ 11 files changed, 1631 insertions(+), 1 deletion(-)
+ create mode 100644 crates/core/src/coordinator_search_native.rs
+ create mode 100644 crates/core/src/coordinator_search_native_inventory.rs
+ create mode 100644 crates/core/src/engines/search_probe.rs
+ create mode 100644 docs/search/NATIVE-COORDINATOR-CAMPAIGN.md
+ create mode 100644 scripts/native_search_receipt.py
+ create mode 100644 scripts/native_search_runtime.py
+ create mode 100644 scripts/test_native_coordinator_search.py
+ create mode 100644 scripts/tests/test_native_search_receipts.py

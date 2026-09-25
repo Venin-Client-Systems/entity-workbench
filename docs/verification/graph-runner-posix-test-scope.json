@@ -1,0 +1,117 @@
+{
+  "record_version": 1,
+  "scope": "Two Mac native-graph runner controls use POSIX private receipt persistence; pure receipt cases remain portable.",
+  "source": {
+    "commit": "6baa137a225e3d5ee216b25006b1f60d930451d4",
+    "tree": "6e35bc051fd90298c04baacb72c3f660543f3597",
+    "base": "792b2176bd3a3c0a845f57fc1c189b57a4c0d623",
+    "files": [
+      {
+        "path": "scripts/tests/test_graph_coordinator_native.py",
+        "bytes": 8582,
+        "sha256": "3cfd71ae8259dce28e51aff5c298c59683b3aab72483d7a7ee442a9a0fb52458"
+      }
+    ]
+  },
+  "unchanged_runtime_sources": [
+    {
+      "path": "scripts/test_python_compatibility.py",
+      "bytes": 22742,
+      "sha256": "894bfbcef66269ac6a399ce8a53d535cff590134166c9342994c13d42b2b997f"
+    },
+    {
+      "path": "scripts/test_graph_coordinator_native.py",
+      "bytes": 7674,
+      "sha256": "8fbccf7b216a1aad73ab697c099b6d01c1d91253699feb2bb7930e226f9678da"
+    }
+  ],
+  "implementation": [
+    "POSIX scope applies only to metadata-failure persistence and outer-timeout runner controls.",
+    "The existing failed-report test now requires exact POSIX mode 0600.",
+    "The real private writer, native runner, timeout semantics and all assertions remain unchanged."
+  ],
+  "prior_failure": {
+    "source_commit": "2cc5ece",
+    "run_id": "36182852025",
+    "job_id": "108229145930",
+    "log_reference": "ci-2cc5ece/windows-job.log",
+    "bytes": 110519,
+    "sha256": "6768b0ae8abc0e22e448592112dd54f2cade8be7c8ec2e61c7c7875d45e5ef26",
+    "observed": "353 tests; two errors and 83 skips. Both errors are unavailable os.fchmod in the POSIX private receipt writer."
+  },
+  "verification": {
+    "host": {
+      "os": "Darwin",
+      "architecture": "arm64",
+      "python": "3.14.2"
+    },
+    "focused_normal": {
+      "tests": 8,
+      "passed": 8,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    "focused_optimized": {
+      "tests": 8,
+      "passed": 8,
+      "skipped": 0,
+      "exit_code": 0
+    },
+    "synthetic_nonposix_selection": {
+      "tests": 8,
+      "passed": 6,
+      "skipped": 2,
+      "exit_code": 0,
+      "method": "Only this test module imports a proxy os.name=nt; real host remains POSIX. The private writer is replaced with a fail-if-called guard.",
+      "claim": "Test-selection simulation, not native Windows execution."
+    },
+    "diff_check": "passed",
+    "staged_source_audit": {
+      "files": 1,
+      "result": "passed"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "artifacts/graph-runner-posix-tests/commands.json",
+      "bytes": 1077,
+      "sha256": "283f7ee8c71b36fa1fd907c5ff2dec5970552b50b91a6bf3be754f1104458100"
+    },
+    {
+      "path": "artifacts/graph-runner-posix-tests/diff-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/graph-runner-posix-tests/focused-normal.log",
+      "bytes": 1652,
+      "sha256": "91e584cc539addfe00d1871729fd5f673afbe2a39d282c87825904903ed3fd75"
+    },
+    {
+      "path": "artifacts/graph-runner-posix-tests/focused-optimized.log",
+      "bytes": 1652,
+      "sha256": "8b0bc79120c57da69771cedd92c95a6dfbb4ab096dbf9af29e0ecefcc41eff78"
+    },
+    {
+      "path": "artifacts/graph-runner-posix-tests/simulate_nonposix_selection.py",
+      "bytes": 1117,
+      "sha256": "56c28b5c41643002371b315bff284fc191dc60b8ee194e9c995b762ec1f57e69"
+    },
+    {
+      "path": "artifacts/graph-runner-posix-tests/source-audit.log",
+      "bytes": 39,
+      "sha256": "848cb50cecc61448de3008cf9bf44fd2d2ecea7a46c70a835ebb93cdcd7f575f"
+    },
+    {
+      "path": "artifacts/graph-runner-posix-tests/synthetic-nonposix-selection.log",
+      "bytes": 1845,
+      "sha256": "fbf40a1972a2ebcd342979d8681ae1ef496a2304a66d8640c83a0c3389e87d9a"
+    }
+  ],
+  "limitations": [
+    "No native Windows rerun or cross-platform runtime support claim.",
+    "No builds, Clippy runs, Java/Python worker invocation or public requests.",
+    "No full suite repeated; the change is confined to the two platform-scoped test methods and one permission assertion.",
+    "No runtime policy, schema, UI, release gate or shared status change."
+  ]
+}

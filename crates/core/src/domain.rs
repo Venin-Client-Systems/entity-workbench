@@ -205,12 +205,32 @@ pub struct Hypothesis {
 #[serde(deny_unknown_fields)]
 pub struct Finding {
     pub id: String,
+    #[serde(default)]
+    pub hypothesis_ids: Vec<String>,
     pub title: String,
     pub assessment: String,
     pub supporting_ids: Vec<String>,
     pub contradicting_ids: Vec<String>,
     pub limitations: String,
     pub needs_review: bool,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct HypothesisInput {
+    pub question: String,
+    pub proposition: String,
+    pub alternatives: Vec<String>,
+    pub gaps: Vec<String>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct FindingInput {
+    pub title: String,
+    pub assessment: String,
+    pub supporting_ids: Vec<String>,
+    pub contradicting_ids: Vec<String>,
+    pub limitations: String,
+    pub hypothesis_ids: Vec<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -255,6 +275,16 @@ pub struct ReportSnapshot {
     pub created_at: String,
     pub sha256: String,
     pub html: String,
+}
+/// Lightweight catalogue entry. Report bytes are retrieved and verified explicitly.
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+pub struct ReportMetadata {
+    pub id: String,
+    pub workspace_revision: u64,
+    pub created_at: String,
+    pub sha256: String,
+    pub html_bytes: u64,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -332,7 +362,8 @@ pub struct SourceExcerpt {
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub struct WorkspaceView {
+#[schemars(rename = "WorkspaceView")]
+pub struct WorkspaceView<R = ReportSnapshot> {
     pub schema_version: u32,
     pub revision: u64,
     pub entities: Vec<Entity>,
@@ -350,14 +381,194 @@ pub struct WorkspaceView {
     pub merges: Vec<MergeDecision>,
     #[serde(default)]
     pub identity_decisions: Vec<IdentityDecision>,
-    pub reports: Vec<ReportSnapshot>,
+    pub reports: Vec<R>,
+    #[serde(default)]
+    pub statement_profiles: Vec<crate::statements::StatementProfile>,
+    #[serde(default)]
+    pub statement_imports: Vec<crate::statements::StatementImport>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(tag = "action", rename_all = "snake_case", deny_unknown_fields)]
 pub enum Command {
+    SaveDocxSnapshot {
+        request_id: String,
+        expected_revision: u64,
+    },
+    ResolveDocxCapture {
+        request_id: String,
+        captured_revision: u64,
+    },
+    PageDocxSnapshots {
+        request: crate::docx_snapshot::DocxSnapshotPageRequest,
+        expected_revision: u64,
+    },
+    InspectDocxSnapshot {
+        report_id: String,
+        expected_document_sha256: String,
+        expected_docx_sha256: String,
+    },
+    ExportTransactionCsv {
+        request: crate::transaction_csv::TransactionCsvRequest,
+        expected_revision: u64,
+    },
+    ExportTransactions {
+        request: crate::transaction_export::TransactionExportRequest,
+        expected_revision: u64,
+    },
+    PageTransferCandidates {
+        request: crate::transfer_candidates::TransferCandidatesRequest,
+        expected_revision: u64,
+    },
+    ReadTransactionBalances {
+        request: crate::transaction_balance::TransactionBalancesRequest,
+        expected_revision: u64,
+    },
+    PageCitationCatalogue {
+        request: crate::citation_catalogue::CitationCatalogueRequest,
+        expected_revision: u64,
+    },
+    ReadCitationSelections {
+        request: crate::citation_catalogue::CitationSelectionsRequest,
+        expected_revision: u64,
+    },
+    SearchTransactions {
+        request: crate::transaction_search::TransactionSearchRequest,
+        expected_revision: u64,
+    },
+    PageTransactionFacets {
+        request: crate::transaction_facets::TransactionFacetRequest,
+        expected_revision: u64,
+    },
+    PageReviewDecisions {
+        request: crate::review_decision_page::ReviewDecisionPageRequest,
+        expected_revision: u64,
+    },
+    ReadTransactionSources {
+        request: crate::transaction_sources::TransactionSourcesRequest,
+        expected_revision: u64,
+    },
+    PageTransactions {
+        request: crate::transaction_page::TransactionPageRequest,
+        expected_revision: u64,
+    },
+    InspectReportSnapshot {
+        report_id: String,
+        expected_sha256: String,
+    },
+    AnalyzeAccountFlows {
+        request: crate::account_flow::AccountFlowRequest,
+        expected_revision: u64,
+    },
+    CompareTransactionPeriods {
+        request: crate::transaction_comparison::TransactionComparisonRequest,
+        expected_revision: u64,
+    },
+    AnalyzeTransactions {
+        request: crate::transaction_analysis::TransactionAnalysisRequest,
+        expected_revision: u64,
+    },
+    QueuePdfPageOcr {
+        evidence_id: String,
+        request_key: String,
+        page_number: u32,
+        dpi: u32,
+    },
+    InspectPdfExtraction {
+        extraction_id: String,
+    },
+    QueueImageOcrRegions {
+        evidence_id: String,
+        request_key: String,
+    },
+    InspectImageRegionExtraction {
+        extraction_id: String,
+    },
+    QueueImageOcr {
+        evidence_id: String,
+        request_key: String,
+    },
+    InspectImageExtraction {
+        extraction_id: String,
+    },
+    QueueGraphPath {
+        expected_revision: u64,
+        source_id: String,
+        target_id: String,
+        request_key: String,
+    },
+    PageGraphJobs {
+        request: crate::graph_api::GraphJobPageRequest,
+        expected_revision: Option<u64>,
+    },
+    InspectGraphJob {
+        job_id: String,
+    },
+    CancelGraphJob {
+        job_id: String,
+        expected_attempt: u32,
+    },
+    InspectGraphAnalysis {
+        id: String,
+        expected_request_sha256: String,
+        expected_result_sha256: String,
+    },
+    RetryGraphPublication {
+        job_id: String,
+        expected_attempt: u32,
+        host_attempt_lease: String,
+        request_sha256: String,
+    },
+    QueueDocumentParse {
+        evidence_id: String,
+        request_key: String,
+    },
+    ListProcessingJobs {},
+    InspectExtraction {
+        extraction_id: String,
+    },
+    InspectProcessingJob {
+        job_id: String,
+    },
+    CancelProcessingJob {
+        job_id: String,
+        expected_attempt: u32,
+    },
+    RetryProcessingJob {
+        job_id: String,
+        expected_attempt: u32,
+        reason: String,
+    },
     View {},
     Search {
         query: String,
+    },
+    PreviewCollection {
+        input: crate::collection_api::CollectionInput,
+    },
+    QueueCollection {
+        input: crate::collection_api::CollectionInput,
+        preview_sha256: String,
+        request_key: String,
+    },
+    PageCollectionRuns {
+        request: crate::collection_api::CollectionRunPageRequest,
+        expected_revision: Option<u64>,
+    },
+    InspectCollectionRun {
+        job_id: String,
+    },
+    CancelCollection {
+        job_id: String,
+        expected_generation: u32,
+    },
+    ResumeCollection {
+        job_id: String,
+        expected_generation: u32,
+    },
+    RetryCollectionSettlement {
+        job_id: String,
+        expected_generation: u32,
+        request_sequence: u32,
     },
     CollectWeb {
         urls: Vec<String>,
@@ -365,10 +576,33 @@ pub enum Command {
         max_requests: u32,
         max_seconds: u64,
     },
+    InspectCollection {
+        job_id: String,
+    },
+    ExportCollection {
+        job_id: String,
+    },
     SeedDemo {},
     Import {
         name: String,
         bytes: Vec<u8>,
+    },
+    InspectStatement {
+        bytes: Vec<u8>,
+        delimiter: crate::statements::Delimiter,
+    },
+    PreviewStatement {
+        name: String,
+        bytes: Vec<u8>,
+        mapping: crate::statements::StatementMapping,
+    },
+    ImportStatement {
+        name: String,
+        bytes: Vec<u8>,
+        mapping: crate::statements::StatementMapping,
+        preview_token: String,
+        save_profile_name: Option<String>,
+        expected_revision: u64,
     },
     AddEntity {
         entity: EntityInput,
@@ -442,7 +676,31 @@ pub enum Command {
         reason: String,
         expected_revision: u64,
     },
+    AddQuestion {
+        question: HypothesisInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    UpdateQuestion {
+        id: String,
+        question: HypothesisInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    UpdateFinding {
+        id: String,
+        finding: FindingInput,
+        reason: String,
+        expected_revision: u64,
+    },
+    ReviewFinding {
+        id: String,
+        reason: String,
+        expected_revision: u64,
+    },
     AddFinding {
+        #[serde(default)]
+        hypothesis_ids: Vec<String>,
         title: String,
         assessment: String,
         supporting_ids: Vec<String>,

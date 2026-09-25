@@ -1,0 +1,13 @@
+{
+  "docs/design/review/finding-history/accessibility.json": "59fe8833177b96dbc2f4fbbd7e2dfe889da821e10aaf171859e7afc521ce4fd7",
+  "docs/design/review/finding-history/history-1440.png": "fa019863ab867267955cf9edd9d66b6b173b2a00da0df3a67249bf3f2e264b50",
+  "docs/design/review/finding-history/history-720.png": "c7d39117f92a107d5e4b8c8879658a913a9e3dbe96c4dd6b67d3c7c276305d53",
+  "docs/design/review/finding-history/history-empty.png": "ad0e892e2fcfc44a450571c02155dd980e2693de4421307797bd0c77c9bb6b1c",
+  "docs/design/review/finding-history/history-error.png": "f210c7f1dec47cb2bbbec2f256bf66582ac343e03c42675abe8f40860d2a2bd7",
+  "docs/design/review/finding-history/verification.json": "3be175b2e0cde82a4dde1f300202852ea481a00ca114f0572e17d7ff9bc0a806",
+  "ui/src/AssessmentWorkbench.tsx": "b503cea0666be9a6d8c3d809704a0976537e80dce2460e75542d582ae888bc2e",
+  "ui/src/FindingReviewHistory.tsx": "3d8fd8bfc45b67ba25cd432ba5a6c0a5a3c82d661b6337ea65e887f26ada6806",
+  "ui/src/review-history-types.ts": "44743117f4a83f29c74af00db1ab09e3e4a013a73daa8d6ba60a07708579dacb",
+  "ui/src/review-history.css": "25b12d61f5195dbcb175cfbc7f8b613e4e97899c0761f85c5198643e21c85400",
+  "ui/tests/review-history.spec.ts": "c94e19c5720ac5109b1a27107fc9cbb36479ce948319bab08864bf835d509d53"
+}

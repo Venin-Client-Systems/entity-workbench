@@ -1,0 +1,130 @@
+.durable-collection {
+  min-width: 0;
+}
+.durable-collection .panel {
+  margin-bottom: 1rem;
+}
+.durable-collection code,
+.durable-collection h3,
+.durable-collection h4 {
+  overflow-wrap: anywhere;
+}
+.durable-collection dd {
+  margin: 0 0 0.75rem;
+}
+.durable-collection dt {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0.8rem 0 0.3rem;
+}
+.durable-collection .panel-heading,
+.durable-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.durable-limits,
+.durable-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 1rem 0;
+}
+.durable-limits > *,
+.durable-metrics > * {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.durable-limits input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.durable-metrics {
+  border: 1px solid var(--border);
+  background: var(--subtle);
+  padding: 1rem;
+}
+.durable-metrics span,
+.durable-metrics strong {
+  display: block;
+}
+.durable-metrics span {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+}
+.durable-metrics strong {
+  font-size: 1.25rem;
+}
+.collection-preview,
+.collection-pending {
+  border: 1px solid var(--border);
+  padding: 1rem;
+  background: var(--subtle);
+  margin: 1rem 0;
+}
+.collection-preview > h3 {
+  background: var(--ink);
+  color: var(--surface);
+  margin: -1rem -1rem 1rem;
+  padding: 0.75rem 1rem;
+}
+.durable-pager nav,
+.durable-run header {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.durable-run h3 {
+  font-size: 1rem;
+}
+.durable-request {
+  border: 1px solid var(--border);
+  margin: 1rem 0;
+}
+.durable-request > header {
+  padding: 0.8rem 1rem;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+.durable-request > div {
+  padding: 1rem;
+}
+.durable-collection textarea {
+  min-height: 5rem;
+}
+.durable-collection button {
+  max-width: 100%;
+  white-space: normal;
+}
+@media (max-width: 760px) {
+  .durable-limits {
+    gap: 0.75rem;
+  }
+  .durable-pager {
+    align-items: flex-start;
+  }
+  .durable-pager nav {
+    width: 100%;
+  }
+}
+
+.durable-pager nav {
+  flex-direction: row;
+}
+
+.durable-pager nav .button {
+  color: var(--ink);
+  width: auto;
+  display: inline-flex;
+  padding: 8px 12px;
+  font-weight: 600;
+}

@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-25T15:28:50.811833+00:00",
+  "base_commit": "090a350ea875ef09be5bc0bd310f188745fef118",
+  "source_identity": "Source file hashes bind the final uncommitted candidate before its signed commit; no self-referential commit claim.",
+  "source_files": {
+    "ui/src/TransactionLedger.tsx": "2ac9e0eca1a48e4cc489755ad6be85c5caeaabca730f633b99c1d57c280f5420",
+    "ui/src/TransactionExportOptions.tsx": "ea3c5a0c4e97bf5d905de9d9c7725fb789e3008862241d685a802b3502d1459b",
+    "ui/src/transaction-csv.ts": "4567e016c4d8cb95401e8e71efb8d0bf7f18acb3ded613f2af39cfbb4446d84d",
+    "ui/src/native-export.ts": "4d827f943e745373afd8a5e9bf94632932389c980d2e11e03493e302fc6826bb",
+    "ui/src/transaction-ledger.css": "14edba06b881b8733d0691cf683dbd32ef11c71e5b3a7d1af7d50b689c4ba121",
+    "ui/tests/transaction-csv.spec.ts": "961e2593761a9e376cc4edc7b4e013ff79b2a3d36c7359a763fa84d85a343c89",
+    "ui/tests/native-export-test-bridge.ts": "826607cf01d772989dabcd820b501a692f7cb8a3896974b24f73a4a81b341e90",
+    "ui/tests/native-exports.spec.ts": "496ca87547b77fc55d9fa4f8efca319a987a2f9c9aa29890adc11efc7b986d3e",
+    "ui/tests/summary-cutover.spec.ts": "6a3195bd18f81a19ba9b0e0b980ea9010997ed2e7e3647f658a876b84f698fec",
+    "ui/tests/docx-snapshots.spec.ts": "f3c2e37bb2c321a01143c2d4a4357d1d8265a694d432b08ccf4a0576c8c6f984",
+    "crates/core/src/transaction_csv.rs": "f1784b25679893aed530465f83a52404c0dd4d799a94cea50f26d42ddd0ab150",
+    "crates/core/src/store/transaction_export_selection.rs": "1cf503b47fe97cae41562d6ddad6ba345adbc292f0d5cb0e59bbf808589def07",
+    "crates/core/src/store/local_exports.rs": "fcae74d88549c04581687125984327970546d84679c15c2ff35fcb13c0b8fb35",
+    "crates/core/examples/native_export_session.rs": "e349a2c211234d51fcd80e795c4bd401da34a9ba883dd073009e521128725136",
+    "Cargo.lock": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+    "package-lock.json": "5f262879fbb9792559952bc8d27aaa1273f8c21d8b0a1b8898a460b5fb9b700f",
+    "docs/design/TYPED-CSV-EXPORT-UI.md": "ad23c28e040a95b07dca75ab49ca4d46887b9177a58256a96e4940ff860a87e2"
+  },
+  "host": {
+    "os": "Darwin",
+    "release": "25.6.0",
+    "machine": "arm64"
+  },
+  "tools": {
+    "node": "v26.7.0",
+    "python": "Python 3.14.2",
+    "cargo": "cargo 1.90.0 (840b83a10 2025-07-30)"
+  },
+  "executables": {
+    "ew-dev": "0d384055b9710483b71b7a0a16e95ad84562f65f0004c9f3c2582aab021cd60f",
+    "native_export_session": "91605e6c66c5c3c4b99902292d025ce2487c4922f3ed620db88f9030e532ff91"
+  },
+  "checks": [
+    {
+      "command": "cargo test -p workbench-core --locked local_export",
+      "result": "19 passed; other tests filtered, no full-core claim"
+    },
+    {
+      "command": "cargo clippy -p workbench-core --all-targets --locked -- -D warnings",
+      "result": "passed"
+    },
+    {
+      "command": "npm run build",
+      "result": "passed final source; existing large-chunk warning"
+    },
+    {
+      "command": "npx --offline playwright test --config artifacts/playwright-csv.config.ts transaction-csv.spec.ts native-exports.spec.ts docx-snapshots.spec.ts summary-cutover.spec.ts",
+      "result": "38 passed before final accessible-name and singular-count wording corrections; unchanged production logic"
+    },
+    {
+      "command": "npx --offline playwright test --config artifacts/playwright-csv.config.ts transaction-csv.spec.ts",
+      "result": "9 passed after final accessible-name and singular-count wording;3axe scans0violations;760x1000overflow+keyboardEnter checked"
+    }
+  ],
+  "test_configuration": {
+    "port": 1421,
+    "reason": "Parent owns1420. Temporary config changes onlyport/importpaths/testdirectory/cwd; nofixturelogic override.",
+    "config_hashes": {
+      "artifacts/playwright-csv.config.ts": "d22d6939c42300f0a659f6fd63657d396f98fe0c0f37aecb6f55d4adf8d7091d",
+      "artifacts/vite-csv.config.ts": "03048c49225c252c2f07a55c5bf8c1593ed01ccb8b5b10a14d277520176f780c"
+    }
+  },
+  "figma": {
+    "file": "CphN4aTS8IXSVlKX7zDJtg",
+    "frames": {
+      "2023:2": {
+        "name": "28 / Instrument \u2014 Typed CSV export",
+        "size": [
+          1120,
+          940
+        ],
+        "png": "figma-csv.png"
+      },
+      "2023:41": {
+        "name": "29 / Instrument \u2014 CSV export outcomes",
+        "size": [
+          720,
+          980
+        ],
+        "png": "figma-outcomes.png"
+      }
+    },
+    "native_editable_text_vector_layers_observed": true,
+    "export_pngs_visually_inspected": true,
+    "post_reload_export_equality": "unverified: one reload action had no observable effect",
+    "download_zip_sha256": {
+      "15": "60ef88f4da04fddec52839c04b2852b3af857a7ab85fb3422b7e7f0127f7dac9",
+      "16": "6724bad2581d48f14f09ba66b10d00ba3ab8d4c08fa0f15141f25c09d103d70c"
+    }
+  },
+  "failed_observations": [
+    {
+      "observation": "browser-first.log",
+      "raw_sha256": "b56ad3231abfa601e01493a2c72f67c603acc9cd65a3c062ea424945130984da",
+      "explanation": "All eight new cases stopped at fixture import: empty required description. Canonical validation correctly refused it. Fixture corrected; no production relaxation."
+    },
+    {
+      "observation": "browser-final.log",
+      "raw_sha256": "29258d91bee0c77c0082dc02aeabb58ab9ffeb86fef15815e217c1d86a95684b",
+      "explanation": "37 passed; one existing summary test incorrectly treated same-origin1421 requests as external because its assertion hardcoded1420. Assertion now uses configured baseURL origin; final38passed."
+    }
+  ],
+  "raw_success_log_sha256": {
+    "browser-verified.log": "f0b087e989f21d08ea8b33e6c560d4f8ab75716732781c84a45951b8a1d709cc",
+    "browser-accessible-final.log": "f25b511cc535ca30efe28c105009edc70799fd390ef50844c8e9ef847edbb29f",
+    "build-accessible-final.log": "9a6da17e706f82317b358938642ee0ff9d80025030f9cffc9c3697026cea1aa6",
+    "clippy-final.log": "190861a3cdffd13b0e9e3254cfc649c8e3f93d3086b3afbe1ab60e97e6711668",
+    "core-native-export.log": "e73edcb9423c26230477dc045450fa917ba25df83f947e242d354f0a0c7d32ee",
+    "browser-wording-final.log": "c21b376ba137c75b0ddb0aeee29a73959651a265f4c847e5804901cc443ed18c",
+    "build-wording-final.log": "2bba12d512bf33dd884de152554cb2b9ff09a9a029c8f992e05e61dd310345c4"
+  },
+  "historical_schemas_unchanged": 97,
+  "limits": [
+    "Native CSV proof is a browser IPC bridge to actual Rust coordinator and files, not packaged WebKit UI interaction.",
+    "No spreadsheet application execution or universal formula-safety guarantee.",
+    "No whole-artifact memory/performance claim; browser makes additional copies.",
+    "No complete compact editable controls specification,200percentzoom or assistive-technology certification.",
+    "Native saved metadata omits private local location; the test verified derived filename and exact saved file bytes.",
+    "app-native-controls.png shows export controls, not a screenshot of the private saved path."
+  ],
+  "artifacts": {
+    ".gitattributes": "c22e1849ed00c6bfa3569c7eb081e6399aadae737e6542502ac4b33611472524",
+    "app-compact.png": "4d878a0cfa78244cc1b1bdfff5ad258692df2a800253ee6c5d15d5c52ec266d3",
+    "app-native-controls.png": "ceae4d3901fdbef254a365f3eefd04a11a8d0ff86ed94dc09822413b21df15e7",
+    "app-wide.png": "ceae4d3901fdbef254a365f3eefd04a11a8d0ff86ed94dc09822413b21df15e7",
+    "browser-compatibility.txt": "f0b087e989f21d08ea8b33e6c560d4f8ab75716732781c84a45951b8a1d709cc",
+    "browser-export-metadata.json": "b3fed30402878123c415d7e993198f6f390272adfd0f6b736ee4ec362207a556",
+    "browser-final-csv.txt": "c21b376ba137c75b0ddb0aeee29a73959651a265f4c847e5804901cc443ed18c",
+    "build.txt": "89720da3257889309f3789a6e852ec69d1d41dbe031df175822b1781f5401740",
+    "clippy.txt": "5fcbdf9cbaebce33ecba100f4e8707ec372c137a8d7f76c842c24fda77cced5b",
+    "core-native-export.txt": "487c3b7c2652c76052aa7f2a2a59f69fc82e399978dbd5fe7f3bd9338e75a4a0",
+    "csv-compact-axe.json": "f2a202d564525d2ac5eab7c8759db17ebad357cc41a3453ac98fa1a270103361",
+    "csv-native-controls-axe.json": "287af94e6c360faa67da7c5bc43508a744b941cea69a18191ad05e821eb62587",
+    "csv-wide-axe.json": "287af94e6c360faa67da7c5bc43508a744b941cea69a18191ad05e821eb62587",
+    "figma-csv.png": "1d8994f910618c6f2e0c25da84339e54e279aeb989cb3cdc950968bbd099ac26",
+    "figma-outcomes.png": "090a45d9c4aae2c0c2a457124b8e89b5ae63345ac9860faa8b6f151c5439220c",
+    "native-saved-metadata.json": "16b1bfed9d29cb53e5241e1372d46d540f95509e4d501c02fefcd32d6239b24c",
+    "playwright-csv.config.ts.txt": "d22d6939c42300f0a659f6fd63657d396f98fe0c0f37aecb6f55d4adf8d7091d",
+    "schemas.txt": "b5c3bc3c3f56c077a344b537c9c780f3fcbce0d271f204916b171619d9cedc62",
+    "synthetic-transactions.csv": "4dc7ed16cf70dd36e9137ddfdff4d3f1a93ec37a0c6c41b5cad52f2117b4c7ed",
+    "vite-csv.config.ts.txt": "03048c49225c252c2f07a55c5bf8c1593ed01ccb8b5b10a14d277520176f780c"
+  }
+}

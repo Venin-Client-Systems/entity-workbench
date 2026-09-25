@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "source_commit": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71",
+  "campaign_nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+  "complete_release": false,
+  "native_report_sha256": "32303f54b87f26fd42226d821b08485bac0df7f4b0f3fe12cbaba47a42313a50",
+  "decoded_events_exactly_match_native_log": true,
+  "offline_cancellation_validator_passed": true,
+  "retained_log_hashes_verified": true,
+  "source_remains_clean_and_exact": true,
+  "sqlite_integrity_all_three_roots": true,
+  "all_table_values_equal_across_workspace_backup_restored": true,
+  "table_counts": {
+    "derivative_objects": 0,
+    "events": 7,
+    "history": 6,
+    "meta": 1,
+    "records": 3,
+    "sqlite_sequence": 3
+  },
+  "originals_per_root": 1,
+  "robots_original_sha256": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed",
+  "robots_original_bytes": 14,
+  "seed_original_absent_in_all_three_roots": true,
+  "native_campaigns_executed_for_independent_checks": 0
+}

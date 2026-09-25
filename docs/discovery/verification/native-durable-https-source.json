@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "scope": "EW-22 / issue #25 source-only fixed native durable HTTPS proof harness",
+  "source_commit": "02866d7d2ebc0e00910ff2c458c4012915e6f40f",
+  "source_tree": "eac678b0f0ee313afe287775ab05287a1122f2b2",
+  "base_commit": "090a350ea875ef09be5bc0bd310f188745fef118",
+  "source_signature": {
+    "verified": true,
+    "key_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y"
+  },
+  "changed_source_file_sha256": {
+    "crates/core/src/coordinator.rs": "cd624322f3552019017947c316c920bffdbf686114e7cd42bf68c76734ac7202",
+    "crates/core/src/coordinator_native_https_proof.rs": "9c0ee754434355154a6407b87e20695da15a118a7b33c26fa12b2424e9e72304",
+    "docs/discovery/NATIVE-DURABLE-HTTPS-PROOF.md": "43653857bd8739dc214ebed6ce114d08fd391be58a0cdf2fb9c825d2bb20ba11",
+    "scripts/native_https_receipt.py": "29a66ad69e2efc7f284d46ea681fa8fbe5438413ca25a93f1c43bd4f85a2655f",
+    "scripts/test_native_durable_https.py": "e253da80ebfb7ccb13eb4d811f04e9451167e32d00b1bc615e902e4cb6c21209",
+    "scripts/tests/test_native_https_receipts.py": "2b2f4d2fe2bd823ec246734f22251a1bf6248414ede4c5cf0ad981eb144fd70c"
+  },
+  "dependency_lock_sha256": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+  "host": {
+    "system": "Darwin",
+    "architecture": "arm64",
+    "os_version": "26.6.2"
+  },
+  "test_source_binding": "Checks ran on the final source bytes identified above before signing. No native campaign was executed.",
+  "rust_checks": {
+    "ordinary_passed": 477,
+    "failed": 0,
+    "native_opt_in_ignored": 27,
+    "focused_synthetic_passed": 4,
+    "strict_debug_all_targets_clippy": "passed",
+    "strict_release_all_targets_clippy": "passed",
+    "fmt": "passed"
+  },
+  "python_checks": {
+    "normal_tests_passed": 9,
+    "optimized_tests_passed": 9,
+    "native_subprocesses": "mocked; no DNS or HTTPS"
+  },
+  "synthetic_coverage": [
+    "closed scope/order/lease/deadline guard refuses third call before executor",
+    "canonical SyntheticV3 queue/reserve/settle/reopen/backup restore",
+    "robots refusal and wrong fixture retained as failure",
+    "unknown provider completion retains quarantine and no ordinary cleanup/recovery claim",
+    "partial parsed event prefix survives malformed tail",
+    "primary timeout survives failed kill or unconfirmed reap without retry",
+    "missing opt-in/source drift prevents native launch",
+    "exact preview/source/nonce/receipt and original identity validation"
+  ],
+  "historical_schemas": {
+    "base_commit": "090a350ea875ef09be5bc0bd310f188745fef118",
+    "historical_files": 97,
+    "historical_json_schemas": 95,
+    "all_byte_identical": true,
+    "inventory": {
+      "path": "artifacts/native-https-source/historical-schemas.json",
+      "bytes": 14790,
+      "sha256": "536694cd8ae75592356c27cc16e03064cfa366423d9820d6b63996a091dc89a7"
+    }
+  },
+  "fixture": {
+    "source_commit": "df4dbff063d274effb9fa6385095938751bb300e",
+    "path": "fixtures/brief.txt",
+    "bytes": 863,
+    "sha256": "1b728541f9939c78bd3432482c1b5894ff70ffc017ebbe07a2f4b0535ba99371",
+    "verification": "local Git object and current file; no fetch"
+  },
+  "proposed_native_scope": {
+    "policy": "fixed-owned-synthetic-https-two-attempts-v1",
+    "host": "raw.githubusercontent.com",
+    "ordered_urls": [
+      "https://raw.githubusercontent.com/robots.txt",
+      "https://raw.githubusercontent.com/Venin-Client-Systems/entity-workbench/df4dbff063d274effb9fa6385095938751bb300e/fixtures/brief.txt"
+    ],
+    "max_charged_attempts": 2,
+    "max_transport_launches": 2,
+    "hops": 0,
+    "retries": 0,
+    "cooperative_seconds": 20,
+    "outer_native_seconds": 30,
+    "owned_process_stop_seconds": 5,
+    "offline_build_seconds": 600
+  },
+  "review": {
+    "independent_read_only_review": "Two concrete failure-retention findings repaired and rechecked; no native execution by reviewer.",
+    "purpose_and_ancestry": "Verified from canonical receipts after acquisition; prefetch guard binds exact URLs/order."
+  },
+  "native_observation": {
+    "state": "not_run",
+    "authorization": "Signed-source review still required before any campaign",
+    "dns_or_https_requests_during_this_increment": 0,
+    "windows_native": "not_run",
+    "http_cancellation": "not_run"
+  },
+  "retained_logs": [
+    {
+      "path": "artifacts/native-https-source/focused1.log",
+      "bytes": 6530,
+      "sha256": "fd69fa2b73483f40e9950eaa608df222427b2509d02bf7b3cb16ecdb62aeb5e8"
+    },
+    {
+      "path": "artifacts/native-https-source/focused2.log",
+      "bytes": 929,
+      "sha256": "81593de923704ce1b971ad57043515c024c4d16e9a335640608c05c4a1ff73ba"
+    },
+    {
+      "path": "artifacts/native-https-source/core-tests.log",
+      "bytes": 59121,
+      "sha256": "16bef6a2abcb34c51da37541ecb2fbab849fb1b34503ca656436f35dc7d413d6"
+    },
+    {
+      "path": "artifacts/native-https-source/clippy-debug-final.log",
+      "bytes": 221,
+      "sha256": "d71d0f12990db6ddbe76a0f220be6eca75d970d75c918217f17735d5007c2830"
+    },
+    {
+      "path": "artifacts/native-https-source/clippy-release-final.log",
+      "bytes": 5934,
+      "sha256": "124a885cb5b69f477df28dc3d963ae080128351186a0db2ee30fbc027eb94c18"
+    },
+    {
+      "path": "artifacts/native-https-source/fmt.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/native-https-source/python-reviewed.log",
+      "bytes": 1819,
+      "sha256": "9d78bb9bd85c24604b36615ef5fe1626593a32154e319405e739b1a69c9570fe"
+    },
+    {
+      "path": "artifacts/native-https-source/python-optimized-reviewed.log",
+      "bytes": 1819,
+      "sha256": "fe9c2e90e40c13789269db6659dc0e5d152b0fcbd387a993900e6dba8158391b"
+    },
+    {
+      "path": "artifacts/native-https-source/public-audit-source.log",
+      "bytes": 39,
+      "sha256": "5acc771d6b6783a46e5929286de94c15f6334a82baa55ec62792bdeed7614a2e"
+    },
+    {
+      "path": "artifacts/native-https-source/signature-source.log",
+      "bytes": 110,
+      "sha256": "bb3514ff9786724f2b565573e5d728aefdeda9d6742d890fa8115c5eb6dea636"
+    },
+    {
+      "path": "artifacts/native-https-source/historical-schemas.json",
+      "bytes": 14790,
+      "sha256": "536694cd8ae75592356c27cc16e03064cfa366423d9820d6b63996a091dc89a7"
+    }
+  ],
+  "public_audit": {
+    "source_files": 6,
+    "private_exclusion_scan": "passed"
+  },
+  "claims": {
+    "production_native_enabled": false,
+    "public_command_or_ui_activation": false,
+    "broad_discovery_benchmark": false,
+    "complete_dns_rrset": false,
+    "provider_quiescence": false,
+    "complete_release": false
+  },
+  "remaining": [
+    "Exact signed-source review before a single native campaign",
+    "Actual Mac native HTTPS response and canonical recovery evidence",
+    "Windows native HTTPS and cancellation uncertainty review",
+    "Separate production admission/cancellation/recovery activation review",
+    "Broad collection capability and release gates remain incomplete"
+  ]
+}

@@ -1,11 +1,47 @@
-//! Canonical workspace ownership and domain rules. No network or worker execution.
+//! Canonical workspace ownership, domain rules and reviewed engine coordination.
+pub mod account_flow;
 pub mod analytics;
+pub mod citation_catalogue;
 pub mod collection;
+pub(crate) mod collection_access;
+pub(crate) mod collection_access_machine;
+pub mod collection_api;
+pub(crate) mod collection_execution;
+mod collection_html;
+pub(crate) mod collection_jobs;
+pub(crate) mod collection_machine;
+pub mod collection_profile;
+pub mod collection_receipt;
+pub(crate) mod collection_settlement;
+pub mod collection_snapshot;
+pub(crate) mod collection_transport;
+pub mod coordinator;
+pub mod desktop_summary;
+pub mod docx_snapshot;
 pub mod domain;
 pub mod engines;
+pub mod graph_api;
+pub mod graph_jobs;
+pub mod literal_search;
+pub mod local_export;
 pub mod policy;
+pub mod processing;
 pub mod report;
+pub mod report_document;
+pub mod report_docx;
+pub mod review_decision_page;
+pub mod statements;
 pub mod store;
+pub mod transaction_analysis;
+pub mod transaction_balance;
+pub mod transaction_comparison;
+pub mod transaction_csv;
+pub mod transaction_export;
+pub mod transaction_facets;
+pub mod transaction_page;
+pub mod transaction_search;
+pub mod transaction_sources;
+pub mod transfer_candidates;
 
 use thiserror::Error;
 #[derive(Debug, Error)]
@@ -16,8 +52,22 @@ pub enum Error {
     Conflict(String),
     #[error("Capability blocked: {0}")]
     Blocked(String),
+    #[error("Collection limit exhausted: {0}")]
+    QuotaExhausted(String),
+    #[error("Processing interrupted: {0}")]
+    Interrupted(String),
+    #[error("Network request failed: {0}")]
+    Network(String),
     #[error("Database: {0}")]
     Database(#[from] rusqlite::Error),
+    #[error("Worker cleanup failed: {0}")]
+    Cleanup(String),
+    #[error("Worker termination could not be verified: {0}")]
+    TerminationUnverified(String),
+    #[error("Worker result was rejected: {0}")]
+    InvalidWorkerResult(String),
+    #[error("Derivative storage is unavailable (published reference: {published})")]
+    DerivativeUnavailable { published: bool },
     #[error("Filesystem: {0}")]
     Io(#[from] std::io::Error),
     #[error("Invalid JSON: {0}")]

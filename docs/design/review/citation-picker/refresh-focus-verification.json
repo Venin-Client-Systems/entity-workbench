@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-24T17:37:52.580711+00:00",
+  "scope": "Finding editor refresh focus follow-up; actual Rust command responses held by synthetic Chromium tests",
+  "base_commit": "ec163589d0def6694490de63eeb8a858d3c5d03e",
+  "core_binary_sha256": "39db715dde9ff3017193b7272779b9fdb5cc4f0314070467046c513b18aad516",
+  "host": {
+    "os": "Darwin",
+    "architecture": "arm64"
+  },
+  "results": {
+    "unchanged_ui_reproduction": {
+      "passed": 1,
+      "failed": 1,
+      "failure": "Refresh workspace remained inactive after the delayed real view response completed and the button re-enabled."
+    },
+    "ui_type_and_production_build": "passed; existing large JavaScript chunk warning retained",
+    "first_repaired_targeted_suite": {
+      "passed": 20,
+      "failed": 0
+    },
+    "final_targeted_suite": {
+      "passed": 21,
+      "failed": 0,
+      "files": [
+        "ui/tests/citations.spec.ts",
+        "ui/tests/assessment.spec.ts",
+        "ui/tests/review-history.spec.ts"
+      ],
+      "new_focus_cases": [
+        "restore lost body/HTML focus after both loading states finish",
+        "preserve deliberately focused citation status",
+        "do not restore after deliberate focus movement followed by blur"
+      ]
+    },
+    "draft_checks": "Unsaved assessment, reason and role selections preserved; canonical finding unchanged."
+  },
+  "limitations": [
+    "The full 79-test application run belongs to the earlier citation handoff, not this follow-up.",
+    "Native WebKit confirmation is a separate coordinating-agent check.",
+    "No new Figma frame, remote sync, release or performance claim.",
+    "No canonical Rust, command schema or default summary response change."
+  ],
+  "source_sha256": {
+    "ui/src/AssessmentWorkbench.tsx": "625aa093f8031114b85b6147b76f849c58047e6174efbaaa06c5ee05591830d9",
+    "ui/tests/citations.spec.ts": "56b3371282fb8c3fa576eceedfcfce228e4652d42d2b1c205a013dbec8cb3bb6"
+  },
+  "retained_log_hashes": {
+    "refresh-focus-before.log": "6cdef9dfa2e0729432694be889a8cf2c1c4fbb52c0e66940c0df4d6d957ce03a",
+    "refresh-focus-build.log": "a6c4a3e4ff681c557f119687c6dc857316add6f6ef3759821a876bf1d6506d04",
+    "refresh-focus-targeted.log": "c84880da9ab52d2f402b1f851cbab0070c81d830d8ef59287b292ebf487464fb",
+    "refresh-focus-final.log": "669fbcb445f59309ef4668a9b2658f42120bce4d9c5c08ed0d8b82988f60165d"
+  }
+}

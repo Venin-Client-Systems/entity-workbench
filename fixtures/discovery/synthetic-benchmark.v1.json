@@ -1,0 +1,370 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "synthetic-direct-discovery-v1",
+  "material": "synthetic",
+  "frozen_at": "2026-09-24T00:00:00Z",
+  "collection_window_days": 14,
+  "limits": {
+    "max_hops": 2,
+    "max_requests": 50,
+    "max_seconds": 600
+  },
+  "thresholds": {
+    "relevant_percent": 60,
+    "expansion_percent": 30
+  },
+  "publishers": [
+    {
+      "id": "publisher-01",
+      "name": "Fictional Research Archive 01",
+      "domain": "publisher-01.example",
+      "independence_group": "publisher-01",
+      "seed_url": "https://publisher-01.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-02",
+      "name": "Fictional Research Archive 02",
+      "domain": "publisher-02.example",
+      "independence_group": "publisher-02",
+      "seed_url": "https://publisher-02.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-03",
+      "name": "Fictional Research Archive 03",
+      "domain": "publisher-03.example",
+      "independence_group": "publisher-03",
+      "seed_url": "https://publisher-03.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-04",
+      "name": "Fictional Research Archive 04",
+      "domain": "publisher-04.example",
+      "independence_group": "publisher-04",
+      "seed_url": "https://publisher-04.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-05",
+      "name": "Fictional Research Archive 05",
+      "domain": "publisher-05.example",
+      "independence_group": "publisher-05",
+      "seed_url": "https://publisher-05.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-06",
+      "name": "Fictional Research Archive 06",
+      "domain": "publisher-06.example",
+      "independence_group": "publisher-06",
+      "seed_url": "https://publisher-06.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-07",
+      "name": "Fictional Research Archive 07",
+      "domain": "publisher-07.example",
+      "independence_group": "publisher-07",
+      "seed_url": "https://publisher-07.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-08",
+      "name": "Fictional Research Archive 08",
+      "domain": "publisher-08.example",
+      "independence_group": "publisher-08",
+      "seed_url": "https://publisher-08.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-09",
+      "name": "Fictional Research Archive 09",
+      "domain": "publisher-09.example",
+      "independence_group": "publisher-09",
+      "seed_url": "https://publisher-09.example/",
+      "access_review": "required_before_each_run"
+    },
+    {
+      "id": "publisher-10",
+      "name": "Fictional Research Archive 10",
+      "domain": "publisher-10.example",
+      "independence_group": "publisher-10",
+      "seed_url": "https://publisher-10.example/",
+      "access_review": "required_before_each_run"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "discovery-01",
+      "publisher_id": "publisher-01",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 01-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-02",
+      "publisher_id": "publisher-01",
+      "input_kind": "name",
+      "query": "Fictional Programme 01-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-03",
+      "publisher_id": "publisher-01",
+      "input_kind": "domain",
+      "query": "publisher-01.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-04",
+      "publisher_id": "publisher-02",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 02-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-05",
+      "publisher_id": "publisher-02",
+      "input_kind": "name",
+      "query": "Fictional Programme 02-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-06",
+      "publisher_id": "publisher-02",
+      "input_kind": "domain",
+      "query": "publisher-02.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-07",
+      "publisher_id": "publisher-03",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 03-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-08",
+      "publisher_id": "publisher-03",
+      "input_kind": "name",
+      "query": "Fictional Programme 03-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-09",
+      "publisher_id": "publisher-03",
+      "input_kind": "domain",
+      "query": "publisher-03.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-10",
+      "publisher_id": "publisher-04",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 04-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-11",
+      "publisher_id": "publisher-04",
+      "input_kind": "name",
+      "query": "Fictional Programme 04-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-12",
+      "publisher_id": "publisher-04",
+      "input_kind": "domain",
+      "query": "publisher-04.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-13",
+      "publisher_id": "publisher-05",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 05-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-14",
+      "publisher_id": "publisher-05",
+      "input_kind": "name",
+      "query": "Fictional Programme 05-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-15",
+      "publisher_id": "publisher-05",
+      "input_kind": "domain",
+      "query": "publisher-05.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-16",
+      "publisher_id": "publisher-06",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 06-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-17",
+      "publisher_id": "publisher-06",
+      "input_kind": "name",
+      "query": "Fictional Programme 06-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-18",
+      "publisher_id": "publisher-06",
+      "input_kind": "domain",
+      "query": "publisher-06.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-19",
+      "publisher_id": "publisher-07",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 07-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-20",
+      "publisher_id": "publisher-07",
+      "input_kind": "name",
+      "query": "Fictional Programme 07-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-21",
+      "publisher_id": "publisher-07",
+      "input_kind": "domain",
+      "query": "publisher-07.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-22",
+      "publisher_id": "publisher-08",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 08-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-23",
+      "publisher_id": "publisher-08",
+      "input_kind": "name",
+      "query": "Fictional Programme 08-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-24",
+      "publisher_id": "publisher-08",
+      "input_kind": "domain",
+      "query": "publisher-08.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-25",
+      "publisher_id": "publisher-09",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 09-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-26",
+      "publisher_id": "publisher-09",
+      "input_kind": "name",
+      "query": "Fictional Programme 09-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-27",
+      "publisher_id": "publisher-09",
+      "input_kind": "domain",
+      "query": "publisher-09.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-28",
+      "publisher_id": "publisher-10",
+      "input_kind": "organisation",
+      "query": "Fictional Programme 10-1",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-29",
+      "publisher_id": "publisher-10",
+      "input_kind": "name",
+      "query": "Fictional Programme 10-2",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    },
+    {
+      "id": "discovery-30",
+      "publisher_id": "publisher-10",
+      "input_kind": "domain",
+      "query": "publisher-10.example",
+      "question": "Identify the fictional programme and a related project.",
+      "relevance_criterion": "The synthetic original identifies the fictional programme and its purpose.",
+      "expansion_criterion": "A newly observed project identifier leads to a distinct synthetic page about that project."
+    }
+  ]
+}

@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "scope": "generator3 table-header pagination; development source-file-bound observation",
+  "base_commit": "dbec31ff61d0551dc1f4b4558efeb8e9ff9d23e8",
+  "source_sha256": {
+    "crates/core/src/report_document.rs": "d57a9ba15f113c89d1b63c8805e6f5ba836e6f78dc12c5bd208e9d8190596da7",
+    "crates/core/src/report_docx.rs": "e23a0bc0a96e6d13e61bd49d71169dec2701c444b0343b0261fc16ff5a8222db",
+    "crates/core/tests/report_docx.rs": "4f5ee9ae8bc59b930046dd8b2fa8e8b3d4eb8c963c760fa07cb33dc1b1fd442b",
+    "crates/core/src/store/docx_snapshots/tests.rs": "6db11a83a63a64ffb9ab69ca41be1bbaced8e79831c44246f56431e45f2f0dbd",
+    "crates/core/tests/fixtures/report-generator2.json": "771a1230b008f9b4e5e68236b56e24624bc42c41ed97b00eb7aec4bf5502527c",
+    "crates/core/examples/report_docx_wrapping.rs": "8eccacf58aad477d00cc8f362c099d80f9b9da13113a736da30ce7527d41c3f0"
+  },
+  "generator_version": "ooxml-foundation-3",
+  "historical_docx_sha256": {
+    "ooxml-foundation-1": "c839120c7646195012e57119be34dcca7ad27e32a032ad734ca47680cfc1c75d",
+    "ooxml-foundation-2": "0b9f69392b57dd1190dea7d45c7fcc16bad97ab9fcf2b9dec3b8350b6fc74fd9"
+  },
+  "managed_renderer": {
+    "manifest": {
+      "artifactToolVersion": "2.8.59",
+      "bundleFormatVersion": 2,
+      "bundleVersion": "26.909.12148",
+      "bundledPlugins": [
+        "plugins/openai-primary-runtime"
+      ],
+      "bundledSkills": [],
+      "libreOfficeVersion": "25.2-headless-codex.1",
+      "nativeDependencies": [
+        "libheif",
+        "jxrlib",
+        "libreoffice-headless",
+        "poppler",
+        "git"
+      ],
+      "nodeVersion": "v24.19.0",
+      "pnpmVersion": "11.19.0",
+      "pythonVersion": "3.12.14",
+      "skillsToRemove": [
+        "codex-primary-runtime/spreadsheets",
+        "codex-primary-runtime/slides",
+        "doc",
+        "docs",
+        "spreadsheet",
+        "slides"
+      ],
+      "targetArch": "arm64",
+      "targetPlatform": "darwin"
+    },
+    "manifest_identity": {
+      "bytes": 651,
+      "sha256": "fa978aa0b2034a53b954cc3fadb48738237db55a941da4274157c4b64674e500"
+    },
+    "script_identity": {
+      "bytes": 19702,
+      "sha256": "876d5993324e2faaaa96a68a4f7504642e9a07e6df265b385b2baa03b231369e"
+    },
+    "native_binary_identity": {
+      "bytes": 53136,
+      "sha256": "b4efedd0c18e62c5598ad55a2531756be5b4476bdc8e766c6b4210fa09dc1a91"
+    },
+    "actual_version": "LibreOfficeDev 26.8.0.0.alpha0 2c87e51eeaa2b413ff4ae097b2705eea1995d8e5"
+  },
+  "specimens": {
+    "ordinary": {
+      "docx": {
+        "bytes": 24409,
+        "sha256": "cd68a3f7997f50e44e4f87a2802d4bb3c37b4b958d3a7e04ab93f6f6c78e82fc"
+      },
+      "json": {
+        "bytes": 3818,
+        "sha256": "f7d7801caa21d6c711d7d72b111b4509c44a48b322fb4174719bd535f4d7cce3"
+      },
+      "pages": [
+        {
+          "bytes": 281665,
+          "sha256": "8953b1ff23ce84426a8a7a93f3741b8048d9f4fabd804e7cb86b7f6c9db28289"
+        },
+        {
+          "bytes": 216374,
+          "sha256": "281f37c67c6578b4191e17960ab182d0a6d4c94beacd2a2455db6a4f488a8e10"
+        },
+        {
+          "bytes": 309289,
+          "sha256": "82ea436bc07cbb21844d4c11110d48dcc8bb531f38a3b3713f6b9e3158b662b6"
+        }
+      ]
+    },
+    "long-literals": {
+      "docx": {
+        "bytes": 24762,
+        "sha256": "4aea1ab247d560828b051320e453bc6d4d9b5d6d459116e13c5233c057836b6b"
+      },
+      "json": {
+        "bytes": 4171,
+        "sha256": "bd6be9e010f8253956dfb71345ebd0d46298502b71a7de0d42c2f23a75fe7ecd"
+      },
+      "pages": [
+        {
+          "bytes": 273222,
+          "sha256": "5e753639c0390d16bdd36728a351696882ac85b1019be9680ceff39c1e4a9c19"
+        },
+        {
+          "bytes": 210548,
+          "sha256": "e3694d6924b53fd9c67a66658598481dc7cad61d468f67558222dfba5cddd4b2"
+        },
+        {
+          "bytes": 208567,
+          "sha256": "ed4be766e544e6cd52f2cb13c9a5171d1046b760a44e7042162fe12cb85502a3"
+        },
+        {
+          "bytes": 175636,
+          "sha256": "b0d6033f8b313b033aadb5cc678a2afab77431beb6049b1a76c57611dfa937b7"
+        }
+      ]
+    }
+  },
+  "checks": {
+    "renderer_cases_passed": 8,
+    "canonical_historical_case_passed": 1,
+    "historical_versions_exercised": 2,
+    "all_seven_page_pngs_visually_inspected": true,
+    "text_clipping_or_overlap_observed": false,
+    "ordinary_header_and_first_row_share_page": 2,
+    "long_literal_header_and_first_row_share_page": 2,
+    "native_word_generator3_verified": false,
+    "strict_all_target_clippy": "passed"
+  },
+  "limits": [
+    "Managed LibreOffice rendering is not native Word pagination evidence.",
+    "No generator3 native app capture or edit-save claim.",
+    "Existing immutable reports and prior native failures are preserved."
+  ],
+  "complete_release": false,
+  "logs": {
+    "historical-tests.log": {
+      "bytes": 2622,
+      "sha256": "292028710427ea24536a805ba94fa87ce7221da786ffe7acf1e909cbb4d7ae4a"
+    },
+    "renderer-tests.log": {
+      "bytes": 6819,
+      "sha256": "a929af7e06b44aede69e3df75f65dd5a399db62414dfd968c3570931d26d6935"
+    },
+    "clippy.log": {
+      "bytes": 5066,
+      "sha256": "cd46b4da5e246d470301dc1e7827d49ce044cd39228864f3c687053aaad9724b"
+    },
+    "render-long.log": {
+      "bytes": 154,
+      "sha256": "9b1f045464bc644993cb93b30ae19bf59efb2e4a2b68336f5965e320966a9b26"
+    },
+    "render-ordinary.log": {
+      "bytes": 158,
+      "sha256": "571bbbfc309230ceaa8428244e6ee143e233abae9e7eff9551d9b3e8549ea68c"
+    },
+    "generate.log": {
+      "bytes": 367,
+      "sha256": "351f9f44e67abe27845517cc3a1be26a339eef913b8c1050b59eb4ff1bd720df"
+    }
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "synthetic": true,
+  "scenarios": {
+    "clean_offline_installation": {
+      "fixtures": [
+        "document",
+        "statement-scan",
+        "transactions",
+        "historical-locations"
+      ],
+      "procedure": "Exercise clean offline installation through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "discovery_from_incomplete_input": {
+      "fixtures": [
+        "discovery-chain",
+        "document"
+      ],
+      "procedure": "Exercise discovery from incomplete input through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "difficult_document_import": {
+      "fixtures": [
+        "document",
+        "statement-scan",
+        "ocr-review"
+      ],
+      "procedure": "Exercise difficult document import through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "identity_ambiguity": {
+      "fixtures": [
+        "namesakes",
+        "copied-origins"
+      ],
+      "procedure": "Exercise identity ambiguity through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "statement_reconciliation": {
+      "fixtures": [
+        "transactions",
+        "ocr-review"
+      ],
+      "procedure": "Exercise statement reconciliation through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "proximity_analysis": {
+      "fixtures": [
+        "historical-locations",
+        "transactions"
+      ],
+      "procedure": "Exercise proximity analysis through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "correction_propagation": {
+      "fixtures": [
+        "ocr-review",
+        "historical-locations",
+        "recovery-events"
+      ],
+      "procedure": "Exercise correction propagation through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "hostile_input_and_networking": {
+      "fixtures": [
+        "hostile-inputs",
+        "discovery-chain"
+      ],
+      "procedure": "Exercise hostile input and networking through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "recovery_and_upgrades": {
+      "fixtures": [
+        "recovery-events",
+        "document"
+      ],
+      "procedure": "Exercise recovery and upgrades through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    },
+    "broad_direct_web_local_search": {
+      "fixtures": [
+        "discovery-chain"
+      ],
+      "procedure": "Exercise broad direct web local search through the installed application; retain candidate identity, source anchors, observed results and review decisions.",
+      "expected_result": "All linked fixture assertions hold. Synthetic replay establishes regression behaviour only; platform, live-web and installed-artifact gates require their separate real evidence."
+    }
+  },
+  "fixtures": [
+    {
+      "id": "document",
+      "kind": "document",
+      "file": {
+        "path": "document.txt",
+        "size": 189,
+        "sha256": "a3fa3b50ad6a4d24b524245647dbe5d6cdc9cd7e80489ad124a1261b0ec4f021"
+      },
+      "expected_assertions": [
+        "Preserve the reference namespace and all leading zeros.",
+        "Every accepted extracted mention retains its original source anchor."
+      ]
+    },
+    {
+      "id": "statement-scan",
+      "kind": "scan",
+      "file": {
+        "path": "statement-scan.png",
+        "size": 1837,
+        "sha256": "ce463a963fd0f7490619e0652858c93227a33ebebe29cf519453accfe7902232"
+      },
+      "expected_assertions": [
+        "Printed debit is exactly 18.00 and printed available balance is 82.00.",
+        "OCR candidates are unreviewed; retain the source image and bounding region."
+      ]
+    },
+    {
+      "id": "ocr-review",
+      "kind": "ocr-error",
+      "file": {
+        "path": "ocr-review.json",
+        "size": 284,
+        "sha256": "664d65ea05cf2b8722d20cc88a6985d92d9253cff2c48c86d43f429771ca1489"
+      },
+      "expected_assertions": [
+        "Reject the OCR amount error until reviewed against the original.",
+        "Correcting the amount invalidates current dependent findings, not previous report bytes."
+      ]
+    },
+    {
+      "id": "namesakes",
+      "kind": "identity",
+      "file": {
+        "path": "namesakes.json",
+        "size": 526,
+        "sha256": "442a9077ae237f19d18560668d8981e2acd4ef6e3c7070e11992f31f0d2825d2"
+      },
+      "expected_assertions": [
+        "Shared name/reference digits do not erase conflicting dates or namespace differences.",
+        "Reversal restores identities while retaining the audit trail."
+      ]
+    },
+    {
+      "id": "copied-origins",
+      "kind": "source-independence",
+      "file": {
+        "path": "copied-origins.json",
+        "size": 533,
+        "sha256": "59e84584a49bd017adf4d92a76059e64e87d1c07e38cbb8877eaab875ee4bfce"
+      },
+      "expected_assertions": [
+        "Two copied sources count as one origin group.",
+        "Confidence, extraction quality and source independence remain separate fields."
+      ]
+    },
+    {
+      "id": "historical-locations",
+      "kind": "temporal-location",
+      "file": {
+        "path": "historical-locations.json",
+        "size": 853,
+        "sha256": "1b770cd0800fb0b83a636289ab7ecfb89479d5230a126b75fe3b37b57b3d4f1b"
+      },
+      "expected_assertions": [
+        "Use the address and merchant validity intervals applicable to the transaction date.",
+        "A nearby branch is not automatically the correct branch.",
+        "Online and ambiguous purchases remain unresolved in the location denominator."
+      ]
+    },
+    {
+      "id": "transactions",
+      "kind": "transactions",
+      "file": {
+        "path": "transactions.csv",
+        "size": 507,
+        "sha256": "2075141dc335cfb9a4f2b60f4f2e737f9728c1260ec3ac05354e291e65471ab8"
+      },
+      "expected_assertions": [
+        "Both legitimate same-day purchases survive duplicate review.",
+        "The overlapping row is reviewable and source-linked.",
+        "An explicitly paired transfer is excluded from combined external flow.",
+        "Refunds retain positive signs; AUD and USD totals remain separate."
+      ]
+    },
+    {
+      "id": "discovery-chain",
+      "kind": "synthetic-discovery",
+      "file": {
+        "path": "discovery-chain.json",
+        "size": 464,
+        "sha256": "1db63acb87473362aa9cbd902f671867bf2239ae23fc67016f3adde7f58db5c7"
+      },
+      "expected_assertions": [
+        "CI replay never contacts these example domains.",
+        "A new identifier leads to a further relevant source within the declared budgets.",
+        "This replay cannot satisfy the live broad-discovery gate."
+      ]
+    },
+    {
+      "id": "hostile-inputs",
+      "kind": "hostile-input",
+      "file": {
+        "path": "hostile-inputs.json",
+        "size": 494,
+        "sha256": "6720642bf184102b441b3274490c6393e8ba39d428be02148196ae8ec29a77a3"
+      },
+      "expected_assertions": [
+        "Archive traversal, unexpected messages and local/link-local destinations are denied.",
+        "Collected scripts never execute in the privileged interface."
+      ]
+    },
+    {
+      "id": "recovery-events",
+      "kind": "recovery",
+      "file": {
+        "path": "recovery-events.json",
+        "size": 452,
+        "sha256": "369329e883b8c5b216e52d6b9eb2f6822022a380ca2e7b8aff303d82bf4b53fa"
+      },
+      "expected_assertions": [
+        "Restart does not publish duplicate observations.",
+        "Migration failure leaves a usable workspace and referenced originals.",
+        "Previous report bytes remain unchanged after correction."
+      ]
+    }
+  ]
+}

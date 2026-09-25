@@ -1,0 +1,109 @@
+{
+  "$defs": {
+    "CollectionDisclosure": {
+      "additionalProperties": false,
+      "properties": {
+        "automatic_case_contents": {
+          "type": "boolean"
+        },
+        "connection_metadata": {
+          "type": "boolean"
+        },
+        "dns_hostnames": {
+          "type": "boolean"
+        },
+        "followed_hosts": {
+          "type": "string"
+        },
+        "selected_and_followed_urls": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "dns_hostnames",
+        "connection_metadata",
+        "selected_and_followed_urls",
+        "automatic_case_contents",
+        "followed_hosts"
+      ],
+      "type": "object"
+    },
+    "CollectionInput": {
+      "additionalProperties": false,
+      "properties": {
+        "max_hops": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_requests": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_seconds": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "urls": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "urls",
+        "max_hops",
+        "max_requests",
+        "max_seconds"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "collector_policy": {
+      "type": "string"
+    },
+    "disclosure": {
+      "$ref": "#/$defs/CollectionDisclosure"
+    },
+    "input": {
+      "$ref": "#/$defs/CollectionInput"
+    },
+    "preview_sha256": {
+      "type": "string"
+    },
+    "robots_urls": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "selected_hosts": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "collector_policy",
+    "input",
+    "selected_hosts",
+    "robots_urls",
+    "disclosure",
+    "preview_sha256"
+  ],
+  "title": "CollectionPreview",
+  "type": "object"
+}

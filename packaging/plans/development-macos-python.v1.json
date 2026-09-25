@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "target": "macos-aarch64",
+  "ocr_languages": ["eng"],
+  "regions": [],
+  "components": [
+    {
+      "id": "python-runtime",
+      "version": "3.13.15+20260924",
+      "paths": ["install", "licenses", "PYTHON.json", "provenance.json", "manifest.json"]
+    }
+  ]
+}

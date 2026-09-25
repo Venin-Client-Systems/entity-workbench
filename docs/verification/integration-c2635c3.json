@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "scope": "development integration; source builds and bounded observations only",
+  "application_source": "c2635c3e13fa6754b87e56d1740b91538a889c78",
+  "rust_test_source": "bef9f309ad09874b227530d40cf074e11ec6debe",
+  "rust_sources_unchanged_between_test_and_application_source": true,
+  "ordinary_core": {
+    "passed": 438,
+    "failed": 0,
+    "specialized_ignored": 23,
+    "strict_all_target_clippy": "passed"
+  },
+  "python_discovery": {
+    "run": 238,
+    "passed": 234,
+    "platform_skipped": 4,
+    "failed": 0
+  },
+  "browser": {
+    "passed": 125,
+    "failed": 0,
+    "production_build": "passed",
+    "elapsed_reported": "4.7m",
+    "browser": "Chromium",
+    "native_webkit_claim": false
+  },
+  "independent_python_prefix_verification": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "logs": {
+    "ew-bef9f30-core.log": {
+      "bytes": 53517,
+      "sha256": "c16ada0df844354bd2401354dbfbe06b163a8215c5c478b2c98bf553c113e8bd"
+    },
+    "ew-bef9f30-clippy.log": {
+      "bytes": 185,
+      "sha256": "abc4faeb301eb29259e63ebc2f86611bca6ca5a9b39fcf47f62c3641ef1f8073"
+    },
+    "ew-c2635c3-python.log": {
+      "bytes": 39183,
+      "sha256": "9945d9c2a10de7a28736f8e584c7a52fae469d346d6525c14e171d1ecfbb4a6e"
+    },
+    "ew-c2635c3-ui.log": {
+      "bytes": 19397,
+      "sha256": "a12c3196591e4b54f04ede9374512bf350e5a527ae2d951be5a355d236a9827c"
+    },
+    "ew-c2635c3-prefix-verification.json": {
+      "bytes": 317,
+      "sha256": "1b922e3201e78fdf03e87a9adaa0d03190c608eaaa3933f38b8d60cc973d780b"
+    }
+  },
+  "limitations": [
+    "Documentation-only Windows receipt integration and status edits occurred during the browser run; application and test sources did not change.",
+    "The production build output retains an advisory about the main asset chunk size.",
+    "Ordinary tests exclude specialised native campaigns; no offline clean-machine installation or signed release claim.",
+    "All twelve complete-release gates remain unpassed."
+  ],
+  "complete_release": false
+}

@@ -1,0 +1,40 @@
+{
+  "$defs": {
+    "TransactionSourceKey": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_version": {
+          "description": "Required for analysis-derived rows. None selects the current row at the\nindependently required workspace revision, for example a finding citation.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "rows": {
+      "items": {
+        "$ref": "#/$defs/TransactionSourceKey"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "rows"
+  ],
+  "title": "TransactionSourcesRequest",
+  "type": "object"
+}

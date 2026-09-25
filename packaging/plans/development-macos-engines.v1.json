@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "target": "macos-aarch64",
+  "ocr_languages": ["eng"],
+  "regions": [],
+  "components": [
+    {
+      "id": "java-runtime",
+      "version": "21.0.12.1+1",
+      "paths": ["java", "development-only.json"]
+    },
+    {
+      "id": "document-parser",
+      "version": "0.1.0",
+      "paths": ["parser", "image", "pdf-render"]
+    },
+    {
+      "id": "lucene-search",
+      "version": "10.5.1",
+      "paths": ["search"]
+    },
+    {
+      "id": "tesseract",
+      "version": "5.5.2",
+      "paths": ["ocr/bin", "ocr/lib", "ocr/licenses", "ocr/NOTICE.json", "ocr/manifest.json"]
+    },
+    {
+      "id": "ocr-language:eng",
+      "version": "4.1.0",
+      "paths": ["ocr/tessdata", "ocr/licenses/tessdata_fast-LICENSE", "ocr/manifest.json"]
+    }
+  ]
+}

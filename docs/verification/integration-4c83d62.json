@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "scope": "Integrated off-lock v4 collection settlement and test-only canonical graph recipe",
+  "source_commit": "4c83d62b48763e2c559fc8eda0009303fe831099",
+  "source_tree": "324c283cdd920c980c7eb77c29a5daab6b73cf14",
+  "host": {
+    "system": "macOS",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "rust": {
+      "passed": 546,
+      "library": 467,
+      "integration": 79,
+      "ignored_native_or_specialized": 31,
+      "failed": 0
+    },
+    "clippy": "strict all targets passed",
+    "formatting": "passed",
+    "python": {
+      "total": 340,
+      "passed": 336,
+      "skipped_platform": 4,
+      "failed": 0
+    },
+    "ui_build": "passed with existing large-chunk warning",
+    "browser": {
+      "file": "ui/tests/durable-collection.spec.ts",
+      "passed": 13,
+      "failed": 0,
+      "real_core": true
+    },
+    "release_policy": {
+      "valid": true,
+      "passed_gates": 0,
+      "unpassed_gates": 12
+    }
+  },
+  "independent_handoff_checks": {
+    "source_files": 11,
+    "historical_schema_directory_files": 100,
+    "retained_artifacts_hash_and_size": 13,
+    "all_matched": true,
+    "signed_implementation": "61399effff794f63c0aca0d13d54ad0e9bf7818e",
+    "signed_evidence": "bd479b89cb20ff1eba0c0bb2c2b9c2957504d8ef",
+    "root_read_only_review": "Full source and regression review found no remaining concrete blocker",
+    "peer_read_only_review": "Clock rollback defect reproduced and repaired; final read-only review found no remaining concrete blocker"
+  },
+  "local_logs": {
+    "browser": {
+      "sha256": "316e2016401f4dcaafac7045aae7ecab9a44ef8a50fa104d7da9504254fb4f26",
+      "bytes": 2479
+    },
+    "clippy": {
+      "sha256": "5bf145c4c2f5d258dd2e816c88a39bf32db6358488b01d693e66df2a5def8aa2",
+      "bytes": 184
+    },
+    "core": {
+      "sha256": "15ad7ccaf9cdeb6f5671b0941616aaeb24c1f713b34c6791e6a7e58de3c4e72d",
+      "bytes": 68180
+    },
+    "fmt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "python": {
+      "sha256": "d328da211ea31272f9fd4db1debc4ee42a76456aaa1d31742bf280f0b5092daf",
+      "bytes": 58907
+    },
+    "release-policy": {
+      "sha256": "e06ca70607453955d732a9e6dbee53c3e4e4a2a56d5116053ad95fd2101e3dee",
+      "bytes": 984
+    },
+    "ui-build": {
+      "sha256": "58509f38bcc5c01a36ebf364715cbe35cdc06871be9667d94f4704933a6de1eb",
+      "bytes": 932
+    }
+  },
+  "limits": [
+    "No native or public-network campaign reran in this integrated check; the separate single canonical graph experiment retains its own source and receipts",
+    "Only v4 coordinator settlement replay and HTML interpretation moved outside the mutex; general inspect/cancel/start/advance replay and bounded capture/commit I/O still hold it",
+    "Parser calls are not cooperatively preemptible; no hard CPU/RSS/latency or cancellation guarantee",
+    "Normal native collection remains disabled; production graph job integration is unfinished",
+    "The full 158-browser result belongs to prior source 73d25e2; only the 13 affected collection flows reran here"
+  ],
+  "complete_release": false
+}

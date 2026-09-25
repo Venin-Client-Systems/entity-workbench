@@ -1,0 +1,18 @@
+.finding-review-history {
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  padding-top: 12px;
+}
+.finding-review-history h4 {
+  margin: 0;
+}
+.review-history-rows {
+  list-style: none;
+  padding: 0;
+}
+.review-history-rows .list-card {
+  overflow-wrap: anywhere;
+}
+.review-history-rows code {
+  font-size: 11px;
+}

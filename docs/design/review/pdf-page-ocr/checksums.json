@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "scope": "synthetic browser review and native editable Figma exports; not native execution or release acceptance",
+  "files": {
+    "accessibility-compact-provenance.json": "f2fc3c1e384466fda50ae41c30a86ae658001d4fc9e51e16e20daffa7a4bce9c",
+    "accessibility-compact.json": "f2fc3c1e384466fda50ae41c30a86ae658001d4fc9e51e16e20daffa7a4bce9c",
+    "accessibility-desktop.json": "f2fc3c1e384466fda50ae41c30a86ae658001d4fc9e51e16e20daffa7a4bce9c",
+    "accessibility-queue-compact.json": "b4f74dcfc6d2c0fb2c907f7c6f847f38f8183835db4b2656ffb343751d651a82",
+    "accessibility-queue-desktop.json": "b4f74dcfc6d2c0fb2c907f7c6f847f38f8183835db4b2656ffb343751d651a82",
+    "empty.png": "9b65fa68d5b368ec2647cf2ae0d940545a91cb31d1c2251f5d654e0acd1da260",
+    "encrypted.png": "be7ce2f98b2319544ac8332e9fed210966284e32f8fe66e1efe7c0e46cde23b3",
+    "failed.png": "e1d405b06a85f85c077f6a9357d23920f2b703cb7cbb0982d6e2f81d116bfd0f",
+    "figma-pdf-page-ocr.png": "2a1128b719224a1ae913dc27d2e3594941a17dfc3258ef25dccdbcb62c8c1a40",
+    "figma-pdf-page-queue.png": "a11a877fe0895619ca6e24997daba26561e58c6c5da30d90f2a15032069f78a6",
+    "queue-compact.png": "82c52d716e53c4fd954fe5fb8b50f180e32fec966ac2fd2e2b1c2cb6a8329298",
+    "queue-desktop.png": "7174a0207fba8d5012593a81dccee56ae9949bd9b9456dcecf2e11ad791cbf0b",
+    "quota.png": "88d8eab141620d8e87b688455f54f81f625befbf21f4241fda371f32d94c3b30",
+    "recognized-compact.png": "ab62285ee02dc4b1be90a841f1ece3bd6add9897f36c2a20db6603fb7e8bf7ac",
+    "recognized-desktop.png": "b10b2a953a5612c13fa12b9ca47619491cd81eac1a5ba779091effc89686848f",
+    "recognized-full.png": "adc22dd37b7418c6dcd394cf9d51f04cf6f3663b77cc9255080027476530e4ef",
+    "recognized-provenance.png": "63cfbe4946278dbb1cfb3827117117632bc92569439f2f0a234cc08b88023a72",
+    "unsupported.png": "1dbbf3140b240a83765babe736388b9ac579dca55dbebd6884a949ebea4cf743"
+  }
+}

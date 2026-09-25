@@ -1,0 +1,51 @@
+/* Existing industrial form and pager primitives; editable facet-state frames pending. */
+.patterns-fields.facet-fields,
+.comparison-filters.facet-fields {
+  align-items: start;
+}
+.transaction-facet {
+  min-width: 0;
+}
+.transaction-facet select {
+  width: 100%;
+  min-width: 0;
+}
+.transaction-facet .facet-status,
+.transaction-facet .facet-scope,
+.transaction-facet .facet-retained,
+.transaction-facet .facet-error p {
+  margin: 7px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.transaction-facet .facet-status {
+  font-family: var(--mono, monospace);
+}
+.transaction-facet .facet-scope {
+  color: #53605b;
+}
+.transaction-facet .facet-retained {
+  border-left: 2px solid #a64b0a;
+  padding-left: 7px;
+}
+.transaction-facet .facet-error {
+  color: #743400;
+  border-left: 2px solid #a64b0a;
+  padding-left: 7px;
+}
+.transaction-facet .facet-error .button {
+  margin-top: 8px;
+}
+.transaction-facet .facet-pager {
+  gap: 4px;
+  margin: 8px 0 0;
+}
+.transaction-facet .facet-pager .button {
+  min-height: 32px;
+  padding: 6px 8px;
+  font-size: 11px;
+}
+.comparison-filters.facet-fields > button[type="submit"] {
+  margin-top: 23px;
+}

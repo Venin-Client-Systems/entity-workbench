@@ -1,0 +1,2 @@
+# Preserve the exact UTF-8 BOM and CRLF bytes of the verified synthetic download.
+synthetic-transactions.csv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

@@ -1,0 +1,21 @@
+[WebServer] (node:17600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:17626) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.63s
+
+Running 9 tests using 1 worker
+
+(node:17710) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 ui/tests/transaction-csv.spec.ts:168:1 › CSV requires an explicit mixed-review choice and downloads every exact canonical row while JSON remains available (4.5s)
+  ✓  2 ui/tests/transaction-csv.spec.ts:236:1 › accepted-only and empty scopes obey the explicit policy; compact controls remain accessible (1.8s)
+  ✓  3 ui/tests/transaction-csv.spec.ts:288:1 › browser export rejects altered dictionary, policy, hash and malformed fixed CSV instead of downloading (1.3s)
+  ✓  4 ui/tests/transaction-csv.spec.ts:325:1 › late browser CSV is not downloaded after the applied scope changes (927ms)
+  ✓  5 ui/tests/transaction-csv.spec.ts:361:1 › native CSV uses metadata-only version2 saves and same-ticket lost-ack recovery with exact bytes (3.5s)
+  ✓  6 ui/tests/transaction-csv.spec.ts:413:1 › native CSV rejects wrong envelope/dictionary receipts and cleans the actual stage (976ms)
+  ✓  7 ui/tests/transaction-csv.spec.ts:459:1 › late native CSV preparation is discarded on unmount and never commits (962ms)
+  ✓  8 ui/tests/transaction-csv.spec.ts:496:1 › two lost native commit acknowledgements remain unconfirmed without a replacement preparation (877ms)
+  ✓  9 ui/tests/transaction-csv.spec.ts:528:1 › stale revisions and corrupted originals refuse CSV without a download (927ms)
+
+  9 passed (18.5s)

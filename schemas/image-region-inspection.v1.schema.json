@@ -1,0 +1,528 @@
+{
+  "$defs": {
+    "DecodeFailure": {
+      "enum": [
+        "unsupported_format",
+        "multiple_images",
+        "malformed_image",
+        "decoder_warning",
+        "pixel_limit",
+        "container_limit"
+      ],
+      "type": "string"
+    },
+    "DecodeLimitation": {
+      "enum": [
+        "exif_orientation_not_applied",
+        "embedded_previews_excluded",
+        "metadata_not_extracted",
+        "color_converted_to_gray",
+        "no_document_page_mapping"
+      ],
+      "type": "string"
+    },
+    "DecodeStatus": {
+      "enum": [
+        "decoded",
+        "unsupported",
+        "failed",
+        "quota_exhausted"
+      ],
+      "type": "string"
+    },
+    "DerivativeKind": {
+      "enum": [
+        "canonical_pgm_v1",
+        "ocr_tsv_v1",
+        "image_region_result_json_v1"
+      ],
+      "type": "string"
+    },
+    "DerivativeRef": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "kind": {
+          "$ref": "#/$defs/DerivativeKind"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "sha256",
+        "bytes",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "ImageDecodeResult": {
+      "additionalProperties": false,
+      "properties": {
+        "decoder": {
+          "type": "string"
+        },
+        "failure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecodeFailure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "java_runtime": {
+          "type": "string"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "$ref": "#/$defs/DecodeLimitation"
+          },
+          "type": "array"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "original_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "original_sha256": {
+          "type": "string"
+        },
+        "protocol_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "raster": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RasterBinding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "$ref": "#/$defs/DecodeStatus"
+        }
+      },
+      "required": [
+        "protocol_version",
+        "job_id",
+        "original_sha256",
+        "original_bytes",
+        "decoder",
+        "java_runtime",
+        "media_type",
+        "status",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "ImageOcrRegionsInput": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "image_ocr_regions",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ImageRegionExtractionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input": {
+          "$ref": "#/$defs/ImageOcrRegionsInput"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "raster": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivativeRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "$ref": "#/$defs/DerivativeRef"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "tsv": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DerivativeRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "job_id",
+        "attempt",
+        "input",
+        "created_at",
+        "result"
+      ],
+      "type": "object"
+    },
+    "ImageRegionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "decoder": {
+          "$ref": "#/$defs/ImageDecodeResult"
+        },
+        "recognition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OcrRegionsResult"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "decoder"
+      ],
+      "type": "object"
+    },
+    "OcrRegion": {
+      "additionalProperties": false,
+      "properties": {
+        "block_number": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "bounds": {
+          "$ref": "#/$defs/RasterBox",
+          "description": "Pixels, top-left origin, right/bottom edges excluded."
+        },
+        "engine_confidence": {
+          "description": "Tesseract's finite 0–100 word score; structural rows carry None.\nThis score is neither a calibrated probability nor analyst confidence.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "level": {
+          "$ref": "#/$defs/RegionLevel"
+        },
+        "line_number": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "page_number": {
+          "description": "Tesseract's one-based raster page. This is never an original document page.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "paragraph_number": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "text": {
+          "type": "string"
+        },
+        "word_number": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "level",
+        "page_number",
+        "block_number",
+        "paragraph_number",
+        "line_number",
+        "word_number",
+        "bounds",
+        "text"
+      ],
+      "type": "object"
+    },
+    "OcrRegionsResult": {
+      "additionalProperties": false,
+      "properties": {
+        "engine": {
+          "type": "string"
+        },
+        "height": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "$ref": "#/$defs/RegionsLimitation"
+          },
+          "type": "array"
+        },
+        "model_sha256": {
+          "type": "string"
+        },
+        "protocol_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "raster_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "raster_sha256": {
+          "type": "string"
+        },
+        "regions": {
+          "items": {
+            "$ref": "#/$defs/OcrRegion"
+          },
+          "type": "array"
+        },
+        "runtime_manifest_sha256": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/RegionsStatus"
+        },
+        "text": {
+          "description": "Companion text output, preserving the engine's original whitespace.",
+          "type": "string"
+        },
+        "tsv_bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "tsv_sha256": {
+          "type": "string"
+        },
+        "width": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "protocol_version",
+        "job_id",
+        "raster_sha256",
+        "raster_bytes",
+        "width",
+        "height",
+        "engine",
+        "language",
+        "model_sha256",
+        "runtime_manifest_sha256",
+        "status",
+        "text",
+        "tsv_sha256",
+        "tsv_bytes",
+        "regions",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "PixelMapping": {
+      "enum": [
+        "encoded_pixels_gray_white_alpha_v1"
+      ],
+      "type": "string"
+    },
+    "RasterBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "height": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "path": {
+          "type": "string"
+        },
+        "pixel_mapping": {
+          "$ref": "#/$defs/PixelMapping"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "source_image_index": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "width": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "width",
+        "height",
+        "source_image_index",
+        "pixel_mapping"
+      ],
+      "type": "object"
+    },
+    "RasterBox": {
+      "additionalProperties": false,
+      "properties": {
+        "height": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "left": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "top": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "width": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "left",
+        "top",
+        "width",
+        "height"
+      ],
+      "type": "object"
+    },
+    "RegionLevel": {
+      "enum": [
+        "page",
+        "block",
+        "paragraph",
+        "line",
+        "word"
+      ],
+      "type": "string"
+    },
+    "RegionsLimitation": {
+      "enum": [
+        "unreviewed_recognition",
+        "unreviewed_word_regions",
+        "engine_confidence_not_probability",
+        "no_original_document_mapping",
+        "single_uniform_block"
+      ],
+      "type": "string"
+    },
+    "RegionsStatus": {
+      "enum": [
+        "recognized",
+        "no_text_recognized"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "extraction": {
+      "$ref": "#/$defs/ImageRegionExtractionRecord"
+    },
+    "result": {
+      "$ref": "#/$defs/ImageRegionResult"
+    }
+  },
+  "required": [
+    "extraction",
+    "result"
+  ],
+  "title": "ImageRegionInspection",
+  "type": "object"
+}

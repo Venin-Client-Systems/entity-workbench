@@ -1,0 +1,3 @@
+Native Chrome accessibility observation, local isolated test tab:
++						467 button Zoom: 200%
+Cleanup subsequently observed Zoom: 100%; owned local tab closed.

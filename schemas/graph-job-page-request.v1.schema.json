@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "page_size": {
+      "format": "uint32",
+      "maximum": 25,
+      "minimum": 1,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "page_size"
+  ],
+  "title": "GraphJobPageRequest",
+  "type": "object"
+}

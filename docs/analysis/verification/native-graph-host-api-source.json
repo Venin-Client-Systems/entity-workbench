@@ -1,0 +1,207 @@
+{
+  "artifacts": [
+    {
+      "bytes": 39,
+      "path": "artifacts/native-graph-host-source/audit-source.log",
+      "sha256": "b05fd877198145b13a6897b2f6d2e9df35375e65dcc16cfdadfdc9fc6d8a7f4e"
+    },
+    {
+      "bytes": 5064,
+      "path": "artifacts/native-graph-host-source/clippy-debug.log",
+      "sha256": "fb7e905a6347353f43b1e18f77b6be580bee4f39f98ac1172cfb91bc3218257f"
+    },
+    {
+      "bytes": 5934,
+      "path": "artifacts/native-graph-host-source/clippy-intel.log",
+      "sha256": "c2bb9618a0613bfd03d2921d1bdf88669def435065154148fcd31747c71d22a7"
+    },
+    {
+      "bytes": 5924,
+      "path": "artifacts/native-graph-host-source/clippy-release.log",
+      "sha256": "6a9a525780ad0c2f0364b8ca0d3ddc645231f773f7029f4117adc15213330a33"
+    },
+    {
+      "bytes": 86915,
+      "path": "artifacts/native-graph-host-source/core.log",
+      "sha256": "6a99c1ab6d22970e3e3e665f6b816dd5e4ecff558013ad679bdaec6d1dc1e5a5"
+    },
+    {
+      "bytes": 6264,
+      "path": "artifacts/native-graph-host-source/first-source-delta.log",
+      "sha256": "bf9e2f107add06256c64e3cfe6d85574e532732cfe83904aefc0aa6c2c5ef777"
+    },
+    {
+      "bytes": 0,
+      "path": "artifacts/native-graph-host-source/fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 19338,
+      "path": "artifacts/native-graph-host-source/historical-schemas.json",
+      "sha256": "b3c7be02dd94f41c4f426f9d9c1e32fe323998b2dba97b1ca8c4579c49ab255f"
+    },
+    {
+      "bytes": 66581,
+      "path": "artifacts/native-graph-host-source/python-final.log",
+      "sha256": "08655b09b28a047c4afde5884f3b7f02766e88c56f9e52fe21449e3938f23cb3"
+    },
+    {
+      "bytes": 66397,
+      "path": "artifacts/native-graph-host-source/python-normal-final.log",
+      "sha256": "4505bfc243180d8e603520dc2d1f76bdbeea24921c767fd85fd83a3972e69df0"
+    },
+    {
+      "bytes": 66250,
+      "path": "artifacts/native-graph-host-source/python-normal.log",
+      "sha256": "76b8794c001d2a54500bf62714d70828b73abf88947b6a8ccd6abc8499c3ad7d"
+    },
+    {
+      "bytes": 66581,
+      "path": "artifacts/native-graph-host-source/python-optimized-final.log",
+      "sha256": "4e48533f4fe7595244a6080fdccb244e19bbde513b5c0a6a771d4f3911d10e2b"
+    },
+    {
+      "bytes": 66397,
+      "path": "artifacts/native-graph-host-source/python-optimized.log",
+      "sha256": "fc8778ed2f8e7f465bea197fc52430a86eb13946bd55e8f74f82a248db2d8d61"
+    },
+    {
+      "bytes": 95,
+      "path": "artifacts/native-graph-host-source/signature-source.log",
+      "sha256": "5f3f0d9f099255a8b0687a2dc0a0908eae975996f949d495203bf5e85992c355"
+    },
+    {
+      "bytes": 165913,
+      "path": "artifacts/native-graph-host-source/source-inventory.json",
+      "sha256": "8e01c17d39c967b51cb9cfb493bd2fa7292fd2161c086b8eaafd42a93c64f71e"
+    }
+  ],
+  "base": "d72a047a65ecb38c056370b0646f1ab4e76bbac9",
+  "checks": {
+    "core": {
+      "integration_passed": 79,
+      "native_ignored": 34,
+      "passed": 700,
+      "unit_passed": 621
+    },
+    "format": "passed",
+    "historical_schema_directory_files_unchanged": 110,
+    "new_python_guard_tests": 9,
+    "public_source_audit_files": 8,
+    "python_normal": {
+      "passed": 380,
+      "run": 384,
+      "skipped": 4
+    },
+    "python_optimized": {
+      "passed": 380,
+      "run": 384,
+      "skipped": 4
+    },
+    "source_signature": "verified",
+    "strict_clippy": [
+      "host-debug-all-targets",
+      "host-release-all-targets",
+      "x86_64-apple-darwin-all-targets"
+    ]
+  },
+  "complete_release": false,
+  "full_tracked_source_inventory_count": 1377,
+  "future_scope": {
+    "automatic_retries": 0,
+    "cases": 1,
+    "entry_point": "start_with_development_app_resources",
+    "expected_revisions": {
+      "captured": 4,
+      "published": 5,
+      "queued": 3,
+      "requested": 2
+    },
+    "launches": 1,
+    "limits_seconds": {
+      "child_cpu": 30,
+      "child_wall": 30,
+      "coordinator_wait": 180,
+      "native_outer": 300,
+      "offline_build": 600
+    },
+    "path": [
+      "a",
+      "b",
+      "c"
+    ],
+    "public_commands": [
+      "queue_graph_path",
+      "page_graph_jobs",
+      "inspect_graph_job",
+      "inspect_graph_analysis"
+    ],
+    "resources": "resources/engines/python within an otherwise fresh canonical UUID artifact directory"
+  },
+  "kind": "native-graph-host-api-source-verification",
+  "limitations": [
+    "Source verification only; ignored native trial unexecuted.",
+    "No packaged Tauri startup or UI proof.",
+    "No normal startup activation, signed-helper or cross-platform runtime claim.",
+    "Child deadline excludes runtime verification, startup, capture and final verification.",
+    "Any uncertain termination forbids later database, original and runtime traversal or cleanup."
+  ],
+  "native_trial": {
+    "candidate_downloaded": false,
+    "executed": false,
+    "interpreter_executed": false,
+    "packaged_tauri_ui_observed": false,
+    "runtime_staged": false
+  },
+  "retained_first_failure": {
+    "artifact": "artifacts/native-graph-host-source/python-normal.log",
+    "failure": "Broad unittest discovery imported a previously loaded test module instead of the prior runner.",
+    "final_scope": "Both complete normal and optimized source suites passed after repair.",
+    "repair": "Distinct run_graph_host_native.py entry point and explicit source-path import of prior runner."
+  },
+  "schema_version": 1,
+  "source_commit": "44ea31f4bc7eaf9728a6934e5f7a3832ad2bd9f3",
+  "source_files": [
+    {
+      "bytes": 38791,
+      "path": "crates/core/src/coordinator.rs",
+      "sha256": "8f39fb0d54f696ae007b4e9419c35112c16223fdc624f2429278027a4ef7f06a"
+    },
+    {
+      "bytes": 18356,
+      "path": "crates/core/src/coordinator_native_graph_host_proof.rs",
+      "sha256": "09b2eb1f969955d74b43bd492ebd37ec005f398b8f88b3dad46ed79c60511520"
+    },
+    {
+      "bytes": 11504,
+      "path": "crates/core/src/engines/python_graph.rs",
+      "sha256": "a2a6da93b3df72fbd84957b8b380b5ac1b3fa9589587c04b1e8d95ad3acb1183"
+    },
+    {
+      "bytes": 6636,
+      "path": "crates/core/src/engines/python_graph/tests.rs",
+      "sha256": "2985374a2ff41094e00124e523aa5f4801a7cafd4c3231fe59eedbbd318b8c7f"
+    },
+    {
+      "bytes": 8249,
+      "path": "docs/analysis/GRAPH-HOST-API-NATIVE.md",
+      "sha256": "d73cbe897a4a9824f64d4a4cc60687c4c88d31d19aaa59bc9ddd1b3b37d3a54c"
+    },
+    {
+      "bytes": 11506,
+      "path": "scripts/python_graph_host_receipts.py",
+      "sha256": "7a72e5fa9cb76ee85aa99975fdec64cae505a5d2c910bb758b51b886f573fbb6"
+    },
+    {
+      "bytes": 7746,
+      "path": "scripts/run_graph_host_native.py",
+      "sha256": "19e368a49a8aa9349f7ba9ef03b96762038169038039d9ef5441612c5c525a12"
+    },
+    {
+      "bytes": 13399,
+      "path": "scripts/tests/test_graph_host_native.py",
+      "sha256": "029ec56b149668b04977f87001bf62467e84e2c300c390d979e6ee9207865205"
+    }
+  ],
+  "source_tree": "f4f33f180ba1e8f6b33f4fbef5bd4f49adb3edbc"
+}

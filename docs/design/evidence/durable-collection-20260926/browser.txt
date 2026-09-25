@@ -1,0 +1,45 @@
+[WebServer] (node:77734) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:77759) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.53s
+
+Running 20 tests using 1 worker
+
+(node:77803) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ui/tests/collection-review.spec.ts:64:1 › request ancestry, escaped source, immutable export and keyboard review use the real core (3.9s)
+  ✓   2 ui/tests/collection-review.spec.ts:250:1 › a zero-based parent sequence remains inspectable (716ms)
+  ✓   3 ui/tests/collection-review.spec.ts:268:1 › incomplete, blocked and failed attempts preserve their different missing-response states (1.1s)
+  ✓   4 ui/tests/collection-review.spec.ts:307:1 › partial retention disables export and unavailable legacy receipt does not invent an empty result (1.1s)
+  ✓   5 ui/tests/collection-review.spec.ts:353:1 › empty originals and unsupported formats are retained without claiming searchable or relevant results (774ms)
+  ✓   6 ui/tests/collection-review.spec.ts:385:1 › Rust rechecks originals at export and surfaces failure without reporting a saved bundle (841ms)
+  ✓   7 ui/tests/collection-review.spec.ts:409:1 › compact review reflows, stays inside the modal and has no automated accessibility violations (1.3s)
+
+  ✓   8 ui/tests/durable-collection.spec.ts:100:1 › Rust normalizes preview and rejects invalid scope; controls stay honestly unavailable (2.3s)
+
+  ✓   9 ui/tests/durable-collection.spec.ts:140:1 › late real preview cannot restore changed scope (799ms)
+
+  ✓  10 ui/tests/durable-collection.spec.ts:166:1 › complete bounded catalogue pages retain identity and reset on revision change (962ms)
+
+  ✓  11 ui/tests/durable-collection.spec.ts:207:1 › recorded progress, exact source verification and keyboard modal use real retained receipts (1.8s)
+
+  ✓  12 ui/tests/durable-collection.spec.ts:258:1 › unknown completion remains distinct and compact controls remain accessible (1.4s)
+
+  ✓  13 ui/tests/durable-collection.spec.ts:297:1 › a corrupted retained original makes inspection unavailable, never successful (779ms)
+
+  ✓  14 ui/tests/durable-collection.spec.ts:328:1 › held old inspection cannot populate a reopened different record (907ms)
+
+  ✓  15 ui/tests/durable-collection.spec.ts:370:1 › catalogue failure stays unavailable and retry differs from an empty catalogue (769ms)
+
+  ✓  16 ui/tests/durable-collection.spec.ts:401:1 › uncertain genuinely refused queue retains exact identity through component remount (955ms)
+
+  ✓  17 ui/tests/durable-collection.spec.ts:461:1 › A to B to A reopening revalidates originals instead of accepting a held old success (982ms)
+
+  ✓  18 ui/tests/durable-collection.spec.ts:518:1 › fresh workspace has an explicit empty durable catalogue and never enables queueing (1.3s)
+
+  ✓  19 ui/tests/durable-collection.spec.ts:541:1 › queue acknowledgement binds the exact canonical request key even for identical input (717ms)
+
+  ✓  20 ui/tests/durable-collection.spec.ts:615:1 › keyboard pagination restores range focus but respects a deliberate move followed by blur (923ms)
+
+  20 passed (27.2s)

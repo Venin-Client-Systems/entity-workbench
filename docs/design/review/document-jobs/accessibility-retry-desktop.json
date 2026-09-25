@@ -1,0 +1,9 @@
+{
+  "scope": "dialog[aria-label=\"Retry document job\"]",
+  "tags": [
+    "wcag2a",
+    "wcag2aa",
+    "wcag21aa"
+  ],
+  "violations": []
+}

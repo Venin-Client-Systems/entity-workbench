@@ -1,0 +1,59 @@
+   Compiling workbench-core v0.1.0 (<worktree>/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.66s
+     Running unittests src/lib.rs (target/debug/deps/workbench_core-3b02699a934d9ff3)
+
+running 52 tests
+test coordinator::search::native::native_coordinator_search_campaign ... ignored, one reviewed native macOS Search campaign; explicit signed-source opt-in required
+test coordinator::search::native::native_search_unknown_and_cleanup_errors_precede_all_query_postreads ... ok
+test coordinator::search::native::native_search_result_contract_rejects_substituted_ids_revision_and_false_empty ... ok
+test coordinator::search::native::native_search_index_snapshot_rejects_residue_and_detects_same_byte_replacement ... ok
+test engines::search::assignment_tests::search_lifecycle_actual_assignment_wrapper_cleans_only_known_stop ... ok
+test coordinator::search::native::inventory::native_search_inventory_is_bounded_and_rejects_links_and_incomplete_trees ... ok
+test engines::search::probe::fixed_search_guard_refuses_extra_reordered_and_any_quarantined_recipe_entry ... ok
+test engines::search::assignment_tests::search_lifecycle_actual_assignment_wrapper_retains_unknown_and_panic ... ok
+test engines::search::tests::index_acknowledgement_is_required_before_revision_publication ... ok
+test engines::search_lifecycle::tests::search_lifecycle_cleanup_error_cannot_publish_or_release_intent ... ok
+test coordinator::search::tests::search_lifecycle_panicked_dispatch_retains_owner_and_shutdown_refuses_poisoned_barrier ... ok
+test coordinator::search::tests::search_lifecycle_coordinator_routes_search_using_its_exact_existing_owner ... ok
+test coordinator::search::tests::search_lifecycle_coordinator_unknown_exit_quarantines_and_cancels_other_owned_tokens ... ok
+test engines::search_lifecycle::tests::search_lifecycle_invalid_query_does_not_create_ownership ... ok
+test engines::search_lifecycle::tests::search_lifecycle_create_collision_is_never_deleted_as_owned ... ok
+test engines::search_lifecycle::tests::search_lifecycle_control_hardlinks_fail_without_altering_outside_bytes ... ok
+test engines::search_lifecycle::tests::search_lifecycle_known_failure_cleans_and_preserves_primary_error ... ok
+test coordinator::search::tests::search_lifecycle_bootstrap_quarantine_prevents_document_start_but_allows_view ... ok
+test engines::search_lifecycle::tests::search_lifecycle_linked_control_and_parent_fail_without_following ... ok
+test engines::search_lifecycle::tests::search_lifecycle_existing_invalid_and_crash_left_intents_block_before_index_change ... ok
+test engines::supervision::tests::native_lucene_uses_separate_jobs_and_read_only_search_index ... ignored, requires staged Java 21 and current worker JAR; run scripts/test_macos_confinement.py
+test engines::search_lifecycle::tests::search_lifecycle_panic_retains_inputs_and_intent ... ok
+test engines::supervision::tests::native_parser_has_no_search_access_and_cancels_running_worker ... ignored, requires separate staged parser runtime; run scripts/test_parser_workers.py
+test coordinator::search::native::native_search_fixture_and_inert_intent_control_need_no_worker ... ok
+test engines::search_lifecycle::tests::search_lifecycle_write_and_sync_failures_prevent_any_launch ... ok
+test engines::search_lifecycle::tests::search_lifecycle_success_releases_both_stages_without_canonical_writes ... ok
+test coordinator::search::tests::search_lifecycle_shutdown_waits_for_admitted_dispatch_after_worker_registry_is_empty ... ok
+test engines::search_lifecycle::tests::search_lifecycle_unknown_exit_retains_every_input_and_never_attempts_cleanup ... ok
+test store::search::tests::search_lifecycle_existing_processing_uncertainty_blocks_before_callback ... ok
+test store::search::tests::search_lifecycle_collection_recovery_refuses_search_without_starting_runtime ... ok
+test store::collection::tests::empty_and_unsupported_responses_survive_without_search_promotion ... ok
+test store::search::tests::search_lifecycle_safe_completion_keeps_owner_and_panic_quarantines ... ok
+test engines::search_lifecycle::tests::search_lifecycle_finalization_failures_reject_success_and_retain_lock ... ok
+test store::search::tests::search_lifecycle_typed_disposition_quarantines_even_when_no_marker_can_be_read ... ok
+test store::search::tests::search_lifecycle_real_orphan_claim_remains_unmodified_and_cannot_launch_search ... ok
+test store::search::tests::search_lifecycle_standalone_cannot_reacquire_current_coordinator_owner ... ok
+test store::search::tests::search_lifecycle_bootstrap_intent_quarantines_owner_but_preserves_reads_and_revision ... ok
+test store::search::tests::search_lifecycle_unreadable_marker_and_linked_ancestor_require_recovery ... ok
+test store::citation_catalogue::tests::literal_search_preserves_display_fields_unicode_whitespace_and_selected_exclusions ... ok
+test store::search::tests::search_lifecycle_workspace_owner_cannot_cross_workspaces_or_release_quarantine ... ok
+test store::search::tests::search_lifecycle_standalone_refuses_orphaned_running_or_legacy_interrupted_claims ... ok
+test store::transaction_search::tests::empty_query_keeps_v12_page_semantics_including_long_legacy_text_but_not_cursor_family ... ok
+test store::transaction_search::tests::search_cursors_bind_text_profile_scope_size_and_revision_including_empty_scopes ... ok
+test store::transaction_search::tests::page_and_search_reject_evidence_retargeted_to_another_intact_original ... ok
+test store::transaction_search::tests::malformed_or_oversized_in_scope_fields_fail_even_when_hidden_by_query_or_review ... ok
+test store::transaction_search::tests::strict_hostile_requests_and_fixed_function_do_not_mutate_workspace ... ok
+test store::transaction_search::tests::text_counts_and_exact_rows_share_a_snapshot_during_real_concurrent_import ... ok
+test store::transfer_candidates::tests::direct_dispatch_and_existing_page_search_schemas_remain_independent ... ok
+test store::transaction_search::tests::search_scope_precedes_review_selection_and_keeps_exact_values_order_and_ties ... ok
+test store::transaction_search::tests::javascript_fixture_cases_match_actual_canonical_search_and_report_unicode_version ... ok
+test store::transaction_export::tests::complete_export_matches_all_search_pages_for_exact_filters_and_date_orders ... ok
+test store::transaction_search::tests::matching_rows_preserve_page_body_budget_and_original_integrity_checks ... ok
+
+test result: ok. 49 passed; 0 failed; 3 ignored; 0 measured; 570 filtered out; finished in 0.94s

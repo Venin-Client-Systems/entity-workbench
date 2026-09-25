@@ -1,0 +1,30 @@
+[WebServer] (node:55279) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:55368) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
+
+Running 18 tests using 1 worker
+
+(node:55514) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ui/tests/account-flows.spec.ts:127:1 › once-per-pair exact flows retain currencies, repeated rows and every review denominator without writes (3.1s)
+  ✓   2 ui/tests/account-flows.spec.ts:196:1 › asymmetric scope shows support-only endpoints and exact source provenance with accessible modal handoff (2.4s)
+  ✓   3 ui/tests/account-flows.spec.ts:245:1 › draft, empty and pending-only scopes remain distinct from unavailable and stale results (1.6s)
+  ✓   4 ui/tests/account-flows.spec.ts:295:1 › source corruption fails explicit verification, restoration retries and later corrections block old source reads (1.4s)
+  ✓   5 ui/tests/account-flows.spec.ts:346:1 › late response after navigation cannot publish into a new flow instance (1.3s)
+  ✓   6 ui/tests/account-flows.spec.ts:383:1 › response identity mismatch is unavailable, never displayed as a valid flow (984ms)
+  ✓   7 ui/tests/account-flows.spec.ts:399:1 › compact controls, modal focus containment and exact values remain accessible (1.7s)
+  ✓   8 ui/tests/account-flows.spec.ts:437:1 › pair and source pages retain every real repeated transfer without silent cutoff (2.6s)
+  ✓   9 ui/tests/account-flows.spec.ts:480:1 › a real revision change while calculation is held refuses the late captured result (795ms)
+  ✓  10 ui/tests/account-flows.spec.ts:521:1 › relationship and account pages explicitly bound the rendered subset and retain all groups (2.1s)
+  ✓  11 ui/tests/account-flows.spec.ts:558:1 › a refused workspace refresh preserves the old result but disables its source actions (760ms)
+  ✓  12 ui/tests/transaction-facets.spec.ts:95:1 › both consumers page exact whole-ledger choices, retain an off-page selection and preserve draft scope (3.8s)
+  ✓  13 ui/tests/transaction-facets.spec.ts:263:1 › transport failure is unavailable, retained selection can be cleared, and Retry reads the real page (1.8s)
+  ✓  14 ui/tests/transaction-facets.spec.ts:303:1 › empty canonical scope is explicit and has no continuation (1.1s)
+  ✓  15 ui/tests/transaction-facets.spec.ts:328:1 › canonical stale failure preserves drafts and existing result, refresh restarts choices at new revision (1.5s)
+  ✓  16 ui/tests/transaction-facets.spec.ts:377:1 › one active and only the latest pending revision per selector; old real responses cannot publish (1.4s)
+  ✓  17 ui/tests/transaction-facets.spec.ts:455:1 › delayed continuation never restores a changed draft selection or steals deliberately moved then blurred focus (931ms)
+  ✓  18 ui/tests/transaction-facets.spec.ts:506:1 › pager completion restores its status when focus falls to documentElement without another control taking focus (770ms)
+
+  18 passed (34.1s)

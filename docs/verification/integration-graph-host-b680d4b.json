@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "source": "b680d4bcf6a6dbf2200ca5c455b4daf85024d983",
+  "complete_release": false,
+  "checks": {
+    "core": {
+      "exit_code": 0,
+      "seconds": 65.25505508400965,
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "workbench-core"
+      ],
+      "log": {
+        "bytes": 86883,
+        "sha256": "2043aca1cfbbe90d0bd47a28bb014d49ac62c86b08ba5a1507e7e6de37065ab7"
+      }
+    },
+    "clippy": {
+      "exit_code": 0,
+      "seconds": 9.73736570798792,
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "workbench-core",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": {
+        "bytes": 184,
+        "sha256": "ca1881291e674e19b68d52e0c8c3d2faf9ed69c252c8a518523cc4dde8c49393"
+      }
+    },
+    "fmt": {
+      "exit_code": 0,
+      "seconds": 0.7841105409897864,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "python": {
+      "exit_code": 0,
+      "seconds": 4.830098375095986,
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-v"
+      ],
+      "log": {
+        "bytes": 67859,
+        "sha256": "b6c6d5b88abc415d15dda251fb1a6e84c051996e858691178f99e8273c95a59a"
+      }
+    },
+    "python-optimized": {
+      "exit_code": 0,
+      "seconds": 5.134984291973524,
+      "command": [
+        "python3",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-v"
+      ],
+      "log": {
+        "bytes": 67859,
+        "sha256": "b2cef601178facb85205603bbc6405435190a40f2ad9be23ab980eb545bf6895"
+      }
+    }
+  },
+  "core": {
+    "passed": 700,
+    "unit_passed": 621,
+    "integration_passed": 79,
+    "ignored": 34
+  },
+  "python_each_mode": {
+    "run": 392,
+    "passed": 388,
+    "skipped": 4
+  },
+  "interface_changed": false,
+  "review": {
+    "source": "44ea31f4bc7eaf9728a6934e5f7a3832ad2bd9f3",
+    "agent_review": "No actionable blocker in constructor, public lifecycle, exact replay, canonical delta, fresh-resource admission or termination read gate",
+    "human_release_approval": false
+  },
+  "runtime_preparation": {
+    "source": "b680d4bcf6a6dbf2200ca5c455b4daf85024d983",
+    "fresh_resources_only": true,
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "files": 11320,
+    "bytes": 601821300,
+    "receipt_sha256": "8bb9ecf55336ab0a017f08f60b2863e745b81b5f133ff75b94ed7275fb70ea56",
+    "candidate_executed_by_preparation": false
+  },
+  "native": {
+    "campaign_id": "930e1d3b-37a6-4939-9362-02ce786f04c5",
+    "report_sha256": "4bd6a9a3d0c6227976aef2a01766ed9360ca89c53ba3a4334a1c1d14b7be8535",
+    "root_audit_sha256": "18a7b869943fed56cee9e8a4fe91f9f28937506ce1126aa20353e1391285dccf",
+    "passed": true,
+    "attempts": 1,
+    "automatic_retries": 0,
+    "peer_retained_review": {
+      "passed": true,
+      "source_files": 1388,
+      "selected_fingerprints": 22,
+      "both_runtime_inventories": true,
+      "full_canonical_database": true,
+      "assignment_reconstructed": true,
+      "worker_rerun": false,
+      "human_release_approval": false
+    }
+  }
+}

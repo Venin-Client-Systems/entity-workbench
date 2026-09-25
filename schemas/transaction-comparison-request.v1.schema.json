@@ -1,0 +1,59 @@
+{
+  "$defs": {
+    "DatePeriod": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "through": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "from",
+        "through"
+      ],
+      "type": "object"
+    },
+    "TransferTreatment": {
+      "enum": [
+        "include",
+        "exclude_reviewed_pairs"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "account": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "baseline": {
+      "$ref": "#/$defs/DatePeriod"
+    },
+    "comparison": {
+      "$ref": "#/$defs/DatePeriod"
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transfers": {
+      "$ref": "#/$defs/TransferTreatment"
+    }
+  },
+  "required": [
+    "baseline",
+    "comparison",
+    "transfers"
+  ],
+  "title": "TransactionComparisonRequest",
+  "type": "object"
+}

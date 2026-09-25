@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-25",
+  "source_commit": "c2635c3e13fa6754b87e56d1740b91538a889c78",
+  "scope": "Editable compact Figma specimens and manual actual-browser zoom/keyboard verification; no production changes.",
+  "figma": {
+    "file": "CphN4aTS8IXSVlKX7zDJtg",
+    "catalogue": {
+      "node": "2006:53",
+      "size": [720, 900],
+      "position": [37500, -500]
+    },
+    "recovery": {
+      "node": "2006:104",
+      "size": [720, 1330],
+      "position": [38500, -500]
+    },
+    "editable_text_inspected": "2006:109",
+    "normal_reload_exports_equal_initial": true
+  },
+  "runtime": {
+    "chrome_version": "154.0.8037.57",
+    "ew_dev": {
+      "bytes": 37859624,
+      "sha256": "f780d6b88497faac570e1b8211eec17069daebaec1a00fd6f59abfe5f651af07"
+    },
+    "test_config": {
+      "bytes": 2789,
+      "sha256": "03048c49225c252c2f07a55c5bf8c1593ed01ccb8b5b10a14d277520176f780c"
+    },
+    "test_config_changes": "Port and exact host/origin1420 changed to1421; relative bridge import adjusted for ignored config location."
+  },
+  "source_files": {
+    "ui/src/DocxSnapshots.tsx": {
+      "bytes": 17191,
+      "sha256": "a3aae2fc32aba5aaa71466d0be82ae164cfa649c56e8ce1536d5bf1450b72b60"
+    },
+    "ui/src/docx-capture.ts": {
+      "bytes": 5167,
+      "sha256": "d3d29d6dd43f1f73af71003afb7ff969c395228f16cde38c8adb47a13d45d5ed"
+    },
+    "ui/src/docx-snapshots.css": {
+      "bytes": 1975,
+      "sha256": "b7c46d4330409b20c6b021e4eaaad45ef83bc94784a299b2989fd8d8d12f5e54"
+    },
+    "ui/src/tokens.css": {
+      "bytes": 1233,
+      "sha256": "ad81c24616079190ea1422a954628e2c9d25c0f335654d649d9ec7a2e19c43ba"
+    },
+    "ui/src/accessibility.css": {
+      "bytes": 1874,
+      "sha256": "cb1a5d2a7e028d3da80b93a954878d2cb4c60c8d5e39594729cb8b603e9b2fd4"
+    },
+    "ui/vite.config.ts": {
+      "bytes": 2785,
+      "sha256": "c38bae66c3bbbf22ff4e98210e19441b6adf4d32195c0e2e02b98a59ef5e8162"
+    },
+    "crates/core/src/bin/ew-dev.rs": {
+      "bytes": 17660,
+      "sha256": "a799e3816d4e462bf71044c513378ea5c92a679456e83e0cd750558f20a529f4"
+    },
+    "Cargo.lock": {
+      "bytes": 131293,
+      "sha256": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32"
+    },
+    "package-lock.json": {
+      "bytes": 62701,
+      "sha256": "5f262879fbb9792559952bc8d27aaa1273f8c21d8b0a1b8898a460b5fb9b700f"
+    }
+  },
+  "artifacts": {
+    "canonical-check.json": {
+      "bytes": 766,
+      "sha256": "5e5dc722390b7c2d1dc2182a0462c25587b255442424920a846f57f3896aa4ad"
+    },
+    "figma-catalogue-persisted.png": {
+      "bytes": 83157,
+      "sha256": "2411bd467d84c4fd16ee320aa60b96b5428513a04c66ae0648a08df3b433cf9a"
+    },
+    "figma-recovery-persisted.png": {
+      "bytes": 121325,
+      "sha256": "d8f9f8ea306dd21f2b470cf5d6ec324572da00f44396b566128659a41d655ca2"
+    },
+    "keyboard-pages.json": {
+      "bytes": 1902,
+      "sha256": "5f9e6d06be9ff53d9b5fb17270b4c55224275b3c2488f91540207501703f572f"
+    },
+    "manual-keyboard-observations.json": {
+      "bytes": 1128,
+      "sha256": "673fcf7f5749e64ff281335915e83aad8cce99b1744b839b6fd47292e7939a30"
+    },
+    "persisted-frame-observation.txt": {
+      "bytes": 926,
+      "sha256": "ec14a35e1bd193dbdfc7f4e455e4baee8797b7c3d517889beafa3b171391be31"
+    },
+    "zoom-capture-focus.png": {
+      "bytes": 152052,
+      "sha256": "4a6cb0414ddaa2c987ce5b491815a087b2f9f54f665ccb25df323a2823dcddc6"
+    },
+    "zoom-keyboard-saved.png": {
+      "bytes": 170308,
+      "sha256": "7b6a13f7fc4c31bb1e4e8cef6e5583dffffd2cc5bd68602c0b885bc941cfe5fa"
+    },
+    "zoom-new-capture-focus.png": {
+      "bytes": 171271,
+      "sha256": "83b52c6ed7a9527f0694072852c04d59c2e1020b9c8f59353ee9e73adbc4a998"
+    },
+    "zoom-next-status.png": {
+      "bytes": 154901,
+      "sha256": "8778c7ea051c62e432d8c15161029503addd78d84ab819482923ff81a4fa2fd6"
+    },
+    "zoom-toolbar-observation.txt": {
+      "bytes": 161,
+      "sha256": "bd41a2e38f237def6a77acb990bffcd41a781be74e48dc4c77013fe446621b4f"
+    }
+  },
+  "limits": [
+    "No product-owner design approval",
+    "No linked-component/auto-layout/prototype claim",
+    "No new automated axe campaign",
+    "No full keyboard or screen-reader audit",
+    "No native WebKit/Word/Windows proof",
+    "Same-revision absence and corruption states illustrated, not manually repeated here"
+  ]
+}

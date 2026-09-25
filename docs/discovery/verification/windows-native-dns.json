@@ -1,0 +1,375 @@
+{
+  "schema_version": 1,
+  "scope": "EW-22/#25 fixed Windows Server native resolver observation; no HTTP or live coordinator activation",
+  "source_revision": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+  "source_tree": "4bfe6af96a382ea212340f2a390ca745ae7b0ea9",
+  "source_clean_and_signature_verified": true,
+  "source_sha256": {
+    ".github/workflows/windows-native-dns.yml": "666e7ffe9b145ced988260985377abe2ef8fb5caeaa7ae9bc615410c72540392",
+    "crates/core/src/collection_transport/resolver.rs": "79f88c45266b8dab883e6bf31c4446761688a27bd87c8e604d7bf44dcc7cc268",
+    "crates/core/src/collection_transport/resolver/native_windows_proof.rs": "f1015fa7a405b74195d484314364152cadd1dbae6950d559e0cb33165468543d",
+    "crates/core/src/collection_transport/resolver_windows.rs": "90870673643881ab72813ff1cd13c427095c00e6e872237a267aad0b0674c103",
+    "docs/discovery/WINDOWS-NATIVE-DNS-PROOF.md": "41c34b41f584d680059e1adb7cef7a9c38d71372d487b3e1efcf70686f883abe",
+    "scripts/test_windows_native_dns.py": "4507b0b43ec6c94e67bcd549f573a781975ef6dd0d427fe889180001973c7586",
+    "scripts/tests/test_windows_dns_receipts.py": "dea7cf4092196d3164d033971de164f7c0101f6071dbe51d0b9fbca17923baec",
+    "scripts/windows_dns_receipt.py": "471092ab3e761d3588b3ee8950efe1e28e8fb0a00f931ca89d1891dc38d7e284"
+  },
+  "local_validation": {
+    "host": "macOS arm64",
+    "core_passed": 438,
+    "library_passed": 362,
+    "integration_passed": 76,
+    "specialised_ignored": 23,
+    "python_receipt_passed": 10,
+    "python_optimized_passed": 10,
+    "existing_mac_evidence_regressions": 9,
+    "debug_release_strict_clippy": "passed",
+    "workflow_actionlint": "passed",
+    "format": "passed",
+    "windows_target_scaffold": "actual resolver/probe typecheck and strict Clippy only; not native execution",
+    "record_sha256": "1b07eebc42301e5c4d0159f0026ad0688f8b2a88ef62a533626cc45b1e56b7f7"
+  },
+  "github_run": {
+    "id": 36141003773,
+    "attempt": 1,
+    "event": "push",
+    "branch": "verify/windows-native-dns-20260925",
+    "source_revision": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+    "url": "https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36141003773",
+    "conclusion": "success",
+    "artifact_id": 10867480069,
+    "artifact_name": "windows-native-dns-36141003773-1",
+    "artifact_archive_bytes": 21735,
+    "artifact_archive_sha256": "1d054916d015a6b88939441a972c15e75dc41ff612f9320c12e2b9bac24876b8",
+    "archive_digest_verified_against_github_metadata": true
+  },
+  "native_campaign_id": "92bf4b8e02ab4aa8b94fae0de5f8a4e8",
+  "native_report_sha256": "ce0ee3b2dba5611b5052931f1e9e75f6b1925e6c3957e0577d29d47efccf2266",
+  "native_observation": {
+    "schema_version": 1,
+    "policy": "fixed-three-windows-lookups-no-http-v1",
+    "passed": true,
+    "outcome": "passed",
+    "phase": "complete",
+    "cases": [
+      {
+        "build_source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "case": "transport_pre_cancel",
+        "elapsed_milliseconds": 0,
+        "followup": null,
+        "hostname": "example.com",
+        "nonce": "85894944-0967-4cf1-b3b0-36a5e2147889",
+        "outcome": {
+          "caller_context": null,
+          "kind": "transport",
+          "locally_quiescent": true,
+          "phase": "before_request",
+          "reason": "cancelled",
+          "stop_observed": "cancelled"
+        },
+        "passed": true,
+        "policy": "fixed-three-windows-lookups-no-http-v1",
+        "probe": {
+          "cancel_returns": [],
+          "completion_returns": [],
+          "contexts_created": 0,
+          "contexts_dropped": 0,
+          "contexts_retained": 0,
+          "event_close": [],
+          "events_created": 0,
+          "launch_returns": [],
+          "results_freed": 0,
+          "trace_truncated": false,
+          "wait_errors": [],
+          "wait_signalled": 0,
+          "wait_timeouts": 0,
+          "wsa_cleanup": [],
+          "wsa_startup": []
+        },
+        "schema_version": 1,
+        "source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "state": "observed"
+      },
+      {
+        "build_source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "case": "transport_expired",
+        "elapsed_milliseconds": 0,
+        "followup": null,
+        "hostname": "example.com",
+        "nonce": "85894944-0967-4cf1-b3b0-36a5e2147889",
+        "outcome": {
+          "caller_context": null,
+          "kind": "transport",
+          "locally_quiescent": true,
+          "phase": "before_request",
+          "reason": "deadline",
+          "stop_observed": "deadline"
+        },
+        "passed": true,
+        "policy": "fixed-three-windows-lookups-no-http-v1",
+        "probe": {
+          "cancel_returns": [],
+          "completion_returns": [],
+          "contexts_created": 0,
+          "contexts_dropped": 0,
+          "contexts_retained": 0,
+          "event_close": [],
+          "events_created": 0,
+          "launch_returns": [],
+          "results_freed": 0,
+          "trace_truncated": false,
+          "wait_errors": [],
+          "wait_signalled": 0,
+          "wait_timeouts": 0,
+          "wsa_cleanup": [],
+          "wsa_startup": []
+        },
+        "schema_version": 1,
+        "source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "state": "observed"
+      },
+      {
+        "build_source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "case": "native_success",
+        "elapsed_milliseconds": 5,
+        "followup": null,
+        "hostname": "example.com",
+        "nonce": "85894944-0967-4cf1-b3b0-36a5e2147889",
+        "outcome": {
+          "authoritative_complete_set": false,
+          "candidate_count": 2,
+          "kind": "resolved",
+          "method": "windows_completed_system_candidates"
+        },
+        "passed": true,
+        "policy": "fixed-three-windows-lookups-no-http-v1",
+        "probe": {
+          "cancel_returns": [],
+          "completion_returns": [
+            0
+          ],
+          "contexts_created": 1,
+          "contexts_dropped": 1,
+          "contexts_retained": 0,
+          "event_close": [
+            true
+          ],
+          "events_created": 1,
+          "launch_returns": [
+            997
+          ],
+          "results_freed": 1,
+          "trace_truncated": false,
+          "wait_errors": [],
+          "wait_signalled": 1,
+          "wait_timeouts": 0,
+          "wsa_cleanup": [
+            0
+          ],
+          "wsa_startup": [
+            0
+          ]
+        },
+        "schema_version": 1,
+        "source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "state": "observed"
+      },
+      {
+        "build_source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "case": "native_negative",
+        "elapsed_milliseconds": 20,
+        "followup": null,
+        "hostname": "ew-native-proof.invalid",
+        "nonce": "85894944-0967-4cf1-b3b0-36a5e2147889",
+        "outcome": {
+          "kind": "stopped",
+          "reason": "network"
+        },
+        "passed": true,
+        "policy": "fixed-three-windows-lookups-no-http-v1",
+        "probe": {
+          "cancel_returns": [],
+          "completion_returns": [
+            11001
+          ],
+          "contexts_created": 1,
+          "contexts_dropped": 1,
+          "contexts_retained": 0,
+          "event_close": [
+            true
+          ],
+          "events_created": 1,
+          "launch_returns": [
+            997
+          ],
+          "results_freed": 0,
+          "trace_truncated": false,
+          "wait_errors": [],
+          "wait_signalled": 1,
+          "wait_timeouts": 0,
+          "wsa_cleanup": [
+            0
+          ],
+          "wsa_startup": [
+            0
+          ]
+        },
+        "schema_version": 1,
+        "source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "state": "observed"
+      },
+      {
+        "build_source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "case": "native_pending_cancel",
+        "elapsed_milliseconds": 1,
+        "followup": {
+          "outcome": {
+            "caller_context": null,
+            "kind": "transport",
+            "locally_quiescent": false,
+            "phase": "before_request",
+            "reason": "recovery_required",
+            "stop_observed": null
+          },
+          "probe": {
+            "cancel_returns": [],
+            "completion_returns": [],
+            "contexts_created": 0,
+            "contexts_dropped": 0,
+            "contexts_retained": 0,
+            "event_close": [],
+            "events_created": 0,
+            "launch_returns": [],
+            "results_freed": 0,
+            "trace_truncated": false,
+            "wait_errors": [],
+            "wait_signalled": 0,
+            "wait_timeouts": 0,
+            "wsa_cleanup": [],
+            "wsa_startup": []
+          }
+        },
+        "hostname": "ew-native-cancel-proof.invalid",
+        "nonce": "85894944-0967-4cf1-b3b0-36a5e2147889",
+        "outcome": {
+          "caller_context": "released_after_completion",
+          "kind": "transport",
+          "locally_quiescent": false,
+          "phase": "dns",
+          "reason": "quiescence_unverified",
+          "stop_observed": "cancelled"
+        },
+        "passed": true,
+        "policy": "fixed-three-windows-lookups-no-http-v1",
+        "probe": {
+          "cancel_returns": [
+            0
+          ],
+          "completion_returns": [
+            10111
+          ],
+          "contexts_created": 1,
+          "contexts_dropped": 1,
+          "contexts_retained": 0,
+          "event_close": [
+            true
+          ],
+          "events_created": 1,
+          "launch_returns": [
+            997
+          ],
+          "results_freed": 0,
+          "trace_truncated": false,
+          "wait_errors": [],
+          "wait_signalled": 1,
+          "wait_timeouts": 0,
+          "wsa_cleanup": [
+            0
+          ],
+          "wsa_startup": [
+            0
+          ]
+        },
+        "schema_version": 1,
+        "source_commit": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+        "state": "observed"
+      }
+    ],
+    "observed_at": "2026-09-25T13:28:22.918272+00:00",
+    "nonce": "85894944-0967-4cf1-b3b0-36a5e2147889",
+    "complete_release": false,
+    "limits": {
+      "native_launches": 3,
+      "http_requests": 0,
+      "retries": 0,
+      "offline_build_seconds": 600,
+      "cooperative_campaign_seconds": 20,
+      "outer_native_process_seconds": 30,
+      "dns_stage_seconds": 5,
+      "cancel_cleanup_seconds": 1
+    },
+    "claims": {
+      "provider_quiescence": false,
+      "windows_11_acceptance": false,
+      "complete_rrset": false,
+      "live_coordinator_activation": false
+    },
+    "platform": {
+      "os": "Windows",
+      "version": "10.0.20348",
+      "edition": "ServerDatacenter",
+      "architecture": "AMD64"
+    },
+    "source": {
+      "revision": "b064c724da574e3d7ebe7b3844697c0fd73d9ee9",
+      "tree": "4bfe6af96a382ea212340f2a390ca745ae7b0ea9",
+      "signature_verified": true,
+      "allowed_signers_sha256": "d8b8b39ef3ab427c6508cde8113b62cc06db98ba7c79fe49fb9db11de737a855",
+      "lockfile_sha256": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+      "shared_identity_helper_sha256": "d28a992bfd94a83099fe98eee47bc3f963cde90b39f79cdbad2826f1808f3f86",
+      "runner_sha256": "4507b0b43ec6c94e67bcd549f573a781975ef6dd0d427fe889180001973c7586",
+      "receipt_validator_sha256": "471092ab3e761d3588b3ee8950efe1e28e8fb0a00f931ca89d1891dc38d7e284"
+    },
+    "compiler": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "binary_sha256": "c929b90c5afa97078f70eeb85909ccf882bbf3d547791fccada08970de645748",
+    "native_exit_code": 0,
+    "native_process_elapsed_ms": 31,
+    "source_unchanged_after": true,
+    "binary_unchanged_after": true,
+    "logs": {
+      "build.log": {
+        "sha256": "77b13c672f427ba35f57efd1c3bcab1ffaa5f11dd81a6568339259626355f8bb",
+        "bytes": 195270
+      },
+      "native.log": {
+        "sha256": "dc1e51850d68e57b5b6f2f09380d649babba896cc2bd67f1fab5c95c019aa41a",
+        "bytes": 4855
+      }
+    }
+  },
+  "independent_artifact_validation": {
+    "all_five_cases_revalidated": true,
+    "case_nonce_matches_runner_nonce": true,
+    "runtime_source_matches_compiled_source": true,
+    "native_log_exact_cases_match_report": true,
+    "retained_log_hashes_and_lengths_match": true,
+    "runner_validator_shared_helper_and_lockfile_match_signed_source": true,
+    "allowed_signers_matches_existing_public_key": true,
+    "binary_identity": "runner-recorded before/after hash invariance; executable bytes are not in this artifact"
+  },
+  "prior_mac_reports_unchanged": {
+    "docs/discovery/verification/native-transport-macos.json": "2cf3ca563ac9aa5bfedf8088b9cb355ad7e17c9edb2cd0e93cc3a750b6ce0f44",
+    "docs/discovery/verification/macos-negative-dns.json": "82d8d4c953836e23f3e403ebcaccb8c0f8b304213d9b4692dc7ed5a5781592f2"
+  },
+  "limitations": [
+    "Actual host was Windows Server 2022 (10.0.20348 ServerDatacenter AMD64), not Windows 11.",
+    "The cancelled operation completed and released caller storage. RetainedPendingCompletion was not observed natively; that path has synthetic validation only.",
+    "Provider quiescence remains explicitly unverified after cancellation, even with released caller storage.",
+    "Three native launch calls are not wire packet counts; caching and underlying provider traffic were not measured.",
+    "No complete RRset or authoritative negative result is established.",
+    "The source-bound libtest executable was built and run on Windows, but this single exact ignored test is not a full Windows ordinary test suite.",
+    "No HTTPS request, source-access approval, live durable collection activation, application UI proof or complete package acceptance.",
+    "No repeated native campaign was performed."
+  ],
+  "complete_release": false
+}

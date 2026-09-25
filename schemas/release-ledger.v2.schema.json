@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "release-ledger.v2.schema.json",
+  "title": "Release ledger version 2",
+  "description": "Structural contract. scripts/release_evidence.py enforces policy bindings, safe file integrity, review chronology, resource limits and qualifying platform coverage.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "complete_release",
+    "candidate",
+    "gates",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "complete_release": {
+      "type": "boolean"
+    },
+    "candidate": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "source_revision",
+            "policy_sha256",
+            "fixture_catalogue_sha256",
+            "artifacts"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
+            },
+            "source_revision": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "policy_sha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "fixture_catalogue_sha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            "artifacts": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "windows-x86_64",
+                "macos-aarch64",
+                "macos-x86_64"
+              ],
+              "properties": {
+                "windows-x86_64": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "size",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 34359738368
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                },
+                "macos-aarch64": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "size",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 34359738368
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                },
+                "macos-x86_64": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "path",
+                    "size",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 4096
+                    },
+                    "size": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 34359738368
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 64,
+                      "pattern": "^[0-9a-f]{64}$"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "gates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "integrated_workflows",
+        "windows_appcontainer",
+        "macos_signed_helpers",
+        "all_runtime_dependencies_bundled",
+        "offline_clean_install_three_targets",
+        "hostile_input_and_resource_exhaustion",
+        "broad_local_web_coverage",
+        "recovery_and_migration_failures",
+        "benchmark_16gb_target",
+        "dependency_license_and_security_review",
+        "signed_and_notarized_artifacts",
+        "downloaded_artifact_verification"
+      ],
+      "properties": {
+        "integrated_workflows": {
+          "type": "boolean"
+        },
+        "windows_appcontainer": {
+          "type": "boolean"
+        },
+        "macos_signed_helpers": {
+          "type": "boolean"
+        },
+        "all_runtime_dependencies_bundled": {
+          "type": "boolean"
+        },
+        "offline_clean_install_three_targets": {
+          "type": "boolean"
+        },
+        "hostile_input_and_resource_exhaustion": {
+          "type": "boolean"
+        },
+        "broad_local_web_coverage": {
+          "type": "boolean"
+        },
+        "recovery_and_migration_failures": {
+          "type": "boolean"
+        },
+        "benchmark_16gb_target": {
+          "type": "boolean"
+        },
+        "dependency_license_and_security_review": {
+          "type": "boolean"
+        },
+        "signed_and_notarized_artifacts": {
+          "type": "boolean"
+        },
+        "downloaded_artifact_verification": {
+          "type": "boolean"
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "maxItems": 2000,
+      "items": {
+        "$ref": "release-evidence.v1.schema.json"
+      }
+    }
+  }
+}

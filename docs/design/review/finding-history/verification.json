@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-09-24T16:23:58.031982+00:00",
+  "scope": "Development Chromium against canonical Rust ew-dev; synthetic fixtures only",
+  "backend_signed_commit": "8fb6a9fc8db22f280efd253859b34f3439d5e7d2",
+  "host": {
+    "os": "Darwin",
+    "arch": "arm64"
+  },
+  "checks": {
+    "production_ui_build": "passed; existing large-chunk warning remains",
+    "development_core_build": "passed",
+    "full_browser_suite": {
+      "passed": 69,
+      "failed": 0
+    },
+    "final_history_evidence_suite": {
+      "passed": 6,
+      "failed": 0
+    },
+    "axe": [
+      {
+        "width": 1440,
+        "violations": 0,
+        "incomplete_rules": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      },
+      {
+        "width": 720,
+        "violations": 0,
+        "incomplete_rules": [
+          "aria-prohibited-attr",
+          "color-contrast"
+        ]
+      }
+    ],
+    "history_runtime_workspace_decisions_dependency": false,
+    "new_native_platform_verification": false,
+    "new_editable_figma_pagination_state": false
+  },
+  "retained_attempts": [
+    {
+      "log": "browser-first.log",
+      "passed": 7,
+      "failed": 1,
+      "finding": "Chromium dropped focus when the last-page Next button became disabled."
+    },
+    {
+      "log": "browser-second.log",
+      "passed": 7,
+      "failed": 1,
+      "finding": "Incomplete first repair omitted the Next callback and retained the focus failure."
+    },
+    {
+      "log": "browser-third.log",
+      "passed": 8,
+      "failed": 0,
+      "finding": "Complete focus repair passed; a separate no-focus-steal regression was then added before the full suite."
+    }
+  ],
+  "raw_log_sha256": {
+    "browser-first.log": "43c89f7e10806058f795d67042540aa1db2f30268c09163038e1ba3618245e2c",
+    "browser-second.log": "ab3fcbe1f618bc9f9dc3087637187ad7f4f98503fe2705f0137be803cb484741",
+    "browser-third.log": "3a23649245a503ba74c76920960a1ce68a80ea7757d7a0493da8876ba7d848d4",
+    "browser-full.log": "474bb2dae1bc317d8a09da8d200819c846483236d8ad029de34c7f21e3ffd12d",
+    "browser-evidence.log": "d750e44b271c23789767127e7f4fa90481738472539a78493f4e515b176ca482",
+    "ui-build-final.log": "b4db99414d2f88274ca70ba0ea07a9d6806dbe175a5afc909042280610b5dce0",
+    "core-build.log": "d8d6297d009f1bcc89b51fe50b3c78c22252d65b2e4cd8e6ff5b8c4ad2a7361c"
+  },
+  "gaps": [
+    "Figma unavailable for a new verified editable pagination frame/readback. Existing assessment frame is the design foundation.",
+    "Native Windows/macOS interaction and manual screen-reader verification not performed by this browser increment.",
+    "Legacy default workspace responses still include the decisions array. This increment only removes the finding history reader dependency."
+  ]
+}

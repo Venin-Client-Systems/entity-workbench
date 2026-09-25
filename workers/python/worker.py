@@ -19,16 +19,8 @@ def execute(request):
     if source.stat().st_size > 64*1024*1024:
         raise ValueError('Input exceeds adapter limit')
     if operation == 'transaction_totals':
-        import duckdb
-        # Parameter binding is the only input to a fixed, reviewed query.
-        with duckdb.connect(':memory:') as conn:
-            conn.execute("SET enable_external_access=false")
-            # Arrow reads only the job-authorised file; DuckDB external I/O is disabled.
-            import pyarrow.parquet as pq
-            table=pq.read_table(source)
-            conn.register('transactions',table)
-            rows=conn.execute("SELECT currency, sum(CAST(amount AS DECIMAL(38,8)))::VARCHAR AS net, list(id) AS transaction_ids FROM transactions WHERE review='accepted' AND transfer_peer IS NULL GROUP BY currency ORDER BY currency").fetchall()
-            return {'totals':[{'currency':c,'net':n,'transaction_ids':ids} for c,n,ids in rows]}
+        from transaction_totals import transaction_totals
+        return transaction_totals(source)
     payload=json.loads(source.read_text())
     if operation == 'graph_paths':
         import networkx as nx

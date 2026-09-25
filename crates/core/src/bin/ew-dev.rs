@@ -3,8 +3,42 @@ use std::{
     io::{self, Read},
     path::PathBuf,
 };
-use workbench_core::{domain::*, policy::WorkerRequest, store::Workspace};
+use workbench_core::{
+    collection_receipt::CollectionReceipt,
+    domain::*,
+    policy::WorkerRequest,
+    statements::{StatementMapping, StatementPreview, StatementSample},
+    store::Workspace,
+};
+#[cfg(debug_assertions)]
+fn raster_binary() -> workbench_core::Result<()> {
+    use std::io::Write;
+    let args: Vec<String> = std::env::args().collect();
+    workbench_core::require(
+        args.len() == 4,
+        "Binary reader requires one workspace and extraction identity",
+    )?;
+    let key = &args[3];
+    workbench_core::require(
+        key.len() == 64
+            && key
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+        "Invalid extraction identity",
+    )?;
+    let bytes = Workspace::open(&args[2])?.read_image_region_raster(key)?;
+    std::io::stdout().lock().write_all(&bytes)?;
+    Ok(())
+}
 fn main() {
+    #[cfg(debug_assertions)]
+    if std::env::args().nth(1).as_deref() == Some("read-image-region-raster") {
+        if raster_binary().is_err() {
+            eprintln!("Retained raster could not be verified or read");
+            std::process::exit(1);
+        }
+        return;
+    }
     let result = run();
     match result {
         Ok(value) => println!("{}", value),
@@ -16,41 +50,566 @@ fn main() {
 }
 fn run() -> workbench_core::Result<serde_json::Value> {
     let arg = std::env::args().nth(1).unwrap_or_default();
+    if matches!(
+        arg.as_str(),
+        "snapshot-durable-collection"
+            | "export-durable-collection"
+            | "inspect-durable-collection-export"
+    ) {
+        let args: Vec<String> = std::env::args().collect();
+        let export = arg == "export-durable-collection";
+        workbench_core::require(
+            args.len() == if export { 5 } else { 4 },
+            "Unexpected durable collection development arguments",
+        )?;
+        let workspace = Workspace::open(&args[2])?;
+        return if export {
+            Ok(serde_json::to_value(
+                workspace.export_durable_collection(&args[3], &args[4])?,
+            )?)
+        } else if arg == "snapshot-durable-collection" {
+            Ok(serde_json::to_value(
+                workspace.durable_collection_snapshot(&args[3])?,
+            )?)
+        } else {
+            Ok(serde_json::to_value(
+                workspace.inspect_durable_collection_export(&args[3])?,
+            )?)
+        };
+    }
+    #[cfg(debug_assertions)]
+    if arg == "seed-image-region-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_image_region_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
+    if arg == "seed-durable-collection-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_durable_collection_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
+    if arg == "seed-collection-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_collection_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
+    if arg == "seed-pdf-processing-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_pdf_processing_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
+    if arg == "seed-image-processing-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        workspace.seed_image_processing_review()?;
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
+    #[cfg(debug_assertions)]
+    if arg == "seed-processing-review" || arg == "seed-processing-recovery-review" {
+        let path = std::env::args().nth(2).ok_or_else(|| {
+            workbench_core::Error::Validation("Provide a fresh synthetic workspace path".into())
+        })?;
+        let mut workspace = Workspace::open(path)?;
+        if arg == "seed-processing-recovery-review" {
+            workspace.seed_processing_recovery_review()?;
+        } else {
+            workspace.seed_processing_review()?;
+        }
+        return Ok(serde_json::to_value(workspace.view()?)?);
+    }
     if arg == "schemas" {
         let root = PathBuf::from("schemas");
         std::fs::create_dir_all(&root)?;
-        for (name, value) in [
+        // Prior command/job schema files are immutable history. Emit only current versions;
+        // Extraction v1 is immutable history. New parse publications use extraction v2.
+        let schemas = [
+            (
+                "account-flow-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::account_flow::AccountFlowRequest
+                ))?,
+            ),
+            (
+                "account-flows",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::account_flow::AccountFlows
+                ))?,
+            ),
+            (
+                "transaction-csv-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_csv::TransactionCsvRequest
+                ))?,
+            ),
+            (
+                "transaction-csv-export",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_csv::TransactionCsvExport
+                ))?,
+            ),
+            (
+                "durable-collection-snapshot",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_snapshot::DurableCollectionSnapshot
+                ))?,
+            ),
+            (
+                "durable-collection-export",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_snapshot::DurableCollectionExport
+                ))?,
+            ),
+            (
+                "durable-collection-export-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_snapshot::DurableCollectionExportInspection
+                ))?,
+            ),
+            (
+                "collection-preview",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_api::CollectionPreview
+                ))?,
+            ),
+            (
+                "collection-run-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_api::CollectionRunPageRequest
+                ))?,
+            ),
+            (
+                "collection-run-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_api::CollectionRunPage
+                ))?,
+            ),
+            (
+                "collection-run-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_api::CollectionRunInspection
+                ))?,
+            ),
+            (
+                "docx-capture-resolution",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxCaptureResolution
+                ))?,
+            ),
+            (
+                "docx-snapshot",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotRecord
+                ))?,
+            ),
+            (
+                "docx-snapshot-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotInspection
+                ))?,
+            ),
+            (
+                "docx-snapshot-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotPageRequest
+                ))?,
+            ),
+            (
+                "docx-snapshot-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::docx_snapshot::DocxSnapshotPage
+                ))?,
+            ),
+            (
+                "native-export-request",
+                2,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::NativeExportRequest
+                ))?,
+            ),
+            (
+                "prepared-export",
+                2,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::PreparedExport
+                ))?,
+            ),
+            (
+                "saved-export-receipt",
+                2,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::SavedExportReceipt
+                ))?,
+            ),
+            (
+                "discarded-export",
+                2,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::local_export::DiscardedExport
+                ))?,
+            ),
+            (
+                "transaction-export-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_export::TransactionExportRequest
+                ))?,
+            ),
+            (
+                "transaction-export",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_export::TransactionExport
+                ))?,
+            ),
+            (
+                "transfer-candidates-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transfer_candidates::TransferCandidatesRequest
+                ))?,
+            ),
+            (
+                "transfer-candidates-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transfer_candidates::TransferCandidatesPage
+                ))?,
+            ),
+            (
+                "transaction-balances-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_balance::TransactionBalancesRequest
+                ))?,
+            ),
+            (
+                "transaction-balances",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_balance::TransactionBalances
+                ))?,
+            ),
+            (
+                "citation-catalogue-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationCatalogueRequest
+                ))?,
+            ),
+            (
+                "citation-catalogue-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationCataloguePage
+                ))?,
+            ),
+            (
+                "citation-selections-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationSelectionsRequest
+                ))?,
+            ),
+            (
+                "citation-selections",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::citation_catalogue::CitationSelections
+                ))?,
+            ),
+            (
+                "desktop-summary-response",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::desktop_summary::DesktopSummaryResponse
+                ))?,
+            ),
+            (
+                "ledger-summary",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::desktop_summary::LedgerSummary
+                ))?,
+            ),
+            (
+                "transaction-search-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_search::TransactionSearchRequest
+                ))?,
+            ),
+            (
+                "transaction-search-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_search::TransactionSearchPage
+                ))?,
+            ),
+            (
+                "transaction-facet-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_facets::TransactionFacetRequest
+                ))?,
+            ),
+            (
+                "transaction-facet-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_facets::TransactionFacetPage
+                ))?,
+            ),
+            (
+                "review-decision-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::review_decision_page::ReviewDecisionPageRequest
+                ))?,
+            ),
+            (
+                "review-decision-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::review_decision_page::ReviewDecisionPage
+                ))?,
+            ),
+            (
+                "transaction-sources-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_sources::TransactionSourcesRequest
+                ))?,
+            ),
+            (
+                "transaction-sources",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_sources::TransactionSources
+                ))?,
+            ),
+            (
+                "transaction-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_page::TransactionPageRequest
+                ))?,
+            ),
+            (
+                "transaction-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_page::TransactionPage
+                ))?,
+            ),
+            (
+                "workspace-presentation",
+                1,
+                serde_json::to_value(schemars::schema_for!(WorkspaceView<ReportMetadata>))?,
+            ),
             (
                 "workspace",
+                3,
                 serde_json::to_value(schemars::schema_for!(WorkspaceView))?,
             ),
             (
+                "graph-job-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_api::GraphJobPageRequest
+                ))?,
+            ),
+            (
+                "graph-job-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_api::GraphJobPage
+                ))?,
+            ),
+            (
+                "graph-job-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_api::GraphJobInspection
+                ))?,
+            ),
+            (
+                "graph-analysis-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_jobs::GraphAnalysisInspection
+                ))?,
+            ),
+            (
                 "command",
+                26,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (
+                "transaction-comparison-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_comparison::TransactionComparisonRequest
+                ))?,
+            ),
+            (
+                "transaction-comparison",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_comparison::TransactionComparison
+                ))?,
+            ),
+            (
+                "transaction-analysis-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_analysis::TransactionAnalysisRequest
+                ))?,
+            ),
+            (
+                "transaction-analysis",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::transaction_analysis::TransactionAnalysis
+                ))?,
+            ),
+            (
+                "graph-analysis",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_jobs::GraphAnalysisRecord
+                ))?,
+            ),
+            (
+                "processing-job",
+                5,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ProcessingJob
+                ))?,
+            ),
+            (
+                "extraction",
+                2,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ExtractionRecord
+                ))?,
+            ),
+            (
+                "pdf-extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::PdfExtractionRecord
+                ))?,
+            ),
+            (
+                "image-region-extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionExtractionRecord
+                ))?,
+            ),
+            (
+                "image-region-result",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionResult
+                ))?,
+            ),
+            (
+                "image-region-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageRegionInspection
+                ))?,
+            ),
+            (
+                "image-extraction",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::processing::ImageExtractionRecord
+                ))?,
+            ),
+            (
+                "collection-receipt",
+                1,
+                serde_json::to_value(schemars::schema_for!(CollectionReceipt))?,
+            ),
+            (
                 "worker-request",
+                1,
                 serde_json::to_value(schemars::schema_for!(WorkerRequest))?,
             ),
             (
                 "analysis-manifest",
+                1,
                 serde_json::to_value(schemars::schema_for!(AnalysisManifest))?,
             ),
             (
                 "identity-comparison",
+                1,
                 serde_json::to_value(schemars::schema_for!(IdentityComparison))?,
             ),
             (
                 "source-excerpt",
+                1,
                 serde_json::to_value(schemars::schema_for!(SourceExcerpt))?,
             ),
-        ] {
+            (
+                "statement-mapping",
+                1,
+                serde_json::to_value(schemars::schema_for!(StatementMapping))?,
+            ),
+            (
+                "statement-sample",
+                1,
+                serde_json::to_value(schemars::schema_for!(StatementSample))?,
+            ),
+            (
+                "statement-preview",
+                1,
+                serde_json::to_value(schemars::schema_for!(StatementPreview))?,
+            ),
+        ];
+        for (name, version, value) in &schemas {
             std::fs::write(
-                root.join(format!("{name}.v1.schema.json")),
+                root.join(format!("{name}.v{version}.schema.json")),
                 serde_json::to_vec_pretty(&value)?,
             )?;
         }
-        return Ok(serde_json::json!({"schemas":6}));
+        return Ok(serde_json::json!({"schemas":schemas.len()}));
     }
     workbench_core::require(!arg.is_empty(), "Provide a development workspace path")?;
     let mut input = String::new();
@@ -58,10 +617,27 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         .take(40 * 1024 * 1024)
         .read_to_string(&mut input)?;
     let mut workspace = Workspace::open(arg)?;
-    if let Some(runtime) = std::env::args().nth(2) {
+    let mut extra = std::env::args().skip(2);
+    let next = extra.next();
+    let presentation = next.as_deref() == Some("--presentation");
+    let summary = next.as_deref() == Some("--summary");
+    let runtime = if presentation || summary {
+        extra.next()
+    } else {
+        next
+    };
+    workbench_core::require(extra.next().is_none(), "Unexpected development argument")?;
+    if let Some(runtime) = runtime {
         workspace.attach_runtime(workbench_core::engines::Runtime {
             root: runtime.into(),
         });
     }
-    workspace.dispatch(serde_json::from_str(&input)?)
+    let command = serde_json::from_str(&input)?;
+    if summary {
+        workspace.dispatch_summary(command)
+    } else if presentation {
+        workspace.dispatch_presentation(command)
+    } else {
+        workspace.dispatch(command)
+    }
 }

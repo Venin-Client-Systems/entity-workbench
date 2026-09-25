@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "source_commit": "a8f504dfc5f929df546a3363c265b2595f612ee1",
+  "source_tree": "cbd7f886494b63e67665987e9145708615d430b6",
+  "complete_release": false,
+  "scope": "Combined development source: summary transfer validation, account-flow backend, CSV controls, native HTTPS harness and Python recipe source",
+  "host": {
+    "os": "macOS",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "core": {
+      "passed": 501,
+      "library": 422,
+      "integration": 79,
+      "failed": 0,
+      "ignored_specialized": 29,
+      "command": "cargo test -p workbench-core --locked --offline"
+    },
+    "clippy": {
+      "passed": true,
+      "command": "cargo clippy -p workbench-core --all-targets --locked --offline -- -D warnings"
+    },
+    "format": {
+      "passed": true,
+      "command": "cargo fmt --all -- --check"
+    },
+    "python": {
+      "run": 309,
+      "passed": 305,
+      "skipped": 4,
+      "failed": 0,
+      "command": "python3 -m unittest discover -s scripts/tests -v"
+    },
+    "ui_build": {
+      "passed": true,
+      "large_chunk_warning": true
+    },
+    "browser": {
+      "passed": 147,
+      "failed": 0,
+      "elapsed_report": "3.8m",
+      "command": "npm run test:ui",
+      "real_core": true
+    },
+    "desktop": {
+      "command": "cargo test -p entity-workbench --locked --offline",
+      "compiled": true,
+      "test_cases": 0,
+      "bundle_active": false,
+      "resources": [],
+      "native_application_run": false
+    },
+    "release_gate": {
+      "exit": 1,
+      "policy_valid": true,
+      "passed": 0,
+      "unpassed": 12
+    }
+  },
+  "logs": {
+    "core": {
+      "bytes": 62361,
+      "sha256": "6aefa730dfc75639234be5f6618078ed4890b28f1ce0efcea9f3222ccb97112c"
+    },
+    "clippy": {
+      "bytes": 185,
+      "sha256": "6ef9d2c8675fb3633f8049d0d56b40c13a18d8d52f004337639892da573a3c3e"
+    },
+    "python": {
+      "bytes": 52956,
+      "sha256": "1a6ca3beef99b8edbc214e52577cd11aa35ba0df59a109a43494cc7e3d86661f"
+    },
+    "ui-build": {
+      "bytes": 932,
+      "sha256": "84f29ea93046ef31d1fda8db4deb41804f4882d73123a785dfc121a57a1fb8e6"
+    },
+    "browser": {
+      "bytes": 22712,
+      "sha256": "f70d879a4392ed57062feb55689c5d3a5ae48485c0cc904ee4b27c88656432f5"
+    },
+    "desktop": {
+      "bytes": 498,
+      "sha256": "2ce84e83407203558655ee0c73d44b2203b40593c6947e1ca1a79866a9c2fad0"
+    },
+    "release": {
+      "bytes": 995,
+      "sha256": "aee8799ecb394c8f6ba859602f14cbdad1133374b433e535412bc824b7382c7a"
+    }
+  },
+  "separate_native_observations": {
+    "https_source_commit": "8262223166b5aa51a65c06960e33f2e5af012627",
+    "csv_app_source_commit": "0f65c56732babeed3d6a58f523f9fca821a32704",
+    "python_engine_source_commit": "46e6c1e23d312f8e5e646441b3654635abb51b20",
+    "meaning": "Separate finite source-bound development observations; not rerun by this ordinary integration suite."
+  },
+  "unverified": [
+    "Normal native collection activation and broad coverage",
+    "Account-flow interface",
+    "Reliable relocated combined Python/spaCy startup",
+    "Canonical analytical worker protocol",
+    "Clean installers, signed helpers and full supported platform runtime matrix"
+  ]
+}

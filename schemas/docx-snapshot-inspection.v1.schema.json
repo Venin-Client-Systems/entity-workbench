@@ -1,0 +1,904 @@
+{
+  "$defs": {
+    "Acquisition": {
+      "additionalProperties": false,
+      "properties": {
+        "job_id": {
+          "type": "string"
+        },
+        "retrieved_at": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "job_id",
+        "url",
+        "retrieved_at"
+      ],
+      "type": "object"
+    },
+    "BalanceCalculation": {
+      "additionalProperties": false,
+      "properties": {
+        "difference": {
+          "type": "string"
+        },
+        "previous_id": {
+          "type": "string"
+        },
+        "reconciled": {
+          "type": "boolean"
+        },
+        "transaction_id": {
+          "type": "string"
+        },
+        "transaction_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "transaction_id",
+        "previous_id",
+        "transaction_ids",
+        "difference",
+        "reconciled"
+      ],
+      "type": "object"
+    },
+    "Calculations": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "balances": {
+          "items": {
+            "$ref": "#/$defs/BalanceCalculation"
+          },
+          "type": "array"
+        },
+        "deferred": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pending": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "rejected": {
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "totals": {
+          "items": {
+            "$ref": "#/$defs/CurrencyTotal"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "totals",
+        "balances",
+        "accepted",
+        "pending",
+        "rejected",
+        "deferred"
+      ],
+      "type": "object"
+    },
+    "CurrencyTotal": {
+      "additionalProperties": false,
+      "properties": {
+        "credits": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "debits": {
+          "type": "string"
+        },
+        "excluded_transfer_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "net": {
+          "type": "string"
+        },
+        "transaction_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "currency",
+        "credits",
+        "debits",
+        "net",
+        "transaction_ids",
+        "excluded_transfer_ids"
+      ],
+      "type": "object"
+    },
+    "DocxSnapshotRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "type": "string"
+        },
+        "document": {
+          "$ref": "#/$defs/ReportArtifactRef"
+        },
+        "docx": {
+          "$ref": "#/$defs/ReportArtifactRef"
+        },
+        "generator_version": {
+          "type": "string"
+        },
+        "id": {
+          "description": "Also the caller's stable request identity. Reuse binds the same source revision.",
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "template_version": {
+          "type": "string"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "workspace_revision",
+        "created_at",
+        "template_version",
+        "generator_version",
+        "document",
+        "docx"
+      ],
+      "type": "object"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "identifiers": {
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/EntityKind"
+        },
+        "merged_into": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "kind",
+        "identifiers"
+      ],
+      "type": "object"
+    },
+    "EntityKind": {
+      "enum": [
+        "person",
+        "organisation",
+        "group",
+        "account",
+        "place",
+        "digital_identifier"
+      ],
+      "type": "string"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "acquisitions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Acquisition"
+          },
+          "type": "array"
+        },
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "extraction_status": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "imported_at": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "origin_group": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sha256",
+        "bytes",
+        "media_type",
+        "origin_group",
+        "imported_at",
+        "extraction_status"
+      ],
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "assessment": {
+          "type": "string"
+        },
+        "contradicting_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "hypothesis_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "limitations": {
+          "type": "string"
+        },
+        "needs_review": {
+          "type": "boolean"
+        },
+        "supporting_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "assessment",
+        "supporting_ids",
+        "contradicting_ids",
+        "limitations",
+        "needs_review"
+      ],
+      "type": "object"
+    },
+    "Hypothesis": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "gaps": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "proposition": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "question",
+        "proposition",
+        "alternatives",
+        "gaps"
+      ],
+      "type": "object"
+    },
+    "Identifier": {
+      "additionalProperties": false,
+      "properties": {
+        "namespace": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "value"
+      ],
+      "type": "object"
+    },
+    "IdentityDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "left_id": {
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/IdentityOutcome"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "right_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "left_id",
+        "right_id",
+        "outcome",
+        "reason",
+        "at"
+      ],
+      "type": "object"
+    },
+    "IdentityOutcome": {
+      "enum": [
+        "keep_separate",
+        "defer"
+      ],
+      "type": "string"
+    },
+    "MergeDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "reversed": {
+          "type": "boolean"
+        },
+        "source": {
+          "type": "string"
+        },
+        "target": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "target",
+        "reason",
+        "reversed"
+      ],
+      "type": "object"
+    },
+    "Observation": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor": {
+          "$ref": "#/$defs/SourceAnchor"
+        },
+        "entity_id": {
+          "type": "string"
+        },
+        "extraction_quality": {
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "field": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "entity_id",
+        "field",
+        "value",
+        "anchor",
+        "review"
+      ],
+      "type": "object"
+    },
+    "ReportArtifactKind": {
+      "enum": [
+        "report_document_json_v1",
+        "report_docx_v1"
+      ],
+      "type": "string"
+    },
+    "ReportArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "bytes": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "kind": {
+          "$ref": "#/$defs/ReportArtifactKind"
+        },
+        "sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "sha256",
+        "bytes"
+      ],
+      "type": "object"
+    },
+    "ReportContent": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "items": {
+            "$ref": "#/$defs/ReviewDecision"
+          },
+          "type": "array"
+        },
+        "entities": {
+          "items": {
+            "$ref": "#/$defs/Entity"
+          },
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "type": "array"
+        },
+        "hypotheses": {
+          "items": {
+            "$ref": "#/$defs/Hypothesis"
+          },
+          "type": "array"
+        },
+        "identity_decisions": {
+          "items": {
+            "$ref": "#/$defs/IdentityDecision"
+          },
+          "type": "array"
+        },
+        "merges": {
+          "items": {
+            "$ref": "#/$defs/MergeDecision"
+          },
+          "type": "array"
+        },
+        "observations": {
+          "items": {
+            "$ref": "#/$defs/Observation"
+          },
+          "type": "array"
+        },
+        "transactions": {
+          "items": {
+            "$ref": "#/$defs/Transaction"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "hypotheses",
+        "findings",
+        "transactions",
+        "entities",
+        "observations",
+        "evidence",
+        "identity_decisions",
+        "merges",
+        "decisions"
+      ],
+      "type": "object"
+    },
+    "ReportDocument": {
+      "additionalProperties": false,
+      "properties": {
+        "calculations": {
+          "$ref": "#/$defs/Calculations"
+        },
+        "content": {
+          "$ref": "#/$defs/ReportContent"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "generator_version": {
+          "type": "string"
+        },
+        "report_id": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "template_version": {
+          "type": "string"
+        },
+        "workspace_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "report_id",
+        "workspace_revision",
+        "created_at",
+        "template_version",
+        "generator_version",
+        "content",
+        "calculations"
+      ],
+      "type": "object"
+    },
+    "ReviewDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "at": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "target_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "target_id",
+        "state",
+        "reason",
+        "at"
+      ],
+      "type": "object"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "SourceAnchor": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "text",
+              "type": "string"
+            },
+            "line_end": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "line_start": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "line_start",
+            "line_end"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "page",
+              "type": "string"
+            },
+            "page": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "region": {
+              "items": {
+                "format": "double",
+                "type": "number"
+              },
+              "maxItems": 4,
+              "minItems": 4,
+              "type": [
+                "array",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "page"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "column": {
+              "type": "string"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "cell",
+              "type": "string"
+            },
+            "row": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sheet": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "sheet",
+            "row",
+            "column"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "message",
+              "type": "string"
+            },
+            "message_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "message_id"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_id": {
+              "type": "string"
+            },
+            "kind": {
+              "const": "capture",
+              "type": "string"
+            },
+            "selector": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "evidence_id",
+            "selector"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Transaction": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "string"
+        },
+        "anchor": {
+          "$ref": "#/$defs/SourceAnchor"
+        },
+        "balance": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "duplicate_candidates": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "type": "string"
+        },
+        "merchant": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "posting_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "$ref": "#/$defs/ReviewState"
+        },
+        "transfer_peer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "account",
+        "date",
+        "description",
+        "amount",
+        "currency",
+        "anchor",
+        "review",
+        "duplicate_candidates",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "document": {
+      "$ref": "#/$defs/ReportDocument",
+      "description": "Explicit bounded read; not part of a default workspace refresh."
+    },
+    "snapshot": {
+      "$ref": "#/$defs/DocxSnapshotRecord"
+    }
+  },
+  "required": [
+    "snapshot",
+    "document"
+  ],
+  "title": "DocxSnapshotInspection",
+  "type": "object"
+}

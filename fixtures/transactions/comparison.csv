@@ -1,0 +1,13 @@
+account,date,description,amount,currency
+0001,2025-01-01,Synthetic income,100.00,AUD
+0001,2025-01-02,<img src=x onerror=window.comparisonExecuted=true>,-10.00,AUD
+0001,2025-01-02,<img src=x onerror=window.comparisonExecuted=true>,-10.00,AUD
+0001,2025-01-03,Synthetic pending,999.00,AUD
+0001,2025-02-01,Synthetic income,120.00,AUD
+0001,2025-02-02,Synthetic purchase,-30.00,AUD
+0001,2025-02-03,Synthetic rejected,900.00,AUD
+0001,2025-02-04,Synthetic deferred,800.00,AUD
+0002,2025-01-04,Synthetic transfer out,-50.00,AUD
+0003,2025-03-01,Synthetic transfer in,50.00,AUD
+0001,2025-01-10,Synthetic foreign purchase,-7.00,USD
+0001,2025-03-02,Synthetic outside period,-4.00,AUD

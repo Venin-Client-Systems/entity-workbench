@@ -5,7 +5,7 @@
   "identifier": "org.entityworkbench.desktop",
   "build": { "beforeDevCommand": "npm run dev", "devUrl": "http://localhost:1420", "beforeBuildCommand": "npm run build", "frontendDist": "../ui/dist" },
   "app": {
-    "windows": [{ "title": "Entity Workbench · Development", "width": 1440, "height": 960, "minWidth": 960, "minHeight": 640 }],
+    "windows": [{ "create": false, "title": "Entity Workbench · Development", "width": 1440, "height": 960, "minWidth": 960, "minHeight": 640 }],
     "security": { "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src ipc: http://ipc.localhost; worker-src 'self' blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'" }
   },
   "bundle": { "active": false, "targets": ["app"], "shortDescription": "Local evidence and entity analysis", "category": "Productivity" }

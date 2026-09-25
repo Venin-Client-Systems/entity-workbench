@@ -1,0 +1,386 @@
+{
+  "artifacts": [
+    {
+      "bytes": 2472,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/build-1.log",
+      "sha256": "2803fe1b57fa7d11c03d811016167323c747ea100a4faef3e9484b0bfbe7d6d4"
+    },
+    {
+      "bytes": 194,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/java-version.log",
+      "sha256": "cf9e37a0dbb141248c06644020e38303bc0261029e2cbd88cd9c9f260edea275"
+    },
+    {
+      "bytes": 13,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/javac-version.log",
+      "sha256": "d84a3d4f4f4d7fd6071835fdc8eaaba1ffc6e3d643f24bbfa623eb35b56ec02b"
+    },
+    {
+      "bytes": 413,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/maven-version.log",
+      "sha256": "599951abd546d0696f6771569ab7936a590dc0c04239cba841de31bdced787de"
+    },
+    {
+      "bytes": 26023,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/post-failure-audit.json",
+      "sha256": "fc1a3de59cf33f806d04dd91c48d6052d9b4812697e2eb86bb99cad877c66017"
+    },
+    {
+      "bytes": 693788,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/private-inputs.json",
+      "sha256": "8dc6d1cef6179e6a1308bad7546cd3b047f93dc5f8d6843c8e405adb020e2292"
+    },
+    {
+      "bytes": 27894,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/receipt.json",
+      "sha256": "097f01fb0779ea130d628688823d9d7bd9daeea39e50f506d0d8d61d619e1c3b"
+    },
+    {
+      "bytes": 59,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/settings.xml",
+      "sha256": "05204bd36a3ad4bcb454ab04f61684accf2de5f73606a4bba23f862b5a6dbecb"
+    },
+    {
+      "bytes": 63,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/toolchains.xml",
+      "sha256": "02afd33de0a42b1a4a8dbff2cc886cb57cf992f340e7ad6c3a4bed0b1efd6679"
+    },
+    {
+      "bytes": 2278,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/build-1/invocation.json",
+      "sha256": "3b84a3e0da90f57beb444c9281c3bc933423f0412ed935e91f3c2c4befcab5ff"
+    },
+    {
+      "bytes": 74334,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/build-1/project/target/workers-0.1.0.jar",
+      "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+    },
+    {
+      "bytes": 1631,
+      "path": "artifacts/java-producer-source/focused-first.log",
+      "sha256": "ae4266321424a7e645045adec36b56004592f08da7e9b48d51e8b56386f9532f"
+    },
+    {
+      "bytes": 1946,
+      "path": "artifacts/java-producer-source/focused-optimized.log",
+      "sha256": "1d9f94c94688654cde26e10c1c69483d857d8bffd5247f4d0a0349dd20935406"
+    },
+    {
+      "bytes": 1946,
+      "path": "artifacts/java-producer-source/focused-second.log",
+      "sha256": "1d9f94c94688654cde26e10c1c69483d857d8bffd5247f4d0a0349dd20935406"
+    },
+    {
+      "bytes": 321,
+      "path": "artifacts/java-producer-source/guard-repair-audit-invocation-failure.json",
+      "sha256": "0d806b1015fe83f10731c4fe6069cbe6938ff85814bb0aaa4a75f040445efab1"
+    },
+    {
+      "bytes": 1955,
+      "path": "artifacts/java-producer-source/guard-repair-final-tests-optimized.log",
+      "sha256": "76a0f10a6d4c5feef862f6885d811221dbf3e02a65efc7b44126044e68e158e8"
+    },
+    {
+      "bytes": 1955,
+      "path": "artifacts/java-producer-source/guard-repair-final-tests.log",
+      "sha256": "4181c3ddc392023e1e92aad4367949263e91dd5d09bf6f0bd80184be5bda21a9"
+    },
+    {
+      "bytes": 817,
+      "path": "artifacts/java-producer-source/guard-repair-retained-log.json",
+      "sha256": "96c4eef0ce1151fda3a3fb5420f91b6d94a28ada6c5d4b22e649b919cf2f4712"
+    },
+    {
+      "bytes": 39,
+      "path": "artifacts/java-producer-source/guard-repair-source-audit.log",
+      "sha256": "9ee34a038c7f4ec553aeb005c2b8636aa6a224fae006f674aed5e35e105a79fc"
+    },
+    {
+      "bytes": 1955,
+      "path": "artifacts/java-producer-source/guard-repair-tests-optimized.log",
+      "sha256": "6ea12bd88a7da9a7b10741eeeb279f72ea41baf85cf9ac6d598ca4a88f1eaa74"
+    },
+    {
+      "bytes": 1955,
+      "path": "artifacts/java-producer-source/guard-repair-tests.log",
+      "sha256": "e3825e6baf3d253c00cf2ba10382820c158187a76e8c56ecb64e5ae7770a3b02"
+    },
+    {
+      "bytes": 39,
+      "path": "artifacts/java-producer-source/source-audit.log",
+      "sha256": "f32bf3a644665a385e05f6e8e28262342e8cafcb8c31e2b8dedcec4cc4ccbeae"
+    }
+  ],
+  "cause": "The original guard demanded a CycloneDX execution header; Maven instead explicitly skipped its online-only makeAggregateBom goal in offline mode. Package itself succeeded. The producer stopped before a second build.",
+  "complete_release": false,
+  "guard_repair": {
+    "semantics": "Require exact seven ordered goal/version headers for five Maven lifecycle plugins, reject unexpected or malformed execution headers, and require the exact offline CycloneDX skip diagnostic once. Cached CycloneDX remains a declared input, not a claim of execution.",
+    "signature_verified": true,
+    "source": {
+      "commit": "7be24e5f5fcef803eac84dff3b998d5b7755d521",
+      "files": [
+        {
+          "bytes": 15396,
+          "path": "scripts/build_java_search.py",
+          "sha256": "8658555021cde0de0aa2607d1be6ac99fe96273e06987d5cbc4dc792d9baed77"
+        },
+        {
+          "bytes": 6519,
+          "path": "scripts/java_build_inputs.py",
+          "sha256": "8a20bf09c6083536e9da773c34c6a334f920377150aee0401ee9742d759484c7"
+        },
+        {
+          "bytes": 11796,
+          "path": "scripts/tests/test_java_search_producer.py",
+          "sha256": "e2e3e54eb297363611a4a4ff38ab3cb33aaf6f844a4a92a6b554118cb4d87fc4"
+        },
+        {
+          "bytes": 6355,
+          "path": "docs/search/OFFLINE-JAVA-PRODUCER.md",
+          "sha256": "49f65aace7df02cb0609eab320e0230ff24b6c5d3a4b7c052240e6d79ca86713"
+        }
+      ],
+      "tree": "4116455673ed9a6bfe480bc6834c7b1b330dd31d"
+    },
+    "staged_public_audit": {
+      "bytes": 39,
+      "path": "artifacts/java-producer-source/guard-repair-source-audit.log",
+      "sha256": "9ee34a038c7f4ec553aeb005c2b8636aa6a224fae006f674aed5e35e105a79fc"
+    },
+    "tests": {
+      "normal": {
+        "failed": 0,
+        "log": {
+          "bytes": 1955,
+          "path": "artifacts/java-producer-source/guard-repair-final-tests.log",
+          "sha256": "4181c3ddc392023e1e92aad4367949263e91dd5d09bf6f0bd80184be5bda21a9"
+        },
+        "passed": 11
+      },
+      "optimized": {
+        "failed": 0,
+        "log": {
+          "bytes": 1955,
+          "path": "artifacts/java-producer-source/guard-repair-final-tests-optimized.log",
+          "sha256": "76a0f10a6d4c5feef862f6885d811221dbf3e02a65efc7b44126044e68e158e8"
+        },
+        "passed": 11
+      },
+      "retained_log_guard_check": {
+        "bytes": 817,
+        "path": "artifacts/java-producer-source/guard-repair-retained-log.json",
+        "sha256": "96c4eef0ce1151fda3a3fb5420f91b6d94a28ada6c5d4b22e649b919cf2f4712"
+      },
+      "scope": "Synthetic helpers only; four portable tests and seven POSIX descriptor/private-file tests. Missing/wrong/extra/duplicate lifecycle and skip diagnostics refused; both Maven failure and post-package guard failure stop before second build."
+    }
+  },
+  "kind": "offline_java_search_producer_partial_observation_and_guard_repair",
+  "limits": [
+    "Failed first observation remains unsuccessful and byte-identical. One package does not establish reproducibility.",
+    "Produced JAR is unequal to the existing staged Search worker; historical staged JAR source provenance remains unproven.",
+    "Existing native Search evidence remains bound to its original 9930-byte worker, not this new output.",
+    "No Java worker, native Search, tests, staged installation, public network campaign or release validation ran. Tool version probes and one offline Maven package ran.",
+    "Offline is a Maven resolver setting, not process network confinement. Inputs are a bounded private cache snapshot, not a complete transitive lock or dependency-origin attestation.",
+    "All private cache entries, exact absolute invocations and local tool paths remain in ignored artifacts; public evidence provides aggregate or selected input identities only."
+  ],
+  "producer_observation": {
+    "artifact_id": "188e9827-bac6-47b2-8b6f-86041877f506",
+    "failure": "actual_build_plugin_versions_differ",
+    "maven_package_exit_codes": [
+      0
+    ],
+    "maven_packages_attempted": 1,
+    "passed": false,
+    "phase": "build_1",
+    "reproducibility": "not_established_one_build_only",
+    "retained_failed_receipt": {
+      "bytes": 27894,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/receipt.json",
+      "sha256": "097f01fb0779ea130d628688823d9d7bd9daeea39e50f506d0d8d61d619e1c3b"
+    },
+    "second_build_started": false,
+    "source": {
+      "allowed_signers_sha256": "5059083df7c2bbba0a4d1791ded8c8ce8c28e4469581c4a773c391b2bc14dd6e",
+      "inputs_sha256": "954507199ef93a2f50d43382027f86ef35df23e28259848f87535135cee129fb",
+      "lockfile_sha256": "63835ff9d6f33cb0b00fefcd586a40272dae2ff147b428e08d7cb52c96d45069",
+      "revision": "01d4b0d979e7eed56604d5be6f01d893c4ac4a86",
+      "runner_sha256": "2b93c37501f98964b26657d95e648c0e7920a061b823dfe8a959daefefad46e0",
+      "shared_source_reader_sha256": "d28a992bfd94a83099fe98eee47bc3f963cde90b39f79cdbad2826f1808f3f86",
+      "signature_verified": true,
+      "tree": "6872a5514f42513a881a851899df177e64972352"
+    }
+  },
+  "proposed_next_observation": {
+    "execution_source": "A clean signed descendant containing this evidence only; its exact source and tree will be recorded by the next receipt.",
+    "maven_packages_maximum": 2,
+    "network_fetch": false,
+    "offline_setting_is_network_sandbox": false,
+    "producer_source_commit": "7be24e5f5fcef803eac84dff3b998d5b7755d521",
+    "runtime_staging_writes": false,
+    "same_scope": true,
+    "seconds_per_build_maximum": 600,
+    "status": "root_review_approved_not_started_at_this_record",
+    "stop_on_first_failure": true,
+    "tests_in_maven": "skipped",
+    "worker_execution": "not_run"
+  },
+  "read_only_post_failure_audit": {
+    "additional_java_or_maven_invocations": 0,
+    "checks": {
+      "all_production_classes_present": true,
+      "cache": true,
+      "copied_java_sources_unchanged": true,
+      "jdk": true,
+      "maven": true,
+      "no_second_build_directory": true,
+      "source_unchanged": true,
+      "staged_search": true
+    },
+    "classfiles": 27,
+    "first_produced_jar": {
+      "bytes": 74334,
+      "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+    },
+    "production_source_files": 12,
+    "record": {
+      "bytes": 26023,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/post-failure-audit.json",
+      "sha256": "fc1a3de59cf33f806d04dd91c48d6052d9b4812697e2eb86bb99cad877c66017"
+    },
+    "runtime_dependency_jars": 95,
+    "search_dependencies": [
+      {
+        "bytes": 84211,
+        "name": "jackson-annotations-2.22.jar",
+        "sha256": "21ddb598807d3a51a876704eb979d9296e1c6a6f47ab1826ff88c6d6a127a2d0"
+      },
+      {
+        "bytes": 594776,
+        "name": "jackson-core-2.22.3.jar",
+        "sha256": "8a501126a385b25841915d839508f8a66e2a0dbc8a6709d055ef3b3e852b094c"
+      },
+      {
+        "bytes": 1709604,
+        "name": "jackson-databind-2.22.3.jar",
+        "sha256": "556db5439e206114346043f68d200497dc96a0bca62a360a81784092ebd0e0a9"
+      },
+      {
+        "bytes": 1757025,
+        "name": "lucene-analysis-common-10.5.1.jar",
+        "sha256": "f710afd91a820987a48f3a215e076715b9237b324cf5458281109ef0d2a17b73"
+      },
+      {
+        "bytes": 4744152,
+        "name": "lucene-core-10.5.1.jar",
+        "sha256": "2b4912cc792f462e8e7b350f7c958f538ee7ec42da4cf4b65902fb9d546bba53"
+      },
+      {
+        "bytes": 333386,
+        "name": "lucene-facet-10.5.1.jar",
+        "sha256": "f47044db3d231a9bf69ab23c6ae04086e2aa93e50722821059c5eed846ea12a3"
+      },
+      {
+        "bytes": 524043,
+        "name": "lucene-queries-10.5.1.jar",
+        "sha256": "6e98e7fd16b951cabe95c4b193e4c50ffd3a5613787d04bd848672c326b309f9"
+      },
+      {
+        "bytes": 426256,
+        "name": "lucene-queryparser-10.5.1.jar",
+        "sha256": "75eddb74abccaf1f3ea5cb1ca2ceff29afb7f564892b50914404720f03d458c4"
+      },
+      {
+        "bytes": 386983,
+        "name": "lucene-sandbox-10.5.1.jar",
+        "sha256": "0c66bc7b779ac7ecf337fdd7373f4ed1652c362da61035bb3f970c321a154693"
+      }
+    ],
+    "staged_search_dependencies_equal": true,
+    "staged_worker": {
+      "bytes": 9930,
+      "sha256": "17185efac0a1b6f0c4590ba5026bf9244920a96eec2a1367ce94b8a10ff1f82e"
+    },
+    "staged_worker_byte_equal": false
+  },
+  "record_version": 1,
+  "retained_diagnostic_failure": "The first ad hoc read-only post-repair log check used a relative path and was refused by the absolute-path-only reader. Only that read was repeated with a canonical absolute path. No additional compiler/package/worker ran; diagnostic record retained.",
+  "toolchain": {
+    "cache_inventory": {
+      "bytes": 126848968,
+      "files": 2614,
+      "scope": "bounded_private_input_snapshot_not_minimal_resolution_closure",
+      "sha256": "04e19ce0171e70003586845ef2890eafe61f47599ce53c1082961636c41cd54e"
+    },
+    "classfile_major": 65,
+    "closed_options": [
+      "--offline",
+      "--batch-mode",
+      "--no-transfer-progress",
+      "--strict-checksums",
+      "-Dmaven.test.skip=true",
+      "-Dmaven.compiler.proc=none",
+      "-Dmaven.compiler.fork=false",
+      "-Dcyclonedx.skip=true",
+      "-Dproject.build.outputTimestamp=2020-01-01T00:00:00Z"
+    ],
+    "compiler": {
+      "IMPLEMENTOR": "Eclipse Adoptium",
+      "JAVA_RUNTIME_VERSION": "25.0.2+10-LTS",
+      "JAVA_VERSION": "25.0.2",
+      "OS_ARCH": "aarch64",
+      "OS_NAME": "Darwin"
+    },
+    "empty_settings": {
+      "bytes": 59,
+      "sha256": "05204bd36a3ad4bcb454ab04f61684accf2de5f73606a4bba23f862b5a6dbecb"
+    },
+    "empty_toolchains": {
+      "bytes": 63,
+      "sha256": "02afd33de0a42b1a4a8dbff2cc886cb57cf992f340e7ad6c3a4bed0b1efd6679"
+    },
+    "jdk_inventory": {
+      "bytes": 307798346,
+      "files": 400,
+      "sha256": "cadc494ab445870c239148415c493d8110b772bc2f02512d788c52d6ec646cdb"
+    },
+    "maven_inventory": {
+      "bytes": 10743688,
+      "files": 96,
+      "sha256": "e385ce7e3681594366cb327f940b0d7ae708986c6bfd40accca04aa28f009865"
+    },
+    "maven_version": "3.9.11",
+    "selected_build_plugins": [
+      {
+        "artifact": "org.apache.maven.plugins:maven-resources-plugin:3.3.1",
+        "bytes": 30951,
+        "sha256": "eb4069c7fe50a313b3f5295ccd214f30402f63971c26f443f7f3e798be8cc2a7"
+      },
+      {
+        "artifact": "org.apache.maven.plugins:maven-compiler-plugin:3.14.1",
+        "bytes": 83593,
+        "sha256": "85bc857c3bf91c87b65dfc15235154eb83b8f4539f0afbc7e6c93eb4a0bcdd38"
+      },
+      {
+        "artifact": "org.apache.maven.plugins:maven-surefire-plugin:3.5.4",
+        "bytes": 46075,
+        "sha256": "d25d73f73b70bfc85dcf949c9c58eaa9ecf79709dd8be19d6f92d72b8720dd61"
+      },
+      {
+        "artifact": "org.apache.maven.plugins:maven-jar-plugin:3.4.1",
+        "bytes": 33771,
+        "sha256": "25e0a5b55b872d95e3a09a5d825bc1061f5ce25ee81f147e623405d8ebedfa5f"
+      },
+      {
+        "artifact": "org.apache.maven.plugins:maven-dependency-plugin:3.8.1",
+        "bytes": 207950,
+        "sha256": "9fc3d435085983b16bc53903f9413aede9de30e20c57c0cece94614f328b14b5"
+      },
+      {
+        "artifact": "org.cyclonedx:cyclonedx-maven-plugin:2.9.1",
+        "bytes": 51839,
+        "sha256": "698e0f37184a5b28c245c4065fd036dfce253b52f82fbb7113d81d36326cc249"
+      }
+    ],
+    "target": "POM release 21; compiler is Temurin JDK 25.0.2"
+  }
+}

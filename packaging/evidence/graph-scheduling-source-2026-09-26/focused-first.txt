@@ -1,0 +1,14 @@
+   Compiling workbench-core v0.1.0 ($WORKSPACE/crates/core)
+error[E0609]: no field `requests` on type `collection_jobs::DurableCollectionJob`
+   --> crates/core/src/coordinator_graph_tests.rs:511:25
+    |
+511 |     assert_eq!(finished.requests.len(), 2);
+    |                         ^^^^^^^^ unknown field
+    |
+help: one of the expressions' fields has a field of the same name
+    |
+511 |     assert_eq!(finished.checkpoint.requests.len(), 2);
+    |                         +++++++++++
+
+For more information about this error, try `rustc --explain E0609`.
+error: could not compile `workbench-core` (lib test) due to 1 previous error

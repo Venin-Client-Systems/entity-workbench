@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "base_commit": "90637c1c2204537a6b3a59fc9d07ce7881361027",
+  "host": {
+    "system": "Darwin",
+    "architecture": "arm64"
+  },
+  "scope": "Durable v3 collection preview, bounded read projections and coordinator command cutover; native transport disabled",
+  "source_files_sha256": {
+    "crates/core/src/bin/ew-dev.rs": "5e6b0e32f1274474bcdca6e6639f07172886a93cef2471ad81e894f079a57675",
+    "crates/core/src/collection.rs": "f407272a0df10b5f710ee5535d10f2c1e65bef4d0d11b2c88539249305775751",
+    "crates/core/src/collection_api.rs": "aab5e2684ba42f53aa1e316cb0c225d2cedf666ea2a4d34a29ce1d652a37828f",
+    "crates/core/src/collection_jobs.rs": "67cf930a68a51e7a3a326a96055be532e0900eb6d13078e186208afb0109ca77",
+    "crates/core/src/collection_machine.rs": "e6f6d54131e826a1cdc83e89815a1c0f973792b17f6ae418084fdebb2321e571",
+    "crates/core/src/collection_machine_transport.rs": "1d4304e39b3e3f44445b6d581618575c2be68884926df36d06c02a4e4a69e782",
+    "crates/core/src/collection_settlement.rs": "a445799d994d374423dfd118b2196b01fa9ffd016fce1dfeafd5b91d17e06c13",
+    "crates/core/src/collection_transport.rs": "f113574f7a8d4d04d5d427fb62a1f119c6c685e9e50ece4b9e9f86b5c3781fdc",
+    "crates/core/src/coordinator.rs": "04a218fa21158d3d4a59043f7500cc3f7253c7926878783b947d2eec43c192dc",
+    "crates/core/src/coordinator_collection.rs": "486a52bd1757e3195c1a1e7be834baa8d8f277b7d0bf33d4fe2eefc59a787dfe",
+    "crates/core/src/coordinator_collection_api.rs": "66cdaaa00788fe51fa18e038d53f67ff773b3898c6524479e7fea01617875df5",
+    "crates/core/src/coordinator_collection_api_tests.rs": "53a7b49b712b440b7a60673a43fe3d6cdc6fe0b3789f853b82cb71aac50cbf56",
+    "crates/core/src/domain.rs": "89366814239c2344a4caf45cd287a9077237377c74b0cb1719b1a4745c5c7017",
+    "crates/core/src/lib.rs": "580e1becc4c39d111d02f904c5c9a62f694115c0e0e229dd8d66308e67528fc3",
+    "crates/core/src/store.rs": "03c3ff5652a7337133fed8eba5bab7e6110f6cd5d8f64ed8718ff4cecd77d2cc",
+    "crates/core/src/store/collection.rs": "e80c53f9e17729b1ea299c2b3ad91262d6e1f2671d5c4bc994858282d73b8a8f",
+    "crates/core/src/store/collection_api.rs": "eeaf9e334e4efb65b494cc929273ce3fb73dda179aa049d498c79f9b023d3030",
+    "crates/core/src/store/collection_api_tests.rs": "4febe30cb4aa5956ba9e0beae437ff625a219a626b2f98abb27a8e9a25150ebc",
+    "crates/core/src/store/collection_jobs.rs": "e117a8f76f00b179a1c86075b13087783fb20ce7ec83ff27d118094198e22ba8",
+    "crates/core/src/store/collection_transport_settlement.rs": "28db5a684d29569012527ab51ee2a5ea046ce9140cdf1801af6b186a3abd65fa",
+    "schemas/collection-preview.v1.schema.json": "56b85de6ad0379f88931554e215a74d2737b25af544d117f7985f6999c944752",
+    "schemas/collection-run-inspection.v1.schema.json": "f580c81ca1f2a6ef788cad9dbc647988fd17b5d425e362cfb61a46604c2efa5d",
+    "schemas/collection-run-page-request.v1.schema.json": "8e8d36fd4c269e4f693f0e018c838ac6240400dff892f1afd8441c3a99041163",
+    "schemas/collection-run-page.v1.schema.json": "fe1067f26fafadb8eef0a3e5ac176b92a288719aa44d69c76e8b27630c9aa18e",
+    "schemas/command.v23.schema.json": "987474747ee8a54556e54bcd7f4762981ad4c79500f5fd281df7fc0d92274259"
+  },
+  "source_manifest_sha256": "251b7776209f270e1a6511fca9f62aa06b5f2d401f9057926a126fba4a32f49c",
+  "historical_schemas": {
+    "files": 85,
+    "json_files": 84,
+    "all_byte_unchanged": true,
+    "manifest_sha256": "eb61736b9cdc8553c6b028d4a78b13f9f9cf1234046171cf50e132e2cd780719"
+  },
+  "checks": {
+    "focused_api": {
+      "passed": 13,
+      "failed": 0,
+      "command": "cargo test -p workbench-core --lib public_api --locked --offline"
+    },
+    "core": {
+      "passed": 451,
+      "library_passed": 375,
+      "integration_passed": 76,
+      "failed": 0,
+      "ignored": 23,
+      "command": "cargo test -p workbench-core --locked --offline"
+    },
+    "clippy_debug": "passed; all targets; -D warnings; locked/offline",
+    "clippy_release": "passed; all targets; -D warnings; locked/offline",
+    "schema_generation": "passed; five additive files; no prior schema changed",
+    "formatting": "passed; cargo fmt --all -- --check",
+    "public_audit": "passed; 27 staged files; private exclusion list retained outside repository"
+  },
+  "retained_logs": {
+    "directory": "artifacts/durable-collection-api",
+    "sha256": {
+      "ew-collection-api-check.log": "00b88ac362e6c9c243b30c197351b6038cce4a0c73903d6a33ee615cd3d5647f",
+      "ew-collection-api-check2.log": "c3a69e045498a3d74e22a027d31cb61af2081f4492abe47a407d67b1d1de97bf",
+      "ew-collection-api-clippy-debug.log": "0c0ef3e4ecb63bdd3f799c57eb28e3c0295e2183a6b420ba0654c124ef1c581f",
+      "ew-collection-api-clippy-release.log": "c536b37af1ce86106d86ecdcc744636a70676fe3fb394252c9c7f861418f5176",
+      "ew-collection-api-core-final.log": "1a156da3891009563497d3ce17de8eb2ed55f6644554ffb71f74d7c1e2858776",
+      "ew-collection-api-core.log": "c66ffcf2b70f6939189b925437bb32e31bda2636db058cd53e26fc60ccdee750",
+      "ew-collection-api-focused1.log": "2f8a0c75c9079af06f9b94a5fbdcf5a96991dba1147509f0f51d8059cf274542",
+      "ew-collection-api-focused2.log": "8342618d771af3b76bfbf49f77e61ff92a09eb47a97cd3985c215fef8bebe9d7",
+      "ew-collection-api-focused3.log": "2c0b43c6b5c990ce555a91d776ea9531554b2776cc30d2df0ef09703d12f89e2",
+      "ew-collection-api-focused4.log": "ae3b35d19822d3c171e85804cd872ca85aa283071f441d2bd805a540ba11cae5",
+      "ew-collection-api-focused5.log": "906bdb386fbcb58c39baa7c2bfb300be3c0d09c9fc444f945de1dcac3c126cf3",
+      "ew-collection-api-focused6.log": "f300e3ac43c4aa2553a11f9b23116adb8fe3c67d836be22328d2bcae7af89943",
+      "ew-collection-api-schemas-final.log": "7c8d59e51a819faebd756560dfdd518a98bcc581c4b553bf6bad98096857dac1",
+      "ew-collection-api-schemas.log": "5772313dfc0ee58a79b5dfe7b095f98b2e66c8b075abb2858e4af726b08f7467",
+      "public-audit.log": "048cfb460df91d19dfa0806b3b1dfd05c03d39ec769fa29b6b0ba5e23a77857f",
+      "fmt-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "development_observations": [
+    "Initial type check found module visibility errors; visibility narrowed to the coordinator ancestor and private Observation constructor before final checks.",
+    "Two initial focused invocations used the wrong module filter and selected zero tests. These are not counted as test coverage.",
+    "First actual focused run had 9 passes and 2 test-fixture failures: pure URL preview does not perform destination resolution, and an oversized SQLite body must remain valid JSON. Corrected expectations/fixture without weakening production validation.",
+    "Follow-up added exact quarantine acknowledgement recovery and contained executor-failure admission guard; final focused and broad runs include both."
+  ],
+  "limitations": [
+    "Only synthetic callback/loopback TLS collection tests executed; no public DNS/HTTP requests or native collection activation.",
+    "Normal coordinator native_disabled; standalone controls refused. Exact retained publication retry and acknowledgement recovery are separate from new execution.",
+    "Historical v1/v2 records remain read-only at public controls. Storage schema5 unchanged; current backup/restore verified with originals. No new historical-binary execution campaign.",
+    "No UI/Figma/native installed-package verification in this core-only increment; integration requires matching UI cutover.",
+    "Bounded output does not imply bounded-to-output replay I/O or an indexed performance result.",
+    "Windows source/native execution and full release gates remain separately required."
+  ]
+}

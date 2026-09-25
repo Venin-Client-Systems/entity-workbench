@@ -1,0 +1,230 @@
+section.patterns {
+  border-top: 4px solid var(--amber, #a64b0a);
+}
+.patterns-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+.patterns-heading h2 {
+  margin: 0 0 12px;
+}
+.patterns-revision {
+  font: 11px var(--mono, monospace);
+  white-space: nowrap;
+  color: #53605b;
+}
+.patterns-scope {
+  background: #e8ece7;
+  padding: 16px;
+  border: 1px solid #bcc3c0;
+  margin: 20px 0;
+}
+.patterns-scope fieldset {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  min-width: 0;
+}
+.patterns-scope legend {
+  font: 11px var(--mono, monospace);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.patterns-fields {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 1fr)) minmax(190px, 1.5fr);
+  gap: 12px;
+  align-items: end;
+}
+.patterns-fields label {
+  margin: 0;
+  min-width: 0;
+}
+.patterns-fields input,
+.patterns-fields select {
+  width: 100%;
+  min-width: 0;
+}
+.patterns-tolerances {
+  margin-top: 16px;
+  grid-template-columns:
+    repeat(3, minmax(120px, 1fr)) minmax(180px, 1.5fr)
+    minmax(130px, 1fr);
+}
+.patterns-tolerances button {
+  min-height: 36px;
+}
+.patterns-applied,
+.patterns-warning {
+  background: #fff4c5;
+  border: 1px solid #d9c580;
+  color: #743400;
+  padding: 12px 16px;
+}
+.patterns-applied p {
+  margin: 8px 0 0;
+}
+.patterns h3 {
+  font: 12px var(--mono, monospace);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 28px 0 12px;
+}
+.patterns-currency {
+  border: 1px solid #bcc3c0;
+  background: #fff;
+  padding: 16px;
+  margin-top: -1px;
+}
+.patterns-currency-grid {
+  display: grid;
+  grid-template-columns: 90px repeat(3, minmax(90px, 1fr)) repeat(
+      2,
+      minmax(150px, 1.5fr)
+    );
+  gap: 12px;
+}
+.patterns-currency h4 {
+  font: 700 20px var(--mono, monospace);
+  margin: 0;
+}
+.patterns-currency h4 small {
+  display: block;
+  font: 11px var(--mono, monospace);
+  margin-top: 8px;
+}
+.patterns-currency dl {
+  margin: 0;
+  min-width: 0;
+}
+.patterns-currency dt {
+  font: 10px var(--mono, monospace);
+  text-transform: uppercase;
+  min-height: 26px;
+}
+.patterns-currency dd {
+  margin: 0;
+  font: 700 20px var(--mono, monospace);
+  overflow-wrap: anywhere;
+}
+.patterns-currency dd button {
+  font: 12px var(--sans, sans-serif);
+  margin-top: 8px;
+  text-align: left;
+}
+.patterns-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 14px;
+}
+.patterns-candidate {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #bcc3c0;
+  padding: 16px;
+  margin: 12px 0;
+}
+.patterns-candidate p {
+  margin: 8px 0 0;
+}
+.patterns-candidate strong {
+  overflow-wrap: anywhere;
+}
+.patterns td:first-child {
+  overflow-wrap: anywhere;
+  max-width: 360px;
+}
+.patterns-pager {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 14px 0;
+}
+.patterns details {
+  margin-top: 24px;
+}
+.patterns details li {
+  margin-bottom: 10px;
+}
+.patterns-drill .patterns-heading .close {
+  position: static;
+  flex: none;
+}
+.patterns-drill {
+  overflow-wrap: anywhere;
+}
+.patterns-source {
+  border: 1px solid #bcc3c0;
+  background: #fff;
+  padding: 16px;
+  margin: 12px 0;
+}
+.patterns-source > code {
+  font-size: 11px;
+  display: block;
+  margin-bottom: 12px;
+}
+.patterns-drill .patterns-heading h2 {
+  font-size: 26px;
+}
+.patterns-drill p {
+  line-height: 1.5;
+}
+.patterns-stale {
+  border-left: 3px solid #a64b0a;
+  padding-left: 12px;
+}
+@media (max-width: 1150px) {
+  .patterns-fields,
+  .patterns-tolerances {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .patterns-currency-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 750px) {
+  .patterns-fields,
+  .patterns-tolerances {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .patterns-heading {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .patterns-candidate {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .patterns-currency-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .patterns-drill .patterns-heading {
+    flex-wrap: nowrap;
+  }
+  .patterns-drill .patterns-heading h2 {
+    font-size: 22px;
+  }
+}
+
+.patterns .patterns-heading h2 {
+  font-size: 28px;
+  line-height: 1.3;
+}
+.patterns .table-scroll thead,
+.patterns-drill .table-scroll thead {
+  background: #202729;
+  color: #fff;
+}
+.patterns .table-scroll th,
+.patterns-drill .table-scroll th {
+  background: #202729;
+  color: #fff;
+}

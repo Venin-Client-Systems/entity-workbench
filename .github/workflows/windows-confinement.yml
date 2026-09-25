@@ -1,0 +1,161 @@
+name: Windows AppContainer development probes
+on:
+  pull_request:
+    paths:
+      - 'crates/windows-worker/**'
+      - 'crates/core/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/windows-confinement.yml'
+      - 'docs/security/WINDOWS-WORKERS.md'
+      - 'docs/security/WINDOWS-JAVA-WORKERS.md'
+      - 'docs/security/WINDOWS-PARSER-COORDINATOR.md'
+      - 'workers/java/**'
+      - 'fixtures/parser/**'
+      - 'fixtures/parser-fonts/**'
+      - 'scripts/stage_windows_engines.py'
+      - 'scripts/tests/test_windows_engine_staging.py'
+      - 'scripts/test_windows_parser_coordinator.py'
+      - 'scripts/tests/test_windows_coordinator_receipts.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  appcontainer:
+    # This is Windows Server 2022, not Windows 11 or a clean installation test.
+    runs-on: windows-2022
+    timeout-minutes: 25
+    env:
+      RUSTFLAGS: '-C target-feature=+crt-static'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87
+        with:
+          toolchain: '1.90.0'
+          components: rustfmt, clippy
+      - name: Record public source, OS and staged runtime identities
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force artifacts/windows-confinement | Out-Null
+          @{
+            schema_version = 1
+            source_commit = (git rev-parse HEAD).Trim()
+            complete_release = $false
+            passed = $false
+            failure = 'Java engine probe has not completed'
+            tests = @{ phase = 'not_started' }
+          } | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 artifacts/windows-confinement/java-engines-report.json
+          @{
+            schema_version = 1
+            source_commit = (git rev-parse HEAD).Trim()
+            complete_release = $false
+            passed = $false
+            failure = 'canonical parser probe has not completed'
+            phase = 'not_started'
+            expected_checks = 25
+            fixture_count = 10
+          } | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 artifacts/windows-confinement/coordinator-report.json
+          $os = Get-CimInstance Win32_OperatingSystem
+          $jdk = $env:JAVA_HOME_21_X64
+          if (-not $jdk -or -not (Test-Path "$jdk/bin/java.exe")) {
+            throw 'The hosted image has no Java 21 runtime; probe blocked.'
+          }
+          $release = Get-Content "$jdk/release"
+          $javaVersion = ($release | Where-Object { $_ -match '^JAVA_VERSION=' }) -replace '^JAVA_VERSION="|"$', ''
+          if ($javaVersion -notmatch '^21\.') { throw 'Java runtime major version is not 21.' }
+          $runtime = @(Get-ChildItem -LiteralPath $jdk -File -Recurse | Sort-Object FullName | ForEach-Object {
+            @{
+              path = [IO.Path]::GetRelativePath($jdk, $_.FullName).Replace('\', '/')
+              bytes = $_.Length
+              sha256 = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+            }
+          })
+          $metadata = @{
+            schema_version = 1
+            scope = 'development probe; no Windows 11 or complete-release acceptance'
+            source_commit = (git rev-parse HEAD).Trim()
+            workflow_run_id = $env:GITHUB_RUN_ID
+            workflow_run_attempt = $env:GITHUB_RUN_ATTEMPT
+            recorded_at_utc = [DateTime]::UtcNow.ToString('o')
+            os = @{ caption = $os.Caption; version = $os.Version; architecture = $os.OSArchitecture }
+            runner_image = @{ label = 'windows-2022'; version = $env:ImageVersion }
+            java = @{ version = $javaVersion; source = 'hosted image preinstalled JDK; copied for probe'; files = $runtime }
+          }
+          $metadata | ConvertTo-Json -Depth 8 | Set-Content -Encoding utf8 artifacts/windows-confinement/environment.json
+      - run: cargo fmt -p workbench-windows-worker -- --check
+      - run: cargo clippy -p workbench-windows-worker --all-targets --locked -- -D warnings
+      - name: Native filesystem and output unit tests
+        run: cargo test -p workbench-windows-worker --locked -- --test-threads=1 --show-output
+      - run: cargo build -p workbench-windows-worker --bin ew-windows-probe --locked
+      - name: Run hostile controls and copied Java 21 runtime in AppContainer
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $binary = 'target/debug/ew-windows-probe.exe'
+          @{
+            source_commit = (git rev-parse HEAD).Trim()
+            binary_sha256 = (Get-FileHash $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json | Set-Content -Encoding utf8 artifacts/windows-confinement/probe-identity.json
+          & $binary --report artifacts/windows-confinement/report.json "$env:JAVA_HOME_21_X64"
+          if ($LASTEXITCODE -ne 0) { throw 'Native confinement probe failed; retain report and keep Windows gate blocked.' }
+      - name: Build the existing pinned Java workers and file IPC tests
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:JAVA_HOME = $env:JAVA_HOME_21_X64
+          & mvn -B --no-transfer-progress -f workers/java/pom.xml package
+          if ($LASTEXITCODE -ne 0) { throw 'Pinned Java worker build/tests failed.' }
+      - name: Stage distinct local Java parser and search runtimes
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python -m unittest discover -s scripts/tests -p test_windows_engine_staging.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Windows runtime staging contract tests failed.' }
+          & python scripts/stage_windows_engines.py --java "$env:JAVA_HOME_21_X64" --worker-target workers/java/target --destination runtime/windows-java-development
+          if ($LASTEXITCODE -ne 0) { throw 'Windows Java staging failed.' }
+          Copy-Item runtime/windows-java-development/parser/manifest.json artifacts/windows-confinement/parser-runtime.json
+          Copy-Item runtime/windows-java-development/search/manifest.json artifacts/windows-confinement/search-runtime.json
+      - run: cargo build -p workbench-windows-worker --bin ew-windows-java-probe --locked
+      - name: Run real parser and separate Lucene recipes with Java boundary controls
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $binary = 'target/debug/ew-windows-java-probe.exe'
+          @{
+            source_commit = (git rev-parse HEAD).Trim()
+            binary_sha256 = (Get-FileHash $binary -Algorithm SHA256).Hash.ToLowerInvariant()
+          } | ConvertTo-Json | Set-Content -Encoding utf8 artifacts/windows-confinement/java-probe-identity.json
+          & $binary --report artifacts/windows-confinement/java-engines-report.json runtime/windows-java-development
+          if ($LASTEXITCODE -ne 0) { throw 'Windows Java engine recipes failed; preserve evidence and keep adapters disabled.' }
+      - name: Verify canonical campaign receipt validation
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python -m unittest discover -s scripts/tests -p test_windows_coordinator_receipts.py -v
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical campaign receipt contract tests failed.' }
+      - name: Build the source-bound canonical coordinator probe
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:WORKBENCH_COORDINATOR_PROBE_SOURCE = (git rev-parse HEAD).Trim()
+          & cargo test -p workbench-core --example windows_parser_probe --locked -- --test-threads=1
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical probe fixture and copy contracts failed.' }
+          & cargo build -p workbench-core --example windows_parser_probe --locked
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical coordinator probe build failed.' }
+      - name: Run canonical imports, document jobs and complete recovery checks
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & python scripts/test_windows_parser_coordinator.py --binary target/debug/examples/windows_parser_probe.exe --runtime runtime/windows-java-development --destination artifacts/windows-confinement
+          if ($LASTEXITCODE -ne 0) { throw 'Canonical parser campaign failed; retain failed receipt and keep complete release blocked.' }
+      - name: Retain sanitized evidence on success or failure
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: windows-appcontainer-development-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/windows-confinement/*.json
+          if-no-files-found: error
+          retention-days: 30

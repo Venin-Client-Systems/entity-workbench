@@ -1,0 +1,600 @@
+{
+  "artifact_id": "c3732b9c-ff5e-4534-bc97-69fadfd28021",
+  "artifacts": [
+    {
+      "bytes": 2472,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/build-1.log",
+      "sha256": "eedda737d0b2c7159da0030142f27ae5c7644c4074ee2cdea667d68e4da332d3"
+    },
+    {
+      "bytes": 2472,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/build-2.log",
+      "sha256": "6ed3a0962d8ef36bffab43967162adf75c67c7eda1626309d0013acab9ca3dd8"
+    },
+    {
+      "bytes": 1463,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/independent-readback.json",
+      "sha256": "e6d1700d7482aa7d9588ba5c2acf8970d10bc27737ea20ef08d287ed3245b4c2"
+    },
+    {
+      "bytes": 194,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/java-version.log",
+      "sha256": "cf9e37a0dbb141248c06644020e38303bc0261029e2cbd88cd9c9f260edea275"
+    },
+    {
+      "bytes": 13,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/javac-version.log",
+      "sha256": "d84a3d4f4f4d7fd6071835fdc8eaaba1ffc6e3d643f24bbfa623eb35b56ec02b"
+    },
+    {
+      "bytes": 413,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/maven-version.log",
+      "sha256": "599951abd546d0696f6771569ab7936a590dc0c04239cba841de31bdced787de"
+    },
+    {
+      "bytes": 693788,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/private-inputs.json",
+      "sha256": "8dc6d1cef6179e6a1308bad7546cd3b047f93dc5f8d6843c8e405adb020e2292"
+    },
+    {
+      "bytes": 79900,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/receipt.json",
+      "sha256": "77ffde0f390bb06bf40be906f324ded6acabf3ea7124f5cc0a507575af597ad8"
+    },
+    {
+      "bytes": 59,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/settings.xml",
+      "sha256": "05204bd36a3ad4bcb454ab04f61684accf2de5f73606a4bba23f862b5a6dbecb"
+    },
+    {
+      "bytes": 63,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/toolchains.xml",
+      "sha256": "02afd33de0a42b1a4a8dbff2cc886cb57cf992f340e7ad6c3a4bed0b1efd6679"
+    },
+    {
+      "bytes": 2278,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/build-1/invocation.json",
+      "sha256": "92d1f70ea405662fee50cc57d67399789aa7df0df274c5ad036a9948e9feed18"
+    },
+    {
+      "bytes": 74334,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/build-1/project/target/workers-0.1.0.jar",
+      "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+    },
+    {
+      "bytes": 2278,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/build-2/invocation.json",
+      "sha256": "a4cdd6f390aba382495ef4b4a3173bcdc9da7e7f5fa86709558380d7ed310811"
+    },
+    {
+      "bytes": 74334,
+      "path": "artifacts/java-search-producer/c3732b9c-ff5e-4534-bc97-69fadfd28021/build-2/project/target/workers-0.1.0.jar",
+      "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+    }
+  ],
+  "complete_release": false,
+  "failure": null,
+  "independent_read_only_audit": {
+    "all_checks_passed": true,
+    "checks": {
+      "build_1_dependency_identity": true,
+      "build_1_jar_identity": true,
+      "build_1_jar_members": true,
+      "build_1_release21": true,
+      "build_1_timestamp": true,
+      "build_2_dependency_identity": true,
+      "build_2_jar_identity": true,
+      "build_2_jar_members": true,
+      "build_2_release21": true,
+      "build_2_timestamp": true,
+      "cache_exact_file_bytes_unchanged": true,
+      "clean_source": true,
+      "jdk_exact_file_bytes_unchanged": true,
+      "maven_exact_file_bytes_unchanged": true,
+      "only_two_build_directories": true,
+      "prior_failed_receipt_unchanged": true,
+      "search_dependencies_equal_staged": true,
+      "source_commit_unchanged": true,
+      "staged_jar_mismatch_honest": true,
+      "staged_search_exact_file_bytes_unchanged": true,
+      "tracked_inputs_unchanged": true,
+      "whole_jars_equal": true
+    },
+    "jars": [
+      {
+        "bytes": 74334,
+        "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+      },
+      {
+        "bytes": 74334,
+        "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+      }
+    ],
+    "receipt": {
+      "bytes": 79900,
+      "sha256": "77ffde0f390bb06bf40be906f324ded6acabf3ea7124f5cc0a507575af597ad8"
+    },
+    "schema_version": 1,
+    "scope": "Read-only independent hashlib/ZipFile comparison after producer; no additional build/tool/worker invocation. Producer no-follow identity checks remain separately recorded."
+  },
+  "input_aggregates": {
+    "cache": {
+      "bytes": 126848968,
+      "files": 2614,
+      "scope": "bounded_private_input_snapshot_not_minimal_resolution_closure",
+      "sha256": "04e19ce0171e70003586845ef2890eafe61f47599ce53c1082961636c41cd54e"
+    },
+    "jdk": {
+      "bytes": 307798346,
+      "files": 400,
+      "sha256": "cadc494ab445870c239148415c493d8110b772bc2f02512d788c52d6ec646cdb"
+    },
+    "maven": {
+      "bytes": 10743688,
+      "files": 96,
+      "sha256": "e385ce7e3681594366cb327f940b0d7ae708986c6bfd40accca04aa28f009865"
+    },
+    "staged_search": {
+      "bytes": 10570366,
+      "files": 10,
+      "sha256": "3cc5af8fe21fe22ecacfc50486bbead7802ef0b697de8a6553eb4717ff4d0db5"
+    }
+  },
+  "kind": "offline_java_search_producer_observation",
+  "limitations": [
+    "New development output is reproducible for these exact source/tool/cache bytes only; it is not a release approval or proof of the older staged JAR source.",
+    "The POM is unchanged. Cache is bounded and copied, not a minimal transitive resolution lock or dependency-origin attestation.",
+    "Compiler JDK is 25.0.2; produced classfile target is 21. No claim of compilation by JDK 21.",
+    "Offline is Maven resolver configuration, not a process network sandbox. No fetch, software installation, worker invocation or runtime staging write was performed.",
+    "Both output JARs and all copied repositories/projects are retained in ignored artifacts. Full private cache coordinates and tool paths are not published.",
+    "No native/runtime campaign, UI changes, public service, schema or release gate changes. Existing native Search proof remains bound to the older staged bytes."
+  ],
+  "outputs": {
+    "actual_lifecycle_headers": [
+      [
+        [
+          "resources",
+          "3.3.1",
+          "resources"
+        ],
+        [
+          "compiler",
+          "3.14.1",
+          "compile"
+        ],
+        [
+          "resources",
+          "3.3.1",
+          "testResources"
+        ],
+        [
+          "compiler",
+          "3.14.1",
+          "testCompile"
+        ],
+        [
+          "surefire",
+          "3.5.4",
+          "test"
+        ],
+        [
+          "jar",
+          "3.4.1",
+          "jar"
+        ],
+        [
+          "dependency",
+          "3.8.1",
+          "copy-dependencies"
+        ]
+      ],
+      [
+        [
+          "resources",
+          "3.3.1",
+          "resources"
+        ],
+        [
+          "compiler",
+          "3.14.1",
+          "compile"
+        ],
+        [
+          "resources",
+          "3.3.1",
+          "testResources"
+        ],
+        [
+          "compiler",
+          "3.14.1",
+          "testCompile"
+        ],
+        [
+          "surefire",
+          "3.5.4",
+          "test"
+        ],
+        [
+          "jar",
+          "3.4.1",
+          "jar"
+        ],
+        [
+          "dependency",
+          "3.8.1",
+          "copy-dependencies"
+        ]
+      ]
+    ],
+    "classfiles": 27,
+    "cyclonedx_execution": [
+      "skipped_by_maven_offline_mode",
+      "skipped_by_maven_offline_mode"
+    ],
+    "jar": {
+      "bytes": 74334,
+      "sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877"
+    },
+    "jar_members": [
+      {
+        "bytes": 81,
+        "path": "META-INF/MANIFEST.MF",
+        "sha256": "52ba2243eb227f64f9ec7c6ac297a807bae2d14945d7412e943ef84bd9d08196"
+      },
+      {
+        "bytes": 61,
+        "path": "META-INF/maven/org.entityworkbench/workers/pom.properties",
+        "sha256": "058f104240c809ff162b75f65d2b4b34e44719ea31c7a3aab608a2171cc31a20"
+      },
+      {
+        "bytes": 2729,
+        "path": "META-INF/maven/org.entityworkbench/workers/pom.xml",
+        "sha256": "261b18cd514b4c8200b442ffa4e95e496be202ec6ad36892a1ae818d2342ae25"
+      },
+      {
+        "bytes": 484,
+        "path": "workbench/AppLocalFonts$AssetException.class",
+        "sha256": "fa5d6abb8f8dc04bb3ba1b7e816f043a872952882e24c34323ba31a3ccc5aa1c"
+      },
+      {
+        "bytes": 5741,
+        "path": "workbench/AppLocalFonts.class",
+        "sha256": "cc7ef9f42acf6b61ef0d58f7709fb6a9dee89fade32cab9665a83026930b1df2"
+      },
+      {
+        "bytes": 2994,
+        "path": "workbench/CappedDirectory$CappedOutput.class",
+        "sha256": "8a67c190847d9374f6bf189b621ee030c1e2f3e8cc8e58202b4f134b7c4c8b56"
+      },
+      {
+        "bytes": 449,
+        "path": "workbench/CappedDirectory$Entry.class",
+        "sha256": "5672ea99a95923c7f95ef3d9fbc15e9886458e5842841f54da187745fab82892"
+      },
+      {
+        "bytes": 8953,
+        "path": "workbench/CappedDirectory.class",
+        "sha256": "54101e4e7add297d2bcefeec0650d2f4b64305824c8ffede255bcfde095a50ca"
+      },
+      {
+        "bytes": 3170,
+        "path": "workbench/FileWorker.class",
+        "sha256": "fec2a09b9ce4c4be13c208987596ffeefddcf675ac826d7e74da8eb4cea8b4f3"
+      },
+      {
+        "bytes": 9978,
+        "path": "workbench/FlatIndex.class",
+        "sha256": "005d1d70b9b1521439db09a92188b268bb7563f1634873ce569c96f1c324ffcd"
+      },
+      {
+        "bytes": 353,
+        "path": "workbench/HostileProbe$Attempt.class",
+        "sha256": "f8d6c27263012df64e0fb351b475339f9737fc0540b1b72ff13997469a5959b4"
+      },
+      {
+        "bytes": 7406,
+        "path": "workbench/HostileProbe.class",
+        "sha256": "c748c1616fbff089b2e1a4ec83e9483217613c3eba0c01b95c3e1ee989e4cee1"
+      },
+      {
+        "bytes": 1682,
+        "path": "workbench/ImageWorker$Raster.class",
+        "sha256": "15a5c507b749e75b5912750b270fd3b41b15005386dca8d5fa7fdf6228cd2a7c"
+      },
+      {
+        "bytes": 541,
+        "path": "workbench/ImageWorker$Refused.class",
+        "sha256": "7913985aafee94ac1f31a12a74df112d795d53b944769787149fc1ac4a6c94c1"
+      },
+      {
+        "bytes": 12291,
+        "path": "workbench/ImageWorker.class",
+        "sha256": "4e4df22eeb362c5fd345966c3e5227742e87cfeef287f212c580e6f13ee8acf8"
+      },
+      {
+        "bytes": 971,
+        "path": "workbench/ParseWorker$1.class",
+        "sha256": "275e3bd7abdadc6750aa4168576812bd09fe9b799d693d8aa82e59c68b941f28"
+      },
+      {
+        "bytes": 399,
+        "path": "workbench/ParseWorker$ArchiveLimit.class",
+        "sha256": "e3b2c801ad3ace725d1f3603d2b4d6b59583ed4d87aecc342f38c6914d57a995"
+      },
+      {
+        "bytes": 1284,
+        "path": "workbench/ParseWorker$BoundedWriter.class",
+        "sha256": "30ff447d5ee91481beed996330c09086118f5453445f8cf8806cf99298264bcf"
+      },
+      {
+        "bytes": 390,
+        "path": "workbench/ParseWorker$TextLimit.class",
+        "sha256": "01710c77f03a5880eda58eab3acb95a0758548687783a2cbae01671f834ea671"
+      },
+      {
+        "bytes": 15857,
+        "path": "workbench/ParseWorker.class",
+        "sha256": "025b37354303a878e8c42880129a3a63688380e268372ce2dc6e112dd7eb1c5e"
+      },
+      {
+        "bytes": 11114,
+        "path": "workbench/PdfRenderPolicy.class",
+        "sha256": "6947f6e6097f90313c4bc630c0f4dbe4d53fd56a910328d007d43267e0cb819d"
+      },
+      {
+        "bytes": 1647,
+        "path": "workbench/PdfRenderWorker$NoFontMapper.class",
+        "sha256": "839f8bd815743c30229701bf81acebddce4845215c2eeb9f80e5d809e452b238"
+      },
+      {
+        "bytes": 557,
+        "path": "workbench/PdfRenderWorker$Refused.class",
+        "sha256": "fdb06c21feaec5a1dd28dbf0d9037023d996eafbd5ee5f6ee497d6a5d74fffb3"
+      },
+      {
+        "bytes": 6814,
+        "path": "workbench/PdfRenderWorker$StrictDrawer.class",
+        "sha256": "e28a6a38befce276f9ddb020704eed9f1e5dd689402287b901d87f050edf2e0a"
+      },
+      {
+        "bytes": 1297,
+        "path": "workbench/PdfRenderWorker$StrictRenderer.class",
+        "sha256": "ca36ad9690e3fad7a531cf5829a1ef6ef39ce723e3196b29cb45b046c2d07a5a"
+      },
+      {
+        "bytes": 14694,
+        "path": "workbench/PdfRenderWorker.class",
+        "sha256": "abbf013880f6169c5638d69aa214dbf7bfbb6597e383db6417abdedc50659b9c"
+      },
+      {
+        "bytes": 12747,
+        "path": "workbench/Protocol.class",
+        "sha256": "75efd1c71f2764df1f01aa2671a72df4e9a4ccaa165974ea9bb16579fe391485"
+      },
+      {
+        "bytes": 10001,
+        "path": "workbench/SearchWorker.class",
+        "sha256": "971e59f8f28a6fdb2706f8889749315c28fbc9ec0e7087a26221b61eff181a93"
+      },
+      {
+        "bytes": 365,
+        "path": "workbench/WindowsJavaProbe$Attempt.class",
+        "sha256": "a030b7a4e1721d54a52da5c7a0a7a7ff06db1dac11e11ea1a4dd542f4ff8f9b3"
+      },
+      {
+        "bytes": 7672,
+        "path": "workbench/WindowsJavaProbe.class",
+        "sha256": "953b6d47ef1627ccc13407ed0a3dfa3dfb55e9c454103906418e9d315f612d45"
+      }
+    ],
+    "production_java_sources": 12,
+    "runtime_dependency_inventory": {
+      "bytes": 12119,
+      "encoding": "JSON sorted object keys, compact separators, ensure_ascii true",
+      "sha256": "4796350f30435a08115cad4f2919f9f3b92e76927fad1dcfed23c67d8ff0d26a"
+    },
+    "runtime_dependency_jars": 95,
+    "search_dependencies": [
+      {
+        "bytes": 84211,
+        "name": "jackson-annotations-2.22.jar",
+        "sha256": "21ddb598807d3a51a876704eb979d9296e1c6a6f47ab1826ff88c6d6a127a2d0"
+      },
+      {
+        "bytes": 594776,
+        "name": "jackson-core-2.22.3.jar",
+        "sha256": "8a501126a385b25841915d839508f8a66e2a0dbc8a6709d055ef3b3e852b094c"
+      },
+      {
+        "bytes": 1709604,
+        "name": "jackson-databind-2.22.3.jar",
+        "sha256": "556db5439e206114346043f68d200497dc96a0bca62a360a81784092ebd0e0a9"
+      },
+      {
+        "bytes": 1757025,
+        "name": "lucene-analysis-common-10.5.1.jar",
+        "sha256": "f710afd91a820987a48f3a215e076715b9237b324cf5458281109ef0d2a17b73"
+      },
+      {
+        "bytes": 4744152,
+        "name": "lucene-core-10.5.1.jar",
+        "sha256": "2b4912cc792f462e8e7b350f7c958f538ee7ec42da4cf4b65902fb9d546bba53"
+      },
+      {
+        "bytes": 333386,
+        "name": "lucene-facet-10.5.1.jar",
+        "sha256": "f47044db3d231a9bf69ab23c6ae04086e2aa93e50722821059c5eed846ea12a3"
+      },
+      {
+        "bytes": 524043,
+        "name": "lucene-queries-10.5.1.jar",
+        "sha256": "6e98e7fd16b951cabe95c4b193e4c50ffd3a5613787d04bd848672c326b309f9"
+      },
+      {
+        "bytes": 426256,
+        "name": "lucene-queryparser-10.5.1.jar",
+        "sha256": "75eddb74abccaf1f3ea5cb1ca2ceff29afb7f564892b50914404720f03d458c4"
+      },
+      {
+        "bytes": 386983,
+        "name": "lucene-sandbox-10.5.1.jar",
+        "sha256": "0c66bc7b779ac7ecf337fdd7373f4ed1652c362da61035bb3f970c321a154693"
+      }
+    ],
+    "whole_jar_bytes_equal": true
+  },
+  "passed": true,
+  "phase": "complete",
+  "preserved_first_failure": {
+    "artifact_id": "188e9827-bac6-47b2-8b6f-86041877f506",
+    "evidence": "docs/search/verification/offline-java-producer-01d4b0d.json",
+    "evidence_commit": "6c467bd894356553fbca60f0d580006be9e50dd1",
+    "failure": "actual_build_plugin_versions_differ",
+    "maven_packages_attempted": 1,
+    "passed": false,
+    "receipt": {
+      "bytes": 27894,
+      "path": "artifacts/java-search-producer/188e9827-bac6-47b2-8b6f-86041877f506/receipt.json",
+      "sha256": "097f01fb0779ea130d628688823d9d7bd9daeea39e50f506d0d8d61d619e1c3b"
+    },
+    "resolution": "Separately reviewed signed guard correction 7be24e5 requires the exact lifecycle and explicit offline skip; one newly approved observation then ran. The original failed receipt remains unchanged.",
+    "second_build_started": false
+  },
+  "producer_final_checks": {
+    "cache_unchanged": true,
+    "source_unchanged": true,
+    "staged_search_unchanged": true,
+    "tool_inputs_unchanged": true
+  },
+  "record_version": 1,
+  "scope": {
+    "both_package_exit_codes": [
+      0,
+      0
+    ],
+    "classfile_target": "Java 21 (65), POM release 21",
+    "compiler": "Temurin JDK 25.0.2+10-LTS, javac in-process Maven compiler",
+    "jdk_release": {
+      "IMPLEMENTOR": "Eclipse Adoptium",
+      "JAVA_RUNTIME_VERSION": "25.0.2+10-LTS",
+      "JAVA_VERSION": "25.0.2",
+      "OS_ARCH": "aarch64",
+      "OS_NAME": "Darwin"
+    },
+    "limits": {
+      "build_seconds_each": 600,
+      "builds": 2,
+      "cache_bytes": 536870912,
+      "cache_entries": 8192,
+      "cache_files": 4096,
+      "input_depth": 20,
+      "input_file_bytes": 268435456,
+      "tool_identity_seconds": 30
+    },
+    "maven": "3.9.11",
+    "maven_packages_attempted": 2,
+    "maven_tests": "skipped",
+    "no_automatic_retry": true,
+    "offline_is_network_sandbox": false,
+    "options": [
+      "--offline",
+      "--batch-mode",
+      "--no-transfer-progress",
+      "--strict-checksums",
+      "-Dmaven.test.skip=true",
+      "-Dmaven.compiler.proc=none",
+      "-Dmaven.compiler.fork=false",
+      "-Dcyclonedx.skip=true",
+      "-Dproject.build.outputTimestamp=2020-01-01T00:00:00Z"
+    ],
+    "runtime_staging": "unchanged",
+    "settings": {
+      "bytes": 59,
+      "sha256": "05204bd36a3ad4bcb454ab04f61684accf2de5f73606a4bba23f862b5a6dbecb"
+    },
+    "toolchains": {
+      "bytes": 63,
+      "sha256": "02afd33de0a42b1a4a8dbff2cc886cb57cf992f340e7ad6c3a4bed0b1efd6679"
+    },
+    "worker_execution": "not_run"
+  },
+  "selected_build_plugins": [
+    {
+      "artifact": "org.apache.maven.plugins:maven-resources-plugin:3.3.1",
+      "bytes": 30951,
+      "sha256": "eb4069c7fe50a313b3f5295ccd214f30402f63971c26f443f7f3e798be8cc2a7"
+    },
+    {
+      "artifact": "org.apache.maven.plugins:maven-compiler-plugin:3.14.1",
+      "bytes": 83593,
+      "sha256": "85bc857c3bf91c87b65dfc15235154eb83b8f4539f0afbc7e6c93eb4a0bcdd38"
+    },
+    {
+      "artifact": "org.apache.maven.plugins:maven-surefire-plugin:3.5.4",
+      "bytes": 46075,
+      "sha256": "d25d73f73b70bfc85dcf949c9c58eaa9ecf79709dd8be19d6f92d72b8720dd61"
+    },
+    {
+      "artifact": "org.apache.maven.plugins:maven-jar-plugin:3.4.1",
+      "bytes": 33771,
+      "sha256": "25e0a5b55b872d95e3a09a5d825bc1061f5ce25ee81f147e623405d8ebedfa5f"
+    },
+    {
+      "artifact": "org.apache.maven.plugins:maven-dependency-plugin:3.8.1",
+      "bytes": 207950,
+      "sha256": "9fc3d435085983b16bc53903f9413aede9de30e20c57c0cece94614f328b14b5"
+    },
+    {
+      "artifact": "org.cyclonedx:cyclonedx-maven-plugin:2.9.1",
+      "bytes": 51839,
+      "sha256": "698e0f37184a5b28c245c4065fd036dfce253b52f82fbb7113d81d36326cc249"
+    }
+  ],
+  "source": {
+    "allowed_signers_sha256": "5059083df7c2bbba0a4d1791ded8c8ce8c28e4469581c4a773c391b2bc14dd6e",
+    "inputs_sha256": "27811a5fc1901391dd7b6441c265c97f8496e733c91891b6350f405d4585eead",
+    "lockfile_sha256": "63835ff9d6f33cb0b00fefcd586a40272dae2ff147b428e08d7cb52c96d45069",
+    "producer_files": [
+      {
+        "bytes": 15396,
+        "path": "scripts/build_java_search.py",
+        "sha256": "8658555021cde0de0aa2607d1be6ac99fe96273e06987d5cbc4dc792d9baed77"
+      },
+      {
+        "bytes": 6519,
+        "path": "scripts/java_build_inputs.py",
+        "sha256": "8a20bf09c6083536e9da773c34c6a334f920377150aee0401ee9742d759484c7"
+      },
+      {
+        "bytes": 11796,
+        "path": "scripts/tests/test_java_search_producer.py",
+        "sha256": "e2e3e54eb297363611a4a4ff38ab3cb33aaf6f844a4a92a6b554118cb4d87fc4"
+      },
+      {
+        "bytes": 6355,
+        "path": "docs/search/OFFLINE-JAVA-PRODUCER.md",
+        "sha256": "49f65aace7df02cb0609eab320e0230ff24b6c5d3a4b7c052240e6d79ca86713"
+      }
+    ],
+    "revision": "6c467bd894356553fbca60f0d580006be9e50dd1",
+    "runner_sha256": "8658555021cde0de0aa2607d1be6ac99fe96273e06987d5cbc4dc792d9baed77",
+    "shared_source_reader_sha256": "d28a992bfd94a83099fe98eee47bc3f963cde90b39f79cdbad2826f1808f3f86",
+    "signature_verified": true,
+    "tree": "7ea5cc3e84e105a38cadbeeaa554b69fb7f3d080"
+  },
+  "staged_comparison": {
+    "historical_staged_worker_producer_provenance": "unresolved; unequal whole bytes, no relabelling of existing native Search evidence",
+    "search_dependencies_equal": true,
+    "worker": {
+      "bytes": 9930,
+      "sha256": "17185efac0a1b6f0c4590ba5026bf9244920a96eec2a1367ce94b8a10ff1f82e"
+    },
+    "worker_byte_equal": false
+  },
+  "validation": {
+    "no_java_tests_or_native_search": true,
+    "producer_source_tests_normal": 11,
+    "producer_source_tests_optimized": 11,
+    "scope": "Focused portable command/receipt and POSIX no-follow/private-file synthetic tests; exact log/header guard refusal cases and first-failure stop. Prior evidence binds test logs to reviewed source."
+  }
+}

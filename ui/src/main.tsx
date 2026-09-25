@@ -1,11 +1,41 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { command } from "./api";
-import type { Response, Transaction, Evidence, Anchor } from "./types";
+import { useEvidenceSearch } from "./evidence-search";
+import { downloadExport } from "./download";
+import type {
+  DesktopSummaryResponse,
+  ReviewState,
+  Transaction,
+  Evidence,
+  Anchor,
+} from "./types";
 import { Graph, LocalMap, TotalsChart } from "./Visuals";
+import { AssessmentWorkbench } from "./AssessmentWorkbench";
+import { DocxCapture } from "./docx-capture";
+import { CollectionHistory } from "./CollectionReview";
+import { DurableCollection } from "./DurableCollection";
+import { DurableCollectionSession } from "./durable-collection-session";
+import { DocumentJobs } from "./DocumentJobs";
 import { Dialog } from "./Dialog";
+import { TransactionLedger } from "./TransactionLedger";
+import { TransactionReview } from "./TransactionReview";
+import type {
+  LedgerScope,
+  TransactionSelection,
+} from "./transaction-ledger-types";
+import {
+  readDesktopSummary,
+  isBackupResult,
+  retainNewestSummary,
+} from "./desktop-summary";
 import { EntityWorkbench } from "./EntityWorkbench";
+import { AccountFlows } from "./AccountFlows";
+import { TransactionComparison } from "./TransactionComparison";
+import { TransactionPatterns } from "./TransactionPatterns";
+import { StatementImport, type StatementFile } from "./StatementImport";
 import { SourceContent } from "./SourceContent";
+import "./tokens.css";
 import "./style.css";
 import "./accessibility.css";
 const sections = [
@@ -20,15 +50,15 @@ const sections = [
 ] as const;
 type Section = (typeof sections)[number];
 function App() {
-  const [data, setData] = useState<Response | null>(null),
+  const [data, setData] = useState<DesktopSummaryResponse | null>(null),
     [section, setSection] = useState<Section>("Overview"),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false);
   const [query, setQuery] = useState(""),
-    [reviewFilter, setReviewFilter] = useState("all"),
-    [currency, setCurrency] = useState("all"),
-    [selected, setSelected] = useState<Transaction | null>(null),
+    [reviewFilter, setReviewFilter] = useState<ReviewState | null>(null),
+    [currency, setCurrency] = useState<string | null>(null),
+    [selected, setSelected] = useState<TransactionSelection | null>(null),
     [evidence, updateEvidence] = useState<Evidence | null>(null);
   const [sourceAnchor, setSourceAnchor] = useState<Anchor | undefined>(
     undefined,
@@ -37,135 +67,137 @@ function App() {
     updateEvidence(item);
     setSourceAnchor(anchor);
   };
-  const [why, setWhy] = useState(""),
-    [corrected, setCorrected] = useState(""),
-    [transfer, setTransfer] = useState(""),
-    [entityId, setEntityId] = useState(""),
-    [seeds, setSeeds] = useState("https://example.com/"),
-    [previewed, setPreviewed] = useState(false);
-  const [findingTitle, setFindingTitle] = useState(""),
-    [assessment, setAssessment] = useState(""),
-    [limitation, setLimitation] = useState(""),
-    [citation, setCitation] = useState("");
-  const [searchHits, setSearchHits] = useState<
-    { id: string; name: string; score: number }[] | null
-  >(null);
-  const upload = useRef<HTMLInputElement>(null);
-  const searchCorpus = async () => {
-    setBusy(true);
-    setError("");
-    try {
-      const result = await command<{
-        hits: { id: string; name: string; score: number }[];
-      }>({ action: "search", query });
-      setSearchHits(result.hits);
-    } catch (e) {
-      setError(String(e));
-    } finally {
-      setBusy(false);
-    }
-  };
-  const run = useCallback(async (action: Record<string, unknown>) => {
-    setBusy(true);
-    setError("");
-    setNotice("");
-    try {
-      const response = await command<Response>(action);
-      if (response.workspace) setData(response);
-      else
-        setNotice(
-          "Recoverable backup saved in the workspace backups directory.",
-        );
-      return true;
-    } catch (e) {
-      setError(String(e));
-      return false;
-    } finally {
-      setBusy(false);
-    }
+  const [ledgerPivot, setLedgerPivot] = useState(0);
+  const [ledgerScope, setLedgerScope] = useState<LedgerScope | null>(null);
+  const [visibleTransactionIds, setVisibleTransactionIds] = useState<string[]>(
+    [],
+  );
+  const [entityId, setEntityId] = useState("");
+  const [collectionSession] = useState(() => new DurableCollectionSession());
+  const w = data?.workspace,
+    a = data?.analysis;
+  const indexSearch = useEvidenceSearch(
+    section === "Evidence",
+    query,
+    w?.revision,
+    w?.evidence ?? [],
+  );
+  const visibleError = error || indexSearch.error;
+  const pendingDocumentRequests = useRef(new Map<string, string>());
+  const [docxCapture] = useState(() => new DocxCapture());
+  const workspaceAction = useRef(false);
+  const publishSummary = useCallback((value: unknown) => {
+    const next = readDesktopSummary(value);
+    setData((current) => retainNewestSummary(current, next));
   }, []);
+  const upload = useRef<HTMLInputElement>(null);
+  const [statementFile, setStatementFile] = useState<StatementFile | null>(
+    null,
+  );
+  const run = useCallback(
+    async (action: Record<string, unknown>) => {
+      if (workspaceAction.current) return false;
+      workspaceAction.current = true;
+      setBusy(true);
+      setError("");
+      setNotice("");
+      try {
+        const response = await command<unknown>(action);
+        if (action.action === "backup") {
+          if (!isBackupResult(response))
+            throw new Error(
+              "Invalid backup response; success was not confirmed.",
+            );
+          setNotice(
+            "Recoverable backup saved in the workspace backups directory.",
+          );
+        } else publishSummary(response);
+        return true;
+      } catch (e) {
+        setError(String(e));
+        return false;
+      } finally {
+        workspaceAction.current = false;
+        setBusy(false);
+      }
+    },
+    [publishSummary],
+  );
   useEffect(() => {
     void run({ action: "view" });
   }, [run]);
   const navigate = (s: Section) => {
+    setSelected(null);
     setSection(s);
     setQuery("");
-    setSearchHits(null);
+    indexSearch.invalidate();
   };
-  const inspectTransaction = (t: Transaction) => {
-    setSelected(t);
-    setWhy("");
-    setCorrected(t.amount);
-    setTransfer("");
+  const inspectTransaction = (row: Transaction, revision: number) => {
+    setSelected({ row, revision });
   };
+  const applyLedgerScope = useCallback(
+    (scope: LedgerScope, visibleIds: string[]) => {
+      setLedgerScope(scope);
+      setVisibleTransactionIds(visibleIds);
+      setCurrency(scope.filter.currency);
+      setReviewFilter(scope.filter.review);
+    },
+    [],
+  );
   const selectEntity = useCallback((id: string) => {
     setEntityId(id);
     setSection("Entities");
   }, []);
   const selectCurrency = useCallback((c: string) => {
     setCurrency(c);
+    setLedgerPivot((value) => value + 1);
     setSection("Transactions");
   }, []);
-  const download = (content: string, name: string, type: string) => {
-    const url = URL.createObjectURL(new Blob([content], { type }));
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  };
-  const w = data?.workspace,
-    a = data?.analysis;
-  const act = async (action: Record<string, unknown>) => {
-    const ok = await run({ ...action, expected_revision: w?.revision });
-    if (ok) {
-      setSelected(null);
-      setWhy("");
-    }
+  const download = async (content: string, name: string, type: string) => {
+    setNotice("");
+    const saved = await downloadExport(content, name, type);
+    if (saved) setNotice(`Saved export: ${saved}`);
   };
   const uploadFile = async (file: File) => {
     if (file.size > 16 * 1024 * 1024) {
       setError("Import limit is 16 MiB per file.");
       return;
     }
-    await run({
-      action: "import",
-      name: file.name,
-      bytes: Array.from(new Uint8Array(await file.arrayBuffer())),
-    });
+    const bytes = Array.from(new Uint8Array(await file.arrayBuffer()));
+    if (/\.(csv|tsv)$/i.test(file.name)) {
+      setSelected(null);
+      setStatementFile({ name: file.name, bytes });
+      return;
+    }
+    await run({ action: "import", name: file.name, bytes });
     setSection("Evidence");
   };
-  const transactions =
-    w?.transactions.filter(
-      (t) =>
-        (reviewFilter === "all" || t.review === reviewFilter) &&
-        (currency === "all" || t.currency === currency) &&
-        `${t.description} ${t.account} ${t.date}`
-          .toLowerCase()
-          .includes(query.toLowerCase()),
-    ) ?? [];
   const evidenceList =
+    indexSearch.rows ??
     w?.evidence.filter((e) =>
-      searchHits
-        ? searchHits.some((h) => h.id === e.id)
-        : `${e.name} ${e.text ?? ""}`
-            .toLowerCase()
-            .includes(query.toLowerCase()),
-    ) ?? [];
+      `${e.name} ${e.text ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+    ) ??
+    [];
   return (
-    <div className="shell">
+    <div
+      className={`shell${selected && section === "Transactions" ? " review-open" : ""}`}
+      onClickCapture={(event) => {
+        // WebKit does not focus buttons on pointer/AX activation. Establish the
+        // real opener before mounting a dialog so source review can return to it.
+        if (event.target instanceof Element)
+          event.target
+            .closest<HTMLButtonElement>("button")
+            ?.focus({ preventScroll: true });
+      }}
+    >
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-symbol">
-            e<span>·</span>
-          </span>
           <div>
-            ENTITY
-            <br />
-            <strong>WORKBENCH</strong>
+            <strong>Entity Workbench</strong>
+            <span className="brand-caption">EVIDENCE WORKSPACE</span>
           </div>
         </div>
-        <div className="workspace-label">INVESTIGATION WORKSPACE</div>
+        <div className="workspace-label">ACTIVE WORKSPACE</div>
         <div className="case-name">
           Local workspace <span>LOCAL</span>
         </div>
@@ -174,13 +206,16 @@ function App() {
             <button
               key={s}
               className={section === s ? "active" : ""}
+              aria-current={section === s ? "page" : undefined}
               onClick={() => navigate(s)}
             >
               <span className="nav-index">
                 {String(i + 1).padStart(2, "0")}
               </span>
               {s}
-              {s === "Transactions" && a && <small>{a.pending}</small>}
+              {s === "Transactions" && a && (
+                <small>{a.review_counts.pending}</small>
+              )}
             </button>
           ))}
         </nav>
@@ -226,17 +261,18 @@ function App() {
         <main>
           <div className="page-heading">
             <div>
-              <p className="eyebrow">EVIDENCE → UNDERSTANDING</p>
+              <p className="eyebrow">
+                WORKSPACE /{" "}
+                {String(sections.indexOf(section) + 1).padStart(2, "0")}
+              </p>
               <h1>
-                {section === "Overview"
-                  ? "An investigation, connected."
-                  : section}
+                {section === "Overview" ? "Investigation overview" : section}
               </h1>
               <p className="subtitle">
                 {
                   {
                     Overview:
-                      "Follow the evidence. Keep every conclusion traceable.",
+                      "Open questions, preserved sources and outstanding review decisions.",
                     Evidence:
                       "Preserved originals, reviewable derivatives and source anchors.",
                     Entities:
@@ -261,9 +297,9 @@ function App() {
                 : "LOCAL WORKSPACE"}
             </span>
           </div>
-          {error && (
+          {visibleError && (
             <div className="alert error" role="alert">
-              {error}
+              {visibleError}
             </div>
           )}
           {notice && (
@@ -293,7 +329,7 @@ function App() {
           )}
           {w && a && (
             <>
-              {w.entities.length === 0 && (
+              {w.revision === 0 && (
                 <div className="welcome">
                   <div>
                     <h2>Start with a reviewable example</h2>
@@ -326,7 +362,7 @@ function App() {
                     />
                     <Stat
                       label="Transactions to review"
-                      value={a.pending}
+                      value={a.review_counts.pending}
                       detail="Exact decimals, by currency"
                     />
                     <Stat
@@ -366,8 +402,8 @@ function App() {
                       <div className="panel-heading">
                         <h2>Review priorities</h2>
                         <span className="count">
-                          {a.balance_checks.filter((c) => !c.reconciled)
-                            .length + a.duplicate_candidates}
+                          {a.balance_discrepancy_count +
+                            a.duplicate_candidate_row_count}
                         </span>
                       </div>
                       <button
@@ -378,12 +414,9 @@ function App() {
                         <div>
                           <h3>Statement reconciliation</h3>
                           <p>
-                            {
-                              a.balance_checks.filter((c) => !c.reconciled)
-                                .length
-                            }{" "}
-                            balance discrepancies · {a.duplicate_candidates}{" "}
-                            possible duplicate rows
+                            {a.balance_discrepancy_count} balance discrepancies
+                            · {a.duplicate_candidate_row_count} possible
+                            duplicate rows
                           </p>
                         </div>
                         <span>↗</span>
@@ -394,9 +427,9 @@ function App() {
                       >
                         <span className="priority-mark">≋</span>
                         <div>
-                          <h3>Namesake comparison</h3>
+                          <h3>Identity review</h3>
                           <p>
-                            Conflicting birth years remain separate observations
+                            {w.entities.length} entities · {w.observations.length} source observations
                           </p>
                         </div>
                         <span>↗</span>
@@ -407,8 +440,8 @@ function App() {
                       >
                         <span className="priority-mark">⌖</span>
                         <div>
-                          <h3>Branch ambiguity</h3>
-                          <p>No location selected by proximity</p>
+                          <h3>Merchant locations</h3>
+                          <p>{w.locations.length} candidates · {w.locations.filter((location) => location.review === "pending").length} pending review</p>
                         </div>
                         <span>↗</span>
                       </button>
@@ -433,39 +466,55 @@ function App() {
                 </>
               )}
               {section === "Evidence" && (
-                <section className="panel">
-                  <div className="toolbar">
-                    <input
-                      aria-label="Search evidence"
-                      placeholder="Search terms, phrase or Lucene query…"
-                      value={query}
-                      onChange={(e) => {
-                        setQuery(e.target.value);
-                        setSearchHits(null);
-                      }}
+                <>
+                  <section className="panel">
+                    <div className="toolbar">
+                      <input
+                        aria-label="Search evidence"
+                        placeholder="Search terms, phrase or Lucene query…"
+                        value={query}
+                        onChange={(e) => {
+                          setQuery(e.target.value);
+                          indexSearch.invalidate();
+                        }}
+                      />
+                      <button
+                        className="button"
+                        disabled={busy || indexSearch.pending || !query}
+                        onClick={() => {
+                          setError("");
+                          void indexSearch.search();
+                        }}
+                      >
+                        Search local index
+                      </button>
+                      <span>{evidenceList.length} source items</span>
+                    </div>
+                    <p className="muted">
+                      Type to filter extracted text, or search the local Lucene
+                      index with Boolean, phrase, proximity, fuzzy and fielded
+                      queries. The packaged macOS development build includes the
+                      local search runtime.
+                    </p>
+                    <EvidenceRows
+                      evidence={evidenceList}
+                      onOpen={setEvidence}
                     />
-                    <button
-                      className="button"
-                      disabled={busy || !query}
-                      onClick={() => void searchCorpus()}
-                    >
-                      Search local index
-                    </button>
-                    <span>{evidenceList.length} source items</span>
-                  </div>
-                  <p className="muted">
-                    Type to filter extracted text, or search the local Lucene
-                    index with Boolean, phrase, proximity, fuzzy and fielded
-                    queries. The packaged macOS development build includes the
-                    local search runtime.
-                  </p>
-                  <EvidenceRows evidence={evidenceList} onOpen={setEvidence} />
-                  <p className="context-note">
-                    UTF-8 text and the documented transaction CSV profile are
-                    active. Other formats are preserved and labelled unsupported
-                    until isolated parsing workers are available.
-                  </p>
-                </section>
+                    <p className="context-note">
+                      UTF-8 text and mapped CSV/TSV statements are active.
+                      Statement imports are previewed locally before
+                      publication. Originals are retained separately. Document
+                      jobs publish unreviewed derivatives with explicit parser
+                      status and limitations.
+                    </p>
+                  </section>
+                  <DocumentJobs
+                    requestKeys={pendingDocumentRequests.current}
+                    evidence={w.evidence}
+                    busy={busy}
+                    onRefresh={() => run({ action: "view" })}
+                  />
+                </>
               )}
               {section === "Entities" && (
                 <EntityWorkbench
@@ -486,7 +535,7 @@ function App() {
                           key={t.currency}
                           label={`${t.currency} reviewed net`}
                           value={t.net}
-                          detail={`${t.transaction_ids.length} included · ${t.excluded_transfer_ids.length} matched transfer rows excluded`}
+                          detail={`${t.included_count} included · ${t.excluded_transfer_count} matched transfer rows excluded`}
                         />
                       ))
                     ) : (
@@ -498,138 +547,41 @@ function App() {
                     )}
                     <Stat
                       label="Pending review"
-                      value={a.pending}
+                      value={a.review_counts.pending}
                       detail="Excluded from reviewed totals"
                     />
                     <Stat
                       label="Balance discrepancies"
-                      value={
-                        a.balance_checks.filter((c) => !c.reconciled).length
-                      }
+                      value={a.balance_discrepancy_count}
                       detail="Compared in source row order"
                     />
                   </div>
-                  <section className="panel">
-                    <div className="toolbar">
-                      <input
-                        aria-label="Filter transactions"
-                        placeholder="Description, account or date…"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                      />
-                      <select
-                        aria-label="Review filter"
-                        value={reviewFilter}
-                        onChange={(e) => setReviewFilter(e.target.value)}
-                      >
-                        {[
-                          "all",
-                          "pending",
-                          "accepted",
-                          "rejected",
-                          "deferred",
-                        ].map((v) => (
-                          <option key={v}>{v}</option>
-                        ))}
-                      </select>
-                      <select
-                        aria-label="Currency filter"
-                        value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
-                      >
-                        {[
-                          "all",
-                          ...new Set(w.transactions.map((t) => t.currency)),
-                        ].map((v) => (
-                          <option key={v}>{v}</option>
-                        ))}
-                      </select>
-                      <button
-                        className="button subtle"
-                        onClick={() =>
-                          download(
-                            JSON.stringify(transactions, null, 2),
-                            "transactions.json",
-                            "application/json",
-                          )
-                        }
-                      >
-                        Export JSON
-                      </button>
-                    </div>
-                    <div className="table-scroll">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Original description</th>
-                            <th>Account</th>
-                            <th className="numeric">Amount</th>
-                            <th>Checks</th>
-                            <th>Review</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {transactions.map((t) => (
-                            <tr
-                              key={t.id}
-                              onClick={() => inspectTransaction(t)}
-                            >
-                              <td>{t.date}</td>
-                              <td>
-                                <button
-                                  className="cell-button"
-                                  onClick={() => inspectTransaction(t)}
-                                >
-                                  {t.description}
-                                </button>
-                                <small>
-                                  {t.posting_date
-                                    ? `Posted ${t.posting_date}`
-                                    : ""}
-                                </small>
-                              </td>
-                              <td>
-                                <code>{t.account}</code>
-                              </td>
-                              <td className="numeric">
-                                <strong>{t.amount}</strong>
-                                <small>{t.currency}</small>
-                              </td>
-                              <td>
-                                {t.duplicate_candidates.length > 0 && (
-                                  <span className="pill warning">
-                                    Possible duplicate
-                                  </span>
-                                )}
-                                {a.balance_checks.some(
-                                  (c) =>
-                                    c.transaction_id === t.id && !c.reconciled,
-                                ) && (
-                                  <span className="pill warning">
-                                    Balance mismatch
-                                  </span>
-                                )}
-                                {t.transfer_peer && (
-                                  <span className="pill">Matched transfer</span>
-                                )}
-                              </td>
-                              <td>
-                                <span className={`pill ${t.review}`}>
-                                  {t.review}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <p className="context-note">
-                      Repeated purchases are retained. No currency conversion is
-                      performed. Select a row to inspect its source, review it
-                      or propose a correction.
-                    </p>
-                  </section>
+                  <TransactionLedger
+                    revision={w.revision}
+                    currency={currency}
+                    review={reviewFilter}
+                    pivot={ledgerPivot}
+                    selectedId={selected?.row.id}
+                    onInspect={inspectTransaction}
+                    onScope={applyLedgerScope}
+                    onRefresh={() => run({ action: "view" })}
+                    download={download}
+                  />
+                  <AccountFlows
+                    revision={w.revision}
+                    onInspect={inspectTransaction}
+                    onRefresh={() => run({ action: "view" })}
+                  />
+                  <TransactionComparison
+                    workspace={w}
+                    onInspect={inspectTransaction}
+                    onRefresh={() => run({ action: "view" })}
+                  />
+                  <TransactionPatterns
+                    workspace={w}
+                    onInspect={inspectTransaction}
+                    onRefresh={() => run({ action: "view" })}
+                  />
                   {a.totals.length > 0 && (
                     <section className="panel">
                       <h2>Reviewed flow by currency</h2>
@@ -711,113 +663,18 @@ function App() {
               )}
               {section === "Discovery" && (
                 <>
-                  <section className="panel">
-                    <h2>Direct public-web collection</h2>
-                    <p>
-                      The selected URLs and normal connection metadata are
-                      disclosed to those websites. Page links are followed only
-                      on the selected hosts. No local case contents or search
-                      terms are sent to a search provider.
-                    </p>
-                    <label>
-                      Seed URLs, one per line
-                      <textarea
-                        aria-label="Seed URLs"
-                        value={seeds}
-                        onChange={(e) => {
-                          setSeeds(e.target.value);
-                          setPreviewed(false);
-                        }}
-                      />
-                    </label>
-                    <div className="scope-grid">
-                      <div>
-                        <strong>2 hops</strong>
-                        <span>Maximum expansion</span>
-                      </div>
-                      <div>
-                        <strong>50 requests</strong>
-                        <span>Including robots and redirects</span>
-                      </div>
-                      <div>
-                        <strong>10 minutes</strong>
-                        <span>Maximum duration</span>
-                      </div>
-                    </div>
-                    <div className="actions">
-                      <button
-                        className="button"
-                        disabled={busy}
-                        onClick={() => {
-                          setPreviewed(true);
-                        }}
-                      >
-                        Preview disclosure
-                      </button>
-                      {previewed && (
-                        <button
-                          className="button primary"
-                          disabled={busy}
-                          onClick={() =>
-                            void run({
-                              action: "collect_web",
-                              urls: seeds
-                                .split("\n")
-                                .map((s) => s.trim())
-                                .filter(Boolean),
-                              max_hops: 2,
-                              max_requests: 50,
-                              max_seconds: 600,
-                            })
-                          }
-                        >
-                          Collect selected websites
-                        </button>
-                      )}
-                    </div>
-                    {previewed && (
-                      <div className="disclosure">
-                        <h3>Requests will be sent to</h3>
-                        {seeds
-                          .split("\n")
-                          .filter(Boolean)
-                          .map((url, i) => (
-                            <code key={i}>
-                              {url}
-                              <br />
-                            </code>
-                          ))}
-                        <p>
-                          Collection honours robots rules, requires HTTPS and
-                          stops at the first exhausted limit. Private, local and
-                          special-use addresses are rejected. Public access and
-                          robots permission do not grant republication rights.
-                        </p>
-                      </div>
-                    )}
-                  </section>
-                  <section className="panel">
-                    <h2>Collection history</h2>
-                    {w.jobs.length === 0 ? (
-                      <p className="muted">
-                        No collection jobs have run. Local indexing requires
-                        collected or imported sources.
-                      </p>
-                    ) : (
-                      w.jobs.map((j) => (
-                        <article className="list-card" key={j.id}>
-                          <span className="pill">
-                            {j.state.replaceAll("_", " ")}
-                          </span>
-                          <h3>{j.queries.join(", ")}</h3>
-                          <p>{j.detail}</p>
-                          <small>
-                            {j.requests_used} / {j.max_requests} requests
-                          </small>
-                        </article>
-                      ))
-                    )}
-                  </section>
+                  <DurableCollection
+                    revision={w.revision}
+                    busy={busy}
+                    session={collectionSession}
+                    evidence={w.evidence}
+                    refresh={() => run({ action: "view" })}
+                  />
+                  <CollectionHistory
+                    workspace={w}
+                    busy={busy}
+                    onRefresh={() => run({ action: "view" })}
+                  />
                   <div className="alert">
                     Search coverage is limited to the local corpus. Broad
                     open-web coverage has not been demonstrated; no third-party
@@ -826,144 +683,15 @@ function App() {
                 </>
               )}
               {section === "Assessment" && (
-                <>
-                  <section className="panel">
-                    <div className="panel-heading">
-                      <h2>Findings</h2>
-                      <button
-                        className="button primary"
-                        disabled={busy}
-                        onClick={() => void run({ action: "save_report" })}
-                      >
-                        Save report snapshot
-                      </button>
-                    </div>
-                    {w.findings.map((f) => (
-                      <article className="finding" key={f.id}>
-                        <span
-                          className={`pill ${f.needs_review ? "warning" : "accepted"}`}
-                        >
-                          {f.needs_review ? "Review required" : "Current"}
-                        </span>
-                        <h3>{f.title}</h3>
-                        <p>{f.assessment}</p>
-                        <p className="muted">{f.limitations}</p>
-                        <div className="actions">
-                          {f.supporting_ids.map((key) => (
-                            <button
-                              className="text-button"
-                              key={key}
-                              onClick={() => {
-                                const t = w.transactions.find(
-                                  (t) => t.id === key,
-                                );
-                                if (t) inspectTransaction(t);
-                                else
-                                  setEvidence(
-                                    w.evidence.find((e) => e.id === key) ??
-                                      null,
-                                  );
-                              }}
-                            >
-                              Supporting source ↗
-                            </button>
-                          ))}
-                        </div>
-                      </article>
-                    ))}
-                  </section>
-                  <section className="panel">
-                    <h2>Add a cited finding</h2>
-                    <div className="form-grid">
-                      <label>
-                        Title
-                        <input
-                          value={findingTitle}
-                          onChange={(e) => setFindingTitle(e.target.value)}
-                        />
-                      </label>
-                      <label>
-                        Supporting evidence
-                        <select
-                          value={citation}
-                          onChange={(e) => setCitation(e.target.value)}
-                        >
-                          <option value="">Choose a source</option>
-                          {w.evidence.map((e) => (
-                            <option value={e.id} key={e.id}>
-                              {e.name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-                    <label>
-                      Assessment
-                      <textarea
-                        value={assessment}
-                        onChange={(e) => setAssessment(e.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Limitations and outstanding enquiries
-                      <textarea
-                        value={limitation}
-                        onChange={(e) => setLimitation(e.target.value)}
-                      />
-                    </label>
-                    <button
-                      className="button"
-                      disabled={
-                        busy ||
-                        !findingTitle ||
-                        !assessment ||
-                        !citation ||
-                        !limitation
-                      }
-                      onClick={() =>
-                        void act({
-                          action: "add_finding",
-                          title: findingTitle,
-                          assessment,
-                          supporting_ids: [citation],
-                          contradicting_ids: [],
-                          limitations: limitation,
-                        })
-                      }
-                    >
-                      Save finding
-                    </button>
-                  </section>
-                  <section className="panel">
-                    <h2>Immutable report snapshots</h2>
-                    {w.reports.map((r) => (
-                      <article className="list-card" key={r.id}>
-                        <span className="pill">REV {r.workspace_revision}</span>
-                        <h3>{new Date(r.created_at).toLocaleString()}</h3>
-                        <p>
-                          <code>{r.sha256}</code>
-                        </p>
-                        <button
-                          className="button"
-                          onClick={() =>
-                            download(
-                              r.html,
-                              `assessment-${r.id}.html`,
-                              "text/html",
-                            )
-                          }
-                        >
-                          Export self-contained HTML
-                        </button>
-                      </article>
-                    ))}
-                    <p className="context-note">
-                      Corrections flag current findings for review. Previous
-                      snapshots remain unchanged. Editable DOCX export is a
-                      remaining release gate.
-                    </p>
-                  </section>
-                </>
+                <AssessmentWorkbench
+                  workspace={w}
+                  busy={busy}
+                  error={error}
+                  run={run}
+                  onSource={setEvidence}
+                  download={download}
+                  docxCapture={docxCapture}
+                />
               )}
             </>
           )}
@@ -975,139 +703,40 @@ function App() {
         </main>
       </div>
       {selected && w && (
-        <Dialog label="Transaction review" onClose={() => setSelected(null)}>
-          <button
-            className="close"
-            aria-label="Close review"
-            onClick={() => setSelected(null)}
-          >
-            ×
-          </button>
-          <p className="eyebrow">
-            TRANSACTION REVIEW · VERSION {selected.version}
-          </p>
-          <h2>{selected.description}</h2>
-          <div className="amount-large">
-            {selected.amount} <span>{selected.currency}</span>
-          </div>
-          <p>
-            {selected.date} · {selected.account} · {selected.review}
-          </p>
-          <div className="disclosure">
-            <strong>Source anchor</strong>
-            <p>
-              {selected.anchor.sheet}, row {selected.anchor.row}, column{" "}
-              {selected.anchor.column}
-            </p>
-            <button
-              className="text-button"
-              onClick={() =>
-                setEvidence(
-                  w.evidence.find(
-                    (e) => e.id === selected.anchor.evidence_id,
-                  ) ?? null,
-                )
-              }
-            >
-              Inspect preserved source ↗
-            </button>
-          </div>
-          <label>
-            Decision reason
-            <input
-              aria-label="Transaction decision reason"
-              value={why}
-              onChange={(e) => setWhy(e.target.value)}
-            />
-          </label>
-          <div className="actions">
-            {(["accepted", "rejected", "deferred"] as const).map((state) => (
-              <button
-                className={`button ${state === "accepted" ? "primary" : ""}`}
-                key={state}
-                disabled={busy || !why || !!selected.transfer_peer}
-                onClick={() =>
-                  void act({
-                    action: "review_transaction",
-                    id: selected.id,
-                    state,
-                    reason: why,
-                  })
-                }
-              >
-                {state === "accepted"
-                  ? "Accept"
-                  : state === "rejected"
-                    ? "Reject"
-                    : "Defer"}
-              </button>
-            ))}
-          </div>
-          <hr />
-          <label>
-            Corrected amount
-            <input
-              aria-label="Corrected amount"
-              value={corrected}
-              onChange={(e) => setCorrected(e.target.value)}
-            />
-          </label>
-          <button
-            className="button"
-            disabled={busy || !why || corrected === selected.amount}
-            onClick={() =>
-              void act({
-                action: "correct_transaction",
-                id: selected.id,
-                amount: corrected,
-                reason: why,
-              })
-            }
-          >
-            Save correction for review
-          </button>
-          <p className="muted">
-            Original evidence stays intact. A correction returns the transaction
-            to pending review and invalidates dependent findings.
-          </p>
-          <hr />
-          <label>
-            Internal transfer counterpart
-            <select
-              aria-label="Transfer counterpart"
-              value={transfer}
-              onChange={(e) => setTransfer(e.target.value)}
-            >
-              <option value="">Select a reviewed transaction</option>
-              {w.transactions
-                .filter(
-                  (t) =>
-                    t.id !== selected.id &&
-                    t.account !== selected.account &&
-                    t.review === "accepted",
-                )
-                .map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.account} · {t.description} · {t.amount} {t.currency}
-                  </option>
-                ))}
-            </select>
-          </label>
-          <button
-            className="button"
-            disabled={busy || !why || !transfer}
-            onClick={() =>
-              void act({
-                action: "match_transfer",
-                first: selected.id,
-                second: transfer,
-                reason: why,
-              })
-            }
-          >
-            Match internal transfer
-          </button>
-        </Dialog>
+        <TransactionReview
+          key={
+            selected.row.id +
+            ":" +
+            selected.row.version +
+            ":" +
+            selected.revision
+          }
+          selection={selected}
+          currentRevision={w.revision}
+          scope={ledgerScope}
+          visibleIds={visibleTransactionIds}
+          evidence={w.evidence}
+          busy={busy}
+          run={run}
+          onSource={setEvidence}
+          close={() => {
+            // A late mutation may close only the review that submitted it.
+            setSelected((current) => (current === selected ? null : current));
+          }}
+        />
+      )}
+      {statementFile && w && (
+        <StatementImport
+          file={statementFile}
+          profiles={w.statement_profiles}
+          onClose={() => setStatementFile(null)}
+          onImported={(response, count) => {
+            publishSummary(response);
+            setStatementFile(null);
+            setSection("Transactions");
+            setNotice(`Imported ${count} transactions as pending review.`);
+          }}
+        />
       )}
       {evidence && (
         <Dialog label="Evidence source" wide onClose={() => setEvidence(null)}>
@@ -1122,7 +751,9 @@ function App() {
           <h2>{evidence.name}</h2>
           <p className="hash">SHA-256 {evidence.sha256}</p>
           <span className="pill">
-            {evidence.extraction_status.replaceAll("_", " ")}
+            {evidence.extraction_status === "unsupported_in_development_build"
+              ? "Legacy import · not yet processed"
+              : evidence.extraction_status.replaceAll("_", " ")}
           </span>
           {evidence.acquisitions.map((capture, i) => (
             <p className="hash" key={i}>
@@ -1177,7 +808,9 @@ function EvidenceRows({
             <small>
               Source {String(i + 1).padStart(2, "0")} ·{" "}
               {(e.bytes / 1024).toFixed(1)} KB ·{" "}
-              {e.extraction_status.replaceAll("_", " ")}
+              {e.extraction_status === "unsupported_in_development_build"
+                ? "Legacy import · not yet processed"
+                : e.extraction_status.replaceAll("_", " ")}
             </small>
           </div>
           <code>{e.sha256.slice(0, 12)}…</code>

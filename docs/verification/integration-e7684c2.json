@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "scope": "Integrated bounded HTML policy with canonical graph adapter and reviewed account flows",
+  "source_commit": "e7684c2f8b9d65f9f430f78b193daa6697063e09",
+  "source_tree": "10a2f980c31d715a996cd606a557246a1c709c9a",
+  "host": {
+    "system": "macOS",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "rust": {
+      "passed": 531,
+      "library": 452,
+      "integration": 79,
+      "ignored_native_or_specialized": 30,
+      "failed": 0
+    },
+    "clippy": "strict all targets passed",
+    "formatting": "passed",
+    "python": {
+      "total": 330,
+      "passed": 326,
+      "skipped_platform": 4,
+      "failed": 0
+    },
+    "ui_build": "passed with existing large-chunk warning",
+    "browser": {
+      "file": "ui/tests/durable-collection.spec.ts",
+      "passed": 13,
+      "failed": 0,
+      "real_core": true
+    },
+    "release_policy": {
+      "valid": true,
+      "passed_gates": 0,
+      "unpassed_gates": 12
+    }
+  },
+  "independent_handoff_checks": {
+    "source_files": 21,
+    "historical_schema_directory_files": 100,
+    "retained_logs_hash_and_size": 16,
+    "all_matched": true,
+    "signed_implementation": "b0971cc398cc1933583b8861eec96d53d91b74b6",
+    "signed_evidence": "7285484a6c0a9d882f2febdf678e2e3a5aad5165",
+    "root_read_only_review": "No concrete blocker found after full parser, version, settlement and regression review",
+    "peer_read_only_review": "No concrete blocker found; no duplicate tests performed"
+  },
+  "local_logs": {
+    "core": {
+      "sha256": "b1e3ea606037369e6ff362027d85071e86301070c195822b5657af8b24d91541",
+      "bytes": 66023
+    },
+    "clippy": {
+      "sha256": "2527cc7af6b5b7e5d5124c4f6f8c1b16f2c6691d3d213ddd59d3b2c71ef9ed46",
+      "bytes": 185
+    },
+    "fmt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "python": {
+      "sha256": "c2eb6f7682379fc733f42234548426b731837edf68d3e9a708531ab135f24a26",
+      "bytes": 56900
+    },
+    "ui-build": {
+      "sha256": "72a7d910e8a11be750c09e859ea77b386cfac598ae39dc6d646e99fd0b150920",
+      "bytes": 932
+    },
+    "browser": {
+      "sha256": "81df56eb75b1d3db7535b394ec75df61e921c32cf5bc4ecf7441d19161445a4b",
+      "bytes": 2424
+    }
+  },
+  "limits": [
+    "No native or public-network campaign in this increment",
+    "HTML interpretation and replay still hold the workspace mutex; parser calls are not preemptible",
+    "Historical v1-v3 over-limit replay is visibly refused without canonical rewrite",
+    "Normal native collection remains disabled",
+    "The full 158-browser result belongs to prior source 73d25e2; only the 13 affected collection flows reran here",
+    "Published db1674b hosted checks were still in progress when this record was prepared"
+  ],
+  "complete_release": false
+}

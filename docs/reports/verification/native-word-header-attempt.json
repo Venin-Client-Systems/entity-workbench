@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-25T14:18:24.435806+00:00",
+  "scope": "operator-recorded native Word control attempt only",
+  "generator_version": "ooxml-foundation-3",
+  "ordinary_docx_sha256": "cd68a3f7997f50e44e4f87a2802d4bb3c37b4b958d3a7e04ab93f6f6c78e82fc",
+  "native_app": "com.microsoft.Word",
+  "observation": "Two bounded app selections returned timeoutReached -10005; inventory between attempts listed Word running.",
+  "generator3_opened": false,
+  "native_pagination_verified": false,
+  "document_edited_or_saved": false,
+  "existing_app_state_preserved": true,
+  "limitations": [
+    "No screenshot or accessible document state was obtained for generator3.",
+    "Managed rendering remains separate from native Word evidence."
+  ],
+  "complete_release": false
+}

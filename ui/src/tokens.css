@@ -1,0 +1,48 @@
+/* Industrial Figma revision: O50ISV0LGG8nKDcFORNMbO, frame 6:2.
+ * Status text uses darker tones than the generated specimens for contrast. */
+@font-face {
+  font-family: Inter;
+  src: url("/fonts/InterVariable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+:root {
+  --mono:
+    "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas,
+    "Liberation Mono", monospace;
+  --canvas: #e7eae8;
+  --surface: #f4f5f3;
+  --navy: #232a2c;
+  --navy-light: #394347;
+  --ink: #202729;
+  --muted: #4f5c60;
+  --muted-on-navy: #cbd1ce;
+  --accent: #a64814;
+  --accent-hover: #82370e;
+  --selection: #f5e5c5;
+  --subtle: #e9ece9;
+  --border: #bcc3c0;
+  --control-border: #747f7c;
+  --focus: #a64814;
+  --warning: #92400e;
+  --warning-bg: #fef3c7;
+  --success: #166534;
+  --success-bg: #dcfce7;
+  --danger: #b91c1c;
+  --danger-bg: #fee2e2;
+}

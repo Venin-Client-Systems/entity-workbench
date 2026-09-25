@@ -1,0 +1,15 @@
+Retained excerpt of the initial cargo test -p workbench-core --locked tool output.
+This is the observed failure excerpt, not a complete raw process log.
+UI source based on canonical region commit 896df068285bd7c62ecf26def678bef531b06c51.
+
+---- coordinator::region_tests::region_missing_runtime_is_visible_and_worker_pool_remains_bounded stdout ----
+
+thread 'coordinator::region_tests::region_missing_runtime_is_visible_and_worker_pool_remains_bounded' panicked at crates/core/src/coordinator_region_tests.rs:78:6:
+called `Result::unwrap()` on an `Err` value: Blocked("Another document coordinator owns this workspace")
+
+failures:
+    coordinator::region_tests::region_missing_runtime_is_visible_and_worker_pool_remains_bounded
+
+test result: FAILED. 106 passed; 1 failed; 21 ignored; 0 measured; 0 filtered out; finished in 4.27s
+
+The chained Clippy command did not run after this failure. A later independent Clippy invocation is recorded separately.
