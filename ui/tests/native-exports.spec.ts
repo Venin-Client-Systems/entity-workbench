@@ -6,20 +6,6 @@ import { mkdirSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 const root = resolve("artifacts/native-export-ui-workspace");
 const captures = resolve("artifacts/native-export-ui");
-test.beforeAll(() => {
-  execFileSync(
-    "cargo",
-    [
-      "build",
-      "-p",
-      "workbench-core",
-      "--locked",
-      "--example",
-      "native_export_session",
-    ],
-    { stdio: "pipe" },
-  );
-});
 const core = (command: Record<string, unknown>) =>
   JSON.parse(
     execFileSync(resolve("target/debug/ew-dev"), [root], {
