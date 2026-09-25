@@ -1,0 +1,41 @@
+{
+  "candidate_executed": false,
+  "complete_release": false,
+  "original_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "recipe": "python-transactions-v1",
+  "relocation": {
+    "bytes": 601821300,
+    "candidate_executed": false,
+    "complete_release": false,
+    "copied": true,
+    "failure": null,
+    "files": 11320,
+    "immutable_source_verified": true,
+    "independent_verification": {
+      "bytes": 601821300,
+      "complete_release": false,
+      "files": 11320,
+      "installation_state": "assembled-unexecuted",
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+      "package_code_executed": false,
+      "runtime_components_satisfied": [],
+      "verified": true,
+      "wheels": 58
+    },
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "preceding_failure": null,
+    "schema_version": 1
+  },
+  "schema_version": 1,
+  "source_commit": "46e6c1e23d312f8e5e646441b3654635abb51b20"
+}

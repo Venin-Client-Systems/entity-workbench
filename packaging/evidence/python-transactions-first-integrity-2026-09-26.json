@@ -1,0 +1,73 @@
+{
+  "campaign_id": "4f92e301-49ec-462a-a54e-a2f47ea75ca2",
+  "candidate_execution_count": 1,
+  "cleanup_confirmed": true,
+  "complete_release": false,
+  "moved_post_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "paired_times": {
+    "initialization": {
+      "elapsed_ms": 6340,
+      "process_cpu_ms": 400
+    },
+    "operation": {
+      "elapsed_ms": 13173,
+      "process_cpu_ms": 981
+    }
+  },
+  "receipt_contract_valid": true,
+  "recipe": "python-transactions-v1",
+  "remaining_job_directories": 0,
+  "retained_files": {
+    "build.log": {
+      "bytes": 202575,
+      "sha256": "749c3f23a121aace044e26760edc097da85a4c6b6394456900cdf622d792c01d"
+    },
+    "native-report.json": {
+      "bytes": 5382,
+      "sha256": "b6ebbe6c5c933b82bb40856e88ab9daae51c9b23dabbd066b723c351017b3efa"
+    },
+    "native-test.log": {
+      "bytes": 206,
+      "sha256": "11103276173879fdd4ec20fd71a64832f397f8f4cd49597cd77919148ec6a9bf"
+    },
+    "observation.json": {
+      "bytes": 10947,
+      "sha256": "e8e62b5635589f8efbb68d4fb60bbc478a05fb8bbee47dec67ab3f029d763bdc"
+    },
+    "stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "retry_count": 0,
+  "runner_original_and_selected_both_refer_to_moved_prefix": true,
+  "schema_version": 1,
+  "source_and_binary_unchanged": true,
+  "source_commit": "46e6c1e23d312f8e5e646441b3654635abb51b20",
+  "termination_confirmed": true,
+  "true_original_post_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  }
+}

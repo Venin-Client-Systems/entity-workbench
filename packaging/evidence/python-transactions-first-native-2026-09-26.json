@@ -1,0 +1,188 @@
+{
+  "architecture": "aarch64",
+  "assigned_files": {
+    "code/bootstrap.py": {
+      "bytes": 4318,
+      "sha256": "b4b5650fcf47dda9f5107ca522fd7536f3006d2dbe5c0e49a5ad34bddb07b6ac"
+    },
+    "code/compatibility.py": {
+      "bytes": 5769,
+      "sha256": "f94264e37c60e18231aebb33a81ffea5c637c3c71e8848d3b8cc4a1e144b52e1"
+    },
+    "code/engine_recipes.py": {
+      "bytes": 3834,
+      "sha256": "78feb6b34c66dba5917b08de588655ace8729680ac609f864d39ad52088a4769"
+    },
+    "code/transaction_totals.py": {
+      "bytes": 6219,
+      "sha256": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+    },
+    "input/assignment.json": {
+      "bytes": 317,
+      "sha256": "7402ff08849e910c6d4e23c1b5a6934490f175de3f4e424f5ff80ce7597b9506"
+    },
+    "input/expected.json": {
+      "bytes": 2820,
+      "sha256": "6c88fcf93736dd8a2af9226d3f5317dfb1025ca14e2fe00f0c4cb5b8ebc74aff"
+    },
+    "input/fixture.json": {
+      "bytes": 6531,
+      "sha256": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85"
+    }
+  },
+  "campaign_id": "4f92e301-49ec-462a-a54e-a2f47ea75ca2",
+  "candidate_interpreter": {
+    "bytes": 18005560,
+    "path": "install/bin/python3.13",
+    "sha256": "3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc"
+  },
+  "complete_release": false,
+  "diagnostics_within_bound": true,
+  "engine_diagnostics": {
+    "checkpoints": [
+      {
+        "boundary": "before",
+        "elapsed_ms": 0,
+        "process_cpu_ms": 0,
+        "stage": "initialization"
+      },
+      {
+        "boundary": "ready",
+        "elapsed_ms": 6340,
+        "process_cpu_ms": 400,
+        "stage": "initialization"
+      },
+      {
+        "boundary": "before",
+        "elapsed_ms": 6340,
+        "process_cpu_ms": 401,
+        "stage": "operation"
+      },
+      {
+        "boundary": "after",
+        "elapsed_ms": 19513,
+        "process_cpu_ms": 1382,
+        "stage": "operation"
+      }
+    ],
+    "valid": true
+  },
+  "exit_code": 0,
+  "failure": null,
+  "import_diagnostics": null,
+  "job_id": "1badd75b-2dcc-4f88-a2c4-b6fba73319c0",
+  "last_import_checkpoint": null,
+  "last_worker_checkpoint": "complete",
+  "passed": true,
+  "phase": "complete",
+  "preparation_elapsed_ms": 2603,
+  "profile_sha256": "4baf4c1ee749f7f83d5db3c7086c55b33c579d0a54e9dbf199a950b9f12d1843",
+  "quota_kind": null,
+  "recipe": "python-transactions-v1",
+  "result": {
+    "checks": {
+      "imported_modules": [
+        "duckdb",
+        "pyarrow",
+        "pyarrow.compute",
+        "pyarrow.parquet"
+      ],
+      "transaction_totals": {
+        "totals": [
+          {
+            "currency": "AUD",
+            "net": "1.123456788",
+            "transaction_ids": [
+              "aud-a",
+              "aud-b",
+              "aud-c"
+            ]
+          },
+          {
+            "currency": "USD",
+            "net": "5.00000000",
+            "transaction_ids": [
+              "usd-a",
+              "usd-b"
+            ]
+          }
+        ]
+      },
+      "transfer_rejected": true,
+      "versions": {
+        "altair": "6.3.0",
+        "annotated-doc": "0.0.5",
+        "annotated-types": "0.8.0",
+        "attrs": "26.1.0",
+        "blis": "1.3.3",
+        "catalogue": "2.0.10",
+        "certifi": "2026.7.22",
+        "charset-normalizer": "3.5.1",
+        "click": "8.3.1",
+        "cloudpathlib": "0.25.0",
+        "confection": "0.1.5",
+        "cymem": "2.0.13",
+        "duckdb": "1.5.0",
+        "idna": "3.20",
+        "igraph": "1.0.0",
+        "jinja2": "3.1.6",
+        "jsonschema": "4.26.0",
+        "jsonschema-specifications": "2025.9.1",
+        "markdown-it-py": "4.2.0",
+        "markupsafe": "3.0.3",
+        "mdurl": "0.1.2",
+        "murmurhash": "1.0.15",
+        "narwhals": "2.26.0",
+        "networkx": "3.6.1",
+        "numpy": "2.5.3",
+        "packaging": "26.3",
+        "pandas": "3.0.6",
+        "preshed": "3.0.13",
+        "pyarrow": "23.0.1",
+        "pydantic": "2.13.5",
+        "pydantic-core": "2.46.5",
+        "pygments": "2.21.0",
+        "python-dateutil": "2.9.0.post0",
+        "referencing": "0.37.0",
+        "requests": "2.34.2",
+        "rich": "15.0.0",
+        "rpds-py": "2026.6.3",
+        "setuptools": "84.0.0",
+        "shellingham": "1.5.4",
+        "six": "1.17.0",
+        "smart-open": "7.7.1",
+        "spacy": "3.8.11",
+        "spacy-legacy": "3.0.12",
+        "spacy-loggers": "1.0.5",
+        "splink": "4.0.12",
+        "sqlglot": "30.18.0",
+        "srsly": "2.5.3",
+        "texttable": "1.7.0",
+        "thinc": "8.3.11",
+        "tqdm": "4.70.1",
+        "typer": "0.27.2",
+        "typer-slim": "0.24.0",
+        "typing-extensions": "4.16.0",
+        "typing-inspection": "0.4.4",
+        "urllib3": "2.8.0",
+        "wasabi": "1.1.3",
+        "weasel": "0.4.3",
+        "wrapt": "2.4.1"
+      }
+    },
+    "isolated": true,
+    "job_id": "1badd75b-2dcc-4f88-a2c4-b6fba73319c0",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "no_bytecode": true,
+    "no_site": true,
+    "python_version": "3.13.15",
+    "recipe": "python-transactions-v1",
+    "schema_version": 1,
+    "verified_paths": true
+  },
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "runtime_verified": true,
+  "schema_version": 1,
+  "supervised_elapsed_ms": 20272,
+  "termination_state": "confirmed"
+}
