@@ -100,10 +100,13 @@ class WheelhouseStagingTests(unittest.TestCase):
         self.assertFalse(provenance['archives'][0]['runnable_engine'])
 
     def test_manifest_is_deterministic_and_independently_matches_all_files(self):
-        first = self.stage(); self.assertTrue(first['staged'], first)
+        # ZIP member timestamps vary between independently created archives.
+        # Deterministic staging compares two outputs from the same input bytes.
+        data = wheel()
+        first = self.stage(data); self.assertTrue(first['staged'], first)
         expected = (self.output / 'manifest.json').read_bytes()
         self.output = self.root / 'second'
-        second = self.stage(); self.assertTrue(second['staged'], second)
+        second = self.stage(data); self.assertTrue(second['staged'], second)
         self.assertEqual(first['manifest_sha256'], second['manifest_sha256'])
         self.assertEqual(expected, (self.output / 'manifest.json').read_bytes())
         for name, info in json.loads(expected)['files'].items():
