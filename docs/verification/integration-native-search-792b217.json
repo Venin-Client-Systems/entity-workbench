@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "source": "792b2176bd3a3c0a845f57fc1c189b57a4c0d623",
+  "complete_release": false,
+  "checks": {
+    "ordinary_rust_passed": 675,
+    "library_passed": 596,
+    "integration_passed": 79,
+    "native_specialized_ignored": 33,
+    "host_strict_clippy": true,
+    "intel_cross_target_strict_clippy": true,
+    "formatting": true,
+    "offline_search_receipt_tests": 11
+  },
+  "logs": {
+    "clippy-exit.json": {
+      "bytes": 131,
+      "sha256": "189fc7e5846ba7f19b80eb2bd6a7d9756e5165580c782686dc2ff91839ee4046"
+    },
+    "clippy.log": {
+      "bytes": 184,
+      "sha256": "293c4ef78619fa8207803a9b1ed5870de48e0e4b2038dc428fc9c8adfa7a0d24"
+    },
+    "core-exit.json": {
+      "bytes": 88,
+      "sha256": "c5729bfda19982c6e28dd47e3ce4b53e1b73f6651e2b925b3f3bcec7f5d9ca82"
+    },
+    "core.log": {
+      "bytes": 83763,
+      "sha256": "4e3b6c49e868073fe60528cd47049151baabf38921ea204c249e09e70e972b9d"
+    },
+    "fmt-exit.json": {
+      "bytes": 64,
+      "sha256": "a911789105235bf8a989b446675b8b360e6bfa9b04d9bf2ee2d603f593ed5980"
+    },
+    "fmt.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "handoff-check.json": {
+      "bytes": 183,
+      "sha256": "71f0528a55ff027d5c259334fde4c70603ff77b6ba89d3ca7bcc1d05f592519f"
+    },
+    "intel-clippy-exit.json": {
+      "bytes": 166,
+      "sha256": "69504b2a91a391166d084f80a7e26a8d4b5eecf30e65df7b4ee96ec22330185b"
+    },
+    "intel-clippy.log": {
+      "bytes": 185,
+      "sha256": "752c76bf32fe4971127ceac128e42eb411be1be31315820aa435f532f31ee9d9"
+    },
+    "offline-receipt-exit.json": {
+      "bytes": 132,
+      "sha256": "9211879c8870744b5ce921cc1d1ed94b3ad0b3cf264a3c28534853b3d812a60e"
+    },
+    "offline-receipt.log": {
+      "bytes": 1962,
+      "sha256": "125f045b4208ad71d3d8d66274c16d47bbbfb526ba41d3d3cdc8817ab3453f94"
+    }
+  },
+  "limitations": [
+    "Source and offline checks are distinct from the separately retained single native Search campaign",
+    "No UI or Java source changes",
+    "Cross-compilation is not native Intel execution"
+  ]
+}
