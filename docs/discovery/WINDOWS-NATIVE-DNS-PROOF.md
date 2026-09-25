@@ -1,8 +1,24 @@
 # Windows native DNS observation contract
 
-This opt-in development harness observes the existing private `GetAddrInfoExW` resolver. It does not activate durable collection, issue HTTP requests, change resolver behavior, or satisfy Windows 11 or complete-release acceptance. No native Windows observation has been recorded for this increment. Host tests and Windows-target type checks exercise different claims and must stay separate from a later actual Windows run.
+This opt-in development harness observes the existing private `GetAddrInfoExW` resolver. It does not activate durable collection, issue HTTP requests, change resolver behavior, or satisfy Windows 11 or complete-release acceptance. One approved native Windows Server observation is recorded below. Host tests and Windows-target type checks exercise different claims and remain separate from that actual run.
 
 The actual implementation uses `GetAddrInfoExW` with `NS_DNS`, an `OVERLAPPED` structure and a manual-reset event. It does **not** use `DnsQueryEx` or a completion-routine callback. The test-only hooks record actual API return codes and resource disposal; they do not replace the native APIs. Production changes only bind existing API return values so those hooks can observe them under `cfg(test)`.
+
+## Recorded native observation
+
+[Run 36141003773, attempt 1](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36141003773) executed the signed source `b064c724da574e3d7ebe7b3844697c0fd73d9ee9` on Windows Server 2022, version `10.0.20348`, ServerDatacenter AMD64. All five cases passed. The [retained evidence record](verification/windows-native-dns.json) includes exact source, tree, runner, binary, nonce, log and GitHub artifact identities. The downloaded archive digest matched GitHub metadata; the actual native log was revalidated against all five report cases.
+
+| Observation | Actual result |
+| --- | --- |
+| Pre-cancel / pre-expired | Correct typed outcomes, zero native launches or resolver resources. |
+| `example.com` | Initial 997, completed 0; two validated candidates in 5 ms; result list and caller resources released. |
+| `ew-native-proof.invalid` | Initial 997, completed 11001; `Network` in 20 ms; caller resources released. |
+| Pending cancellation | Initial 997, cancel returned 0, completed 10111; `QuiescenceUnverified`, `locally_quiescent=false`, caller context released after completion. |
+| Quarantine refusal | `RecoveryRequired` before request, with no further Winsock startup, event, context or native launch. |
+
+There were exactly three native launches and no HTTP requests or retries. The native test process took 31 ms; individual timings are observations of this run, not performance claims. Source and binary identity remained unchanged. The executable's hash was recorded before and after execution; its bytes are not included in the downloaded artifact.
+
+The native cancellation exercised **released-after-completion**, not retained-pending-completion. The latter remains covered by synthetic receipt/ownership tests. Actual caller cleanup does not establish provider quiescence, and the transport correctly retained that uncertainty and blocked further requests. Windows 11, HTTPS, public collection commands, durable live activation and complete-package acceptance remain unproved. The earlier Mac success and failure evidence files are unchanged.
 
 ## Fixed scope and acceptance
 
@@ -55,7 +71,7 @@ The separately authorized initial proof route is the **first push creating exact
 
 The workflow verifies the signature before running repository scripts. A distinct preparation step obtains only locked Cargo dependencies for the Windows target; this build-preparation traffic is outside the DNS campaign's zero-HTTP claim. The runner then builds offline and invokes only the exact ignored native test. An `always()` artifact step retains the initial workflow receipt, build preparation log and all available runner artifacts on success or failure. Abrupt runner loss can still prevent artifact upload and must never be reported as a completed observation.
 
-The workflow remains a review candidate until the parent integrator approves the signed source and exact trigger. Checking in this file does not authorize this implementing agent to push, dispatch or run native queries. A local invocation on an approved Windows host uses the same runner and reviewed public allowed-signers file:
+The parent integrator approved the signed source and created the fixed branch once for the recorded observation. That branch must not be moved, recreated or rerun for another campaign. The manual route remains separate and requires a newly approved scope; checking in this file does not grant another query, push or dispatch. A future approved local invocation on Windows uses the same runner and reviewed public allowed-signers file:
 
 ```sh
 python scripts/test_windows_native_dns.py --allow-fixed-dns --allowed-signers /path/to/allowed_signers
