@@ -79,6 +79,8 @@ pub(super) fn native(
     cancellation: &CancellationToken,
 ) -> Result<ResolvedCandidates, ResolverFailure> {
     window.check(cancellation)?;
+    #[cfg(test)]
+    native_proof::before_native_operation(host);
     let deadline = Instant::now() + Duration::from_secs(5).min(window.remaining());
     // SAFETY: zeroed WSADATA is output-only, version 2.2 is requested explicitly.
     let mut data: WSADATA = unsafe { std::mem::zeroed() };
