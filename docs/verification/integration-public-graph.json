@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "scope": "integrated_public_graph_api_document_compatibility_and_development_bootstrap",
+  "source_revision": "c2eb6d79518350350e50683f2aa03ab087d053d6",
+  "source_files": [
+    {
+      "path": "crates/core/src/bin/ew-dev.rs",
+      "bytes": 22976,
+      "sha256": "0533e312589c0c3f06405a93192c4e0bf856e4047e7400ed7cbad874f29d6e22"
+    },
+    {
+      "path": "crates/core/src/coordinator.rs",
+      "bytes": 38646,
+      "sha256": "351d3658233b5253f78d40181112fc7ff55246ac0bc10307170f5be11d6ca451"
+    },
+    {
+      "path": "crates/core/src/coordinator_bootstrap.rs",
+      "bytes": 3926,
+      "sha256": "c11a550b9eec3bdf70835a695943427a8fadf54492f3a07ef7569862af541dd1"
+    },
+    {
+      "path": "crates/core/src/coordinator_bootstrap_tests.rs",
+      "bytes": 9514,
+      "sha256": "f9ae2c057cb121d46887f83b7d10fec8322ef20a011488a30a696a51b9d47978"
+    },
+    {
+      "path": "crates/core/src/coordinator_graph.rs",
+      "bytes": 19646,
+      "sha256": "bbda68854f570af8778e0eced20d4954509c37a126fc5c9030096eacd576345f"
+    },
+    {
+      "path": "crates/core/src/coordinator_graph_api.rs",
+      "bytes": 7992,
+      "sha256": "1ccb58655b46536b32cb276d70cb23829805d3661260dc76623325c98b465973"
+    },
+    {
+      "path": "crates/core/src/coordinator_graph_api_tests.rs",
+      "bytes": 16307,
+      "sha256": "88cb8dae4ed2e95bc9480380287b76c36d8b48e827da38ea90c793816bee9810"
+    },
+    {
+      "path": "crates/core/src/coordinator_graph_tests.rs",
+      "bytes": 27628,
+      "sha256": "d770015a1558e5dca91f50133c0f8ecffb5c24078a7536c2b3739b8bdfd25ec6"
+    },
+    {
+      "path": "crates/core/src/domain.rs",
+      "bytes": 19163,
+      "sha256": "cd82ee0cef47f0c8d5b3946dd7a7f93314c571dffc8f11c7651159c5c944afc8"
+    },
+    {
+      "path": "crates/core/src/graph_api.rs",
+      "bytes": 4151,
+      "sha256": "cd3e3aea46675a3e32a744429e1a200c22dbba68f6eccc8c9fe9fc6b4c2b1a24"
+    },
+    {
+      "path": "crates/core/src/lib.rs",
+      "bytes": 2384,
+      "sha256": "6c9bbf6cc9ab50d963f772fd81c44ede8581f3db1a774cc3cc519670ba0b8fd2"
+    },
+    {
+      "path": "crates/core/src/store.rs",
+      "bytes": 45409,
+      "sha256": "25db1b316e96d95278b9bba59922a78d6fdda5851e2a6d09ccc58719b186f69b"
+    },
+    {
+      "path": "crates/core/src/store/graph_api.rs",
+      "bytes": 14010,
+      "sha256": "d146a6c977fa80ba9281464946a4bc7b866cfc85e12bb0f421565cdc1001b711"
+    },
+    {
+      "path": "crates/core/src/store/graph_api_tests.rs",
+      "bytes": 14877,
+      "sha256": "c4c74a11428b364916cbb34273777ed7540da9440e6dde72676313ab50a3629a"
+    },
+    {
+      "path": "crates/core/src/store/processing.rs",
+      "bytes": 52516,
+      "sha256": "9f5e0673070bd41ab5a1562128883846f09584fd8abfe82d93c16812b983a6e0"
+    },
+    {
+      "path": "crates/core/src/store/processing_graph.rs",
+      "bytes": 16044,
+      "sha256": "8877d605faf47a6c9ab9cbb9061855bc60215ae2db6244077293628dca0b5a95"
+    },
+    {
+      "path": "desktop/Cargo.toml",
+      "bytes": 463,
+      "sha256": "7ad193d186f9c97fa6672897c52a27f3982e8db98beffb6abca0d191a420ad2f"
+    },
+    {
+      "path": "desktop/src/main.rs",
+      "bytes": 3535,
+      "sha256": "4d406500fd14da62476907eab5ab723faa42ddb0f800a90647c6c0555dc2e9e4"
+    },
+    {
+      "path": "schemas/command.v26.schema.json",
+      "bytes": 60143,
+      "sha256": "57d0fa0cb7c4d6d914858b2947c9dbc664fb75692db947be4b081b332980e08b"
+    },
+    {
+      "path": "schemas/graph-analysis-inspection.v1.schema.json",
+      "bytes": 15396,
+      "sha256": "097ed37c0a3d4c1bec2eda072828049a3447cc1455e7599eb66d916bbef9688e"
+    },
+    {
+      "path": "schemas/graph-job-inspection.v1.schema.json",
+      "bytes": 10983,
+      "sha256": "5a35889dd9d6a3ab3e3fa20d83d23ae2a57dc8bf23f7d640a554c4ccab3a0e24"
+    },
+    {
+      "path": "schemas/graph-job-page-request.v1.schema.json",
+      "bytes": 406,
+      "sha256": "c2fc581f6421f8112b5af81cf9cd7e145d7d8beee1bb71cb8b15fef71f24db87"
+    },
+    {
+      "path": "schemas/graph-job-page.v1.schema.json",
+      "bytes": 8656,
+      "sha256": "0f4e5a39fc632483bca39e62a3ec1be7ce3aed412021050199cb5ceb2eb87251"
+    },
+    {
+      "path": "scripts/build_java_search.py",
+      "bytes": 15396,
+      "sha256": "8658555021cde0de0aa2607d1be6ac99fe96273e06987d5cbc4dc792d9baed77"
+    },
+    {
+      "path": "scripts/java_build_inputs.py",
+      "bytes": 6519,
+      "sha256": "8a20bf09c6083536e9da773c34c6a334f920377150aee0401ee9742d759484c7"
+    },
+    {
+      "path": "scripts/tests/test_java_search_producer.py",
+      "bytes": 11796,
+      "sha256": "e2e3e54eb297363611a4a4ff38ab3cb33aaf6f844a4a92a6b554118cb4d87fc4"
+    },
+    {
+      "path": "ui/src/DocumentJobs.tsx",
+      "bytes": 14425,
+      "sha256": "b67478e8b36ad192f6e840b56248a16ac8d12407bd5def46ac493ae2cec1814f"
+    },
+    {
+      "path": "ui/src/ProcessingJobReview.tsx",
+      "bytes": 13470,
+      "sha256": "4cf302d8139a63d1ddb4f217d6b567ad29711fd7ce064644a3ada6de047e8b69"
+    },
+    {
+      "path": "ui/src/processing-types.ts",
+      "bytes": 4839,
+      "sha256": "5c82bd0d21cb487066b2e19dbcfb18539b45527d5e73c5a6ef910507c95fab22"
+    },
+    {
+      "path": "ui/tests/document-jobs.spec.ts",
+      "bytes": 31739,
+      "sha256": "e8d662040a6929cc2bd07a8da886549741a765fcfb31a724d049e26a13465c1f"
+    }
+  ],
+  "checks": [
+    {
+      "name": "core-bootstrap",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "workbench-core",
+        "--locked"
+      ],
+      "exit_code": 0,
+      "seconds": 69.53453629196156,
+      "log_bytes": 86495,
+      "log_sha256": "c76d18cbd7e685b40b8b091f768ba36e296b278b043f05018028bea30f23831b",
+      "retained_artifact": "integration-graph-api/core-bootstrap.log"
+    },
+    {
+      "name": "clippy-bootstrap",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "workbench-core",
+        "--all-targets",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 10.053883749991655,
+      "log_bytes": 184,
+      "log_sha256": "1f0175becbb682b8815c221094bc4aae5f6c8f6db307f239b833cc0183c16cfc",
+      "retained_artifact": "integration-graph-api/clippy-bootstrap.log"
+    },
+    {
+      "name": "intel-clippy-bootstrap",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "workbench-core",
+        "--all-targets",
+        "--target",
+        "x86_64-apple-darwin",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 18.07291604205966,
+      "log_bytes": 185,
+      "log_sha256": "9887235d3598943e29bdc901564e7a0405c717ed3fe6b78192853ca2a3b9a564",
+      "retained_artifact": "integration-graph-api/intel-clippy-bootstrap.log"
+    },
+    {
+      "name": "fmt-bootstrap",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8293646670645103,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retained_artifact": "integration-graph-api/fmt-bootstrap.log"
+    },
+    {
+      "name": "build-final",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "seconds": 1.439238207996823,
+      "log_bytes": 932,
+      "log_sha256": "06b8b8431a8a7c920d762b01dd0211d9c469d03977f5f8f9403e62659d104eaa",
+      "retained_artifact": "integration-graph-api/build-final.log"
+    },
+    {
+      "name": "browser-final",
+      "command": [
+        "npx",
+        "playwright",
+        "test",
+        "ui/tests/document-jobs.spec.ts",
+        "ui/tests/image-jobs.spec.ts",
+        "ui/tests/pdf-jobs.spec.ts",
+        "ui/tests/image-regions.spec.ts"
+      ],
+      "exit_code": 0,
+      "seconds": 85.73404725000728,
+      "log_bytes": 6012,
+      "log_sha256": "87885adb9978db5ccbc2df38d69f89f5524394e2d6abdf7d5b76e71beb0815e6",
+      "retained_artifact": "integration-graph-api/browser-final.log"
+    },
+    {
+      "name": "python",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests"
+      ],
+      "exit_code": 0,
+      "seconds": 8.828107624896802,
+      "log_bytes": 1004,
+      "log_sha256": "7114fd50e33dc839d0de74e35bb85dd58cf959f72770f372eef73c933ecff11a",
+      "retained_artifact": "integration-graph-api/python.log"
+    },
+    {
+      "name": "python-optimized",
+      "command": [
+        "python3",
+        "-O",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests"
+      ],
+      "exit_code": 0,
+      "seconds": 9.10808704199735,
+      "log_bytes": 1004,
+      "log_sha256": "28c5a2b3c142e81957c38ac88d8d5cdcef365fd07cf0ee4087fc4ed6ccd973a3",
+      "retained_artifact": "integration-graph-api/python-optimized.log"
+    }
+  ],
+  "results": {
+    "core_ordinary_passed": 698,
+    "native_ignored": 33,
+    "browser_workflows_passed": 38,
+    "python_tests_run_each_mode": 375,
+    "python_passed_each_mode": 371,
+    "python_skipped_each_mode": 4,
+    "historical_schema_files_unchanged": 105,
+    "additive_schemas": 5
+  },
+  "source_binding": {
+    "core_source_revision": "d72a047",
+    "ui_source_revision": "3fee0eb",
+    "ui_harness_core_source_revision": "8df0c01",
+    "python_source_revision": "b4ebc53",
+    "description": "Each check used these relevant source bytes; documentation/evidence commits do not change execution. UI cases preceded the separate bootstrap-only core change. No exact-source native campaign is asserted."
+  },
+  "independent_readbacks": [
+    {
+      "name": "graph-api-handoff-check.json",
+      "sha256": "6facfee51e88651586389196f85d62a0ed7983965dca8c11d5a2525fcdde65e3",
+      "bytes": 354,
+      "summary": {
+        "passed": true,
+        "source": "aa09e37491a6a5e3046136cb6d3e721890e81aaf",
+        "integrated_source": "8df0c014d9e4ddb2940b2a84345cf9c1a7cf6dbd",
+        "counts": {
+          "source_files": 20,
+          "historical_schemas": 105,
+          "additive_schemas": 5,
+          "artifacts": 32
+        },
+        "manifest_sha256": "67a06d50c2e6cdb71659733ab11d4d0eeec4f59f7040f04a106af5d423c2bb11"
+      }
+    },
+    {
+      "name": "graph-bootstrap-handoff-check.json",
+      "sha256": "a750b2f53a69e46b2fddd6627a840a8b75cb9fd7e91e968a436015b208c0b8c1",
+      "bytes": 258,
+      "summary": {
+        "passed": true,
+        "source": "812f661c9790a35665b0766d4e586b461f08aab1",
+        "integrated": "d72a047",
+        "verified_identities": 146,
+        "manifest_sha256": "e8e8688e8835fc49c886b9cf69768d652ecf0c8fcdfd5a42224f26af4e162c68",
+        "native_execution_claim": false
+      }
+    },
+    {
+      "name": "java-producer-root-checks.json",
+      "sha256": "16f3bc7c9606fdcff191897ed392d1c9f729b5a2a01e183287163a0aefc71386",
+      "bytes": 627,
+      "summary": {
+        "passed": true,
+        "source": "6c467bd894356553fbca60f0d580006be9e50dd1",
+        "artifact_hashes_verified": 36,
+        "tracked_source_blobs": 121,
+        "jar_bytes": 74334,
+        "jar_sha256": "a555216f95cd7ea44c9e16718e18bcd5b88f6089eac36680909192bfc9ca1877",
+        "classfiles_each": 27,
+        "dependencies_each": 95,
+        "tool_files_verified": 496,
+        "copied_cache_files_verified": 5228,
+        "staged_source_equivalence_claim": false,
+        "no_execution": true,
+        "staged_files_verified": 10,
+        "search_dependencies_equal": 9,
+        "staged_worker_bytes": 9930,
+        "staged_worker_sha256": "17185efac0a1b6f0c4590ba5026bf9244920a96eec2a1367ce94b8a10ff1f82e"
+      }
+    }
+  ],
+  "peer_review": {
+    "graph_api": "retry and cancellation findings repaired and rechecked",
+    "document_compatibility": "selected-response identity and initial-unavailable findings repaired and rechecked",
+    "development_bootstrap": "no blocker in six-file source scope"
+  },
+  "limits": [
+    "No new native worker or packaged application executed during this integration.",
+    "Default desktop graph execution stays unavailable; explicit development feature requires a complete verified app-resource prefix.",
+    "Desktop feature off/on host and Intel compilation is separately bound to bootstrap evidence, with bundled resources omitted for compilation.",
+    "Java producer output differs from the old staged worker. Existing Search campaign evidence is not transferred to the new JAR.",
+    "Figma graph design and interface remain outstanding; the document correction reuses existing instruments.",
+    "All twelve release gates remain false."
+  ]
+}
