@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "source_commit": "817d20032cf8a8d4a6b7cffc9f1ac334a1f92eea",
+  "source_tree": "895c24c0174e061895a91c7bcca81ad308bd5387",
+  "browser_corrected_commit": "73d25e20c75f23ae8dc31e60cdcacf1fcb8458bc",
+  "complete_release": false,
+  "scope": "Combined owned graph capture, account-flow interface and fixed cancellation source; later correction changes one browser test only",
+  "host": {
+    "os": "macOS",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "core": {
+      "passed": 520,
+      "library": 441,
+      "integration": 79,
+      "failed": 0,
+      "ignored_specialized": 30,
+      "command": "cargo test -p workbench-core --locked --offline"
+    },
+    "clippy": {
+      "passed": true,
+      "command": "cargo clippy -p workbench-core --all-targets --locked --offline -- -D warnings"
+    },
+    "format": {
+      "passed": true,
+      "command": "cargo fmt --all -- --check"
+    },
+    "python": {
+      "run": 317,
+      "passed": 313,
+      "skipped": 4,
+      "failed": 0,
+      "command": "python3 -m unittest discover -s scripts/tests -v"
+    },
+    "ui_build": {
+      "passed": true,
+      "large_chunk_warning": true,
+      "command": "npm run build"
+    },
+    "browser_initial": {
+      "passed": 157,
+      "failed": 1,
+      "source_commit": "817d20032cf8a8d4a6b7cffc9f1ac334a1f92eea",
+      "failure": "ENOTEMPTY during synthetic workspace removal before response identity test entered",
+      "scope": "Fixture teardown race; preceding late-navigation test did not await completion of all real routed responses"
+    },
+    "browser_focused_after_fix": {
+      "passed": 2,
+      "failed": 0
+    },
+    "browser_final": {
+      "passed": 158,
+      "failed": 0,
+      "elapsed_report": "3.7m",
+      "command": "npm run test:ui",
+      "real_core": true,
+      "source_commit": "73d25e20c75f23ae8dc31e60cdcacf1fcb8458bc"
+    },
+    "release_gate": {
+      "exit": 1,
+      "policy_valid": true,
+      "passed": 0,
+      "unpassed": 12
+    }
+  },
+  "test_correction": {
+    "file": "ui/tests/account-flows.spec.ts",
+    "sha256": "b1c163cbe42b253f78abe70c0bfd2ea4d84de29ff46320703c967a7ec2c6b746",
+    "behavior": "Keep real core route handlers owned through response fulfillment, await remounted facet readiness, then unroute with behavior wait before checking absence of the obsolete result. No sleep, deletion retry or weakened product assertion.",
+    "production_sources_unchanged": true
+  },
+  "logs": {
+    "core": {
+      "bytes": 64806,
+      "sha256": "52837b83136330f5095f24e7d63d9a094eec38de66272c5ee8bb699bad27a513"
+    },
+    "clippy": {
+      "bytes": 185,
+      "sha256": "af9c7749041936b19bfc05a35156d7cdc5bce43de6c897bb9e5d1bd7357214c6"
+    },
+    "format": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "python": {
+      "bytes": 54634,
+      "sha256": "35dfeabcff0c7282f1f5b09b38075b8544e1b760165a6345b7f7375ca77690f8"
+    },
+    "ui-build": {
+      "bytes": 932,
+      "sha256": "77c5330308413c62ff273f13625701d22ea99d04dcb69f538dfc3b457fc4fb3c"
+    },
+    "browser": {
+      "bytes": 25402,
+      "sha256": "1fe5834dafc39215210b6d6ba635ac4983c2ee596852c0bde523cae9d60a2aea"
+    },
+    "browser-flow-handoff-fixed": {
+      "bytes": 737,
+      "sha256": "83c2fa7885e956eda48ebcac8c90994d696c1ac5006fc9d7e4fc8b944e59bde5"
+    },
+    "browser-fixed": {
+      "bytes": 24268,
+      "sha256": "c37fd3445fc892267f5e84755a4211409e014882860d13c30188ca96892fd587"
+    },
+    "release": {
+      "bytes": 995,
+      "sha256": "aee8799ecb394c8f6ba859602f14cbdad1133374b433e535412bc824b7382c7a"
+    }
+  },
+  "independent_review": {
+    "account_flow_source_commit": "4ffa1ae8022270f7feea87d02a5cdd0a302020e9",
+    "source_hashes": 23,
+    "historical_schema_hashes": 99,
+    "artifact_hashes": 15,
+    "sanitized_log_hashes": 7,
+    "figma_and_app_images_visually_inspected": 5,
+    "account_flow_manifest_sha256": "459ce18fa06b15d8fd167a5ad4f8c400c2624421b497dfa7a922f37434b5b9dc",
+    "graph_source_commit": "98e43987f9106e632fe27e58e39e54cc8bcbae37",
+    "graph_review": "Owned capture, canonical read transactions, strict result parsing, source verification, independent shortest-path check and deterministic concurrent-writer regression reviewed"
+  },
+  "separate_native_observations": {
+    "cancellation_source_commit": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71",
+    "receipt_sha256": "32303f54b87f26fd42226d821b08485bac0df7f4b0f3fe12cbaba47a42313a50",
+    "root_checks_sha256": "ad6c3cedd029cd3250f67159d4018242fbe54a6809e5ec0dbbf3749ce9cf0b53",
+    "meaning": "Separate finite actual native observation; not rerun by ordinary suite"
+  },
+  "unverified": [
+    "Native account-flow application interaction",
+    "Canonical graph native worker and durable analytical lifecycle",
+    "Normal collection activation, bounded HTML interpretation and broad coverage",
+    "Reliable relocated combined Python startup",
+    "Complete signed offline distributions and supported-platform acceptance"
+  ]
+}
