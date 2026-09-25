@@ -1,0 +1,10 @@
+[feat/search-lifecycle 74d1a98] Contain uncertain local search execution and index ownership
+ 14 files changed, 1668 insertions(+), 202 deletions(-)
+ create mode 100644 crates/core/src/coordinator_search.rs
+ create mode 100644 crates/core/src/coordinator_search_tests.rs
+ create mode 100644 crates/core/src/engines/search.rs
+ create mode 100644 crates/core/src/engines/search_lifecycle.rs
+ create mode 100644 crates/core/src/engines/search_lifecycle_tests.rs
+ create mode 100644 crates/core/src/store/search.rs
+ create mode 100644 crates/core/src/store/search_tests.rs
+ create mode 100644 docs/search/EXECUTION-LIFECYCLE.md

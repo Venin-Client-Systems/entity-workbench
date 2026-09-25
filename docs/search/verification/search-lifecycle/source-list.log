@@ -1,0 +1,3 @@
+crates/core/src/engines/search.rs 1c30c2ea54d4aa709958673f4a839981d90ccd944b0c37321450696d5bb87625
+crates/core/src/engines/search_lifecycle.rs 937e97e9f2af2919edb86338cc00763f71ac61f0e8957af7bcba83c0c3a1fea5
+source membership and digest readback passed; no native invocation
