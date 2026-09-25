@@ -1,0 +1,55 @@
+{
+  "base_commit": "e037feb",
+  "complete_release": false,
+  "observed_on": "2026-09-25",
+  "previous_native_campaign": {
+    "campaign_id": "b4672903-8182-4683-9eb3-ec38fd02de66",
+    "native_receipt_sha256": "c0ae88f59b2f2d65396ed35a0e19c7ee6e290e9411a2844bdeb22b96d4d0769f",
+    "outer_receipt_sha256": "128fdb98c944e6b129ac10c94d34caba0e0baa03d924c06cec4b51d446a507c2",
+    "passed": false,
+    "source": "fdf7265398535593f3001e60cc15ca125cb8bd29",
+    "termination": "confirmed"
+  },
+  "schema_version": 1,
+  "scope": "EW-07 closed import/quota timing diagnostics source verification",
+  "source_binding": "individual-file-sha256-before-commit",
+  "source_files": {
+    "crates/core/src/engines/supervision/python_probe.rs": "45d82ff5db0dbf316e5c01d06305c3c878eb8ef38ea5c49cc9989062a08aad32",
+    "docs/security/PYTHON-COMPATIBILITY-PROBE.md": "a931b532297d6a48c6f9e304daef6a91744e9a53cad58ef40aa6d8ca5fe672ba",
+    "scripts/test_python_compatibility.py": "795c5d167ea98c16d42b96e90e51527d3c2ed302d3945c300e5ef1d4bfa6b3bc",
+    "scripts/tests/test_python_probe_contracts.py": "04b0566c26830959dc99fc78b49490d1fd57fb94a22f56214be0def6f2c1806d",
+    "workers/python/probe/bootstrap.py": "ddc1b57e964fbf864cbdde88f31bf9ff0ebf8cc313235995193571987edc1b75",
+    "workers/python/probe/compatibility.py": "4c0e3b4976c58b7bc3ed466f6c40901bafc5c999a5a5d9039c6bd8f7287815b2"
+  },
+  "tests": {
+    "Python_contracts": [
+      {
+        "host_version": "3.13.11",
+        "optimized": false,
+        "passed": 14
+      },
+      {
+        "host_version": "3.13.11",
+        "optimized": true,
+        "passed": 14
+      },
+      {
+        "host_version": "3.14.2",
+        "optimized": false,
+        "passed": 14
+      },
+      {
+        "host_version": "3.14.2",
+        "optimized": true,
+        "passed": 14
+      }
+    ],
+    "cargo_fmt_check": "passed",
+    "ordinary_Rust_contracts": {
+      "ignored_native": 1,
+      "passed": 6
+    },
+    "strict_core_all_targets_clippy": "passed"
+  },
+  "this_revision_candidate_executed": false
+}

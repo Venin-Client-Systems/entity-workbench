@@ -18,6 +18,7 @@ const FIXTURE: &[u8] = include_bytes!("../../../../../workers/python/probe/fixtu
 const EXPECTED: &[u8] = include_bytes!("../../../../../workers/python/probe/expected.json");
 const RESULT_LIMIT: u64 = 1024 * 1024;
 const DIAGNOSTIC_LIMIT: u64 = 128 * 1024;
+const IMPORTS: [&str; 6] = ["duckdb", "networkx", "spacy", "click", "splink", "pyarrow"];
 const PHASES: [&str; 8] = [
     "bootstrap",
     "versions",
@@ -103,6 +104,13 @@ struct Asset {
 #[serde(deny_unknown_fields)]
 struct Checkpoint {
     phase: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+struct ImportCheckpoint {
+    module: String,
+    boundary: String,
 }
 
 fn unique_versions<'de, D: serde::Deserializer<'de>>(
@@ -315,6 +323,43 @@ fn checkpoint(job: &Path) -> Option<String> {
     last
 }
 
+fn import_checkpoint(job: &Path) -> Option<ImportCheckpoint> {
+    let mut last = None;
+    for (index, module) in IMPORTS.iter().enumerate() {
+        for (offset, boundary) in ["before", "after"].iter().enumerate() {
+            let path = job.join(format!("scratch/import-{}.json", index * 2 + offset));
+            if !path.exists() {
+                return last;
+            }
+            let bytes = read_result(&path, 512).ok()?;
+            let record: ImportCheckpoint = serde_json::from_slice(&bytes).ok()?;
+            if record.module != *module || record.boundary != *boundary {
+                return None;
+            }
+            last = Some(record);
+        }
+    }
+    last
+}
+
+fn quota_kind(error: &Error) -> Option<&'static str> {
+    let Error::QuotaExhausted(message) = error else {
+        return None;
+    };
+    Some(match message.as_str() {
+        "Local worker wall-time limit exhausted" => "wall-time",
+        "Worker output nesting limit exceeded" => "tree-depth",
+        "Worker file-count limit exceeded" => "tree-entry-count",
+        "Worker disk budget exceeded" => "tree-or-file-bytes",
+        "Worker output size overflow" => "tree-size-overflow",
+        _ => "other",
+    })
+}
+
+fn elapsed_ms(started: Instant) -> u64 {
+    started.elapsed().as_millis().try_into().unwrap_or(u64::MAX)
+}
+
 fn failure(error: &Error) -> &'static str {
     match error {
         Error::TerminationUnverified(_) => "termination-unverified",
@@ -341,6 +386,7 @@ fn run(
     observation: &mut serde_json::Value,
     output: &mut File,
 ) -> Result<WorkerResult> {
+    let preparation_started = Instant::now();
     observation["phase"] = "runtime-inventory".into();
     save(output, observation)?;
     verify_prefix(prefix, MANIFEST, 11_320)?;
@@ -417,12 +463,15 @@ fn run(
             .stdout(stdout)
             .stderr(stderr);
         configure_process(&mut command)?;
+        observation["preparation_elapsed_ms"] = elapsed_ms(preparation_started).into();
         observation["phase"] = "confined-compatibility".into();
         observation["termination_state"] = "unconfirmed".into();
         save(output, observation)?;
+        let supervised_started = Instant::now();
         let child = match command.spawn() {
             Ok(child) => child,
             Err(error) => {
+                observation["supervised_elapsed_ms"] = elapsed_ms(supervised_started).into();
                 observation["termination_state"] = "not-started".into();
                 return Err(error.into());
             }
@@ -434,6 +483,10 @@ fn run(
             Duration::from_secs(30),
             Some(&CancellationToken::default()),
         );
+        observation["supervised_elapsed_ms"] = elapsed_ms(supervised_started).into();
+        if let Err(error) = &status {
+            observation["quota_kind"] = serde_json::json!(quota_kind(error));
+        }
         // Never inspect/copy worker output unless termination was confirmed.
         let status = match status {
             Err(error @ Error::TerminationUnverified(_)) => {
@@ -444,6 +497,8 @@ fn run(
         };
         observation["termination_state"] = "confirmed".into();
         observation["last_worker_checkpoint"] = serde_json::json!(checkpoint(job.path()));
+        observation["last_import_checkpoint"] =
+            serde_json::to_value(import_checkpoint(job.path()))?;
         for name in ["stdout.txt", "stderr.txt"] {
             if let Ok(data) = read_result(&job.path().join("scratch").join(name), DIAGNOSTIC_LIMIT)
             {
@@ -476,6 +531,14 @@ fn run(
             checkpoint(job.path()).as_deref() == Some("complete"),
             "Incomplete Python probe checkpoints",
         )?;
+        require(
+            import_checkpoint(job.path())
+                == Some(ImportCheckpoint {
+                    module: "pyarrow".into(),
+                    boundary: "after".into(),
+                }),
+            "Incomplete Python import checkpoints",
+        )?;
         let accepted = accept(
             &read_result(&job.path().join("scratch/result.json"), RESULT_LIMIT)?,
             job_id,
@@ -491,7 +554,8 @@ fn initial_observation(campaign_id: &str) -> serde_json::Value {
         "campaign_id":campaign_id,"job_id":uuid::Uuid::new_v4().to_string(),"architecture":std::env::consts::ARCH,"runtime_verified":false,
         "candidate_interpreter":null,"profile_sha256":null,"assigned_files":{},"termination_state":"not-started",
         "passed":false,"complete_release":false,"phase":"not-started","diagnostics_within_bound":true,
-        "last_worker_checkpoint":null,"exit_code":null,"failure":null,"result":null})
+        "last_worker_checkpoint":null,"last_import_checkpoint":null,"quota_kind":null,
+        "preparation_elapsed_ms":null,"supervised_elapsed_ms":null,"exit_code":null,"failure":null,"result":null})
 }
 
 #[test]
@@ -543,6 +607,9 @@ fn native_python_compatibility() {
         }
         Err(error) => {
             observation["failure"] = failure(&error).into();
+            if observation["quota_kind"].is_null() {
+                observation["quota_kind"] = serde_json::json!(quota_kind(&error));
+            }
         }
     }
     save(&mut output, &observation).unwrap();
@@ -625,4 +692,82 @@ fn python_probe_runtime_requires_exact_inventory_without_links_or_mutation() {
     fs::set_permissions(&binary, fs::Permissions::from_mode(0o755)).unwrap();
     fs::write(binary, b"changed").unwrap();
     assert!(verify_prefix(&prefix, &pin, 2).is_err());
+}
+
+#[test]
+fn python_probe_import_checkpoints_are_ordered_bounded_and_closed() {
+    let temp = tempfile::tempdir().unwrap();
+    let scratch = temp.path().join("scratch");
+    fs::create_dir(&scratch).unwrap();
+    assert!(import_checkpoint(temp.path()).is_none());
+    fs::write(
+        scratch.join("import-0.json"),
+        br#"{"module":"duckdb","boundary":"before"}"#,
+    )
+    .unwrap();
+    assert_eq!(
+        import_checkpoint(temp.path()),
+        Some(ImportCheckpoint {
+            module: "duckdb".into(),
+            boundary: "before".into()
+        })
+    );
+    for invalid in [
+        br#"{"module":"networkx","boundary":"after"}"#.as_slice(),
+        br#"{"module":"duckdb","boundary":"after","private":"not-allowed"}"#,
+        br#"{"module":"duckdb","module":"duckdb","boundary":"after"}"#,
+        br#"{"module":"not-allowed","boundary":"after"}"#,
+    ] {
+        fs::write(scratch.join("import-1.json"), invalid).unwrap();
+        assert!(import_checkpoint(temp.path()).is_none());
+    }
+    fs::write(scratch.join("import-1.json"), [b' '; 513]).unwrap();
+    assert!(import_checkpoint(temp.path()).is_none());
+    for (index, module) in IMPORTS.iter().enumerate() {
+        for (offset, boundary) in ["before", "after"].iter().enumerate() {
+            fs::write(
+                scratch.join(format!("import-{}.json", index * 2 + offset)),
+                serde_json::to_vec(&serde_json::json!({"module":module,"boundary":boundary}))
+                    .unwrap(),
+            )
+            .unwrap();
+        }
+    }
+    assert_eq!(
+        import_checkpoint(temp.path()),
+        Some(ImportCheckpoint {
+            module: "pyarrow".into(),
+            boundary: "after".into()
+        })
+    );
+    fs::remove_file(scratch.join("import-1.json")).unwrap();
+    assert_eq!(
+        import_checkpoint(temp.path()),
+        Some(ImportCheckpoint {
+            module: "duckdb".into(),
+            boundary: "before".into()
+        })
+    );
+}
+
+#[test]
+fn python_probe_quota_categories_never_expose_unrecognized_error_text() {
+    for (message, expected) in [
+        ("Local worker wall-time limit exhausted", "wall-time"),
+        ("Worker output nesting limit exceeded", "tree-depth"),
+        ("Worker file-count limit exceeded", "tree-entry-count"),
+        ("Worker disk budget exceeded", "tree-or-file-bytes"),
+        ("Worker output size overflow", "tree-size-overflow"),
+        ("unrecognized private diagnostic", "other"),
+    ] {
+        assert_eq!(
+            quota_kind(&Error::QuotaExhausted(message.into())),
+            Some(expected)
+        );
+    }
+    assert_eq!(
+        quota_kind(&Error::TerminationUnverified("private".into())),
+        None
+    );
+    assert_eq!(quota_kind(&Error::Validation("private".into())), None);
 }

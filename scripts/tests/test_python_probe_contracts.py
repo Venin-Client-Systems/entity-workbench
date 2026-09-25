@@ -44,7 +44,9 @@ def successful_receipt(campaign):
               'campaign_id': campaign, 'job_id': job, 'architecture': 'aarch64', 'runtime_verified': True,
               'candidate_interpreter': interpreter, 'profile_sha256': 'a' * 64, 'assigned_files': assigned,
               'termination_state': 'confirmed', 'passed': True, 'complete_release': False, 'phase': 'complete',
-              'diagnostics_within_bound': True, 'last_worker_checkpoint': 'complete', 'exit_code': 0, 'failure': None,
+              'diagnostics_within_bound': True, 'last_worker_checkpoint': 'complete',
+              'last_import_checkpoint': {'module': 'pyarrow', 'boundary': 'after'}, 'quota_kind': None,
+              'preparation_elapsed_ms': 50, 'supervised_elapsed_ms': 100, 'exit_code': 0, 'failure': None,
               'result': {'schema_version': 1, 'recipe': 'python-compatibility-v1', 'job_id': job,
                          'manifest_sha256': runner.MANIFEST, 'python_version': '3.13.15', 'isolated': True,
                          'no_site': True, 'no_bytecode': True, 'verified_paths': True,
@@ -87,6 +89,25 @@ class ProbeContractTests(unittest.TestCase):
             with patch.object(compatibility.importlib.metadata, 'distributions', return_value=distributions):
                 with self.assertRaises(ValueError): compatibility.distribution_versions(Path('site'), wanted)
 
+    def test_import_diagnostics_retain_exact_order_and_failed_import_boundary(self):
+        class StopProbe(Exception): pass
+        fixture = {'schema_version': 1, 'versions': {}}
+        for fail_at in range(6):
+            events = []; count = 0
+            def fake_import(name):
+                nonlocal count
+                current = count; count += 1
+                if current == fail_at: raise StopProbe()
+                return SimpleNamespace()
+            with patch.object(compatibility, 'distribution_versions', return_value=({}, [])), \
+                    patch.object(compatibility.importlib, 'import_module', side_effect=fake_import) as imported:
+                with self.assertRaises(StopProbe):
+                    compatibility.execute(fixture, Path('prefix'), Path('job'), lambda _phase: None,
+                                          lambda module, boundary: events.append((module, boundary)))
+            self.assertEqual([call.args[0] for call in imported.call_args_list], list(runner.IMPORTS[:fail_at + 1]))
+            self.assertEqual(events, [(module, boundary) for module in runner.IMPORTS[:fail_at]
+                                      for boundary in ('before', 'after')] + [(runner.IMPORTS[fail_at], 'before')])
+
     def test_native_receipt_binds_campaign_job_source_interpreter_and_termination(self):
         campaign = str(uuid.uuid4())
         native, interpreter = successful_receipt(campaign)
@@ -98,7 +119,9 @@ class ProbeContractTests(unittest.TestCase):
                      lambda n: n['assigned_files']['code/bootstrap.py'].update(sha256='b' * 64),
                      lambda n: n['assigned_files'].pop('input/assignment.json'),
                      lambda n: n['result']['checks'].update(transfer_rejected=1), lambda n: n.update(exit_code=False),
-                     lambda n: n.update(extra='unreviewed')]
+                     lambda n: n.update(extra='unreviewed'), lambda n: n.update(quota_kind='wall-time'),
+                     lambda n: n.update(last_import_checkpoint={'module': 'spacy', 'boundary': 'before'}),
+                     lambda n: n.update(supervised_elapsed_ms=None)]
         for mutate in mutations:
             changed = copy.deepcopy(native); mutate(changed)
             with self.assertRaises(runner.ProbeFailure): runner.accept_native(changed, campaign, interpreter)
@@ -112,6 +135,11 @@ class ProbeContractTests(unittest.TestCase):
         self.assertEqual(summary['job_id'], native['job_id'])
         for key, value in [('failure', '/private/sentinel'), ('phase', '/private/sentinel'),
                            ('profile_sha256', '/private/sentinel'), ('job_id', '/private/sentinel'),
+                           ('last_import_checkpoint', {'module': '/private/sentinel', 'boundary': 'before'}),
+                           ('last_import_checkpoint', {'module': 'duckdb', 'boundary': '/private/sentinel'}),
+                           ('last_import_checkpoint', {'module': 'duckdb', 'boundary': 'before', 'private': 'x'}),
+                           ('quota_kind', '/private/sentinel'), ('supervised_elapsed_ms', True),
+                           ('preparation_elapsed_ms', -1), ('supervised_elapsed_ms', 86_400_001),
                            ('candidate_interpreter', {'path': '/private/sentinel', **identity(b'x')})]:
             changed = copy.deepcopy(native); changed[key] = value
             with self.assertRaises(runner.ProbeFailure): runner.failure_summary(changed, campaign)
@@ -122,7 +150,8 @@ class ProbeContractTests(unittest.TestCase):
         campaign = str(uuid.uuid4()); native, _ = successful_receipt(campaign)
         native.update(passed=False, phase='runtime-inventory', runtime_verified=False, candidate_interpreter=None,
                       profile_sha256=None, assigned_files={}, termination_state='not-started',
-                      last_worker_checkpoint=None, exit_code=None, failure='compatibility-failed', result=None)
+                      last_worker_checkpoint=None, last_import_checkpoint=None, quota_kind=None, preparation_elapsed_ms=None,
+                      supervised_elapsed_ms=None, exit_code=None, failure='compatibility-failed', result=None)
         self.assertEqual(runner.failure_summary(native, campaign)['assigned_files'], {})
         with self.assertRaises(runner.ProbeFailure): runner.accept_native(native, campaign, None)
 

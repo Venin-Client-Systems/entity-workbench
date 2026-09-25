@@ -173,3 +173,26 @@ describe the original assembly/verifier operation, not the later campaign's
 history. The failed native execution is recorded separately and does not mutate
 that immutable installed manifest. Raw build/native logs remain private local
 artifacts. No job directories remained after confirmed cleanup.
+
+## Reviewed diagnostic refinement — awaiting execution review
+
+The follow-up records one closed `before`/`after` checkpoint around each of the
+six imports in the existing order: duckdb, networkx, spacy, click, splink, pyarrow.
+Each checkpoint is at most 512 bytes, with only a fixed module and boundary.
+Success requires all twelve in order. Malformed, oversized, duplicate or unknown
+fields cannot enter a retained diagnostic. Result fixtures and import behavior
+are otherwise unchanged.
+
+A closed `quota_kind` identifies the exact existing supervisor message as
+`wall-time`, `tree-depth`, `tree-entry-count`, `tree-or-file-bytes` or
+`tree-size-overflow`. An unrecognized quota message becomes only `other`; other
+error classes have no quota kind. No original exception text is copied. These
+values classify the supervisor's observed quota failures, not CPU-limit signals.
+
+Monotonic `preparation_elapsed_ms` measures inventory/setup through readiness
+to spawn. `supervised_elapsed_ms` measures spawn through the existing wait and
+termination/reaping return, including spawn overhead; it does not redefine the
+existing wall-time timer. Null means that interval has not completed. Timing
+observations cannot authorize larger budgets or infer a causal explanation.
+Sandbox grants, all resource limits and final result assertions are unchanged.
+The first failure above remains byte-for-byte historical evidence.

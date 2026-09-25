@@ -5,6 +5,7 @@ import sys
 
 MAX_JSON = 64 * 1024
 PHASES = ('bootstrap', 'versions', 'imports', 'mentions', 'graph', 'transactions', 'plugins', 'complete')
+IMPORTS = ('duckdb', 'networkx', 'spacy', 'click', 'splink', 'pyarrow')
 
 
 def require(condition):
@@ -64,9 +65,15 @@ def main():
             phase = value
             write_json(scratch / ('checkpoint-' + str(PHASES.index(value)) + '.json'), {'phase': value}, 512)
 
+        def import_checkpoint(module, boundary):
+            require(module in IMPORTS and boundary in ('before', 'after'))
+            index = IMPORTS.index(module) * 2 + (boundary == 'after')
+            write_json(scratch / ('import-' + str(index) + '.json'),
+                       {'module': module, 'boundary': boundary}, 512)
+
         checkpoint('bootstrap')
         from compatibility import execute
-        result = {'checks': execute(read_json(job / 'input/fixture.json'), prefix, job, checkpoint)}
+        result = {'checks': execute(read_json(job / 'input/fixture.json'), prefix, job, checkpoint, import_checkpoint)}
         result.update(schema_version=1, recipe='python-compatibility-v1', job_id=assignment['job_id'],
                       manifest_sha256=assignment['manifest_sha256'], python_version=sys.version.split()[0],
                       isolated=True, no_site=True, no_bytecode=True, verified_paths=True)

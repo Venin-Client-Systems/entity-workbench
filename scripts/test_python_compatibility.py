@@ -63,7 +63,9 @@ def read_json(path, maximum):
 NATIVE_KEYS = {'schema_version', 'recipe', 'runtime_manifest_sha256', 'passed', 'complete_release',
                'phase', 'diagnostics_within_bound', 'last_worker_checkpoint', 'exit_code', 'failure', 'result',
                'campaign_id', 'job_id', 'architecture', 'runtime_verified', 'candidate_interpreter',
-               'profile_sha256', 'assigned_files', 'termination_state'}
+               'profile_sha256', 'assigned_files', 'termination_state', 'last_import_checkpoint', 'quota_kind',
+               'preparation_elapsed_ms', 'supervised_elapsed_ms'}
+IMPORTS = ('duckdb', 'networkx', 'spacy', 'click', 'splink', 'pyarrow')
 ASSIGNED = {'code/bootstrap.py': 'workers/python/probe/bootstrap.py',
             'code/compatibility.py': 'workers/python/probe/compatibility.py',
             'code/transaction_totals.py': 'workers/python/transaction_totals.py',
@@ -108,6 +110,15 @@ def failure_summary(native, campaign):
     require(native['candidate_interpreter'] is None or asset_identity(native['candidate_interpreter'], 80 * 1024**2,
                                                                     'install/bin/python3.13'), 'unsafe-interpreter-identity')
     require(native['profile_sha256'] is None or sha256(native['profile_sha256']), 'unsafe-profile-identity')
+    checkpoint = native['last_import_checkpoint']
+    require(checkpoint is None or isinstance(checkpoint, dict) and set(checkpoint) == {'module', 'boundary'}
+            and checkpoint['module'] in IMPORTS and checkpoint['boundary'] in ('before', 'after'),
+            'unsafe-import-checkpoint')
+    require(native['quota_kind'] is None or native['quota_kind'] in
+            ('wall-time', 'tree-depth', 'tree-entry-count', 'tree-or-file-bytes', 'tree-size-overflow', 'other'),
+            'unsafe-quota-kind')
+    require(all(native[key] is None or type(native[key]) is int and 0 <= native[key] <= 86_400_000
+                for key in ('preparation_elapsed_ms', 'supervised_elapsed_ms')), 'unsafe-elapsed-observation')
     assigned = native['assigned_files']
     require(isinstance(assigned, dict) and set(assigned) <= set(ASSIGNED)
             and all(asset_identity(value, 64 * 1024) for value in assigned.values()), 'unsafe-assigned-identity')
@@ -120,7 +131,10 @@ def accept_native(native, campaign, interpreter):
             and native['diagnostics_within_bound'] is True and native['last_worker_checkpoint'] == 'complete'
             and type(native['exit_code']) is int and native['exit_code'] == 0 and native['failure'] is None
             and native['termination_state'] == 'confirmed' and sha256(native['profile_sha256'])
-            and native['candidate_interpreter'] == interpreter and set(native['assigned_files']) == set(ASSIGNED),
+            and native['candidate_interpreter'] == interpreter and set(native['assigned_files']) == set(ASSIGNED)
+            and native['last_import_checkpoint'] == {'module': 'pyarrow', 'boundary': 'after'}
+            and native['quota_kind'] is None and native['preparation_elapsed_ms'] is not None
+            and native['supervised_elapsed_ms'] is not None,
             'native-compatibility-failed')
     for relative, source in ASSIGNED.items():
         if relative == 'input/assignment.json':

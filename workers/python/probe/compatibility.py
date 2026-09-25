@@ -31,14 +31,18 @@ def write_transactions(pa, pq, path, rows):
     require(path.stat().st_size <= 1024 * 1024)
 
 
-def execute(fixture, prefix, job, checkpoint):
+def execute(fixture, prefix, job, checkpoint, import_checkpoint):
     require(fixture['schema_version'] == 1)
     site = prefix / 'install/lib/python3.13/site-packages'
     checkpoint('versions')
     versions, distributions = distribution_versions(site, fixture['versions'])
     checkpoint('imports')
     imported = ['duckdb', 'networkx', 'spacy', 'click', 'splink', 'pyarrow']
-    modules = {name: importlib.import_module(name) for name in imported}
+    modules = {}
+    for name in imported:
+        import_checkpoint(name, 'before')
+        modules[name] = importlib.import_module(name)
+        import_checkpoint(name, 'after')
     for module in modules.values():
         require(Path(module.__file__).resolve().is_relative_to(site))
 
