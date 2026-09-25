@@ -72,4 +72,3 @@ def preimport_backends():
     entry = backends[0]
     require((entry.name, entry.value) == LOOPBACK and entry.dist is not None
             and entry.dist.metadata['Name'].lower() == 'networkx' and entry.dist.version == '3.6.1')
-

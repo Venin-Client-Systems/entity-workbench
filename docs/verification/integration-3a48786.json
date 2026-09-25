@@ -184,5 +184,11 @@
     "Hosted source checks for earlier 4bdcb5b passed; this new head requires its own checks",
     "Clean supported-platform installation, signed helpers, complete packaging and independent release review remain open"
   ],
-  "complete_release": false
+  "complete_release": false,
+  "publication_preflight": {
+    "outcome": "First complete commit-range diff check rejected one extra terminal blank line in workers/python/runtime_support.py",
+    "repair": "Normalized only terminal newline after the recorded integration; no functional source change",
+    "original_integration_source_retained": true,
+    "native_execution": false
+  }
 }
