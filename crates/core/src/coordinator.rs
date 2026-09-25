@@ -358,8 +358,8 @@ fn work(shared: Arc<Shared>) {
                 ))
             } else if matches!(result, Err(Error::Cleanup(_))) {
                 Err(Error::Cleanup("Scratch cleanup failed".into()))
-            } else if shared.stopping.load(Ordering::Acquire) {
-                Err(Error::Interrupted("Coordinator stopped".into()))
+            } else if shared.stopping.load(Ordering::Acquire) || !shared.ownership.held() {
+                Err(Error::Interrupted("Coordinator execution stopped".into()))
             } else {
                 match &result {
                     Ok(value) => Ok(value),

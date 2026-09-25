@@ -29,7 +29,7 @@ impl CollectionOwnership {
             .lock()
             .is_ok_and(|state| state.file.is_some() && !state.quarantined)
     }
-    fn publication_held(&self) -> bool {
+    pub(crate) fn publication_held(&self) -> bool {
         self.state.lock().is_ok_and(|state| state.file.is_some())
     }
     pub(crate) fn quarantine(&self) {

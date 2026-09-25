@@ -861,3 +861,170 @@ fn ordinary_document_cleanup_failure_does_not_quarantine_collection_or_joined_re
         JobCoordinator::start(Workspace::open(temp.path().join("case")).unwrap(), 1).unwrap();
     next.shutdown().unwrap();
 }
+
+#[test]
+fn unknown_collection_quarantines_before_failed_publication_and_retains_explicit_retry() {
+    for late_success in [false, true] {
+        unknown_collection_publication_case(late_success);
+    }
+}
+
+fn unknown_collection_publication_case(late_success: bool) {
+    use crate::{
+        collection_jobs::CollectionEvent,
+        collection_transport::{CallerContextState, ResolverUncertainty, StopReason},
+        engines::parser::{ParseLimitation, ParseResult, ParseStatus},
+        processing::{ProcessingFailure, ProcessingState},
+    };
+    let (temp, mut workspace) = fixture();
+    let source = workspace
+        .import("synthetic.txt", b"Synthetic pending publication")
+        .unwrap();
+    let active_document = workspace.queue_document_parse(&source, &key()).unwrap();
+    let queued_document = workspace.queue_document_parse(&source, &key()).unwrap();
+    let collection = workspace
+        .queue_collection_transport(input(), &key(), now())
+        .unwrap();
+    sql(&temp, "CREATE TRIGGER reject_unknown_receipt BEFORE UPDATE ON records WHEN NEW.kind='collection_run' AND json_extract(NEW.body,'$.events[#-1].event')='transport_observed' BEGIN SELECT RAISE(ABORT,'synthetic receipt publication fault'); END;");
+    let entered = Arc::new(AtomicBool::new(false));
+    let cancelled = Arc::new(AtomicBool::new(false));
+    let document_calls = Arc::new(AtomicUsize::new(0));
+    let transport_calls = Arc::new(AtomicUsize::new(0));
+    let (doc_entered, doc_cancelled, doc_calls) =
+        (entered.clone(), cancelled.clone(), document_calls.clone());
+    let (net_entered, net_calls) = (entered.clone(), transport_calls.clone());
+    let coordinator = JobCoordinator::with_collection_executor(
+        workspace,
+        Arc::new(move |_, _, _, bytes, token| {
+            assert_eq!(
+                doc_calls.fetch_add(1, Ordering::AcqRel),
+                0,
+                "Queued document must never launch"
+            );
+            doc_entered.store(true, Ordering::Release);
+            until(|| token.is_cancelled());
+            doc_cancelled.store(true, Ordering::Release);
+            if late_success {
+                Ok(ProcessingOutput::Document(ParseResult {
+                    protocol_version: 1,
+                    job_id: key(),
+                    content_sha256: crate::store::hash(bytes),
+                    source_bytes: bytes.len() as u64,
+                    parser: "utf8-v1".into(),
+                    media_type: "text/plain".into(),
+                    status: ParseStatus::Complete,
+                    text: "Synthetic late result must not publish".into(),
+                    metadata: BTreeMap::new(),
+                    limitations: vec![ParseLimitation::NoSourceAnchors],
+                    error: None,
+                }))
+            } else {
+                Err(Error::Interrupted(
+                    "Synthetic cancellation before collection publication".into(),
+                ))
+            }
+        }),
+        Arc::new(move |_, _, _, _, _| {
+            until(|| net_entered.load(Ordering::Acquire));
+            net_calls.fetch_add(1, Ordering::AcqRel);
+            Observation {
+                outcome: Outcome::Stopped {
+                    reason: StopReason::QuiescenceUnverified,
+                    head: None,
+                },
+                phase: Phase::Dns,
+                elapsed_milliseconds: 1,
+                observed_wall_ms: now(),
+                resolved: None,
+                resolver_uncertainty: Some(ResolverUncertainty {
+                    method: "windows_overlapped_dns",
+                    caller_context: CallerContextState::RetainedPendingCompletion,
+                }),
+                stop_observed: None,
+                locally_quiescent: false,
+            }
+        }),
+    )
+    .unwrap();
+    until(|| coordinator.collection_status().unwrap().phase == LanePhase::SettlementPending);
+    // This is before retry or shutdown. A blocked canonical write cannot delay quarantine.
+    assert!(!coordinator.shared.ownership.held());
+    until(|| cancelled.load(Ordering::Acquire));
+    until(|| {
+        coordinator
+            .shared
+            .workspace
+            .lock()
+            .unwrap()
+            .processing_job(&active_document.id)
+            .unwrap()
+            .state
+            != ProcessingState::Running
+    });
+    let stopped_document = coordinator
+        .shared
+        .workspace
+        .lock()
+        .unwrap()
+        .processing_job(&active_document.id)
+        .unwrap();
+    assert_eq!(
+        stopped_document.failure,
+        Some(ProcessingFailure::Interrupted)
+    );
+    assert!(stopped_document.result_ids.is_empty());
+    assert_eq!(
+        coordinator
+            .shared
+            .workspace
+            .lock()
+            .unwrap()
+            .processing_job(&queued_document.id)
+            .unwrap()
+            .state,
+        ProcessingState::Queued
+    );
+    assert_eq!(document_calls.load(Ordering::Acquire), 1);
+    assert_eq!(transport_calls.load(Ordering::Acquire), 1);
+    let before = coordinator.inspect_collection_job(&collection.id).unwrap();
+    assert!(matches!(
+        before.checkpoint.requests[0].progress,
+        RequestProgress::Reserved
+    ));
+    assert!(!before
+        .events
+        .iter()
+        .any(|event| matches!(event, CollectionEvent::TransportObserved { .. })));
+    assert!(coordinator.queue_collection(input(), &key()).is_err());
+    assert!(coordinator
+        .retry_collection_settlement(&collection.id, 2, 0)
+        .is_err());
+    assert!(coordinator
+        .retry_collection_settlement(&collection.id, 1, 1)
+        .is_err());
+    sql(&temp, "DROP TRIGGER reject_unknown_receipt;");
+    coordinator
+        .retry_collection_settlement(&collection.id, 1, 0)
+        .unwrap();
+    until(|| coordinator.collection_status().unwrap().phase == LanePhase::RecoveryRequired);
+    let after = coordinator.inspect_collection_job(&collection.id).unwrap();
+    assert_eq!(after.checkpoint.state, CollectionState::RecoveryRequired);
+    assert_eq!(
+        after
+            .events
+            .iter()
+            .filter(|event| matches!(event, CollectionEvent::TransportObserved { .. }))
+            .count(),
+        1
+    );
+    assert_eq!(after.checkpoint.requests_used(), 1);
+    assert_eq!(transport_calls.load(Ordering::Acquire), 1);
+    assert_eq!(document_calls.load(Ordering::Acquire), 1);
+    assert!(coordinator
+        .retry_collection_settlement(&collection.id, 1, 0)
+        .is_err());
+    assert!(coordinator.shutdown().is_err());
+    assert!(coordinator.shutdown().is_err());
+    drop(coordinator);
+    assert!(JobCoordinator::start(Workspace::open(temp.path().join("case")).unwrap(), 1).is_err());
+}

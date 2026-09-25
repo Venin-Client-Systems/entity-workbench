@@ -234,7 +234,11 @@ impl JobCoordinator {
         sequence: u32,
     ) -> Result<CollectionLaneStatus> {
         let lane = self.collection_lane()?;
-        self.collection_open()?;
+        crate::require(
+            !self.shared.stopping.load(Ordering::Acquire)
+                && self.shared.ownership.publication_held(),
+            "Collection publication ownership is stopped or unavailable",
+        )?;
         let mut state = lane
             .state
             .lock()
@@ -355,10 +359,14 @@ fn run(shared: &Shared, lane: &CollectionLane) -> Result<()> {
                 state.status.publication_retries = 0;
                 state.retry_requested = false;
             }
+            if unknown {
+                // Execution must stop even when canonical settlement is blocked.
+                // The still-locked ownership lifetime permits publication only.
+                quarantine_execution(shared);
+            }
             let finished = publish(shared, lane, &pending)?;
             if unknown {
                 lane.fault(true);
-                quarantine_execution(shared);
                 return Ok(());
             }
             let Some(job) = finished else {
