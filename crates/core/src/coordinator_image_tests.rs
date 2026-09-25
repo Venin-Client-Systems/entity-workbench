@@ -55,7 +55,9 @@ fn image_and_parse_share_two_slots_and_joined_shutdown() {
             match input {
                 ProcessingInput::ImageOcr { .. } => image_flag.store(true, Ordering::Release),
                 ProcessingInput::ParseDocument { .. } => parse_flag.store(true, Ordering::Release),
-                ProcessingInput::PdfPageOcr { .. } | ProcessingInput::ImageOcrRegions { .. } => {
+                ProcessingInput::ShortestConnectionPath { .. }
+                | ProcessingInput::PdfPageOcr { .. }
+                | ProcessingInput::ImageOcrRegions { .. } => {
                     panic!("Unexpected PDF job in image/parse fixture")
                 }
             }

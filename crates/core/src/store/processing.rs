@@ -12,6 +12,9 @@ mod publication;
 use publication::validated_derivative;
 #[path = "processing_extraction.rs"]
 mod extraction;
+#[path = "processing_graph.rs"]
+#[allow(dead_code)]
+mod graph;
 
 const MAX_PENDING: usize = 64;
 const MAX_ATTEMPTS: u32 = 3;
@@ -19,18 +22,39 @@ const PAGE_LIMIT: u32 = 200;
 
 fn supported_job(job: &ProcessingJob) -> Result<()> {
     require(
-        job.schema_version == 4
+        job.schema_version == 5
+            && matches!(job.input, ProcessingInput::ShortestConnectionPath { .. })
+            || (job.schema_version == 4
+                && !matches!(job.input, ProcessingInput::ShortestConnectionPath { .. }))
             || (job.schema_version == 3
-                && !matches!(job.input, ProcessingInput::ImageOcrRegions { .. }))
+                && !matches!(
+                    job.input,
+                    ProcessingInput::ImageOcrRegions { .. }
+                        | ProcessingInput::ShortestConnectionPath { .. }
+                ))
             || (job.schema_version == 2
                 && !matches!(
                     job.input,
-                    ProcessingInput::PdfPageOcr { .. } | ProcessingInput::ImageOcrRegions { .. }
+                    ProcessingInput::PdfPageOcr { .. }
+                        | ProcessingInput::ImageOcrRegions { .. }
+                        | ProcessingInput::ShortestConnectionPath { .. }
                 ))
             || (job.schema_version == 1
                 && matches!(job.input, ProcessingInput::ParseDocument { .. })),
         "Unsupported processing job version or operation",
     )?;
+    if let ProcessingInput::ShortestConnectionPath {
+        requested_revision,
+        queued_revision,
+        ..
+    } = job.input
+    {
+        require(
+            requested_revision < queued_revision
+                && (job.attempt != 1 || requested_revision.checked_add(1) == Some(queued_revision)),
+            "Invalid graph queue revisions",
+        )?;
+    }
     if let ProcessingInput::PdfPageOcr {
         page_number, dpi, ..
     } = job.input
@@ -368,7 +392,19 @@ impl Workspace {
             "This job cannot be retried in its current state",
         )?;
         require(job.attempt < MAX_ATTEMPTS, "Manual retry limit exhausted")?;
-        self.verify_processing_input(&job.input)?;
+        if matches!(job.input, ProcessingInput::ShortestConnectionPath { .. }) {
+            self.verify_graph_endpoints(&job.input)?;
+        } else {
+            self.verify_processing_input(&job.input)?;
+        }
+        if let ProcessingInput::ShortestConnectionPath {
+            queued_revision, ..
+        } = &mut job.input
+        {
+            *queued_revision = expected
+                .checked_add(1)
+                .ok_or_else(|| Error::Validation("Graph revision overflow".into()))?;
+        }
         job.state = ProcessingState::Queued;
         job.attempt += 1;
         job.cancellation_requested = false;
@@ -388,7 +424,9 @@ impl Workspace {
     }
 
     pub(super) fn verify_processing_input(&self, input: &ProcessingInput) -> Result<Vec<u8>> {
-        let (evidence_id, sha256, bytes) = input.source();
+        let (evidence_id, sha256, bytes) = input
+            .source()
+            .ok_or_else(|| Error::Validation("Graph input is not an imported document".into()))?;
         let evidence: Evidence = get(&self.conn, "evidence", evidence_id)?;
         require(
             evidence.id == evidence_id
@@ -410,6 +448,18 @@ impl Workspace {
         };
         let mut job: ProcessingJob = serde_json::from_str(&body)?;
         supported_job(&job)?;
+        if matches!(job.input, ProcessingInput::ShortestConnectionPath { .. }) {
+            terminal(&mut job, ProcessingState::Blocked,
+                Some(ProcessingFailure::SchedulingOrRuntimeUnavailable),
+                "Graph execution is disabled pending exclusive analytical scheduling and a verified application-local runtime; no capture or worker started");
+            self.change(
+                Some(expected),
+                "processing.graph_unavailable",
+                false,
+                |conn| put(conn, "processing_job", &job.id, &job),
+            )?;
+            return Ok(None);
+        }
         let bytes = match self.verify_processing_input(&job.input) {
             Ok(bytes) => bytes,
             Err(_) => {
@@ -435,6 +485,7 @@ impl Workspace {
         job.started_at = Some(now());
         job.updated_at = now();
         job.detail = match job.input {
+            ProcessingInput::ShortestConnectionPath { .. } => "Graph execution is disabled",
             ProcessingInput::ParseDocument { .. } => "Local document worker is running",
             ProcessingInput::PdfPageOcr { .. } => {
                 "Local PDF page rendering and OCR workers are running in sequence"
@@ -451,12 +502,13 @@ impl Workspace {
             require_verified_worker_exit(conn)?;
             put(conn, "processing_job", &job.id, &job)
         })?;
+        let ticket = JobTicket {
+            job_id: job.id,
+            attempt: job.attempt,
+            lease,
+        };
         Ok(Some(PreparedProcessingJob {
-            ticket: JobTicket {
-                job_id: job.id,
-                attempt: job.attempt,
-                lease,
-            },
+            ticket,
             input: job.input,
             bytes,
         }))
@@ -541,6 +593,10 @@ impl Workspace {
     ) -> Result<ProcessingJob> {
         let expected = self.revision()?;
         let mut job = self.processing_job(&ticket.job_id)?;
+        require(
+            !matches!(job.input, ProcessingInput::ShortestConnectionPath { .. }),
+            "Graph publication requires its private attempt",
+        )?;
         attempt(&job, ticket.attempt)?;
         require(
             job.lease.as_deref() == Some(&ticket.lease),
@@ -966,7 +1022,7 @@ mod tests {
             .unwrap();
         let prepared = workspace.claim_processing_job().unwrap().unwrap();
         let input = workspace.processing_job(&job.id).unwrap().input;
-        let (_, sha256, _) = input.source();
+        let (_, sha256, _) = input.source().unwrap();
         fs::rename(
             dir.path().join("originals").join(sha256),
             dir.path().join("scratch").join("removed-original"),
@@ -1120,7 +1176,7 @@ mod tests {
             if cancelled {
                 workspace.cancel_processing_job(&job.id, 1).unwrap();
             }
-            let (_, sha256, _) = job.input.source();
+            let (_, sha256, _) = job.input.source().unwrap();
             fs::rename(
                 dir.path().join("originals").join(sha256),
                 dir.path().join("scratch").join("removed-original"),
@@ -1225,3 +1281,7 @@ mod region_tests;
 #[cfg(debug_assertions)]
 #[path = "processing_region_demo.rs"]
 mod region_demo;
+
+#[cfg(test)]
+#[path = "processing_graph_tests.rs"]
+mod graph_tests;

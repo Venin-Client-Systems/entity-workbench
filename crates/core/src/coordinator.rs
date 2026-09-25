@@ -54,6 +54,9 @@ impl JobCoordinator {
                     Error::Blocked("Packaged processing runtime is unavailable".into())
                 })?;
                 match input {
+                    ProcessingInput::ShortestConnectionPath { .. } => Err(Error::Blocked(
+                        "Application-local Python graph execution is not activated".into(),
+                    )),
                     ProcessingInput::ParseDocument { .. } => runtime
                         .parse_with_cancel(scratch, bytes, token)
                         .map(ProcessingOutput::Document),

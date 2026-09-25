@@ -431,8 +431,15 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 ))?,
             ),
             (
+                "graph-analysis",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_jobs::GraphAnalysisRecord
+                ))?,
+            ),
+            (
                 "processing-job",
-                4,
+                5,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::processing::ProcessingJob
                 ))?,

@@ -21,6 +21,12 @@ pub enum ProcessingState {
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
 #[serde(tag = "operation", rename_all = "snake_case", deny_unknown_fields)]
 pub enum ProcessingInput {
+    ShortestConnectionPath {
+        source_id: String,
+        target_id: String,
+        requested_revision: u64,
+        queued_revision: u64,
+    },
     ParseDocument {
         evidence_id: String,
         sha256: String,
@@ -46,8 +52,9 @@ pub enum ProcessingInput {
 }
 
 impl ProcessingInput {
-    pub(crate) fn source(&self) -> (&str, &str, u64) {
+    pub(crate) fn source(&self) -> Option<(&str, &str, u64)> {
         match self {
+            Self::ShortestConnectionPath { .. } => None,
             Self::ParseDocument {
                 evidence_id,
                 sha256,
@@ -68,7 +75,7 @@ impl ProcessingInput {
                 sha256,
                 bytes,
                 ..
-            } => (evidence_id, sha256, *bytes),
+            } => Some((evidence_id, sha256, *bytes)),
         }
     }
 }
@@ -113,6 +120,8 @@ pub enum ProcessingFailure {
     WorkerExitUnverified,
     RecoveryRequired,
     DerivativeUnavailable,
+    StaleGraphCapture,
+    SchedulingOrRuntimeUnavailable,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -169,6 +178,9 @@ pub(crate) struct PreparedProcessingJob {
 
 /// In-memory only: image rasters are needed for acceptance, never serialized into job records.
 pub(crate) enum ProcessingOutput {
+    #[allow(dead_code)]
+    // Constructed only by the private publication tests until scheduling/activation.
+    Graph(Vec<u8>),
     Document(crate::engines::parser::ParseResult),
     Image(Box<crate::engines::image::ImageOcr>),
     Pdf(Box<crate::engines::pdf_render::PdfOcr>),

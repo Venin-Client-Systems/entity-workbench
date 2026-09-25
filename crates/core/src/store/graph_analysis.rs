@@ -4,7 +4,11 @@ use super::*;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 mod capture;
+#[allow(dead_code)] // Fixed publication seam; automatic graph execution remains disabled.
+mod job_attempt;
 mod model;
+pub(super) use job_attempt::record_identity;
+pub(crate) use job_attempt::GraphAttempt;
 use model::*;
 pub(crate) use model::{CapturedGraph, Hop, ValidatedGraph, ValidatedPath};
 
@@ -38,40 +42,16 @@ impl Workspace {
         let transaction = self.conn.unchecked_transaction()?;
         let revision = capture::revision(&transaction)?;
         same_revision(expected_revision, revision)?;
-        let selection = capture::read(self, &transaction, source_id, target_id)?;
-        let snapshot_sha256 = selection.digest(revision)?;
-        let nonce = Uuid::new_v4().to_string();
-        let request = WorkerInput {
-            schema_version: 1,
-            recipe: RECIPE,
-            policy: POLICY,
-            nonce: &nonce,
-            workspace_revision: revision,
-            snapshot_sha256: &snapshot_sha256,
-            engine: ENGINE,
-            engine_version: ENGINE_VERSION,
-            runtime_manifest_sha256: RUNTIME,
+        let captured = capture_in_transaction(
+            &self.root,
+            self.graph_capture_owner,
+            &transaction,
+            revision,
             source_id,
             target_id,
-            nodes: selection.nodes.iter().map(String::as_str).collect(),
-            edges: selection
-                .edges
-                .keys()
-                .map(|(a, b)| [a.as_str(), b.as_str()])
-                .collect(),
-        };
-        let request_bytes = bounded_json(&request, MAX_INPUT_BYTES)?;
+        )?;
         transaction.commit()?;
-        Ok(CapturedGraph {
-            owner: self.graph_capture_owner,
-            revision,
-            nonce,
-            snapshot_sha256,
-            source_id: source_id.into(),
-            target_id: target_id.into(),
-            request_bytes,
-            selection,
-        })
+        Ok(captured)
     }
 
     /// Consume the Rust-owned handle even on rejection. This returns no publication authority.
@@ -80,25 +60,89 @@ impl Workspace {
         captured: CapturedGraph,
         worker_bytes: &[u8],
     ) -> Result<ValidatedGraph> {
-        if captured.owner != self.graph_capture_owner {
-            return Err(Error::Conflict(
-                "Graph capture belongs to another workspace instance".into(),
-            ));
-        }
         let transaction = self.conn.unchecked_transaction()?;
-        same_revision(captured.revision, capture::revision(&transaction)?)?;
-        // Recapture from the pinned canonical read transaction, including original checks.
-        // A digest supplied by a worker is never used to choose or authenticate this state.
-        let current = capture::read(self, &transaction, &captured.source_id, &captured.target_id)?;
-        if current.digest(captured.revision)? != captured.snapshot_sha256 {
-            return Err(Error::Conflict(
-                "Captured graph records or provenance changed".into(),
-            ));
-        }
-        let result = validate_worker(&captured, worker_bytes)?;
+        let result = validate_borrowed(
+            &self.root,
+            self.graph_capture_owner,
+            &transaction,
+            &captured,
+            worker_bytes,
+        )?;
         transaction.commit()?;
         Ok(ValidatedGraph { captured, result })
     }
+}
+
+// Caller owns and pins the transaction; reads the actual stored revision before capture.
+fn capture_in_transaction(
+    root: &Path,
+    owner: Uuid,
+    conn: &Connection,
+    revision: u64,
+    source_id: &str,
+    target_id: &str,
+) -> Result<CapturedGraph> {
+    require(
+        !conn.is_autocommit(),
+        "Graph capture requires a pinned transaction",
+    )?;
+    same_revision(revision, capture::revision(conn)?)?;
+    let selection = capture::read(root, conn, source_id, target_id)?;
+    let snapshot_sha256 = selection.digest(revision)?;
+    let nonce = Uuid::new_v4().to_string();
+    let request = WorkerInput {
+        schema_version: 1,
+        recipe: RECIPE,
+        policy: POLICY,
+        nonce: &nonce,
+        workspace_revision: revision,
+        snapshot_sha256: &snapshot_sha256,
+        engine: ENGINE,
+        engine_version: ENGINE_VERSION,
+        runtime_manifest_sha256: RUNTIME,
+        source_id,
+        target_id,
+        nodes: selection.nodes.iter().map(String::as_str).collect(),
+        edges: selection
+            .edges
+            .keys()
+            .map(|(a, b)| [a.as_str(), b.as_str()])
+            .collect(),
+    };
+    let request_bytes = bounded_json(&request, MAX_INPUT_BYTES)?;
+    Ok(CapturedGraph {
+        owner,
+        revision,
+        nonce,
+        snapshot_sha256,
+        source_id: source_id.into(),
+        target_id: target_id.into(),
+        request_bytes,
+        selection,
+    })
+}
+
+// Not exposed: only the consumed read API and private GraphAttempt can borrow a capture here.
+fn validate_borrowed(
+    root: &Path,
+    owner: Uuid,
+    conn: &Connection,
+    captured: &CapturedGraph,
+    bytes: &[u8],
+) -> Result<ValidatedPath> {
+    if captured.owner != owner {
+        return Err(Error::Conflict(
+            "Graph capture belongs to another workspace instance".into(),
+        ));
+    }
+    same_revision(captured.revision, capture::revision(conn)?)?;
+    let current = capture::read(root, conn, &captured.source_id, &captured.target_id)?;
+    if current.digest(captured.revision)? != captured.snapshot_sha256 {
+        return Err(Error::Conflict(
+            "Captured graph records or provenance changed".into(),
+        ));
+    }
+    validate_worker(captured, bytes)
 }
 
 fn same_revision(expected: u64, actual: u64) -> Result<()> {

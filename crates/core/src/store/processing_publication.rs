@@ -114,7 +114,9 @@ pub(super) fn validated_derivative(
     original: &[u8],
     output: &ProcessingOutput,
 ) -> Result<Derivative> {
-    let (_, sha256, bytes) = job.input.source();
+    let (_, sha256, bytes) = job.input.source().ok_or_else(|| {
+        Error::InvalidWorkerResult("Graph output requires its private capture".into())
+    })?;
     require(
         hash(original) == sha256 && original.len() as u64 == bytes,
         "Processing source binding changed",

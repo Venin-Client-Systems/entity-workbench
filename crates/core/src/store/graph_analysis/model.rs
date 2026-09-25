@@ -53,6 +53,7 @@ pub(crate) struct Hop {
 }
 
 pub(crate) struct Selection {
+    pub(super) entities: BTreeMap<String, Entity>,
     pub(super) nodes: BTreeSet<String>,
     pub(super) edges: BTreeMap<(String, String), Vec<String>>,
     pub(crate) fingerprints: BTreeMap<(String, String), String>,
@@ -79,8 +80,9 @@ impl ReviewCounts {
     }
 }
 
-/// Evidence text never enters the capture handle or worker; original identity and origin do.
+/// Frozen evidence stays in the bounded Rust-owned handle; workers receive topology only.
 pub(crate) struct EvidenceProvenance {
+    pub(super) frozen: Evidence,
     pub(crate) sha256: String,
     pub(crate) bytes: u64,
     pub(crate) origin_group: String,

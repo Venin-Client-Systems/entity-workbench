@@ -2,7 +2,7 @@
 use super::*;
 use tempfile::TempDir;
 
-pub(super) fn specimen() -> (TempDir, Workspace, String) {
+pub(crate) fn specimen() -> (TempDir, Workspace, String) {
     let root = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
     let (workspace, source) = seed_case(&root.path().join("case")).unwrap();
     (root, workspace, source)

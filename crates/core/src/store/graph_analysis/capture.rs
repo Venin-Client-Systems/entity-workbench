@@ -140,7 +140,7 @@ fn validity(assertion: &Assertion) -> Result<()> {
 }
 
 pub(super) fn read(
-    workspace: &Workspace,
+    root: &Path,
     conn: &Connection,
     source: &str,
     target: &str,
@@ -235,7 +235,7 @@ pub(super) fn read(
                     "Graph referenced original aggregate exceeds bound",
                 )?;
                 // Reuse the authoritative no-follow, single-link, identity/hash-bound reader.
-                read_original(&workspace.root, &source)?;
+                read_original(root, &source)?;
                 // Store the bounded source only within this read, for existing anchor validation.
                 evidence.insert(source.id.clone(), source);
             }
@@ -256,14 +256,16 @@ pub(super) fn read(
             (
                 id,
                 EvidenceProvenance {
-                    sha256: value.sha256,
+                    sha256: value.sha256.clone(),
                     bytes: value.bytes,
-                    origin_group: value.origin_group,
+                    origin_group: value.origin_group.clone(),
+                    frozen: value,
                 },
             )
         })
         .collect();
     Ok(Selection {
+        entities,
         nodes,
         edges,
         fingerprints: budget.fingerprints,
