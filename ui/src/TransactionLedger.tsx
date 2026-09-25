@@ -9,8 +9,20 @@ import {
 } from "./TransactionPageControls";
 import { BalanceLabel, useTransactionBalances } from "./TransactionBalances";
 import { emptyFilter, type LedgerScope } from "./transaction-ledger-types";
+import {
+  TransactionExportOptions,
+  type TransactionOutputFormat,
+} from "./TransactionExportOptions";
+import { readTransactionCsv, type CsvPolicy } from "./transaction-csv";
 import { readTransactionExport } from "./transaction-export";
-import { nativeExportsAvailable, prepareNativeTransactions, commitNativeExport, discardNativeExport, type PreparedNativeExport } from "./native-export";
+import {
+  nativeExportsAvailable,
+  prepareNativeCsv,
+  prepareNativeTransactions,
+  commitNativeExport,
+  discardNativeExport,
+  type PreparedNativeExport,
+} from "./native-export";
 import "./transaction-ledger.css";
 
 export function TransactionLedger({
@@ -50,10 +62,12 @@ export function TransactionLedger({
     [exportError, setExportError] = useState(""),
     [notice, setNotice] = useState("");
   const [refreshError, setRefreshError] = useState("");
+  const [format, setFormat] = useState<TransactionOutputFormat>("json"),
+    [csvPolicy, setCsvPolicy] = useState<CsvPolicy>("reject");
   const lifetime = useRef(true),
     activeExport = useRef(false);
-  const latest = useRef({ revision, scope });
-  latest.current = { revision, scope };
+  const latest = useRef({ revision, scope, format, csvPolicy });
+  latest.current = { revision, scope, format, csvPolicy };
   const previousPivot = useRef(pivot),
     previousRevision = useRef(revision);
   useEffect(() => {
@@ -135,58 +149,93 @@ export function TransactionLedger({
       revision,
       count: read.value.page.selected_count,
       matching: read.value.matching,
+      format,
+      csvPolicy,
     };
     activeExport.current = true;
     setExporting(true);
     setExportError("");
     setNotice("");
     let prepared: PreparedNativeExport | undefined;
-    let committed = false;
+    let committed = false,
+      commitStarted = false;
     try {
       if (nativeExportsAvailable()) {
-        prepared = await prepareNativeTransactions(
-          snapshot.scope,
-          snapshot.revision,
-          snapshot.count,
-          snapshot.matching,
-        );
+        prepared =
+          snapshot.format === "csv"
+            ? await prepareNativeCsv(
+                snapshot.scope,
+                snapshot.csvPolicy,
+                snapshot.revision,
+                snapshot.count,
+                snapshot.matching,
+              )
+            : await prepareNativeTransactions(
+                snapshot.scope,
+                snapshot.revision,
+                snapshot.count,
+                snapshot.matching,
+              );
         if (
           !lifetime.current ||
           latest.current.revision !== snapshot.revision ||
-          latest.current.scope !== snapshot.scope
+          latest.current.scope !== snapshot.scope ||
+          latest.current.format !== snapshot.format ||
+          latest.current.csvPolicy !== snapshot.csvPolicy
         )
           throw new Error(
             "Ledger changed while preparing export. Apply and export the current scope again.",
           );
+        commitStarted = true;
         const saved = await commitNativeExport(prepared);
         committed = true;
         if (lifetime.current)
           setNotice(
-            `Saved ${snapshot.count} matching rows at revision ${snapshot.revision}: ${saved.location}`,
+            `Saved ${snapshot.count} matching ${snapshot.count === 1 ? "row" : "rows"} at revision ${snapshot.revision}: ${saved.location}${snapshot.format === "csv" ? ` · CSV SHA-256 ${saved.artifact.sha256}` : ""}`,
           );
         return;
       }
-      const value = await readTransactionExport(
-        snapshot.scope,
-        snapshot.revision,
-        snapshot.count,
-        snapshot.matching,
-      );
+      const value =
+        snapshot.format === "csv"
+          ? await readTransactionCsv(
+              snapshot.scope,
+              snapshot.csvPolicy,
+              snapshot.revision,
+              snapshot.count,
+              snapshot.matching,
+            )
+          : await readTransactionExport(
+              snapshot.scope,
+              snapshot.revision,
+              snapshot.count,
+              snapshot.matching,
+            );
       if (
         !lifetime.current ||
         latest.current.revision !== snapshot.revision ||
-        latest.current.scope !== snapshot.scope
+        latest.current.scope !== snapshot.scope ||
+        latest.current.format !== snapshot.format ||
+        latest.current.csvPolicy !== snapshot.csvPolicy
       )
         throw new Error(
           "Ledger changed while preparing export. Apply and export the current scope again.",
         );
-      await download(value.json, "transactions.json", "application/json");
+      if ("csv" in value)
+        await download(
+          value.csv,
+          `transactions-typed-v1-r${value.workspace_revision}-${value.sha256}.csv`,
+          "text/csv;charset=utf-8",
+        );
+      else await download(value.json, "transactions.json", "application/json");
       if (lifetime.current)
         setNotice(
-          `Prepared ${value.row_count} matching rows at revision ${value.workspace_revision} for export.`,
+          `Prepared ${value.row_count} matching ${value.row_count === 1 ? "row" : "rows"} at revision ${value.workspace_revision} for export.${snapshot.format === "csv" ? ` Browser download requested · CSV SHA-256 ${value.sha256}` : ""}`,
         );
     } catch (cause) {
-      if (lifetime.current) setExportError(String(cause));
+      if (lifetime.current)
+        setExportError(
+          `${commitStarted ? "Native save completion is unconfirmed. " : ""}${String(cause)}`,
+        );
     } finally {
       if (prepared && !committed) {
         try {
@@ -337,14 +386,6 @@ export function TransactionLedger({
           >
             Clear draft filters
           </button>
-          <button
-            className="button subtle"
-            type="button"
-            disabled={!read.value || exporting || dirty}
-            onClick={() => void exportAll()}
-          >
-            {exporting ? "Preparing complete export…" : "Export JSON"}
-          </button>
         </div>
       </form>
       {dirty && (
@@ -371,6 +412,26 @@ export function TransactionLedger({
         ; equal dates retain source insertion order. Literal query:{" "}
         <code>{scope.query || "(empty)"}</code>.
       </p>
+      <TransactionExportOptions
+        format={format}
+        policy={csvPolicy}
+        onFormat={(value) => {
+          setFormat(value);
+          setExportError("");
+          setNotice("");
+        }}
+        onPolicy={(value) => {
+          setCsvPolicy(value);
+          setExportError("");
+          setNotice("");
+        }}
+        revision={revision}
+        count={read.value?.page.selected_count ?? null}
+        counts={read.value?.page.review_counts ?? null}
+        disabled={!read.value || exporting || dirty}
+        exporting={exporting}
+        onExport={() => void exportAll()}
+      />
       <PageControls
         label="Ledger"
         value={read.value}

@@ -1,0 +1,3 @@
+    Checking workbench-windows-worker v0.1.0 (<worktree>/crates/windows-worker)
+    Checking workbench-core v0.1.0 (<worktree>/crates/core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 14.80s

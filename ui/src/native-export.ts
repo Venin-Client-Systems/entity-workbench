@@ -4,6 +4,13 @@ import {
   type LedgerScope,
   type Matching,
 } from "./transaction-ledger-types";
+import {
+  CSV_FORMAT,
+  csvRequest,
+  validateCsvIdentity,
+  type CsvIdentity,
+  type CsvPolicy,
+} from "./transaction-csv";
 import type { Workspace } from "./types";
 import { docxUuid, type DocxSnapshot } from "./docx-snapshot-types";
 export { isTauri as nativeExportsAvailable };
@@ -11,7 +18,7 @@ export { isTauri as nativeExportsAvailable };
 type TransactionArtifact = {
   kind: "transactions";
   workspace_revision: number;
-  request: LedgerScope;
+  request: Omit<LedgerScope, "page_size">;
   matching: Matching;
   query_sha256: string;
   row_count: number;
@@ -33,15 +40,17 @@ type DocxArtifact = {
   bytes: number;
   sha256: string;
 };
-type Artifact = TransactionArtifact | ReportArtifact | DocxArtifact;
+type CsvArtifact = CsvIdentity & { kind: "transaction_csv" };
+type Artifact =
+  TransactionArtifact | ReportArtifact | DocxArtifact | CsvArtifact;
 export type PreparedNativeExport = {
-  schema_version: 1;
+  schema_version: 1 | 2;
   ticket: string;
   expires_after_seconds: 120;
   artifact: Artifact;
 };
 export type SavedNativeExport = {
-  schema_version: 1;
+  schema_version: 1 | 2;
   ticket: string;
   artifact: Artifact;
   filename: string;
@@ -71,6 +80,26 @@ function artifactValid(a: Artifact): boolean {
     !integer(a.workspace_revision)
   )
     return false;
+  if (a.kind === "transaction_csv")
+    return (
+      keys(a, [
+        "kind",
+        "workspace_revision",
+        "request",
+        "matching",
+        "selection_sha256",
+        "format",
+        "format_sha256",
+        "dictionary",
+        "row_count",
+        "bytes",
+        "sha256",
+      ]) &&
+      integer(a.row_count) &&
+      digest(a.selection_sha256) &&
+      digest(a.format_sha256) &&
+      a.format === CSV_FORMAT
+    );
   if (a.kind === "docx_report")
     return (
       keys(a, [
@@ -111,7 +140,7 @@ function preparedValid(p: PreparedNativeExport): boolean {
       "expires_after_seconds",
       "artifact",
     ]) &&
-    p.schema_version === 1 &&
+    p.schema_version === (p.artifact?.kind === "transaction_csv" ? 2 : 1) &&
     uuid(p.ticket) &&
     p.expires_after_seconds === 120 &&
     artifactValid(p.artifact)
@@ -133,12 +162,18 @@ const same = (a: unknown, b: unknown): boolean => {
 };
 async function prepare(
   request: Record<string, unknown>,
-  accepts: (a: Artifact) => boolean,
+  accepts: (a: Artifact) => boolean | Promise<boolean>,
 ): Promise<PreparedNativeExport> {
   const value = await invoke<PreparedNativeExport>("prepare_native_export", {
     request,
   });
-  if (!preparedValid(value) || !accepts(value.artifact)) {
+  let accepted = false;
+  try {
+    accepted = preparedValid(value) && (await accepts(value.artifact));
+  } catch {
+    /* Invalid metadata must discard its stage before rejection. */
+  }
+  if (!accepted) {
     if (uuid(value?.ticket)) await discardNativeExport(value.ticket);
     throw new Error(
       "Prepared native export identity did not match the selected scope.",
@@ -171,6 +206,30 @@ export function prepareNativeTransactions(
       a.row_count === count &&
       same(a.request, request) &&
       same(a.matching, matching),
+  );
+}
+export function prepareNativeCsv(
+  scope: LedgerScope,
+  policy: CsvPolicy,
+  revision: number,
+  count: number,
+  matching: Matching,
+) {
+  const request = csvRequest(scope, policy);
+  return prepare(
+    {
+      kind: "transaction_csv",
+      request,
+      expected_revision: revision,
+      expected_row_count: count,
+      expected_matching: matching,
+      expected_format: CSV_FORMAT,
+    },
+    async (a) => {
+      if (a.kind !== "transaction_csv") return false;
+      await validateCsvIdentity(a, request, revision, count, matching);
+      return true;
+    },
   );
 }
 export function prepareNativeReport(report: Workspace["reports"][number]) {
@@ -220,9 +279,11 @@ export async function commitNativeExport(
     args,
   ).catch(() => invoke<SavedNativeExport>("commit_native_export", args));
   const expectedName =
-    prepared.artifact.kind === "transactions"
-      ? `transactions-r${prepared.artifact.workspace_revision}-${prepared.artifact.sha256}.json`
-      : `assessment-${prepared.artifact.report_id}-${prepared.artifact.sha256}.${prepared.artifact.kind === "docx_report" ? "docx" : "html"}`;
+    prepared.artifact.kind === "transaction_csv"
+      ? `transactions-typed-v1-r${prepared.artifact.workspace_revision}-${prepared.artifact.sha256}.csv`
+      : prepared.artifact.kind === "transactions"
+        ? `transactions-r${prepared.artifact.workspace_revision}-${prepared.artifact.sha256}.json`
+        : `assessment-${prepared.artifact.report_id}-${prepared.artifact.sha256}.${prepared.artifact.kind === "docx_report" ? "docx" : "html"}`;
   if (
     !keys(result, [
       "schema_version",
@@ -231,7 +292,7 @@ export async function commitNativeExport(
       "filename",
       "location",
     ]) ||
-    result.schema_version !== 1 ||
+    result.schema_version !== prepared.schema_version ||
     result.ticket !== prepared.ticket ||
     !same(result.artifact, prepared.artifact) ||
     result.filename !== expectedName ||

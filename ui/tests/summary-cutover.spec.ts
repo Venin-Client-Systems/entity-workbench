@@ -116,6 +116,7 @@ const visibleIds = (page: Page) =>
 
 test("summary transport omits full arrays; bounded ledger pages keep exact counts, date order and complete export", async ({
   page,
+  baseURL,
 }) => {
   const w = fixture();
   const summaries: any[] = [],
@@ -131,7 +132,10 @@ test("summary transport omits full arrays; bounded ledger pages keep exact count
   page.on("request", (request) => {
     if (request.url().endsWith("/api/workbench"))
       requests.push(request.postDataJSON());
-    if (!/^(http:\/\/127\.0\.0\.1:1420\/|blob:|data:)/.test(request.url()))
+    if (
+      !request.url().startsWith(new URL(baseURL!).origin + "/") &&
+      !/^(blob:|data:)/.test(request.url())
+    )
       external.push(request.url());
   });
   await open(page);

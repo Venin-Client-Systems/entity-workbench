@@ -1,0 +1,86 @@
+   Compiling workbench-core v0.1.0 (<worktree>/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 20.14s
+     Running unittests src/lib.rs (target/debug/deps/workbench_core-77d4e335fed2ef45)
+
+running 19 tests
+test store::local_exports::tests::cleanup_failure_is_explicit_retains_stage_and_blocks_new_preparation ... ok
+test store::local_exports::tests::coordinator_shutdown_and_restart_clean_stages_without_canonical_mutation ... ok
+test store::local_exports::tests::identical_external_hardlink_target_is_rejected_for_publication_and_reuse ... ok
+test store::local_exports::tests::docx_native_preparation_rejects_wrong_identity_and_frontend_bytes_without_a_stage ... ok
+test store::local_exports::tests::housekeeping_cannot_falsely_reject_first_prepare_but_concurrent_generation_is_blocked ... ok
+test store::local_exports::tests::shutdown_during_preparation_waits_then_rejects_and_cleans_without_deadlock ... ok
+test store::local_exports::tests::links_never_touch_outside_sentinel_and_startup_refuses_unexpected_entries ... ok
+test store::local_exports::tests::immutable_html_uses_saved_identity_after_current_workspace_changes ... ok
+test store::local_exports::tests::docx_stage_expiry_tamper_and_coordinator_shutdown_retain_exact_lifecycle_boundaries ... ok
+test store::local_exports::tests::startup_recovers_owned_publication_orphan_but_rejects_noncanonical_names ... ok
+test store::local_exports::tests::staged_and_target_tampering_fail_without_overwrite_or_false_receipt ... ok
+test store::local_exports::tests::docx_native_save_preserves_binary_both_digests_and_historical_revision_through_lost_ack ... ok
+test store::local_exports::tests::transaction_identity_exact_bytes_no_clobber_and_lost_ack_recommit ... ok
+test store::local_exports::tests::typed_csv_native_refuses_nonaccepted_stale_and_wrong_scope_expectations_without_stage ... ok
+test store::local_exports::tests::verification_refuses_path_replacement_and_fifo_swap_without_blocking ... ok
+test store::local_exports::tests::typed_csv_native_same_content_reuses_file_but_corrupt_target_never_gets_receipt ... ok
+test store::local_exports::tests::typed_csv_native_save_keeps_prepared_bytes_after_correction_and_retries_same_ticket ... ok
+test store::local_exports::tests::stage_expiry_discard_and_completed_cache_are_bounded ... ok
+test store::local_exports::tests::docx_has_its_own_binary_limit_before_staging_even_if_other_export_kinds_allow_more ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 404 filtered out; finished in 1.63s
+
+     Running unittests src/bin/ew-dev.rs (target/debug/deps/ew_dev-0541c3e765e1209a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/assessment_workflows.rs (target/debug/deps/assessment_workflows-b5089c3be341a35b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests/desktop_summary_cli.rs (target/debug/deps/desktop_summary_cli-bd4b4f7865a3734a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/identity_workflows.rs (target/debug/deps/identity_workflows-7c6100e1a1785c16)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+     Running tests/report_calculations.rs (target/debug/deps/report_calculations-5dd19bcea9dcde26)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/report_docx.rs (target/debug/deps/report_docx-c54f144958c4db13)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+     Running tests/statement_mapping.rs (target/debug/deps/statement_mapping-d703e0d9dfc11be0)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+
+     Running tests/transaction_comparison.rs (target/debug/deps/transaction_comparison-c03fda9d33153ba8)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.00s
+
+     Running tests/transaction_patterns.rs (target/debug/deps/transaction_patterns-5413dae4bf855dd3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 11 filtered out; finished in 0.00s
+
+     Running tests/workflows.rs (target/debug/deps/workflows-c8f2cf14ccd37405)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 20 filtered out; finished in 0.00s

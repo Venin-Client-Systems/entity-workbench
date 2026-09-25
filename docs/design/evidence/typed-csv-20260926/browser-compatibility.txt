@@ -1,0 +1,52 @@
+[WebServer] (node:12315) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:12350) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Blocking waiting for file lock on build directory
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.33s
+
+Running 38 tests using 1 worker
+
+(node:12553) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ui/tests/docx-snapshots.spec.ts:104:1 › DOCX catalogue distinguishes empty and failed reads, creates a canonical snapshot and records accessible compact metadata (3.2s)
+  ✓   2 ui/tests/docx-snapshots.spec.ts:184:1 › bounded catalogue pages retain exact canonical order without omissions and avoid focus theft after a deliberate move and blur (2.9s)
+  ✓   3 ui/tests/docx-snapshots.spec.ts:262:1 › lost creation acknowledgement survives navigation and retries only the same UUID and captured revision after a later change (1.1s)
+  ✓   4 ui/tests/docx-snapshots.spec.ts:311:1 › creation completes after unmount and failed refresh remains a saved snapshot, not a repeated write (1.0s)
+  ✓   5 ui/tests/docx-snapshots.spec.ts:357:1 › obsolete catalogue responses cannot reappear across revision refresh and A to B to A navigation (698ms)
+
+  ✓   6 ui/tests/docx-snapshots.spec.ts:393:1 › stale creation and corrupt catalogue metadata are explicit failures (638ms)
+  ✓   7 ui/tests/docx-snapshots.spec.ts:420:1 › typed later-revision absence permits only an explicit new capture and retains the acknowledged request (1.1s)
+  ✓   8 ui/tests/docx-snapshots.spec.ts:467:1 › typed absence at the same revision never enables a replacement and retries the original request (1.0s)
+  ✓   9 ui/tests/docx-snapshots.spec.ts:507:1 › verified outcome lookup recovers a saved acknowledgement through navigation without another capture (633ms)
+  ✓  10 ui/tests/docx-snapshots.spec.ts:549:1 › corrupt saved artifact blocks typed recovery and never becomes permission for a replacement (583ms)
+  ✓  11 ui/tests/docx-snapshots.spec.ts:676:1 › typed native DOCX save recovers lost commit acknowledgement and preserves old frozen bytes after current changes (1.8s)
+  ✓  12 ui/tests/docx-snapshots.spec.ts:735:1 › late DOCX native preparation is discarded after navigation with no commit (656ms)
+  ✓  13 ui/tests/docx-snapshots.spec.ts:767:1 › native DOCX rejects substituted preparation identity and actual corrupted frozen artifacts (621ms)
+  ✓  14 ui/tests/native-exports.spec.ts:67:1 › native transaction export saves exact complete canonical bytes, without a browser download, and recovers a lost commit acknowledgement (765ms)
+  ✓  15 ui/tests/native-exports.spec.ts:124:1 › held native preparation is discarded after scope changes, with no commit or saved file (719ms)
+  ✓  16 ui/tests/native-exports.spec.ts:160:1 › held native preparation is discarded after leaving the ledger (695ms)
+  ✓  17 ui/tests/native-exports.spec.ts:194:1 › mismatched native preparation metadata is refused and the real stage is discarded (649ms)
+  ✓  18 ui/tests/native-exports.spec.ts:217:1 › native HTML export saves exact historical HTML after later canonical changes (635ms)
+  ✓  19 ui/tests/summary-cutover.spec.ts:67:1 › an existing statement-only workspace shows factual priorities without demo onboarding (385ms)
+  ✓  20 ui/tests/summary-cutover.spec.ts:127:1 › summary transport omits full arrays; bounded ledger pages keep exact counts, date order and complete export (1.2s)
+  ✓  21 ui/tests/summary-cutover.spec.ts:224:1 › byte-short pages advance by returned rows, retain duplicates and distinguish zero selected from empty scope (4.0s)
+  ✓  22 ui/tests/summary-cutover.spec.ts:259:1 › an off-page transaction keeps draft text; external correction and refresh disable stale mutation without rebasing (1.0s)
+  ✓  23 ui/tests/summary-cutover.spec.ts:307:1 › held real ledger reads coalesce queries and cannot restore an obsolete page after a workspace revision (968ms)
+  ✓  24 ui/tests/summary-cutover.spec.ts:355:1 › broad transfer candidates page accepted other-account rows and keep unequal and other-currency options (1.8s)
+  ✓  25 ui/tests/summary-cutover.spec.ts:411:1 › original corruption refuses a complete export without turning its successful page into an empty result (707ms)
+  ✓  26 ui/tests/summary-cutover.spec.ts:434:1 › balance read failure is independent of a successful page and retry restores canonical annotations (810ms)
+  ✓  27 ui/tests/summary-cutover.spec.ts:470:1 › a held verified complete export is refused after a newly applied scope (834ms)
+  ✓  28 ui/tests/summary-cutover.spec.ts:502:1 › an empty canonical ledger and an unavailable read retain different states; backup is explicitly confirmed (594ms)
+  ✓  29 ui/tests/summary-cutover.spec.ts:538:1 › compact ledger and review preserve readable controls, inert source text and accessible navigation (2.5s)
+  ✓  30 ui/tests/transaction-csv.spec.ts:168:1 › CSV requires an explicit mixed-review choice and downloads every exact canonical row while JSON remains available (2.8s)
+  ✓  31 ui/tests/transaction-csv.spec.ts:236:1 › accepted-only and empty scopes obey the explicit policy; compact controls remain accessible (1.6s)
+  ✓  32 ui/tests/transaction-csv.spec.ts:288:1 › browser export rejects altered dictionary, policy, hash and malformed fixed CSV instead of downloading (1.1s)
+  ✓  33 ui/tests/transaction-csv.spec.ts:325:1 › late browser CSV is not downloaded after the applied scope changes (900ms)
+  ✓  34 ui/tests/transaction-csv.spec.ts:361:1 › native CSV uses metadata-only version2 saves and same-ticket lost-ack recovery with exact bytes (2.6s)
+  ✓  35 ui/tests/transaction-csv.spec.ts:413:1 › native CSV rejects wrong envelope/dictionary receipts and cleans the actual stage (879ms)
+  ✓  36 ui/tests/transaction-csv.spec.ts:459:1 › late native CSV preparation is discarded on unmount and never commits (900ms)
+  ✓  37 ui/tests/transaction-csv.spec.ts:496:1 › two lost native commit acknowledgements remain unconfirmed without a replacement preparation (771ms)
+  ✓  38 ui/tests/transaction-csv.spec.ts:528:1 › stale revisions and corrupted originals refuse CSV without a download (854ms)
+
+  38 passed (1.0m)
