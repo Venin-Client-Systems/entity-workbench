@@ -2,6 +2,7 @@
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -97,13 +98,18 @@ class CoordinatorCampaignTests(unittest.TestCase):
             path=Path(root)/'result.json';path.write_bytes(b'{ "x":1}')
             with self.assertRaises(receipt.common.ProbeFailure): receipt.raw(path,100,receipt.identity(b'{"x":1}'))
 
+    # These two runner controls use the real POSIX-only private receipt writer.
+    # Pure receipt validation above remains portable; no Windows ACL claim is made.
+    @unittest.skipUnless(os.name == 'posix', 'Mac runner receipt persistence requires POSIX file modes')
     def test_source_metadata_failure_retains_initial_failed_report_without_execution(self):
         with tempfile.TemporaryDirectory() as root, patch.object(runner,'source_identity',side_effect=OSError('fixture')),patch.object(runner,'build',side_effect=AssertionError('build')):
             report=runner.run(Path('/unused'),Path(root))
             saved=json.loads((Path(root)/'observation.json').read_text())
             self.assertFalse(report['passed']);self.assertFalse(saved['candidate_started']);self.assertEqual(saved['cases'],[])
             self.assertEqual(saved['failure'],'campaign-input-or-receipt-unavailable')
+            self.assertEqual((Path(root)/'observation.json').stat().st_mode & 0o777, 0o600)
 
+    @unittest.skipUnless(os.name == 'posix', 'Mac runner receipt persistence requires POSIX file modes')
     def test_outer_native_timeout_does_not_read_receipts_or_prefix_afterward(self):
         import subprocess
         with tempfile.TemporaryDirectory() as root:
