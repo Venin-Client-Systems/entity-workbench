@@ -1,0 +1,20 @@
+
+> entity-workbench@0.1.0 build
+> tsc --noEmit -p ui/tsconfig.json && vite build --config ui/vite.config.ts
+
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 673 modules transformed.
+rendering chunks...
+computing gzip size...
+ui/dist/index.html                                 0.39 kB │ gzip:   0.28 kB
+ui/dist/assets/maplibre-gl-worker-CNLXcz58.js    508.48 kB
+ui/dist/assets/index-DLIBKyiK.css                130.37 kB │ gzip:  20.12 kB
+ui/dist/assets/index-D2qDY_S5.js               2,459.37 kB │ gzip: 718.32 kB
+
+✓ built in 527ms
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 1200 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.

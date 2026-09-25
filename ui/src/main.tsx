@@ -29,6 +29,7 @@ import {
   retainNewestSummary,
 } from "./desktop-summary";
 import { EntityWorkbench } from "./EntityWorkbench";
+import { AccountFlows } from "./AccountFlows";
 import { TransactionComparison } from "./TransactionComparison";
 import { TransactionPatterns } from "./TransactionPatterns";
 import { StatementImport, type StatementFile } from "./StatementImport";
@@ -573,6 +574,11 @@ function App() {
                     onScope={applyLedgerScope}
                     onRefresh={() => run({ action: "view" })}
                     download={download}
+                  />
+                  <AccountFlows
+                    revision={w.revision}
+                    onInspect={inspectTransaction}
+                    onRefresh={() => run({ action: "view" })}
                   />
                   <TransactionComparison
                     workspace={w}

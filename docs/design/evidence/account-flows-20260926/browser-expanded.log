@@ -1,0 +1,47 @@
+[WebServer] (node:51204) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:51229) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.53s
+
+Running 10 tests using 1 worker
+
+(node:51272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ui/tests/account-flows.spec.ts:64:1 › once-per-pair exact flows retain currencies, repeated rows and every review denominator without writes (2.2s)
+  ✓   2 ui/tests/account-flows.spec.ts:92:1 › asymmetric scope shows support-only endpoints and exact source provenance with accessible modal handoff (2.5s)
+  ✓   3 ui/tests/account-flows.spec.ts:114:1 › draft, empty and pending-only scopes remain distinct from unavailable and stale results (1.9s)
+  ✓   4 ui/tests/account-flows.spec.ts:135:1 › source corruption fails explicit verification, restoration retries and later corrections block old source reads (1.7s)
+  ✓   5 ui/tests/account-flows.spec.ts:153:1 › late response after navigation cannot publish into a new flow instance (1.4s)
+  ✓   6 ui/tests/account-flows.spec.ts:166:1 › response identity mismatch is unavailable, never displayed as a valid flow (813ms)
+  ✓   7 ui/tests/account-flows.spec.ts:176:1 › compact controls, modal focus containment and exact values remain accessible (1.2s)
+  ✓   8 ui/tests/account-flows.spec.ts:193:1 › pair and source pages retain every real repeated transfer without silent cutoff (2.4s)
+  ✘   9 ui/tests/account-flows.spec.ts:214:1 › a real revision change while calculation is held refuses the late captured result (30.0s)
+(node:52349) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  10 ui/tests/account-flows.spec.ts:229:1 › relationship and account pages explicitly bound the rendered subset and retain all groups (2.0s)
+
+
+  1) ui/tests/account-flows.spec.ts:214:1 › a real revision change while calculation is held refuses the late captured result
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.click: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for getByRole('region', { name: 'Transaction ledger', exact: true }).getByRole('button', { name: 'Refresh workspace', exact: true })
+
+
+      222 |   );
+      223 |   await axe(page, 'dialog[aria-label="Account flow sources"]', "pairs");
+    > 224 |   await dialog
+          |               ^
+      225 |     .getByRole("button", { name: "Inspect both source rows" })
+      226 |     .first()
+      227 |     .click();
+        at <WORKTREE>/ui/tests/account-flows.spec.ts:224:143
+
+    Error Context: test-results/account-flows-a-real-revis-c13c2-es-the-late-captured-result/error-context.md
+
+  1 failed
+    ui/tests/account-flows.spec.ts:214:1 › a real revision change while calculation is held refuses the late captured result
+  9 passed (49.2s)

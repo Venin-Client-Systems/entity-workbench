@@ -8,12 +8,14 @@ export function AnalysisSourceRows({
   ids,
   versions,
   annotations,
+  contexts,
   revision,
   onInspect,
 }: {
   ids: string[];
   versions: ReadonlyMap<string, number>;
   annotations: ReadonlyMap<string, PatternRow>;
+  contexts?: ReadonlyMap<string, string>;
   revision: number;
   onInspect: (transaction: Transaction) => void;
 }) {
@@ -32,6 +34,7 @@ export function AnalysisSourceRows({
       valid={valid}
       versions={versions}
       annotations={annotations}
+      contexts={contexts}
       onInspect={onInspect}
     />
   );
@@ -43,12 +46,14 @@ function SelectedSourcePage({
   valid,
   versions,
   annotations,
+  contexts,
   onInspect,
 }: {
   selection: string;
   valid: boolean;
   versions: ReadonlyMap<string, number>;
   annotations: ReadonlyMap<string, PatternRow>;
+  contexts?: ReadonlyMap<string, string>;
   onInspect: (transaction: Transaction) => void;
 }) {
   const [attempt, setAttempt] = useState(0);
@@ -134,6 +139,7 @@ function SelectedSourcePage({
           transaction={row}
           expectedVersion={versions.get(row.id)}
           annotation={annotations.get(row.id)}
+          context={contexts?.get(row.id)}
           onInspect={onInspect}
         />
       ))}
@@ -147,12 +153,14 @@ export function AnalysisSourceRow({
   transaction: t,
   expectedVersion,
   annotation: a,
+  context,
   onInspect,
 }: {
   id: string;
   transaction: Transaction | undefined;
   expectedVersion: number | undefined;
   annotation?: PatternRow;
+  context?: string;
   onInspect: (transaction: Transaction) => void;
 }) {
   return t && expectedVersion !== undefined && t.version === expectedVersion ? (
@@ -160,9 +168,10 @@ export function AnalysisSourceRow({
       <strong>
         {t.date} / {t.account} / {t.amount} {t.currency}
       </strong>
+      {context && <p className="flow-source-context">{context}</p>}
       <p>{t.description}</p>
       <p>
-        {a ? `${a.disposition.replaceAll("_", " ")} · ` : ""}
+        {a && !context ? `${a.disposition.replaceAll("_", " ")} · ` : ""}
         {t.review} · version {expectedVersion} · source row{" "}
         {t.anchor.row ?? "see anchor"}
       </p>

@@ -91,13 +91,13 @@ async function axe(page: Page, scope: string, name: string) {
   expect(result.violations).toEqual([]);
 }
 test("exact separate totals, full denominators, cash/refund and recurrence drill through real retained sources", async ({
-  page,
+  page, baseURL,
 }) => {
   const external: string[] = [],
     errors: string[] = [];
   page.on("request", (r) => {
     if (
-      !r.url().startsWith("http://127.0.0.1:1420/") &&
+      !r.url().startsWith(`${baseURL}/`) &&
       !/^(blob:|data:)/.test(r.url())
     )
       external.push(r.url());

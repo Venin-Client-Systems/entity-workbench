@@ -91,13 +91,13 @@ async function axe(page: Page, selector: string, name: string) {
   expect(result.violations).toEqual([]);
 }
 test("exact period amounts, full review partitions and inert sources use the real canonical command", async ({
-  page,
+  page, baseURL,
 }) => {
   const external: string[] = [],
     errors: string[] = [];
   page.on("request", (request) => {
     if (
-      !request.url().startsWith("http://127.0.0.1:1420/") &&
+      !request.url().startsWith(`${baseURL}/`) &&
       !/^(blob:|data:)/.test(request.url())
     )
       external.push(request.url());

@@ -1,0 +1,40 @@
+[WebServer] (node:57734) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:57764) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.35s
+
+Running 28 tests using 1 worker
+
+(node:57806) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ui/tests/summary-cutover.spec.ts:67:1 › an existing statement-only workspace shows factual priorities without demo onboarding (1.5s)
+  ✓   2 ui/tests/summary-cutover.spec.ts:117:1 › summary transport omits full arrays; bounded ledger pages keep exact counts, date order and complete export (1.3s)
+  ✓   3 ui/tests/summary-cutover.spec.ts:214:1 › byte-short pages advance by returned rows, retain duplicates and distinguish zero selected from empty scope (4.0s)
+  ✓   4 ui/tests/summary-cutover.spec.ts:249:1 › an off-page transaction keeps draft text; external correction and refresh disable stale mutation without rebasing (1.1s)
+  ✓   5 ui/tests/summary-cutover.spec.ts:297:1 › held real ledger reads coalesce queries and cannot restore an obsolete page after a workspace revision (1.0s)
+  ✓   6 ui/tests/summary-cutover.spec.ts:345:1 › broad transfer candidates page accepted other-account rows and keep unequal and other-currency options (1.7s)
+  ✓   7 ui/tests/summary-cutover.spec.ts:401:1 › original corruption refuses a complete export without turning its successful page into an empty result (703ms)
+  ✓   8 ui/tests/summary-cutover.spec.ts:424:1 › balance read failure is independent of a successful page and retry restores canonical annotations (816ms)
+  ✓   9 ui/tests/summary-cutover.spec.ts:460:1 › a held verified complete export is refused after a newly applied scope (868ms)
+  ✓  10 ui/tests/summary-cutover.spec.ts:492:1 › an empty canonical ledger and an unavailable read retain different states; backup is explicitly confirmed (582ms)
+  ✓  11 ui/tests/summary-cutover.spec.ts:528:1 › compact ledger and review preserve readable controls, inert source text and accessible navigation (2.6s)
+  ✓  12 ui/tests/transaction-comparison.spec.ts:93:1 › exact period amounts, full review partitions and inert sources use the real canonical command (869ms)
+  ✓  13 ui/tests/transaction-comparison.spec.ts:179:1 › draft scope stays unapplied; selected order, empty periods and zero or negative baselines stay explicit (1.1s)
+  ✓  14 ui/tests/transaction-comparison.spec.ts:234:1 › pending-only scope differs from an empty scope and reviewed transfer exclusion is explicit (1.2s)
+  ✓  15 ui/tests/transaction-comparison.spec.ts:291:1 › stale canonical revisions and overlap failures retain honest unavailable results (1.1s)
+  ✓  16 ui/tests/transaction-comparison.spec.ts:326:1 › late core replies after navigation cannot populate a remounted comparison (826ms)
+  ✓  17 ui/tests/transaction-comparison.spec.ts:365:1 › desktop and compact comparison and source dialogs retain keyboard access and zero axe violations (2.5s)
+  ✓  18 ui/tests/transaction-comparison.spec.ts:435:1 › an arriving canonical refresh hides stale open source rows and restores the compare control (890ms)
+  ✓  19 ui/tests/transaction-patterns.spec.ts:93:1 › exact separate totals, full denominators, cash/refund and recurrence drill through real retained sources (1.6s)
+  ✓  20 ui/tests/transaction-patterns.spec.ts:191:1 › explicit transfer exclusion and scope drafts never silently change the applied result (1.2s)
+  ✓  21 ui/tests/transaction-patterns.spec.ts:240:1 › correction makes results stale and recalculation removes pending row from every pattern (1.1s)
+  ✓  22 ui/tests/transaction-patterns.spec.ts:296:1 › stale backend revision fails honestly and late replies after unmount cannot become a new calculation (1.2s)
+  ✓  23 ui/tests/transaction-patterns.spec.ts:348:1 › industrial scope and review surfaces remain accessible at desktop and compact sizes (2.6s)
+  ✓  24 ui/tests/transaction-patterns.spec.ts:398:1 › source pagination retains all pending rows and hostile descriptions remain escaped (1.1s)
+  ✓  25 ui/tests/transaction-patterns.spec.ts:447:1 › an arriving workspace refresh disables an open stale source review and restores a usable control (863ms)
+  ✓  26 ui/tests/transaction-patterns.spec.ts:497:1 › source reads reject altered originals and retry exact canonical rows after restoration (864ms)
+  ✓  27 ui/tests/transaction-patterns.spec.ts:533:1 › late source-page replies cannot replace a newer bounded canonical selection (917ms)
+  ✓  28 ui/tests/transaction-patterns.spec.ts:611:1 › returning to an earlier source page requires a new verification before enabling review (934ms)
+
+  28 passed (39.4s)

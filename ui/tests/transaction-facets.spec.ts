@@ -121,7 +121,7 @@ test("both consumers page exact whole-ledger choices, retain an off-page selecti
   const initialReads = requests.filter(
     (request) => request.action === "page_transaction_facets",
   );
-  expect(initialReads).toHaveLength(6);
+  expect(initialReads).toHaveLength(8);
   expect(
     initialReads.every(
       (request) =>
@@ -401,7 +401,7 @@ test("one active and only the latest pending revision per selector; old real res
     } else await route.continue();
   });
   await open(page);
-  await expect.poll(() => requests.length).toBe(3);
+  await expect.poll(() => requests.length).toBe(4);
   const heldBox = page.locator(
     '.transaction-facet[data-facet-kind="account"][aria-busy="true"]',
   );
@@ -425,7 +425,7 @@ test("one active and only the latest pending revision per selector; old real res
         requests.filter((request) => request.expected_revision === middle)
           .length,
     )
-    .toBe(2);
+    .toBe(3);
   const latest = importRows("synthetic-latest.csv", [
     "LATEST,2025-01-01,Synthetic latest,-1.00,AUD",
   ]).revision;
@@ -439,17 +439,17 @@ test("one active and only the latest pending revision per selector; old real res
         requests.filter((request) => request.expected_revision === latest)
           .length,
     )
-    .toBe(2);
+    .toBe(3);
   await expect(box.getByRole("status")).toHaveText("Loading accounts…");
   release();
   await expect(box.getByRole("status")).toHaveText("1–100 of 207 accounts");
   await expect(box).toContainText(`revision ${latest}`);
   expect(
     requests.filter((request) => request.expected_revision === middle),
-  ).toHaveLength(2);
+  ).toHaveLength(3);
   expect(
     requests.filter((request) => request.expected_revision === latest),
-  ).toHaveLength(3);
+  ).toHaveLength(4);
 });
 
 test("delayed continuation never restores a changed draft selection or steals deliberately moved then blurred focus", async ({

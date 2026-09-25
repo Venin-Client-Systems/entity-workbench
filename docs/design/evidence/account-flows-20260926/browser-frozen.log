@@ -1,0 +1,23 @@
+[WebServer] (node:65120) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:65145) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.36s
+
+Running 11 tests using 1 worker
+
+(node:65185) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 ui/tests/account-flows.spec.ts:127:1 › once-per-pair exact flows retain currencies, repeated rows and every review denominator without writes (2.2s)
+  ✓   2 ui/tests/account-flows.spec.ts:196:1 › asymmetric scope shows support-only endpoints and exact source provenance with accessible modal handoff (1.6s)
+  ✓   3 ui/tests/account-flows.spec.ts:245:1 › draft, empty and pending-only scopes remain distinct from unavailable and stale results (1.2s)
+  ✓   4 ui/tests/account-flows.spec.ts:295:1 › source corruption fails explicit verification, restoration retries and later corrections block old source reads (959ms)
+  ✓   5 ui/tests/account-flows.spec.ts:346:1 › late response after navigation cannot publish into a new flow instance (669ms)
+  ✓   6 ui/tests/account-flows.spec.ts:383:1 › response identity mismatch is unavailable, never displayed as a valid flow (639ms)
+  ✓   7 ui/tests/account-flows.spec.ts:399:1 › compact controls, modal focus containment and exact values remain accessible (1.2s)
+  ✓   8 ui/tests/account-flows.spec.ts:437:1 › pair and source pages retain every real repeated transfer without silent cutoff (1.7s)
+  ✓   9 ui/tests/account-flows.spec.ts:480:1 › a real revision change while calculation is held refuses the late captured result (746ms)
+  ✓  10 ui/tests/account-flows.spec.ts:521:1 › relationship and account pages explicitly bound the rendered subset and retain all groups (1.8s)
+  ✓  11 ui/tests/account-flows.spec.ts:558:1 › a refused workspace refresh preserves the old result but disables its source actions (665ms)
+
+  11 passed (15.4s)
