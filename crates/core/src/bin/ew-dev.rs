@@ -115,6 +115,20 @@ fn run() -> workbench_core::Result<serde_json::Value> {
         // Extraction v1 is immutable history. New parse publications use extraction v2.
         let schemas = [
             (
+                "account-flow-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::account_flow::AccountFlowRequest
+                ))?,
+            ),
+            (
+                "account-flows",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::account_flow::AccountFlows
+                ))?,
+            ),
+            (
                 "transaction-csv-request",
                 1,
                 serde_json::to_value(schemars::schema_for!(
@@ -385,7 +399,7 @@ fn run() -> workbench_core::Result<serde_json::Value> {
             ),
             (
                 "command",
-                24,
+                25,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (

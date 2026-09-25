@@ -1,4 +1,5 @@
 //! Canonical workspace ownership, domain rules and reviewed engine coordination.
+pub mod account_flow;
 pub mod analytics;
 pub mod citation_catalogue;
 pub mod collection;

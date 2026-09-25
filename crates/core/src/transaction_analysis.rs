@@ -367,13 +367,10 @@ fn recurring(
     Ok(None)
 }
 
-/// All output IDs resolve to the supplied immutable revision. No source row is silently deduplicated.
-pub fn analyze(
+/// Shared validation only. No matching, recurrence or review classifications run here.
+pub(crate) fn validated_lookup(
     transactions: &[Transaction],
-    revision: u64,
-    request: &TransactionAnalysisRequest,
-) -> Result<TransactionAnalysis> {
-    request.validate()?;
+) -> Result<BTreeMap<&str, &Transaction>> {
     require(
         transactions.len() <= MAX_ANALYSIS_ROWS,
         "Transaction analysis exceeds the 100,000-row bound; analytical pagination is required",
@@ -394,6 +391,17 @@ pub fn analyze(
             "Transaction analysis exceeds the 32 MiB description bound",
         )?;
     }
+    Ok(lookup)
+}
+
+/// All output IDs resolve to the supplied immutable revision. No source row is silently deduplicated.
+pub fn analyze(
+    transactions: &[Transaction],
+    revision: u64,
+    request: &TransactionAnalysisRequest,
+) -> Result<TransactionAnalysis> {
+    request.validate()?;
+    let lookup = validated_lookup(transactions)?;
     let mut output = TransactionAnalysis { schema_version: 1, rules_version: "transaction_patterns_v1".into(), workspace_revision: revision, request: request.clone(), workspace_transaction_count: transactions.len(), scope_transaction_count: 0, rows: vec![], currencies: vec![], merchant_groups: vec![], recurring_candidates: vec![], recurrence_eligible_ids: vec![], recurrence_unclassified_ids: vec![], limitations: vec![
         "Merchant totals group original descriptions by ASCII case and whitespace only. Merchant identity, branch and transaction channel are unconfirmed; digits and punctuation remain significant.".into(),
         "Cash/refund markers and cadence are heuristic candidates, not accepted classifications. Refunds are not paired to purchases or silently netted against another row.".into(),

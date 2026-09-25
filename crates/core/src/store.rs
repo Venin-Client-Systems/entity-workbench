@@ -23,6 +23,7 @@ mod file_identity;
 mod identity;
 mod originals;
 use originals::read_original;
+mod account_flow;
 #[cfg(test)]
 mod evidence_identity_tests;
 pub(crate) mod local_exports;
@@ -532,6 +533,14 @@ impl Workspace {
                     expected_attempt,
                     &reason,
                 )?)?)
+            }
+            Command::AnalyzeAccountFlows {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.analyze_account_flows(&request, expected_revision)?,
+                )?);
             }
             Command::CompareTransactionPeriods {
                 request,

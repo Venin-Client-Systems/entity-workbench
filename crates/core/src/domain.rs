@@ -455,6 +455,10 @@ pub enum Command {
         report_id: String,
         expected_sha256: String,
     },
+    AnalyzeAccountFlows {
+        request: crate::account_flow::AccountFlowRequest,
+        expected_revision: u64,
+    },
     CompareTransactionPeriods {
         request: crate::transaction_comparison::TransactionComparisonRequest,
         expected_revision: u64,
