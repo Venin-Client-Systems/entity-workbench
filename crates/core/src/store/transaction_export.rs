@@ -1,12 +1,8 @@
 //! One explicit export reads a single snapshot and never substitutes a visible page.
 use super::*;
-use crate::{
-    literal_search::{lower_query, LiteralMatching},
-    transaction_export::*,
-    transaction_page::TransactionPageOrder,
-    transaction_search::matches_lowered,
-};
-use std::collections::BTreeSet;
+use crate::transaction_export::*;
+#[cfg(test)]
+use crate::{literal_search::LiteralMatching, transaction_page::TransactionPageOrder};
 use std::io;
 
 struct LimitedJson {
@@ -46,94 +42,23 @@ impl Workspace {
         request: &TransactionExportRequest,
         expected_revision: u64,
     ) -> Result<TransactionExport> {
-        request.validate()?;
-        let snapshot = self.conn.unchecked_transaction()?;
-        let revision = self.revision()?;
-        if revision != expected_revision {
-            return Err(Error::Conflict(
-                "Transaction export revision changed; refresh and apply the export scope again"
-                    .into(),
-            ));
-        }
-        let lowered = lower_query(&request.query);
-        let matching = LiteralMatching::default();
-        let query_sha256 = hash(&serde_json::to_vec(&(
-            "transaction-export-v1",
-            revision,
-            &request.filter,
-            request.order,
-            &matching,
-            &lowered,
-        ))?);
-        let scope = request.filter.scope();
-        let mut statement = snapshot
-            .prepare("SELECT id,body FROM records WHERE kind='transaction' ORDER BY sequence")?;
-        let mut records = statement.query([])?;
-        let mut selected = Vec::new();
-        while let Some(record) = records.next()? {
-            let key: String = record.get(0)?;
-            let body: String = record.get(1)?;
-            let row: crate::domain::Transaction = serde_json::from_str(&body)?;
-            require(
-                key == row.id && row.version > 0,
-                "Canonical export transaction identity is invalid",
-            )?;
-            analytics::validate_transaction(&row)?;
-            if !scope.includes(&row) {
-                continue;
-            }
-            // Like search, text validation precedes review selection; a malformed
-            // scoped field cannot be hidden by a nonmatching query/review filter.
-            if !lowered.is_empty()
-                && !matches_lowered(&row.description, &row.account, &row.date, &lowered)?
-            {
-                continue;
-            }
-            if request
-                .filter
-                .review
-                .as_ref()
-                .is_some_and(|state| state != &row.review)
-            {
-                continue;
-            }
-            selected.push(row);
-        }
-        drop(records);
-        drop(statement);
-        // Stable sorting retains canonical source insertion order for equal dates.
-        selected.sort_by(|left, right| match request.order {
-            TransactionPageOrder::DateAscending => left.date.cmp(&right.date),
-            TransactionPageOrder::DateDescending => right.date.cmp(&left.date),
-        });
-        let sources: BTreeSet<_> = selected
-            .iter()
-            .map(|row| row.anchor.evidence_id())
-            .collect();
-        for key in sources {
-            let evidence: Evidence = get(&snapshot, "evidence", key)?;
-            require(
-                evidence.id == key,
-                "Canonical export source identity is invalid",
-            )?;
-            self.verify_original(&evidence)?;
-        }
-        let json = encode(&selected, MAX_EXPORT_JSON_BYTES)?;
-        let response = TransactionExport {
-            schema_version: 1,
-            workspace_revision: revision,
-            request: request.clone(),
-            matching,
-            query_sha256,
-            row_count: selected.len() as u64,
-            bytes: json.len() as u64,
-            sha256: hash(json.as_bytes()),
-            json,
-        };
-        snapshot.commit()?;
-        Ok(response)
+        self.with_transaction_export_selection(request, expected_revision, |selection| {
+            let json = encode(&selection.rows, MAX_EXPORT_JSON_BYTES)?;
+            Ok(TransactionExport {
+                schema_version: 1,
+                workspace_revision: selection.revision,
+                request: request.clone(),
+                matching: selection.matching,
+                query_sha256: selection.query_sha256,
+                row_count: selection.rows.len() as u64,
+                bytes: json.len() as u64,
+                sha256: hash(json.as_bytes()),
+                json,
+            })
+        })
     }
 }
+
 #[cfg(test)]
 #[path = "transaction_export_tests.rs"]
 mod tests;

@@ -407,6 +407,10 @@ pub enum Command {
         expected_document_sha256: String,
         expected_docx_sha256: String,
     },
+    ExportTransactionCsv {
+        request: crate::transaction_csv::TransactionCsvRequest,
+        expected_revision: u64,
+    },
     ExportTransactions {
         request: crate::transaction_export::TransactionExportRequest,
         expected_revision: u64,

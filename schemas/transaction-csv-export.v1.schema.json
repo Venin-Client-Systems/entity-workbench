@@ -1,0 +1,293 @@
+{
+  "$defs": {
+    "CsvLogicalType": {
+      "enum": [
+        "text",
+        "exact_decimal_text",
+        "calendar_date_text",
+        "unsigned_integer",
+        "source_anchor_json",
+        "string_array_json"
+      ],
+      "type": "string"
+    },
+    "LiteralMatching": {
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "$ref": "#/$defs/LiteralSearchAlgorithm"
+        },
+        "unicode_version": {
+          "items": {
+            "format": "uint8",
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        }
+      },
+      "required": [
+        "algorithm",
+        "unicode_version"
+      ],
+      "type": "object"
+    },
+    "LiteralSearchAlgorithm": {
+      "enum": [
+        "unicode_default_lowercase_literal_v1"
+      ],
+      "type": "string"
+    },
+    "NonAcceptedCsvPolicy": {
+      "enum": [
+        "reject",
+        "allow_selected"
+      ],
+      "type": "string"
+    },
+    "ReviewState": {
+      "enum": [
+        "pending",
+        "accepted",
+        "rejected",
+        "deferred"
+      ],
+      "type": "string"
+    },
+    "TransactionCsvColumn": {
+      "additionalProperties": false,
+      "properties": {
+        "logical_type": {
+          "$ref": "#/$defs/CsvLogicalType"
+        },
+        "meaning": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "nullable": {
+          "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "logical_type",
+        "prefix",
+        "nullable",
+        "meaning"
+      ],
+      "type": "object"
+    },
+    "TransactionCsvDictionary": {
+      "additionalProperties": false,
+      "properties": {
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/TransactionCsvColumn"
+          },
+          "type": "array"
+        },
+        "delimiter": {
+          "type": "string"
+        },
+        "encoding": {
+          "type": "string"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "null_literal": {
+          "type": "string"
+        },
+        "quote_policy": {
+          "type": "string"
+        },
+        "record_terminator": {
+          "type": "string"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "schema_version",
+        "encoding",
+        "delimiter",
+        "record_terminator",
+        "quote_policy",
+        "null_literal",
+        "columns",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "TransactionCsvFormat": {
+      "enum": [
+        "typed_literal_v1"
+      ],
+      "type": "string"
+    },
+    "TransactionCsvRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "non_accepted": {
+          "$ref": "#/$defs/NonAcceptedCsvPolicy"
+        },
+        "selection": {
+          "$ref": "#/$defs/TransactionExportRequest"
+        }
+      },
+      "required": [
+        "selection",
+        "non_accepted"
+      ],
+      "type": "object"
+    },
+    "TransactionExportRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "filter": {
+          "$ref": "#/$defs/TransactionPageFilter"
+        },
+        "order": {
+          "$ref": "#/$defs/TransactionPageOrder"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "query",
+        "filter",
+        "order"
+      ],
+      "type": "object"
+    },
+    "TransactionPageFilter": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "currency": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_from": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "date_to": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReviewState"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "TransactionPageOrder": {
+      "enum": [
+        "date_ascending",
+        "date_descending"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bytes": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "csv": {
+      "type": "string"
+    },
+    "dictionary": {
+      "$ref": "#/$defs/TransactionCsvDictionary"
+    },
+    "format": {
+      "$ref": "#/$defs/TransactionCsvFormat"
+    },
+    "format_sha256": {
+      "description": "Versioned format and full dictionary, independent of selected row content.",
+      "type": "string"
+    },
+    "matching": {
+      "$ref": "#/$defs/LiteralMatching"
+    },
+    "request": {
+      "$ref": "#/$defs/TransactionCsvRequest"
+    },
+    "row_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "selection_sha256": {
+      "description": "Same selection identity as complete raw JSON, independent of CSV presentation.",
+      "type": "string"
+    },
+    "sha256": {
+      "description": "Exact CSV bytes including UTF-8 BOM, doubled quotes and CRLF separators.",
+      "type": "string"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "workspace_revision",
+    "request",
+    "matching",
+    "selection_sha256",
+    "format",
+    "format_sha256",
+    "dictionary",
+    "row_count",
+    "bytes",
+    "sha256",
+    "csv"
+  ],
+  "title": "TransactionCsvExport",
+  "type": "object"
+}

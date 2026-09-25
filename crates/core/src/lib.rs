@@ -27,6 +27,7 @@ pub mod store;
 pub mod transaction_analysis;
 pub mod transaction_balance;
 pub mod transaction_comparison;
+pub mod transaction_csv;
 pub mod transaction_export;
 pub mod transaction_facets;
 pub mod transaction_page;

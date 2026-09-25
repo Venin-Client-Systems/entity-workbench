@@ -36,7 +36,9 @@ mod statements;
 mod transaction_analysis;
 mod transaction_balance;
 mod transaction_comparison;
+mod transaction_csv;
 mod transaction_export;
+mod transaction_export_selection;
 mod transaction_facets;
 mod transaction_page;
 mod transaction_search;
@@ -356,6 +358,14 @@ impl Workspace {
                     &expected_document_sha256,
                     &expected_docx_sha256,
                 )?)?);
+            }
+            Command::ExportTransactionCsv {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.export_transaction_csv(&request, expected_revision)?,
+                )?);
             }
             Command::ExportTransactions {
                 request,
