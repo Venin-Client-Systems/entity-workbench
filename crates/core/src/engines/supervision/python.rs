@@ -221,6 +221,7 @@ fn after_confirmed<T>(
     inspect(status?)
 }
 
+#[cfg(target_arch = "aarch64")]
 pub(in crate::engines) fn execute_graph<T>(
     prefix: &Path,
     scratch_root: &Path,
@@ -277,8 +278,10 @@ pub(in crate::engines) fn execute_graph<T>(
 #[cfg(test)]
 mod tests;
 
+#[cfg(target_arch = "aarch64")]
 pub(in crate::engines) const MANIFEST: &str =
     "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822";
+#[cfg(target_arch = "aarch64")]
 pub(in crate::engines) const FILE_COUNT: usize = 11_320;
 
 #[derive(Deserialize)]

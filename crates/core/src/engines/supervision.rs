@@ -13,6 +13,7 @@ use std::{
 };
 
 pub(super) mod ocr;
+#[cfg(any(target_arch = "aarch64", test))]
 pub(super) mod python;
 #[cfg(test)]
 mod python_probe;
