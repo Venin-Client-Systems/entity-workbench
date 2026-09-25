@@ -36,3 +36,43 @@ The synthetic 113-row fixture includes leading-zero accounts, eight decimal plac
 An initial test fixture used an empty required description and was correctly refused by the importer; the fixture was corrected without relaxing production validation. A broader compatibility run found a pre-existing test-only hardcoded port: valid requests on the isolated test port were labelled external. The assertion now accepts only the configured local origin plus the existing `blob:`/`data:` schemes. Failed observations are retained by digest and summarized in the manifest. Initial screenshot crops clipped the header behind the sticky application bar; the capture helper now temporarily increases screenshot height while accessibility checks still run at the original viewport.
 
 The complete CSV artifact still has a 256 MiB backend limit and browser processing makes additional in-memory copies. This increment makes no performance or memory claim, does not prove behaviour in Excel or other spreadsheet applications, and does not complete EW-30 or the cross-platform release gates. No core command, schema, dependency, native runtime or canonical storage behaviour changed.
+
+## Actual Mac application observation — 26 September 2026
+
+A separate unsigned development `.app`, built at clean source
+`0f65c56732babeed3d6a58f523f9fca821a32704`, was exercised through its actual
+WebKit controls on the available Apple Silicon Mac. Its exclusive synthetic
+workspace contained three transactions at revision 2: one accepted and two
+pending, leading-zero account identifiers, eight-place decimal amounts, two
+currencies, a formula-like description and quoted multiline text. This app used
+an isolated identifier and no bundled worker resources; it was not an installer
+or full-runtime acceptance run.
+
+The default CSV policy visibly refused the mixed-review scope and created no
+file or staging residue. Explicit inclusion saved all three records. A second
+export reused the same filename and hash, leaving exactly one CSV file. An
+independent standard-library CSV reader decoded every one of the 15 columns and
+compared all fields with the canonical transactions, preserving exact decimals,
+leading zeros, missing values and embedded line breaks. The 1,396-byte BOM/CRLF
+artifact has SHA-256
+`c07c2a4a252a770c7afcc37fc5d845a8ed380d12466f77a9b4d1c5bb28c2fadc`.
+
+Normal quit and reopen retained the three rows and revision. A subsequent JSON
+save produced the unchanged historical array contract, exactly equal to the
+canonical records: 1,813 bytes, SHA-256
+`6629e680f6eeb21318e0078916ec0c0f17796fb4180ff599761da06537caf46b`.
+The first independent JSON check incorrectly expected an envelope; correcting
+that verifier to the existing array shape required no app change or repeat
+export. The previously saved CSV remained byte-identical. All canonical tables
+and original files matched the pre-action baseline, the staging directory was
+empty, and the saved CSV was a single-link mode-0600 file. Final application
+exit was confirmed.
+
+The [native observation](../transactions/verification/native-csv-ui-first-2026-09-26.json)
+binds source, binary, configuration, frontend assets and the scoped checks;
+its SHA-256 is
+`0ac07afe85922e2264a4396dbe1692f10125630361650ba3321e8b344f25b6cb`.
+Private path-bearing screenshots and raw workspace evidence are not published.
+This establishes one native development workflow, with no claim of spreadsheet
+application execution, universal formula safety, other-platform behaviour,
+clean installation, signing or release readiness.

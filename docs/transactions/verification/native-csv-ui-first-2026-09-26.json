@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "source_commit": "0f65c56732babeed3d6a58f523f9fca821a32704",
+  "native_bundle_identifier": "org.entityworkbench.csvreview20260926",
+  "bundle_binary_sha256": "f83d47354a1fac64aa5699215f95442aa01140c3aa8da97092fa159f4234df00",
+  "configuration_sha256": "7a99a6f314c89427c83a7e8adffa9c3eb29d214e763f91b0e89890ebc8078408",
+  "frontend_manifest": {
+    "index.html": "5f1d475259075dc9963ddd8e341bd75a33a32d5c90bd69daee814ccafd57b994",
+    "JetBrainsMono-Regular.woff2": "a9cb1cd82332b23a47e3a1239d25d13c86d16c4220695e34b243effa999f45f2",
+    "JetBrainsMono-LICENSE.txt": "60d55f23c6ce05a81099a762cb67ca2c9b6ea251c7912720998b4c89ebfd4faa",
+    "Inter-LICENSE.txt": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+    "InterVariable.woff2": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3",
+    "JetBrainsMono-Bold.woff2": "c503cc5ec5f8b2c7666b7ecda1adf44bd45f2e6579b2eba0fc292150416588a2",
+    "index-DzpVv-Ee.css": "d1347d792cacdef586584d2d9bdc56fbb4077a62e7fc9d5e332dc7bca5e2ed67",
+    "index-DVL0HCRR.js": "c5bec99728451fcbef7bf6783b9312d921fb679b04aa0a9878710a83b03423cd",
+    "maplibre-gl-worker-CNLXcz58.js": "80f3f1eb3fd53fa5af74341632d974122a0741fad5687b0714d5932f6ddffa87"
+  },
+  "workspace_revision": 2,
+  "source_rows": 3,
+  "review_partition": {
+    "accepted": 1,
+    "pending": 2
+  },
+  "default_policy_refusal_observed": true,
+  "refused_export_created_no_stage_or_file": true,
+  "explicit_inclusion_native_save_observed": true,
+  "repeated_export_same_filename_and_one_file": true,
+  "csv_bytes": 1396,
+  "csv_sha256": "c07c2a4a252a770c7afcc37fc5d845a8ed380d12466f77a9b4d1c5bb28c2fadc",
+  "all_15_fields_decoded_and_exactly_equal_to_canonical": true,
+  "canonical_tables_unchanged": true,
+  "originals_unchanged": true,
+  "staging_empty": true,
+  "export_single_link_mode_0600": true,
+  "normal_quit_and_reopen": "passed; retained revision and three rows visible; final app quit confirmed",
+  "complete_release": false,
+  "limitations": [
+    "Three synthetic rows on available Apple Silicon development Mac",
+    "Unsigned unnotarized isolated development app",
+    "No installed bundled-worker or other-platform acceptance",
+    "No spreadsheet application execution or formula safety claim"
+  ],
+  "legacy_json_native_save": true,
+  "json_bytes": 1813,
+  "json_sha256": "6629e680f6eeb21318e0078916ec0c0f17796fb4180ff599761da06537caf46b",
+  "json_rows_exactly_equal_to_canonical": true,
+  "csv_preserved_after_reopen_and_json_save": true,
+  "final_export_files": 2,
+  "final_canonical_tables_and_originals_unchanged": true,
+  "final_staging_empty": true,
+  "verification_harness_correction": "Initial independent JSON check incorrectly expected an envelope; corrected to the unchanged historical array shape. No app change or repeat export."
+}
