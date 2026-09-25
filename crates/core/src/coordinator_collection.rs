@@ -391,6 +391,14 @@ fn run(shared: &Shared, lane: &CollectionLane) -> Result<()> {
 }
 
 fn settle(shared: &Shared, pending: &PendingSettlement) -> Result<DurableCollectionJob> {
+    settle_at(shared, pending, now())
+}
+
+fn settle_at(
+    shared: &Shared,
+    pending: &PendingSettlement,
+    at_ms: i64,
+) -> Result<DurableCollectionJob> {
     let mut workspace = shared
         .workspace
         .lock()
@@ -398,11 +406,20 @@ fn settle(shared: &Shared, pending: &PendingSettlement) -> Result<DurableCollect
     if shared.stopping.load(Ordering::Acquire) || !shared.ownership.held() {
         let job = workspace.inspect_durable_collection(&pending.request().run.job_id)?;
         if job.checkpoint.state == CollectionState::Running {
-            workspace.cancel_durable_collection(
-                &pending.request().run.job_id,
-                pending.request().run.generation,
-                now(),
-            )?;
+            if at_ms < job.checkpoint.updated_at_ms {
+                // The stop intent uses the already validated journal anchor;
+                // pending.settle retains the actual observation clock unchanged.
+                workspace.cancel_collection_settlement_at_checkpoint(
+                    pending.request(),
+                    &shared.ownership,
+                )?;
+            } else {
+                workspace.cancel_durable_collection(
+                    &pending.request().run.job_id,
+                    pending.request().run.generation,
+                    at_ms,
+                )?;
+            }
         }
     }
     pending.settle(&mut workspace, &shared.ownership)

@@ -5,6 +5,42 @@ use crate::{
 };
 
 impl Workspace {
+    /// A coordinator may preserve stop intent at the validated journal anchor
+    /// before settling its owned response. No caller timestamp is accepted.
+    pub(crate) fn cancel_collection_settlement_at_checkpoint(
+        &mut self,
+        request: &RequestTicket,
+        owner: &CollectionOwnership,
+    ) -> Result<DurableCollectionJob> {
+        self.collection_publication_owner(owner)?;
+        let mut loaded = self.load_collection(&request.run.job_id)?;
+        require(
+            loaded.job.schema_version == 2 && loaded.job.synthetic,
+            "Anchored cancellation requires synthetic v2 run",
+        )?;
+        check_ticket(&loaded.job, &request.run)?;
+        require(
+            matches!(
+                charged_request(&loaded, request)?.progress,
+                RequestProgress::Reserved
+            ),
+            "Anchored cancellation requires the exact reserved request",
+        )?;
+        if loaded.job.checkpoint.cancellation_requested {
+            return Ok(loaded.job);
+        }
+        require(
+            loaded.job.events.len() < MAX_EVENTS,
+            "Collection event bound reached",
+        )?;
+        let event = loaded.machine.cancel_reserved_at_checkpoint()?;
+        loaded.job.events.push(event);
+        loaded.job.checkpoint = loaded.machine.checkpoint.clone();
+        bounded(&loaded.job)?;
+        self.publish_collection(&loaded, None, None)?;
+        Ok(loaded.job)
+    }
+
     pub(super) fn collection_transport_available(&self) -> Result<()> {
         let quarantined: bool = self.conn.query_row(
             "SELECT EXISTS(SELECT 1 FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state')='recovery_required')",
@@ -41,20 +77,7 @@ impl Workspace {
             loaded.job.schema_version == 2 && loaded.job.synthetic,
             "Transport settlement requires synthetic v2 run",
         )?;
-        let charged = loaded
-            .job
-            .checkpoint
-            .requests
-            .get(request.sequence as usize)
-            .ok_or_else(|| Error::Validation("No charged request for transport settlement".into()))?
-            .clone();
-        require(
-            charged.generation == request.run.generation
-                && charged.lease == request.run.lease
-                && charged.sequence == request.sequence
-                && charged.entry.url == request.url,
-            "Transport settlement ticket changed",
-        )?;
+        let charged = charged_request(&loaded, request)?.clone();
         let receipt = TransportReceipt::from_observation(observation);
         let body = match &observation.outcome {
             Outcome::Complete { body, .. } => Some(body.as_slice()),
@@ -85,6 +108,23 @@ impl Workspace {
         self.publish_collection(&loaded, evidence, promotion)?;
         Ok(loaded.job)
     }
+}
+
+fn charged_request<'a>(loaded: &'a Loaded, request: &RequestTicket) -> Result<&'a ChargedRequest> {
+    let charged = loaded
+        .job
+        .checkpoint
+        .requests
+        .get(request.sequence as usize)
+        .ok_or_else(|| Error::Validation("No charged request for transport settlement".into()))?;
+    require(
+        charged.generation == request.run.generation
+            && charged.lease == request.run.lease
+            && charged.sequence == request.sequence
+            && charged.entry.url == request.url,
+        "Transport settlement ticket changed",
+    )?;
+    Ok(charged)
 }
 
 #[cfg(test)]

@@ -34,6 +34,27 @@ An explicit retry must identify the exact current job, generation and request se
 
 Shutdown signals cancellation and wakes the pending wait. If publication still fails, it performs exactly one final attempt and then joins the lane. A quiescent but unpublished response leaves its canonical reservation charged and reports the private `unpublished` state; shutdown completion does not claim that all acquisitions were published. The response is no longer retained in memory after that join. Bytes written before a failed database transaction may remain an unreferenced original under the existing lifecycle. A later exclusively owned recovery records the unresolved request as unknown; a previously requested cancellation becomes cancelled without inventing a response hash or acquisition. If the observation's local quiescence was unverified, ownership remains quarantined even when final publication also fails.
 
+Before settling during shutdown or quarantine, the coordinator journals its stop
+intent. If its current clock sample precedes the already validated checkpoint,
+that private cancellation uses the checkpoint's exact journal timestamp. It does
+not fabricate a transport completion time or change the owned receipt's raw wall
+sample. This narrowly scoped operation accepts no supplied timestamp: it requires
+the same held publication ownership, exact running generation/lease and reserved
+request sequence/URL, and a replay-validated synthetic v2 record. It reuses the
+ordinary Cancel transition and journal bounds. Ordinary cancellation timestamps
+still reject backwards or future values. Reusing the stored anchor also handles
+a rollback larger than the ordinary five-second future-clock tolerance.
+
+The cancellation remains committed if later receipt publication fails, so an
+exact retry neither fetches again nor loses shutdown intent. Unknown local
+quiescence still takes precedence over a clock change or cancellation; a known
+backwards transport clock remains a Failed receipt, and a complete response
+observed before the stop remains retained without promotion. Tests reproduce the
+former preliminary-cancellation failure, exercise all three outcomes, preserve
+the exact receipt on replay, and use a consistent historical fixture to model a
+large rollback without changing the host clock. A separate injected database
+failure verifies that the cancellation and later receipt retry remain distinct.
+
 Claim/reservation or integrity errors stop the lane with a fault instead of repeatedly performing writes or requests. Public retry/recovery ergonomics and persistent operator-facing failure reasons are still future command/UI work; the private lane state is not a replacement for a public receipt contract.
 
 ## Verification and remaining activation

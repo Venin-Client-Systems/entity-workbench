@@ -107,6 +107,36 @@ impl Machine {
         } else {
             valid_time(at)?;
         }
+        self.apply_ordered_event(event, body)
+    }
+
+    /// Stop intent for an already reserved v2 request. The timestamp is the
+    /// machine's own validated journal anchor, never an external clock sample.
+    /// This remains usable after a rollback makes that anchor appear future-dated.
+    pub(crate) fn cancel_reserved_at_checkpoint(&mut self) -> Result<CollectionEvent> {
+        require(
+            self.version == 2
+                && self.checkpoint.state == CollectionState::Running
+                && self
+                    .checkpoint
+                    .requests
+                    .last()
+                    .is_some_and(|request| matches!(request.progress, RequestProgress::Reserved)),
+            "Anchored cancellation requires a running reserved v2 request",
+        )?;
+        let event = CollectionEvent::Cancel {
+            at_ms: self.checkpoint.updated_at_ms,
+        };
+        self.apply_ordered_event(&event, None)?;
+        Ok(event)
+    }
+
+    fn apply_ordered_event(
+        &mut self,
+        event: &CollectionEvent,
+        body: Option<&[u8]>,
+    ) -> Result<Option<Promotion>> {
+        let at = event.at_ms();
         require(
             at >= self.checkpoint.updated_at_ms,
             "Collection clock moved backwards",

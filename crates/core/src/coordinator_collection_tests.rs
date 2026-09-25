@@ -1028,3 +1028,168 @@ fn unknown_collection_publication_case(late_success: bool) {
     drop(coordinator);
     assert!(JobCoordinator::start(Workspace::open(temp.path().join("case")).unwrap(), 1).is_err());
 }
+
+#[test]
+fn stop_settlement_preserves_exact_receipts_when_the_coordinator_clock_moves_backwards() {
+    use crate::{
+        collection_jobs::CollectionEvent,
+        collection_settlement::TransportReceipt,
+        collection_transport::{CallerContextState, ResolverUncertainty, StopReason},
+    };
+    #[derive(Clone, Copy)]
+    enum Returned {
+        Complete,
+        ClockChanged,
+        Unknown,
+    }
+    for returned in [
+        Returned::Complete,
+        Returned::ClockChanged,
+        Returned::Unknown,
+    ] {
+        let (_temp, workspace) = fixture();
+        let coordinator = JobCoordinator::start(workspace, 1).unwrap();
+        // Use the real canonical reservation/driver with an inert injected
+        // observation. No native clock change, DNS or HTTP request is involved.
+        let (job, mut driver) = {
+            let mut workspace = coordinator.shared.workspace.lock().unwrap();
+            let job = workspace
+                .queue_collection_transport(input(), &key(), now())
+                .unwrap();
+            let execution = workspace
+                .start_durable_collection(&job.id, 1, &coordinator.shared.ownership, now())
+                .unwrap()
+                .unwrap();
+            let driver =
+                CollectionDriver::attach(&workspace, &coordinator.shared.ownership, execution)
+                    .unwrap();
+            (job, driver)
+        };
+        let mut expected = None;
+        let mut calls = 0;
+        let pending = driver
+            .next_with(
+                &coordinator.shared.workspace,
+                &coordinator.shared.ownership,
+                &CancellationToken::default(),
+                |ticket, _, _, _, _| {
+                    calls += 1;
+                    let anchor = coordinator
+                        .shared
+                        .workspace
+                        .lock()
+                        .unwrap()
+                        .inspect_durable_collection(&job.id)
+                        .unwrap()
+                        .checkpoint
+                        .updated_at_ms;
+                    let observation = match returned {
+                        Returned::Complete => complete(ticket),
+                        Returned::ClockChanged => {
+                            let mut observation = complete(ticket);
+                            observation.observed_wall_ms = anchor - 500;
+                            observation.stop_observed = Some(StopReason::ClockChanged);
+                            observation
+                        }
+                        Returned::Unknown => Observation {
+                            outcome: Outcome::Stopped {
+                                reason: StopReason::QuiescenceUnverified,
+                                head: None,
+                            },
+                            phase: Phase::Dns,
+                            elapsed_milliseconds: 1,
+                            observed_wall_ms: anchor - 500,
+                            resolved: None,
+                            resolver_uncertainty: Some(ResolverUncertainty {
+                                method: "windows_overlapped_dns",
+                                caller_context: CallerContextState::RetainedPendingCompletion,
+                            }),
+                            stop_observed: None,
+                            locally_quiescent: false,
+                        },
+                    };
+                    expected = Some(TransportReceipt::from_observation(&observation));
+                    observation
+                },
+            )
+            .unwrap()
+            .unwrap();
+        let before = coordinator
+            .shared
+            .workspace
+            .lock()
+            .unwrap()
+            .inspect_durable_collection(&job.id)
+            .unwrap();
+        let anchor = before.checkpoint.updated_at_ms;
+        {
+            let mut workspace = coordinator.shared.workspace.lock().unwrap();
+            // Analyst-supplied historical timestamps retain their strict rules.
+            assert!(workspace
+                .cancel_durable_collection(&job.id, 1, anchor - 1000)
+                .is_err());
+            assert_eq!(
+                workspace.inspect_durable_collection(&job.id).unwrap(),
+                before
+            );
+        }
+        if matches!(returned, Returned::Unknown) {
+            quarantine_execution(&coordinator.shared);
+        } else {
+            coordinator.shared.stopping.store(true, Ordering::Release);
+        }
+        let settled = settle_at(&coordinator.shared, &pending, anchor - 1000).unwrap();
+        assert!(settled.checkpoint.cancellation_requested);
+        assert_eq!(
+            settled.checkpoint.state,
+            match returned {
+                Returned::Complete => CollectionState::Cancelled,
+                Returned::ClockChanged => CollectionState::Failed,
+                Returned::Unknown => CollectionState::RecoveryRequired,
+            }
+        );
+        assert_eq!(settled.checkpoint.requests_used(), 1);
+        assert_eq!(settled.checkpoint.pages_retained, 0);
+        let RequestProgress::Observed { receipt } = &settled.checkpoint.requests[0].progress else {
+            panic!("The exact owned observation must be retained");
+        };
+        assert_eq!(receipt, expected.as_ref().unwrap());
+        let cancellation_times = settled
+            .events
+            .iter()
+            .filter_map(|event| match event {
+                CollectionEvent::Cancel { at_ms } => Some(*at_ms),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(cancellation_times, vec![anchor]);
+        let revision = coordinator
+            .shared
+            .workspace
+            .lock()
+            .unwrap()
+            .revision()
+            .unwrap();
+        assert_eq!(
+            settle_at(&coordinator.shared, &pending, anchor - 2000).unwrap(),
+            settled
+        );
+        let workspace = coordinator.shared.workspace.lock().unwrap();
+        assert_eq!(workspace.revision().unwrap(), revision);
+        let evidence = workspace.view().unwrap().evidence;
+        assert!(evidence.iter().all(|source| source.text.is_none()));
+        assert_eq!(
+            evidence.len(),
+            usize::from(!matches!(returned, Returned::Unknown))
+        );
+        if let Some(source) = evidence.first() {
+            assert_eq!(source.acquisitions.len(), 1);
+        }
+        drop(workspace);
+        assert_eq!(calls, 1);
+        assert_eq!(
+            coordinator.shutdown().is_err(),
+            matches!(returned, Returned::Unknown)
+        );
+    }
+}

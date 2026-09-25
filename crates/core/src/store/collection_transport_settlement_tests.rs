@@ -83,6 +83,162 @@ fn put_raw(w: &Workspace, key: &str, body: &str) {
 }
 
 #[test]
+fn anchored_stop_survives_a_large_clock_rollback_and_exact_publication_retry() {
+    let (_temp, mut w, owner, execution, request) = fixture();
+    // Model a previously valid clock which has since moved back over five
+    // seconds. Shift the complete, internally consistent synthetic history;
+    // no OS clock is changed and replay still validates every event/checkpoint.
+    let mut historic = w.inspect_durable_collection(&execution.job_id).unwrap();
+    let shift = chrono::Utc::now().timestamp_millis() + 60_000 - historic.created_at_ms;
+    historic.created_at_ms += shift;
+    for event in &mut historic.events {
+        match event {
+            CollectionEvent::Start { at_ms, .. } | CollectionEvent::Advance { at_ms } => {
+                *at_ms += shift;
+            }
+            _ => panic!("Fixture must contain only start and reservation"),
+        }
+    }
+    historic.checkpoint.first_started_at_ms =
+        historic.checkpoint.first_started_at_ms.map(|at| at + shift);
+    historic.checkpoint.deadline_at_ms = historic.checkpoint.deadline_at_ms.map(|at| at + shift);
+    historic.checkpoint.updated_at_ms += shift;
+    for charged in &mut historic.checkpoint.requests {
+        charged.reserved_at_ms += shift;
+    }
+    put_raw(
+        &w,
+        &execution.job_id,
+        &serde_json::to_string(&historic).unwrap(),
+    );
+    assert_eq!(
+        w.inspect_durable_collection(&execution.job_id).unwrap(),
+        historic
+    );
+    let anchor = historic.checkpoint.updated_at_ms;
+    let revision = w.revision().unwrap();
+    assert!(w
+        .cancel_durable_collection(&execution.job_id, 1, chrono::Utc::now().timestamp_millis())
+        .unwrap_err()
+        .to_string()
+        .contains("clock moved backwards"));
+    assert!(w
+        .cancel_durable_collection(&execution.job_id, 1, anchor)
+        .unwrap_err()
+        .to_string()
+        .contains("future collection timestamp"));
+    assert_eq!(w.revision().unwrap(), revision);
+    owner.quarantine();
+    let cancelled = w
+        .cancel_collection_settlement_at_checkpoint(&request, &owner)
+        .unwrap();
+    assert_eq!(cancelled.checkpoint.updated_at_ms, anchor);
+    assert!(cancelled.checkpoint.cancellation_requested);
+    assert_eq!(
+        cancelled.events.last(),
+        Some(&CollectionEvent::Cancel { at_ms: anchor })
+    );
+    let revision = w.revision().unwrap();
+    assert_eq!(
+        w.cancel_collection_settlement_at_checkpoint(&request, &owner)
+            .unwrap(),
+        cancelled
+    );
+    assert_eq!(w.revision().unwrap(), revision);
+    let observation = complete(anchor - 500, b"Exact synthetic rollback response");
+    let expected = TransportReceipt::from_observation(&observation);
+    w.conn.execute_batch("CREATE TRIGGER reject_clock_receipt BEFORE UPDATE ON records WHEN NEW.kind='collection_run' AND json_extract(NEW.body,'$.events[#-1].event')='transport_observed' BEGIN SELECT RAISE(ABORT,'synthetic clock publication failure'); END;").unwrap();
+    assert!(w
+        .settle_collection_transport(&request, &observation, &owner)
+        .is_err());
+    assert_eq!(
+        w.inspect_durable_collection(&execution.job_id).unwrap(),
+        cancelled
+    );
+    w.conn
+        .execute_batch("DROP TRIGGER reject_clock_receipt;")
+        .unwrap();
+    let settled = w
+        .settle_collection_transport(&request, &observation, &owner)
+        .unwrap();
+    assert_eq!(settled.checkpoint.state, CollectionState::Failed);
+    assert_eq!(settled.checkpoint.updated_at_ms, anchor);
+    assert!(
+        matches!(&settled.checkpoint.requests[0].progress, RequestProgress::Observed { receipt } if receipt == &expected)
+    );
+    let revision = w.revision().unwrap();
+    assert_eq!(
+        w.settle_collection_transport(&request, &observation, &owner)
+            .unwrap(),
+        settled
+    );
+    assert_eq!(w.revision().unwrap(), revision);
+    let evidence = w.view().unwrap().evidence;
+    assert_eq!(evidence.len(), 1);
+    assert_eq!(evidence[0].acquisitions.len(), 1);
+    assert!(evidence[0].text.is_none());
+    assert_eq!(
+        read_original(&w.root, &evidence[0]).unwrap(),
+        b"Exact synthetic rollback response"
+    );
+    assert_eq!(
+        w.inspect_durable_collection(&execution.job_id).unwrap(),
+        settled
+    );
+}
+
+#[test]
+fn anchored_stop_requires_the_exact_still_reserved_request_and_owner() {
+    let (_temp, mut w, owner, execution, request) = fixture();
+    let before = w.inspect_durable_collection(&execution.job_id).unwrap();
+    let revision = w.revision().unwrap();
+    let mut wrong = request.clone();
+    wrong.run.lease = id();
+    assert!(w
+        .cancel_collection_settlement_at_checkpoint(&wrong, &owner)
+        .is_err());
+    wrong = request.clone();
+    wrong.run.generation += 1;
+    assert!(w
+        .cancel_collection_settlement_at_checkpoint(&wrong, &owner)
+        .is_err());
+    wrong = request.clone();
+    wrong.sequence += 1;
+    assert!(w
+        .cancel_collection_settlement_at_checkpoint(&wrong, &owner)
+        .is_err());
+    wrong = request.clone();
+    wrong.url.push_str("?changed");
+    assert!(w
+        .cancel_collection_settlement_at_checkpoint(&wrong, &owner)
+        .is_err());
+    let (_other_temp, _other_workspace, other_owner, _, _) = fixture();
+    assert!(w
+        .cancel_collection_settlement_at_checkpoint(&request, &other_owner)
+        .is_err());
+    assert_eq!(
+        w.inspect_durable_collection(&execution.job_id).unwrap(),
+        before
+    );
+    assert_eq!(w.revision().unwrap(), revision);
+    let observation = complete(
+        before.checkpoint.updated_at_ms,
+        b"Synthetic ordinary response",
+    );
+    w.settle_collection_transport(&request, &observation, &owner)
+        .unwrap();
+    let revision = w.revision().unwrap();
+    assert!(w
+        .cancel_collection_settlement_at_checkpoint(&request, &owner)
+        .is_err());
+    assert_eq!(w.revision().unwrap(), revision);
+    owner.release().unwrap();
+    assert!(w
+        .cancel_collection_settlement_at_checkpoint(&request, &owner)
+        .is_err());
+}
+
+#[test]
 fn v2_backwards_clock_preserves_raw_sample_body_and_last_valid_clock_without_invented_end_time() {
     let (temp, mut w, owner, execution, request) = fixture();
     let anchor = w
