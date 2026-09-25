@@ -22,7 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = '4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822'
 NATIVE_TEST = 'engines::supervision::python_probe::native_python_compatibility'
 SOURCES = ('crates/core/src/engines/supervision.rs', 'crates/core/src/engines/supervision/python_probe.rs',
+           'crates/core/src/engines/supervision/python_probe/import_diagnostics.rs',
            'workers/python/probe/bootstrap.py', 'workers/python/probe/compatibility.py',
+           'workers/python/probe/import_diagnostics.py',
            'workers/python/probe/fixture.json', 'workers/python/probe/expected.json',
            'workers/python/transaction_totals.py', 'scripts/test_python_compatibility.py',
            'scripts/verify_python_install.py', 'scripts/install_python_offline.py',
@@ -64,10 +66,14 @@ NATIVE_KEYS = {'schema_version', 'recipe', 'runtime_manifest_sha256', 'passed', 
                'phase', 'diagnostics_within_bound', 'last_worker_checkpoint', 'exit_code', 'failure', 'result',
                'campaign_id', 'job_id', 'architecture', 'runtime_verified', 'candidate_interpreter',
                'profile_sha256', 'assigned_files', 'termination_state', 'last_import_checkpoint', 'quota_kind',
-               'preparation_elapsed_ms', 'supervised_elapsed_ms'}
+               'preparation_elapsed_ms', 'supervised_elapsed_ms', 'import_diagnostics'}
 IMPORTS = ('duckdb', 'networkx', 'spacy', 'click', 'splink', 'pyarrow')
+ATTEMPTS = frozenset(('numpy', 'numpy._core._multiarray_umath', 'catalogue', 'confection',
+    'thinc', 'thinc.compat', 'thinc.backends.numpy_ops', 'blis', 'blis.cy', 'srsly',
+    'pydantic_core', 'pydantic_core._pydantic_core', 'spacy.pipeline', 'spacy.language', 'spacy.cli', 'weasel'))
 ASSIGNED = {'code/bootstrap.py': 'workers/python/probe/bootstrap.py',
             'code/compatibility.py': 'workers/python/probe/compatibility.py',
+            'code/import_diagnostics.py': 'workers/python/probe/import_diagnostics.py',
             'code/transaction_totals.py': 'workers/python/transaction_totals.py',
             'input/fixture.json': 'workers/python/probe/fixture.json',
             'input/reader.json': None, 'input/assignment.json': None}
@@ -88,6 +94,35 @@ def asset_identity(value, maximum, path=None):
     return (isinstance(value, dict) and set(value) == ({'bytes', 'sha256'} if path is None else {'path', 'bytes', 'sha256'})
             and type(value['bytes']) is int and 0 < value['bytes'] <= maximum and sha256(value['sha256'])
             and (path is None or value['path'] == path))
+
+
+def validate_import_diagnostics(value, last):
+    if value is None:
+        require(last is None, 'import-diagnostics-missing')
+        return
+    require(isinstance(value, dict) and set(value) == {'valid', 'checkpoints', 'attempts'}
+            and type(value['valid']) is bool, 'unsafe-import-diagnostics')
+    for key, maximum in (('checkpoints', 12), ('attempts', 16)):
+        records = value[key]
+        require(isinstance(records, list) and len(records) <= maximum, 'unsafe-import-diagnostic-count')
+        previous = (0, 0); seen = set()
+        for index, record in enumerate(records):
+            fields = {'module', 'elapsed_ms', 'process_cpu_ms', 'boundary' if key == 'checkpoints' else 'ordinal'}
+            require(isinstance(record, dict) and set(record) == fields, 'unsafe-import-diagnostic-shape')
+            clocks = (record['elapsed_ms'], record['process_cpu_ms'])
+            require(all(type(now) is int and old <= now <= 120_000 for old, now in zip(previous, clocks)),
+                    'unsafe-import-diagnostic-clock')
+            previous = clocks
+            if key == 'checkpoints':
+                require(record['module'] == IMPORTS[index // 2] and record['boundary'] == ('before', 'after')[index % 2],
+                        'unsafe-import-diagnostic-order')
+            else:
+                require(type(record['module']) is str and record['module'] in ATTEMPTS and record['module'] not in seen
+                        and type(record['ordinal']) is int and record['ordinal'] == index, 'unsafe-import-attempt')
+                seen.add(record['module'])
+    records = value['checkpoints']
+    expected_last = {key: records[-1][key] for key in ('module', 'boundary')} if records else None
+    require(last == expected_last, 'import-diagnostic-last-mismatch')
 
 
 def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assigned_names=ASSIGNED):
@@ -116,6 +151,8 @@ def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assig
     require(checkpoint is None or isinstance(checkpoint, dict) and set(checkpoint) == {'module', 'boundary'}
             and checkpoint['module'] in IMPORTS and checkpoint['boundary'] in ('before', 'after'),
             'unsafe-import-checkpoint')
+    validate_import_diagnostics(native['import_diagnostics'], checkpoint)
+    require(recipe != 'python-hostile-v1' or native['import_diagnostics'] is None, 'unexpected-hostile-import-diagnostics')
     require(native['quota_kind'] is None or native['quota_kind'] in
             ('wall-time', 'tree-depth', 'tree-entry-count', 'tree-or-file-bytes', 'tree-size-overflow', 'other'),
             'unsafe-quota-kind')
@@ -135,6 +172,8 @@ def accept_native(native, campaign, interpreter):
             and native['termination_state'] == 'confirmed' and sha256(native['profile_sha256'])
             and native['candidate_interpreter'] == interpreter and set(native['assigned_files']) == set(ASSIGNED)
             and native['last_import_checkpoint'] == {'module': 'pyarrow', 'boundary': 'after'}
+            and native['import_diagnostics'] is not None and native['import_diagnostics']['valid'] is True
+            and len(native['import_diagnostics']['checkpoints']) == 12
             and native['quota_kind'] is None and native['preparation_elapsed_ms'] is not None
             and native['supervised_elapsed_ms'] is not None,
             'native-compatibility-failed')

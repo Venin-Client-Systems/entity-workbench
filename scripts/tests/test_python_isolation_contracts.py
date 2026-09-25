@@ -43,6 +43,7 @@ def native_receipt(campaign):
                           'input/sentinel.txt': asset(runner.SENTINEL), 'input/assignment.json': asset(b'fixed assignment')},
         'termination_state': 'confirmed', 'passed': True, 'complete_release': False, 'phase': 'complete',
         'diagnostics_within_bound': True, 'last_worker_checkpoint': 'complete', 'last_import_checkpoint': None,
+        'import_diagnostics': None,
         'quota_kind': None, 'preparation_elapsed_ms': 10, 'supervised_elapsed_ms': 20, 'exit_code': 0, 'failure': None,
         'result': result, 'host_controls': {'before': True, 'after': True}, 'post_runtime_verified': True,
         'network_observer': {protocol: {'before': 1, 'after': 1, 'confined': 0, 'unexpected': 0, 'errors': 0}for protocol in ['tcp', 'udp']}}

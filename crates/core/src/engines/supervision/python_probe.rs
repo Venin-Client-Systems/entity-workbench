@@ -11,11 +11,14 @@ use std::{
 };
 
 mod hostile;
+mod import_diagnostics;
 mod listeners;
 
 const MANIFEST: &str = "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822";
 const BOOTSTRAP: &[u8] = include_bytes!("../../../../../workers/python/probe/bootstrap.py");
 const COMPATIBILITY: &[u8] = include_bytes!("../../../../../workers/python/probe/compatibility.py");
+const IMPORT_DIAGNOSTICS: &[u8] =
+    include_bytes!("../../../../../workers/python/probe/import_diagnostics.py");
 const ADAPTER: &[u8] = include_bytes!("../../../../../workers/python/transaction_totals.py");
 const FIXTURE: &[u8] = include_bytes!("../../../../../workers/python/probe/fixture.json");
 const EXPECTED: &[u8] = include_bytes!("../../../../../workers/python/probe/expected.json");
@@ -326,25 +329,6 @@ fn checkpoint(job: &Path) -> Option<String> {
     last
 }
 
-fn import_checkpoint(job: &Path) -> Option<ImportCheckpoint> {
-    let mut last = None;
-    for (index, module) in IMPORTS.iter().enumerate() {
-        for (offset, boundary) in ["before", "after"].iter().enumerate() {
-            let path = job.join(format!("scratch/import-{}.json", index * 2 + offset));
-            if !path.exists() {
-                return last;
-            }
-            let bytes = read_result(&path, 512).ok()?;
-            let record: ImportCheckpoint = serde_json::from_slice(&bytes).ok()?;
-            if record.module != *module || record.boundary != *boundary {
-                return None;
-            }
-            last = Some(record);
-        }
-    }
-    last
-}
-
 fn quota_kind(error: &Error) -> Option<&'static str> {
     let Error::QuotaExhausted(message) = error else {
         return None;
@@ -404,6 +388,7 @@ fn run(
         for (name, data, maximum) in [
             ("code/bootstrap.py", BOOTSTRAP, 64 * 1024),
             ("code/compatibility.py", COMPATIBILITY, 64 * 1024),
+            ("code/import_diagnostics.py", IMPORT_DIAGNOSTICS, 64 * 1024),
             ("code/transaction_totals.py", ADAPTER, 32 * 1024),
             ("input/fixture.json", FIXTURE, 64 * 1024),
         ] {
@@ -428,6 +413,7 @@ fn run(
         for name in [
             "code/bootstrap.py",
             "code/compatibility.py",
+            "code/import_diagnostics.py",
             "code/transaction_totals.py",
             "input/fixture.json",
             "input/reader.json",
@@ -500,8 +486,9 @@ fn run(
         };
         observation["termination_state"] = "confirmed".into();
         observation["last_worker_checkpoint"] = serde_json::json!(checkpoint(job.path()));
-        observation["last_import_checkpoint"] =
-            serde_json::to_value(import_checkpoint(job.path()))?;
+        let imports = import_diagnostics::collect(job.path());
+        observation["last_import_checkpoint"] = serde_json::to_value(imports.last())?;
+        observation["import_diagnostics"] = serde_json::to_value(&imports)?;
         for name in ["stdout.txt", "stderr.txt"] {
             if let Ok(data) = read_result(&job.path().join("scratch").join(name), DIAGNOSTIC_LIMIT)
             {
@@ -534,14 +521,7 @@ fn run(
             checkpoint(job.path()).as_deref() == Some("complete"),
             "Incomplete Python probe checkpoints",
         )?;
-        require(
-            import_checkpoint(job.path())
-                == Some(ImportCheckpoint {
-                    module: "pyarrow".into(),
-                    boundary: "after".into(),
-                }),
-            "Incomplete Python import checkpoints",
-        )?;
+        require(imports.complete(), "Incomplete Python import checkpoints")?;
         let accepted = accept(
             &read_result(&job.path().join("scratch/result.json"), RESULT_LIMIT)?,
             job_id,
@@ -557,7 +537,7 @@ fn initial_observation(campaign_id: &str) -> serde_json::Value {
         "campaign_id":campaign_id,"job_id":uuid::Uuid::new_v4().to_string(),"architecture":std::env::consts::ARCH,"runtime_verified":false,
         "candidate_interpreter":null,"profile_sha256":null,"assigned_files":{},"termination_state":"not-started",
         "passed":false,"complete_release":false,"phase":"not-started","diagnostics_within_bound":true,
-        "last_worker_checkpoint":null,"last_import_checkpoint":null,"quota_kind":null,
+        "last_worker_checkpoint":null,"last_import_checkpoint":null,"import_diagnostics":null,"quota_kind":null,
         "preparation_elapsed_ms":null,"supervised_elapsed_ms":null,"exit_code":null,"failure":null,"result":null})
 }
 
@@ -695,62 +675,6 @@ fn python_probe_runtime_requires_exact_inventory_without_links_or_mutation() {
     fs::set_permissions(&binary, fs::Permissions::from_mode(0o755)).unwrap();
     fs::write(binary, b"changed").unwrap();
     assert!(verify_prefix(&prefix, &pin, 2).is_err());
-}
-
-#[test]
-fn python_probe_import_checkpoints_are_ordered_bounded_and_closed() {
-    let temp = tempfile::tempdir().unwrap();
-    let scratch = temp.path().join("scratch");
-    fs::create_dir(&scratch).unwrap();
-    assert!(import_checkpoint(temp.path()).is_none());
-    fs::write(
-        scratch.join("import-0.json"),
-        br#"{"module":"duckdb","boundary":"before"}"#,
-    )
-    .unwrap();
-    assert_eq!(
-        import_checkpoint(temp.path()),
-        Some(ImportCheckpoint {
-            module: "duckdb".into(),
-            boundary: "before".into()
-        })
-    );
-    for invalid in [
-        br#"{"module":"networkx","boundary":"after"}"#.as_slice(),
-        br#"{"module":"duckdb","boundary":"after","private":"not-allowed"}"#,
-        br#"{"module":"duckdb","module":"duckdb","boundary":"after"}"#,
-        br#"{"module":"not-allowed","boundary":"after"}"#,
-    ] {
-        fs::write(scratch.join("import-1.json"), invalid).unwrap();
-        assert!(import_checkpoint(temp.path()).is_none());
-    }
-    fs::write(scratch.join("import-1.json"), [b' '; 513]).unwrap();
-    assert!(import_checkpoint(temp.path()).is_none());
-    for (index, module) in IMPORTS.iter().enumerate() {
-        for (offset, boundary) in ["before", "after"].iter().enumerate() {
-            fs::write(
-                scratch.join(format!("import-{}.json", index * 2 + offset)),
-                serde_json::to_vec(&serde_json::json!({"module":module,"boundary":boundary}))
-                    .unwrap(),
-            )
-            .unwrap();
-        }
-    }
-    assert_eq!(
-        import_checkpoint(temp.path()),
-        Some(ImportCheckpoint {
-            module: "pyarrow".into(),
-            boundary: "after".into()
-        })
-    );
-    fs::remove_file(scratch.join("import-1.json")).unwrap();
-    assert_eq!(
-        import_checkpoint(temp.path()),
-        Some(ImportCheckpoint {
-            module: "duckdb".into(),
-            boundary: "before".into()
-        })
-    );
 }
 
 #[test]

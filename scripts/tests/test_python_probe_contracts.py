@@ -46,6 +46,10 @@ def successful_receipt(campaign):
               'termination_state': 'confirmed', 'passed': True, 'complete_release': False, 'phase': 'complete',
               'diagnostics_within_bound': True, 'last_worker_checkpoint': 'complete',
               'last_import_checkpoint': {'module': 'pyarrow', 'boundary': 'after'}, 'quota_kind': None,
+              'import_diagnostics': {'valid': True, 'attempts': [], 'checkpoints': [
+                  {'module': module, 'boundary': boundary, 'elapsed_ms': index * 2 + offset,
+                   'process_cpu_ms': index * 2 + offset}
+                  for index, module in enumerate(runner.IMPORTS) for offset, boundary in enumerate(('before', 'after'))]},
               'preparation_elapsed_ms': 50, 'supervised_elapsed_ms': 100, 'exit_code': 0, 'failure': None,
               'result': {'schema_version': 1, 'recipe': 'python-compatibility-v1', 'job_id': job,
                          'manifest_sha256': runner.MANIFEST, 'python_version': '3.13.15', 'isolated': True,
@@ -117,6 +121,7 @@ class ProbeContractTests(unittest.TestCase):
                      lambda n: n.update(runtime_verified=False), lambda n: n.update(profile_sha256=None),
                      lambda n: n['candidate_interpreter'].update(sha256='b' * 64),
                      lambda n: n['assigned_files']['code/bootstrap.py'].update(sha256='b' * 64),
+                     lambda n: n['assigned_files']['code/import_diagnostics.py'].update(sha256='b' * 64),
                      lambda n: n['assigned_files'].pop('input/assignment.json'),
                      lambda n: n['result']['checks'].update(transfer_rejected=1), lambda n: n.update(exit_code=False),
                      lambda n: n.update(extra='unreviewed'), lambda n: n.update(quota_kind='wall-time'),
@@ -151,7 +156,7 @@ class ProbeContractTests(unittest.TestCase):
         native.update(passed=False, phase='runtime-inventory', runtime_verified=False, candidate_interpreter=None,
                       profile_sha256=None, assigned_files={}, termination_state='not-started',
                       last_worker_checkpoint=None, last_import_checkpoint=None, quota_kind=None, preparation_elapsed_ms=None,
-                      supervised_elapsed_ms=None, exit_code=None, failure='compatibility-failed', result=None)
+                      import_diagnostics=None, supervised_elapsed_ms=None, exit_code=None, failure='compatibility-failed', result=None)
         self.assertEqual(runner.failure_summary(native, campaign)['assigned_files'], {})
         with self.assertRaises(runner.ProbeFailure): runner.accept_native(native, campaign, None)
 
@@ -223,7 +228,8 @@ class ProbeRunnerTests(unittest.TestCase):
         def timeout(_command, _path, _timeout, environment):
             native, _ = successful_receipt(environment['WORKBENCH_TEST_PYTHON_CAMPAIGN'])
             native.update(passed=False, phase='confined-compatibility', termination_state='unconfirmed',
-                          last_worker_checkpoint=None, exit_code=None, failure=None, result=None)
+                          last_worker_checkpoint=None, last_import_checkpoint=None, import_diagnostics=None,
+                          exit_code=None, failure=None, result=None)
             (self.artifacts / 'native-report.json').write_text(json.dumps(native))
             raise subprocess.TimeoutExpired('synthetic-test', 120)
         with patch.object(runner, 'run_logged', side_effect=timeout) as launch:
@@ -246,6 +252,29 @@ class ProbeRunnerTests(unittest.TestCase):
         self.assertFalse(report['passed']); self.assertEqual(report['native']['last_worker_checkpoint'], 'imports')
         self.assertNotIn('/private/sentinel', json.dumps(report))
         self.assertEqual(report['failure'], 'native-test-process-failed')
+
+    def test_quota_failure_retains_partial_timing_and_invalid_diagnostic_without_replacing_cause(self):
+        self.patches()
+        def fail(_command, _path, _timeout, environment):
+            native, _ = successful_receipt(environment['WORKBENCH_TEST_PYTHON_CAMPAIGN'])
+            native.update(passed=False, phase='confined-compatibility', last_worker_checkpoint='imports',
+                          failure='quota-exhausted', quota_kind='wall-time', exit_code=None, result=None,
+                          last_import_checkpoint={'module': 'spacy', 'boundary': 'before'})
+            native['import_diagnostics']['checkpoints'] = native['import_diagnostics']['checkpoints'][:5]
+            native['import_diagnostics'].update(valid=False, attempts=[{
+                'module': 'numpy', 'ordinal': 0, 'elapsed_ms': 6, 'process_cpu_ms': 3}])
+            (self.artifacts / 'native-report.json').write_text(json.dumps(native))
+            return SimpleNamespace(returncode=1)
+        with patch.object(runner, 'run_logged', side_effect=fail) as launched:
+            report = runner.observe(self.prefix, self.artifacts)
+        launched.assert_called_once()
+        self.assertFalse(report['passed'])
+        self.assertEqual(report['native']['failure'], 'quota-exhausted')
+        self.assertEqual(report['native']['quota_kind'], 'wall-time')
+        self.assertEqual(len(report['native']['import_diagnostics']['checkpoints']), 5)
+        self.assertFalse(report['native']['import_diagnostics']['valid'])
+        self.assertEqual(report['native']['import_diagnostics']['attempts'][0]['module'], 'numpy')
+        self.assertEqual(report['termination_state'], 'confirmed')
 
     def test_unsupported_platform_never_verifies_or_spawns_candidate(self):
         self.patches()
