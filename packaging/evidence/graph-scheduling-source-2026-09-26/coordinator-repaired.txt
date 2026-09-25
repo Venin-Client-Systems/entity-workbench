@@ -1,0 +1,15 @@
+   Compiling workbench-core v0.1.0 ($WORKSPACE/crates/core)
+error[E0425]: cannot find value `token` in this scope
+   --> crates/core/src/coordinator_graph.rs:308:14
+    |
+308 |         _ if token.is_cancelled() || shared.stopping.load(Ordering::Acquire) => Err(
+    |              ^^^^^ not found in this scope
+
+error[E0425]: cannot find value `shared` in this scope
+   --> crates/core/src/coordinator_graph.rs:308:38
+    |
+308 |         _ if token.is_cancelled() || shared.stopping.load(Ordering::Acquire) => Err(
+    |                                      ^^^^^^ not found in this scope
+
+For more information about this error, try `rustc --explain E0425`.
+error: could not compile `workbench-core` (lib test) due to 2 previous errors

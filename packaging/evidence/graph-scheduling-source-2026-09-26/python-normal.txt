@@ -1,0 +1,18 @@
+test_core_backend_preserves_identity_and_does_not_return_provenance (test_graph_path_adapter.GraphContractTests.test_core_backend_preserves_identity_and_does_not_return_provenance) ... ok
+test_edges_are_flat_known_canonical_unique_and_bounded (test_graph_path_adapter.GraphContractTests.test_edges_are_flat_known_canonical_unique_and_bounded) ... ok
+test_fixed_shape_rejects_missing_extra_and_executable_fields_before_import (test_graph_path_adapter.GraphContractTests.test_fixed_shape_rejects_missing_extra_and_executable_fields_before_import) ... ok
+test_identity_types_and_pins_are_exact (test_graph_path_adapter.GraphContractTests.test_identity_types_and_pins_are_exact) ... ok
+test_isolated_endpoint_no_path_has_exact_empty_outcome (test_graph_path_adapter.GraphContractTests.test_isolated_endpoint_no_path_has_exact_empty_outcome) ... ok
+test_malformed_json_duplicates_constants_and_non_utf8_never_import (test_graph_path_adapter.GraphContractTests.test_malformed_json_duplicates_constants_and_non_utf8_never_import) ... ok
+test_nodes_are_sorted_unique_bounded_scalar_ids_and_endpoints_are_members (test_graph_path_adapter.GraphContractTests.test_nodes_are_sorted_unique_bounded_scalar_ids_and_endpoints_are_members) ... ok
+test_serializer_bounds_escaping_before_output_growth (test_graph_path_adapter.GraphContractTests.test_serializer_bounds_escaping_before_output_growth) ... ok
+test_unexpected_engine_failure_version_or_result_never_becomes_unreachable (test_graph_path_adapter.GraphContractTests.test_unexpected_engine_failure_version_or_result_never_becomes_unreachable) ... ok
+test_input_errors_and_read_contract_violations_write_nothing (test_graph_path_adapter.StreamTests.test_input_errors_and_read_contract_violations_write_nothing) ... ok
+test_input_limit_reads_at_most_one_extra_byte_and_writes_nothing (test_graph_path_adapter.StreamTests.test_input_limit_reads_at_most_one_extra_byte_and_writes_nothing) ... ok
+test_partial_output_or_flush_error_stays_failed_without_retry (test_graph_path_adapter.StreamTests.test_partial_output_or_flush_error_stays_failed_without_retry) ... ok
+test_short_reads_and_writes_complete_only_the_closed_result (test_graph_path_adapter.StreamTests.test_short_reads_and_writes_complete_only_the_closed_result) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.024s
+
+OK

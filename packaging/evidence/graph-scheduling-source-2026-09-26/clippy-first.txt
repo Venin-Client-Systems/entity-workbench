@@ -1,0 +1,45 @@
+    Checking workbench-windows-worker v0.1.0 ($WORKSPACE/crates/windows-worker)
+    Checking workbench-core v0.1.0 ($WORKSPACE/crates/core)
+error: large size difference between variants
+  --> crates/core/src/coordinator_graph.rs:64:1
+   |
+64 | / enum Interval {
+65 | |     Open,
+66 | |     Draining(Drain),
+   | |     --------------- the largest variant contains at least 392 bytes
+67 | |     Owned(Owned),
+   | |     ------------ the second-largest variant contains at least 96 bytes
+68 | | }
+   | |_^ the entire enum is at least 392 bytes
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_enum_variant
+   = note: `-D clippy::large-enum-variant` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+   |
+66 -     Draining(Drain),
+66 +     Draining(Box<Drain>),
+   |
+
+error: large size difference between variants
+   --> crates/core/src/coordinator_graph.rs:113:1
+    |
+113 | / pub(super) enum Admission {
+114 | |     Open,
+    | |     ---- the second-largest variant carries no data at all
+115 | |     Wait,
+116 | |     Graph(ProcessingJob),
+    | |     -------------------- the largest variant contains at least 312 bytes
+117 | | }
+    | |_^ the entire enum is at least 312 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/master/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+116 -     Graph(ProcessingJob),
+116 +     Graph(Box<ProcessingJob>),
+    |
+
+error: could not compile `workbench-core` (lib) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `workbench-core` (lib test) due to 2 previous errors

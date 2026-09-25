@@ -1,0 +1,80 @@
+   Compiling workbench-core v0.1.0 ($WORKSPACE/crates/core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.36s
+     Running unittests src/lib.rs ($CARGO_TARGET/debug/deps/workbench_core-3b02699a934d9ff3)
+
+running 73 tests
+test coordinator::collection::public_api::tests::normal_coordinator_exposes_disabled_catalogue_and_blocks_old_and_new_execution_without_mutation ... ok
+test coordinator::collection::public_api::tests::contained_lane_failure_refuses_new_work_instead_of_admitting_stranded_queue ... ok
+test coordinator::collection::public_api::tests::crash_recovery_retains_charge_and_fixed_deadline_and_requires_explicit_generation_resume ... ok
+test coordinator::collection::public_api::tests::quarantined_pending_receipt_exposes_only_exact_publication_retry_and_no_new_execution ... ok
+test coordinator::collection::public_api::tests::queued_cancel_is_uncharged_and_historical_v2_is_never_admitted_to_public_lane ... ok
+test coordinator::collection::public_api::tests::public_cancel_retains_complete_body_without_promotion_and_stale_generation_fails ... ok
+test coordinator::collection::tests::active_cancellation_is_responsive_and_complete_race_keeps_bytes_without_promotion ... ok
+test coordinator::collection::tests::exclusive_start_recovers_charged_unknown_and_requires_explicit_resume_with_original_deadline ... ok
+test coordinator::collection::tests::explicit_publication_retry_limit_and_failed_shutdown_leave_one_charged_unknown ... ok
+test coordinator::collection::tests::joined_shutdown_holds_shared_ownership_until_both_document_and_collection_lanes_exit ... ok
+test coordinator::collection::tests::ordinary_coordinator_keeps_collection_unactivated_and_does_not_recover_private_runs ... ok
+test coordinator::collection::tests::ordinary_document_cleanup_failure_does_not_quarantine_collection_or_joined_release ... ok
+test coordinator::collection::tests::panicked_collection_adapter_keeps_the_shared_lock_quarantined_without_false_settlement ... ok
+test coordinator::collection::tests::panicked_join_never_releases_shared_ownership_on_repeated_shutdown ... ok
+test coordinator::collection::tests::persisted_document_uncertainty_prevents_collection_start_after_exclusive_recovery ... ok
+test coordinator::collection::tests::publication_failure_waits_for_exact_explicit_retry_without_another_transport ... ok
+test coordinator::collection::tests::stop_settlement_preserves_exact_receipts_when_the_coordinator_clock_moves_backwards ... ok
+test coordinator::collection::public_api::tests::public_prepared_cancel_accepts_exact_cancel_suffix_without_second_write ... ok
+test coordinator::collection::public_api::tests::public_prepared_cancel_replays_once_outside_locks_and_signals_only_after_commit ... ok
+test coordinator::collection::tests::synthetic_lane_recovery_does_not_rewrite_historical_v1_running_records ... ok
+test coordinator::collection::public_api::tests::v4_interpretation_releases_workspace_for_canonical_cancel_and_preserves_complete_body ... ok
+test coordinator::collection::public_api::tests::public_v3_queue_owned_tls_receipts_idempotency_and_backup_preserve_originals ... ok
+test coordinator::collection::public_api::tests::v4_shutdown_joins_paused_preparation_before_releasing_owner_and_retains_exact_body ... ok
+test coordinator::graph::tests::actual_cleanup_failure_takes_precedence_over_inflight_cancellation ... ok
+test coordinator::collection::tests::unknown_operation_retains_canonical_quarantine_and_never_starts_the_next_run ... ok
+test coordinator::collection::tests::unknown_document_exit_cancels_active_collection_preserves_its_bytes_and_blocks_queued_work ... ok
+test coordinator::graph::tests::cancellation_before_initial_publication_consumes_its_single_settlement ... ok
+test coordinator::graph::tests::capture_failure_followed_by_storage_failure_retains_unclaimed_drain_until_repaired ... ok
+test coordinator::collection::tests::unknown_collection_quarantines_before_failed_publication_and_retains_explicit_retry ... ok
+test coordinator::graph::tests::drain_waits_for_registered_document_publication_and_cancel_does_not_stop_it ... ok
+test coordinator::graph::tests::collection_fifo_and_non_draining_faults_are_resolved_before_graph_claim ... ok
+test coordinator::graph::tests::failed_atomic_capture_rolls_back_running_and_releases_after_blocked_commit ... ok
+test coordinator::graph::tests::exact_pending_retries_never_reexecute_and_success_releases_interval ... ok
+test coordinator::graph::tests::graph_owned_blocks_all_automatic_claims_but_analyst_write_stales_result ... ok
+test coordinator::graph::tests::preexisting_admitted_ticket_is_frozen_and_only_that_ticket_may_enter_drain ... ok
+test coordinator::graph::tests::exhausted_result_retries_allow_one_new_cancel_settlement ... ok
+test coordinator::graph::tests::pending_shutdown_has_exactly_one_final_settlement_and_retains_known_stopped_authority ... ok
+test coordinator::graph::tests::public_and_internal_resume_are_no_write_refusals_during_drain_but_prepared_cancel_works ... ok
+test coordinator::graph::tests::standalone_interruption_remains_typed ... ok
+test coordinator::graph::tests::unavailable_blocks_before_drain_and_never_calls_executor ... ok
+test coordinator::graph::tests::stop_observed_before_first_publication_gets_no_extra_final_retry ... ok
+test coordinator::graph::tests::two_real_coordinator_workers_serialize_graphs_without_self_invalidation ... ok
+test coordinator::graph::tests::unknown_exit_quarantines_before_terminal_write_and_keeps_interval ... ok
+test coordinator::image_tests::native_coordinator_images_publish_and_restore_recognition_and_provenance ... ignored, requires real confined PNG/JPEG and app-local OCR runtimes
+test coordinator::image_tests::executor_panic_cannot_claim_worker_exit_or_start_queued_work ... ok
+test coordinator::image_tests::image_and_parse_share_two_slots_and_joined_shutdown ... ok
+test coordinator::native_https_proof::cancellation::native_durable_https_cancellation_campaign ... ignored, fixed native response cancellation; separately reviewed signed source and opt-in required
+test coordinator::native_https_proof::fixed_https_guard_refuses_drift_reordering_extra_attempts_and_expiry_before_executor ... ok
+test coordinator::native_https_proof::cancellation::fixed_cancellation_never_passes_when_robots_blocks_before_handshake ... ok
+test coordinator::native_https_proof::cancellation::fixed_cancellation_canonical_controller_preserves_charges_and_reopen_without_seed_original ... ok
+test coordinator::native_https_proof::fixed_https_orchestration_retains_unknown_completion_without_recovery_claims ... ok
+test coordinator::native_https_proof::native_durable_https_campaign ... ignored, fixed native HTTPS proof; requires separately reviewed signed source and explicit opt-in
+test coordinator::ownership_tests::joined_shutdown_releases_ownership_while_a_fork_inherits_the_descriptor ... ok
+test coordinator::native_https_proof::fixed_https_orchestration_replays_and_restores_real_synthetic_canonical_receipts ... ok
+test coordinator::pdf_tests::native_pdf_jobs_publish_selected_pages_and_restore_exact_unreviewed_provenance ... ignored, requires real confined PDF renderer and packaged English OCR
+test coordinator::ownership_tests::repeated_shutdown_cannot_release_a_later_coordinators_ownership ... ok
+test coordinator::native_https_proof::fixed_https_orchestration_preserves_robots_refusal_and_changed_fixture_as_failures ... ok
+test coordinator::region_tests::native_image_regions_retain_exact_provenance_raster_tsv_and_restore ... ignored, requires actual confined image and English word-region OCR runtimes
+test coordinator::pdf_tests::pdf_and_legacy_jobs_share_two_slots_and_joined_shutdown ... ok
+test coordinator::region_tests::region_missing_runtime_is_visible_and_worker_pool_remains_bounded ... ok
+test coordinator::tests::native_coordinator_publishes_and_restores_pdf_derivative ... ignored, requires staged native Java parser and development confinement
+test coordinator::pdf_tests::pdf_running_cancellation_and_panic_do_not_publish_or_hide_unknown_exit ... ok
+test coordinator::tests::malformed_worker_results_stay_invalid_without_publishing_in_both_dispatch_modes ... ok
+test coordinator::tests::shutdown_while_admission_registry_is_held_does_not_claim_or_launch_a_worker ... ok
+test coordinator::tests::responsive_cancellation_stops_execution_before_terminal_state_and_suppresses_success ... ok
+test coordinator::tests::summary_dispatch_wakes_once_and_signals_the_same_cancellation_owner ... ok
+test coordinator::tests::worker_pool_is_bounded_and_shutdown_reaps_all_active_executors ... ok
+test coordinator::graph::tests::actual_collection_run_drains_all_requests_before_graph_capture ... ok
+test coordinator::collection::public_api::tests::public_prepared_cancel_preflight_and_failed_publication_never_signal ... ok
+test coordinator::graph::tests::retained_collection_settlement_keeps_drain_until_exact_publication_retry ... ok
+test coordinator::collection::tests::synthetic_coordinator_runs_one_tls_lane_with_canonical_receipts_and_no_held_workspace_lock ... ok
+test coordinator::tests::raster_accessor_verifies_bytes_without_mutation_and_refuses_shutdown ... ok
+test coordinator::collection::public_api::tests::public_prepared_cancel_rejects_drift_or_quarantine_without_signalling_current_token ... ok
+
+test result: ok. 67 passed; 0 failed; 6 ignored; 0 measured; 486 filtered out; finished in 3.28s
