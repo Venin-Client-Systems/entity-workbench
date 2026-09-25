@@ -3,7 +3,9 @@
 This development harness exercises the public Rust workspace and job-coordinator
 interfaces with the confined Windows Java parser recipe. It adds no production
 commands, worker overrides or cancellation hooks. Its first actual Windows run
-is pending. Host contract tests and cross-target compilation do not establish
+failed in the probe's command-envelope handling before it queued a parser job;
+the repaired native campaign remains pending. Host contract tests and
+cross-target compilation do not establish
 native confinement, clean installation, Windows 11 compatibility or release
 acceptance.
 
@@ -134,6 +136,12 @@ local paths or raw native/JVM messages. The workflow creates a separate failed
 `coordinator-report.json` before all builds and probes, so failure of an earlier
 stage leaves the canonical campaign explicitly unpassed.
 
+The version 2 child receipt records a bounded terminal-job observation before
+checking publication: state, typed failure, attempt, result count and whether
+the job started. These fields distinguish a rejected runtime or input from a
+parser result without publishing raw worker diagnostics. A failure before
+queueing leaves this observation absent.
+
 To execute on a prepared Windows development checkout, after the existing
 foundation and Java engine campaigns:
 
@@ -162,3 +170,34 @@ compiler was unavailable. This is a local verification limitation, not a native
 pass or evidence that the Windows example links or runs. The actual hosted
 workflow must build and execute the integrated source before any coordinator
 campaign success is recorded.
+
+## Command-envelope regression
+
+The first hosted campaign (run `36130338414`, source
+`6f1b388e4906430757bac7466735878fc1e058b6`) retained a failed receipt at
+`fixture_notice.txt` / `publication`, with no derivative. The same run's earlier
+Java engine campaign passed. Source review found that the canonical harness
+looked for `evidence` at the top level of the import response. Both `Import` and
+`View` actually return `{ analysis, workspace }`. The missing lookup failed
+before the harness called `QueueDocumentParse`; this observation is not a
+canonical parser or original-verification failure.
+
+The probe now reads workspace fields through one checked envelope accessor.
+Snapshot comparisons retain the complete response, including analysis. Evidence,
+observation and assertion checks use the nested workspace. Direct job,
+extraction, job-list and backup responses retain their existing contracts. No
+production dispatcher, parser recipe, permission or resource bound changes.
+
+A host regression calls the actual `JobCoordinator` for TXT and unprocessed
+imports, reads the resulting `View` and job list, verifies retained originals,
+creates a backup, joins the coordinator and restores the full snapshot. It
+queues no worker. This test first reproduced the exact `Publication` failure
+with the old lookup. A separate already-cancelled job case checks direct reply
+shapes without starting a parser. These are command-contract tests, not native
+Windows execution or confinement evidence. The original failed receipt remains
+retained; only a new Windows campaign can establish the repaired native outcome.
+
+After the repair, all nine Rust example tests passed on the Mac host. All
+thirteen Python receipt tests passed in ordinary and optimized Python modes.
+Strict release-profile Clippy for the example, core formatting and the patch
+whitespace check passed. These checks leave the native Windows campaign unpassed.

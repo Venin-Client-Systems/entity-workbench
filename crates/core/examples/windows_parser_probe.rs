@@ -164,6 +164,29 @@ fn workspace_call<T: for<'de> Deserialize<'de>>(
     serde_json::from_value(workspace.dispatch(command).map_err(|_| Failure::Command)?)
         .map_err(|_| Failure::Command)
 }
+// Only Import/View use the workspace response. Direct job, extraction, list and
+// backup commands must retain their own top-level response contracts.
+fn workspace_from_response(response: &Value) -> ProbeResult<&Value> {
+    check(
+        response.get("analysis").is_some_and(Value::is_object),
+        Failure::Command,
+    )?;
+    response
+        .get("workspace")
+        .filter(|workspace| workspace.is_object())
+        .ok_or(Failure::Command)
+}
+fn imported_source(response: &Value, fixture: Fixture) -> ProbeResult<Value> {
+    workspace_from_response(response)?["evidence"]
+        .as_array()
+        .and_then(|sources| {
+            sources
+                .iter()
+                .find(|source| source["id"] == hash(fixture.bytes))
+        })
+        .cloned()
+        .ok_or(Failure::Publication)
+}
 fn queue(
     coordinator: &JobCoordinator,
     source: &str,
@@ -289,6 +312,7 @@ struct Snapshot {
 }
 fn capture(mut dispatch: impl FnMut(Command) -> ProbeResult<Value>) -> ProbeResult<Snapshot> {
     let view = dispatch(Command::View {})?;
+    workspace_from_response(&view)?;
     let jobs = dispatch(Command::ListProcessingJobs {})?;
     let list = jobs["jobs"].as_array().ok_or(Failure::Recovery)?;
     check(jobs["total"] == list.len() as u64, Failure::Recovery)?;
@@ -331,7 +355,7 @@ fn read_bounded(path: &Path, maximum: u64) -> ProbeResult<Vec<u8>> {
     Ok(bytes)
 }
 fn verify_originals(root: &Path, snapshot: &Snapshot) -> ProbeResult<()> {
-    for source in snapshot.view["evidence"]
+    for source in workspace_from_response(&snapshot.view)?["evidence"]
         .as_array()
         .ok_or(Failure::Recovery)?
     {
@@ -431,15 +455,7 @@ fn main_campaign(
                         bytes: fixture.bytes.to_vec(),
                     },
                 )?;
-                let source = imported["evidence"]
-                    .as_array()
-                    .and_then(|sources| {
-                        sources
-                            .iter()
-                            .find(|source| source["id"] == hash(fixture.bytes))
-                    })
-                    .ok_or(Failure::Publication)?
-                    .clone();
+                let source = imported_source(&imported, fixture)?;
                 if fixture.name == "unreviewed.source" {
                     check(source["text"].is_null(), Failure::Publication)?;
                 }
@@ -487,7 +503,8 @@ fn main_campaign(
                 snapshot.jobs["total"] == 11 && snapshot.extractions.len() == 10,
                 Failure::Publication,
             )?;
-            let sources = snapshot.view["evidence"]
+            let workspace = workspace_from_response(&snapshot.view)?;
+            let sources = workspace["evidence"]
                 .as_array()
                 .ok_or(Failure::Publication)?;
             for (key, baseline) in &baselines {
@@ -497,8 +514,7 @@ fn main_campaign(
                 )?;
             }
             check(
-                snapshot.view["observations"] == json!([])
-                    && snapshot.view["assertions"] == json!([]),
+                workspace["observations"] == json!([]) && workspace["assertions"] == json!([]),
                 Failure::Publication,
             )?;
             receipt.pass("evidence_unchanged")?;
@@ -769,6 +785,124 @@ fn entry() -> ProbeResult<()> {
 mod tests {
     use super::*;
     use std::collections::BTreeSet;
+    #[test]
+    fn canonical_import_view_and_recovery_use_the_real_workspace_envelope() {
+        let temporary = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let root = temporary.path().join("workspace");
+        let coordinator = JobCoordinator::start(Workspace::open(&root).unwrap(), 1).unwrap();
+        let mut sources = Vec::new();
+        for fixture in FIXTURES[..2].iter().copied() {
+            let imported: Value = call(
+                &coordinator,
+                Command::Import {
+                    name: fixture.name.into(),
+                    bytes: fixture.bytes.to_vec(),
+                },
+            )
+            .unwrap();
+            let source = imported_source(&imported, fixture).unwrap();
+            assert_eq!(source["sha256"], hash(fixture.bytes));
+            assert_eq!(source["bytes"], fixture.bytes.len());
+            assert!(imported.get("evidence").is_none());
+            sources.push(source);
+        }
+        assert_eq!(
+            sources[0]["text"],
+            std::str::from_utf8(FIXTURES[0].bytes).unwrap()
+        );
+        assert!(sources[1]["text"].is_null());
+        let snapshot = capture(|command| call(&coordinator, command)).unwrap();
+        assert_eq!(snapshot.view["workspace"]["evidence"], json!(sources));
+        assert_eq!(snapshot.jobs["total"], 0);
+        assert!(snapshot.extractions.is_empty());
+        verify_originals(&root, &snapshot).unwrap();
+        let backup = backup(&coordinator, &root).unwrap();
+        assert_eq!(
+            capture(|command| call(&coordinator, command)).unwrap(),
+            snapshot
+        );
+        coordinator.shutdown().unwrap();
+        empty_scratch(&root).unwrap();
+        restore(&backup, &temporary.path().join("restored"), &snapshot).unwrap();
+    }
+    #[test]
+    fn direct_job_commands_remain_top_level_and_never_require_a_workspace_envelope() {
+        let temporary = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let root = temporary.path().join("workspace");
+        let mut workspace = Workspace::open(&root).unwrap();
+        let fixture = FIXTURES[0];
+        let imported: Value = workspace_call(
+            &mut workspace,
+            Command::Import {
+                name: fixture.name.into(),
+                bytes: fixture.bytes.to_vec(),
+            },
+        )
+        .unwrap();
+        let source = imported_source(&imported, fixture).unwrap();
+        let queued: ProcessingJob = workspace_call(
+            &mut workspace,
+            Command::QueueDocumentParse {
+                evidence_id: source["id"].as_str().unwrap().into(),
+                request_key: uuid::Uuid::new_v4().to_string(),
+            },
+        )
+        .unwrap();
+        let cancelled: ProcessingJob = workspace_call(
+            &mut workspace,
+            Command::CancelProcessingJob {
+                job_id: queued.id.clone(),
+                expected_attempt: queued.attempt,
+            },
+        )
+        .unwrap();
+        assert_eq!(cancelled.state, ProcessingState::Cancelled);
+        assert_eq!(
+            cancelled.failure,
+            Some(ProcessingFailure::CancelledByAnalyst)
+        );
+        assert!(cancelled.started_at.is_none());
+        let coordinator = JobCoordinator::start(workspace, 1).unwrap();
+        let observed: ProcessingJob = call(
+            &coordinator,
+            Command::InspectProcessingJob {
+                job_id: queued.id.clone(),
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            serde_json::to_value(observed).unwrap(),
+            serde_json::to_value(cancelled).unwrap()
+        );
+        let snapshot = capture(|command| call(&coordinator, command)).unwrap();
+        assert_eq!(snapshot.jobs["total"], 1);
+        assert_eq!(snapshot.jobs["jobs"][0]["id"], queued.id);
+        assert!(snapshot.extractions.is_empty());
+        verify_originals(&root, &snapshot).unwrap();
+        coordinator.shutdown().unwrap();
+        empty_scratch(&root).unwrap();
+    }
+    #[test]
+    fn missing_or_wrong_workspace_envelopes_fail_instead_of_looking_empty() {
+        for response in [
+            Value::Null,
+            json!({"evidence": []}),
+            json!({"workspace": {}, "analysis": null}),
+            json!({"workspace": [], "analysis": {}}),
+            json!({"workspace": null, "analysis": {}}),
+        ] {
+            assert_eq!(workspace_from_response(&response), Err(Failure::Command));
+            assert!(imported_source(&response, FIXTURES[0]).is_err());
+            assert_eq!(capture(|_| Ok(response.clone())), Err(Failure::Command));
+        }
+        assert_eq!(
+            imported_source(
+                &json!({"workspace": {"evidence": []}, "analysis": {}}),
+                FIXTURES[0]
+            ),
+            Err(Failure::Publication)
+        );
+    }
     #[test]
     fn fixture_and_check_inventory_is_closed_and_independent() {
         assert_eq!(FIXTURES.len(), 10);
