@@ -1,0 +1,44 @@
+{
+  "format_version": 1,
+  "observed_date": "2026-09-25",
+  "tool": "Figma Design, controlled through CUA",
+  "file_id": "CphN4aTS8IXSVlKX7zDJtg",
+  "file_name": "Entity Workbench — development design",
+  "contract_source_commit": "bdc15be874b5e40d631561254131297d412a68ad",
+  "assets": [
+    {
+      "path": "figma-catalogue.png",
+      "frame_id": "2002:2",
+      "frame_name": "21 / Instrument — DOCX snapshot catalogue",
+      "width": 1120,
+      "height": 1300,
+      "position": { "x": 34500, "y": -500 },
+      "bytes": 127500,
+      "sha256": "d7e7f023ded563078126c78547225ed01bee8f430bd7d691a5cb012d167826c8",
+      "fresh_load_export_sha256": "d7e7f023ded563078126c78547225ed01bee8f430bd7d691a5cb012d167826c8"
+    },
+    {
+      "path": "figma-capture-outcomes.png",
+      "frame_id": "2002:58",
+      "frame_name": "22 / Instrument — DOCX capture outcomes",
+      "width": 1120,
+      "height": 1480,
+      "position": { "x": 36000, "y": -500 },
+      "bytes": 137033,
+      "sha256": "351f1904e071215ba57ec2c64dc9be5b71c0bb4d2e6f7ce7fcd8b37afd5ce3d1",
+      "fresh_load_export_sha256": "351f1904e071215ba57ec2c64dc9be5b71c0bb4d2e6f7ce7fcd8b37afd5ce3d1"
+    }
+  ],
+  "verification": {
+    "native_editable_text_node": "2002:96",
+    "observed_text_controls": ["Text", "Typography", "Inter", "Bold", "16 px"],
+    "renamed_file_survived_reload": true,
+    "both_named_frames_survived_reload": true,
+    "exported_before_and_after_reload": true,
+    "full_resolution_pngs_visually_inspected": true,
+    "clipping_or_overlap_observed": false,
+    "application_code_changed": false,
+    "new_implementation_comparison_performed": false,
+    "owner_sign_off": false
+  }
+}
