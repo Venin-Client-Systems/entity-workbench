@@ -6,6 +6,9 @@ use std::{
     ptr,
 };
 
+const RETURN_INTERMEDIATES: u32 = 0x1000;
+const NO_SUCH_RECORD: i32 = -65554;
+
 type Service = *mut c_void;
 type Callback = unsafe extern "C" fn(
     Service,
@@ -39,6 +42,7 @@ struct Answers {
     batch_ended: bool,
     error: Option<StopReason>,
     callbacks: usize,
+    negative_observed: bool,
 }
 impl Answers {
     fn new() -> Self {
@@ -47,19 +51,26 @@ impl Answers {
             batch_ended: false,
             error: None,
             callbacks: 0,
+            negative_observed: false,
         }
     }
     fn record(&mut self, flags: u32, error: i32, address: Option<IpAddr>) {
-        self.callbacks += 1;
+        self.callbacks = self.callbacks.saturating_add(1);
         if self.error.is_some() {
-            return;
-        }
-        if error != 0 {
-            self.error = Some(StopReason::Network);
             return;
         }
         if self.callbacks > MAX_ADDRESSES * 4 {
             self.error = Some(StopReason::Policy);
+            return;
+        }
+        if error == NO_SUCH_RECORD {
+            // A negative does not prove completion of either/both families. The
+            // public callback contract declares all other fields undefined here.
+            self.negative_observed = true;
+            return;
+        }
+        if error != 0 {
+            self.error = Some(StopReason::Network);
             return;
         }
         let Some(address) = address else {
@@ -86,6 +97,26 @@ impl Answers {
         // Only batch information. We intentionally stop our continuing subscription
         // after this batch and make no complete RRset/address-family claim.
         self.batch_ended = flags & 1 == 0;
+    }
+
+    fn ready(&self, stage_expired: bool) -> Result<bool, StopReason> {
+        if let Some(error) = self.error {
+            return Err(error);
+        }
+        if !self.values.is_empty() && (self.batch_ended || stage_expired) {
+            // Stage expiry permits only the bounded validated snapshot already
+            // observed. Neither a batch marker nor expiry proves a full RRset.
+            return Ok(true);
+        }
+        if stage_expired {
+            return Err(if self.negative_observed {
+                StopReason::Network
+            } else {
+                StopReason::Timeout
+            });
+        }
+        // An empty batch/removal or one negative may precede useful callbacks.
+        Ok(false)
     }
 }
 
@@ -123,9 +154,12 @@ unsafe extern "C" fn answer(
             }
         }
     };
+    // Even instrumentation must not interpret fields that the public contract
+    // leaves undefined on an error callback.
+    let known_flags = if error == 0 { Some(flags) } else { None };
     #[cfg(test)]
-    native_proof::callback(flags, error);
-    answers.record(flags, error, ip);
+    native_proof::callback(known_flags, error);
+    answers.record(known_flags.unwrap_or_default(), error, ip);
 }
 
 struct Operation {
@@ -157,42 +191,72 @@ pub(super) fn native(
     };
     let deadline = Instant::now() + Duration::from_secs(5).min(window.remaining());
     window.check(cancellation)?;
-    // SAFETY: all inputs/context outlive the continuing service, deallocated by
-    // Operation on every return. Request both families without forcing multicast.
-    #[cfg(test)]
-    native_proof::attempted();
-    let status = unsafe {
-        DNSServiceGetAddrInfo(
-            &mut operation.service,
-            0,
-            0,
-            3,
-            hostname.as_ptr(),
-            answer,
-            (&mut *operation.answers as *mut Answers).cast(),
-        )
-    };
-    #[cfg(test)]
-    native_proof::creation_status(status);
-    if status != 0 {
-        // Failed creation does not transfer a valid service reference to us.
-        operation.service = ptr::null_mut();
-        return Err(StopReason::ResolverUnavailable);
-    }
-    if operation.service.is_null() {
-        return Err(StopReason::ResolverUnavailable);
-    }
-    #[cfg(test)]
-    native_proof::created(window);
+    let result = (|| {
+        // SAFETY: all inputs/context outlive the continuing service, deallocated
+        // below before any result escapes. Request both families and intermediate
+        // negatives without forcing multicast or using a shared subscription.
+        #[cfg(test)]
+        native_proof::attempted();
+        let status = unsafe {
+            DNSServiceGetAddrInfo(
+                &mut operation.service,
+                RETURN_INTERMEDIATES,
+                0,
+                3,
+                hostname.as_ptr(),
+                answer,
+                (&mut *operation.answers as *mut Answers).cast(),
+            )
+        };
+        #[cfg(test)]
+        native_proof::creation_status(status);
+        if status != 0 {
+            // Failed creation does not transfer a valid service reference to us.
+            operation.service = ptr::null_mut();
+            return Err(StopReason::ResolverUnavailable);
+        }
+        if operation.service.is_null() {
+            return Err(StopReason::ResolverUnavailable);
+        }
+        #[cfg(test)]
+        native_proof::created(window);
+        collect(&mut operation, window, cancellation, deadline)
+    })();
+    drop(operation);
+    // Deallocation may itself take time. Overall stop conditions retain priority
+    // after owned cleanup, including over an otherwise usable candidate snapshot.
+    window.check(cancellation)?;
+    Ok(ResolvedCandidates {
+        addresses: result?,
+        method: "macos_dns_service_observed_batch",
+        authoritative_complete_set: false,
+    })
+}
+
+fn ready_after_check(
+    answers: &Answers,
+    window: &mut ExecutionWindow,
+    cancellation: &CancellationToken,
+    deadline: Instant,
+) -> Result<bool, StopReason> {
+    window.check(cancellation)?;
+    answers.ready(Instant::now() >= deadline)
+}
+
+fn collect(
+    operation: &mut Operation,
+    window: &mut ExecutionWindow,
+    cancellation: &CancellationToken,
+    deadline: Instant,
+) -> Result<Vec<SocketAddr>, StopReason> {
     // SAFETY: the successful service remains live throughout this owned loop.
     let fd = unsafe { DNSServiceRefSockFD(operation.service) };
     if fd < 0 {
         return Err(StopReason::ResolverUnavailable);
     }
     loop {
-        window.check(cancellation)?;
-        if Instant::now() >= deadline {
-            return Err(StopReason::Timeout);
+        if ready_after_check(&operation.answers, window, cancellation, deadline)? {
+            return Ok(std::mem::take(&mut operation.answers.values));
         }
         let timeout = POLL
             .min(window.remaining())
@@ -220,21 +284,6 @@ pub(super) fn native(
         // the OS API itself is trusted to return from processing its local message.
         if unsafe { DNSServiceProcessResult(operation.service) } != 0 {
             return Err(StopReason::Network);
-        }
-        if let Some(error) = operation.answers.error {
-            return Err(error);
-        }
-        if operation.answers.batch_ended {
-            if operation.answers.values.is_empty() {
-                return Err(StopReason::Network);
-            }
-            let addresses = std::mem::take(&mut operation.answers.values);
-            drop(operation); // The owned subscription ends before candidates escape.
-            return Ok(ResolvedCandidates {
-                addresses,
-                method: "macos_dns_service_observed_batch",
-                authoritative_complete_set: false,
-            });
         }
     }
 }
@@ -275,3 +324,7 @@ mod tests {
 #[cfg(test)]
 #[path = "native_macos_proof.rs"]
 mod native_proof;
+
+#[cfg(test)]
+#[path = "resolver_macos_negative_tests.rs"]
+mod negative_tests;

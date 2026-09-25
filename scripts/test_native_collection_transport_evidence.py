@@ -19,7 +19,7 @@ def events():
         values.append({"case": name, "passed": True,
                        "hostname": "ew-native-proof.invalid" if index == 3 else "example.com",
                        "probe": {"attempted": count, "created": count, "deallocated": count,
-                                 "callbacks": [[0, -65554]] if index == 3 else []},
+                                 "callbacks": [[None, -65554]] if index == 3 else []},
                        "outcome": {"authoritative_complete_set": False}})
     return values
 

@@ -5,7 +5,7 @@ use crate::collection_transport::{fetch, Outcome};
 use serde_json::{json, Value};
 use std::cell::RefCell;
 
-const OPT_IN: &str = "fixed-three-subscriptions-no-http-v1";
+const OPT_IN: &str = "fixed-three-subscriptions-no-http-v2";
 const PREFIX: &str = "EW_NATIVE_DNS_CASE=";
 
 #[derive(Default, serde::Serialize)]
@@ -14,7 +14,7 @@ struct Probe {
     created: u32,
     deallocated: u32,
     creation_status: Option<i32>,
-    callbacks: Vec<(u32, i32)>,
+    callbacks: Vec<(Option<u32>, i32)>,
     #[serde(skip)]
     expire_after_creation: bool,
 }
@@ -46,7 +46,7 @@ pub(super) fn created(window: &mut ExecutionWindow) {
         }
     });
 }
-pub(super) fn callback(flags: u32, error: i32) {
+pub(super) fn callback(flags: Option<u32>, error: i32) {
     update(|probe| {
         if probe.callbacks.len() < MAX_ADDRESSES * 4 + 1 {
             probe.callbacks.push((flags, error));
@@ -62,7 +62,10 @@ fn window(deadline: Instant) -> ExecutionWindow {
     ExecutionWindow::new(
         now + 20_000,
         now,
-        Duration::from_secs(5).min(deadline.saturating_duration_since(Instant::now())),
+        // Keep the overall window later than the native five-second DNS stage;
+        // stage expiry can then report the observed negative without overriding
+        // an actual caller deadline. Campaign-wide remaining time is unchanged.
+        Duration::from_secs(20).min(deadline.saturating_duration_since(Instant::now())),
     )
     .unwrap()
 }
@@ -199,7 +202,7 @@ fn native_macos_dns_campaign() {
 #[test]
 fn native_probe_is_thread_local_and_inactive_by_default() {
     attempted();
-    callback(0, -65554);
+    callback(None, -65554);
     assert!(PROBE.with_borrow(Option::is_none));
     PROBE.with_borrow_mut(|probe| *probe = Some(Probe::default()));
     std::thread::spawn(attempted).join().unwrap();

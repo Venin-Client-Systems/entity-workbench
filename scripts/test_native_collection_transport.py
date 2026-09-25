@@ -12,7 +12,7 @@ import uuid
 
 ROOT = Path(__file__).resolve().parents[1]
 TEST = "collection_transport::resolver::platform::native_proof::native_macos_dns_campaign"
-OPT_IN = "fixed-three-subscriptions-no-http-v1"
+OPT_IN = "fixed-three-subscriptions-no-http-v2"
 PREFIX = "EW_NATIVE_DNS_CASE="
 CASES = ["transport_pre_cancel", "transport_expired", "native_success",
          "native_negative", "native_active_deadline"]
@@ -133,7 +133,8 @@ def evidence_failure(report, reason):
 
 
 def observe(artifact, allow_fixed_dns, signers):
-    report = {"schema_version": 1, "passed": False, "outcome": "incomplete",
+    report = {"schema_version": 1, "campaign_policy": OPT_IN,
+              "passed": False, "outcome": "incomplete",
               "observed_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "phase": "authorization", "limits": LIMITS, "cases": [],
               "https": {"state": "not_attempted", "reason": "reviewed_access_not_established"},
