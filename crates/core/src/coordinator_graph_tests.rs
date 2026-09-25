@@ -765,3 +765,6 @@ fn actual_cleanup_failure_takes_precedence_over_inflight_cancellation() {
     assert_eq!(finished.failure, Some(ProcessingFailure::CleanupFailed));
     c.shutdown().unwrap();
 }
+
+#[path = "coordinator_graph_api_tests.rs"]
+mod public_api;

@@ -6,13 +6,7 @@ use crate::graph_jobs::*;
 fn graph_endpoints(conn: &Connection, source: &str, target: &str) -> Result<()> {
     require(source != target, "Graph endpoints must differ")?;
     for key in [source, target] {
-        require(
-            !key.is_empty()
-                && key.len() <= 128
-                && key.trim() == key
-                && !key.chars().any(char::is_control),
-            "Invalid graph endpoint",
-        )?;
+        crate::graph_api::endpoint(key)?;
         let active: bool = conn.query_row("SELECT EXISTS(SELECT 1 FROM records WHERE kind='entity' AND id=? AND json_extract(body,'$.merged_into') IS NULL)", [key], |row|row.get(0))?;
         require(active, "Graph endpoint is missing or merged")?;
     }
@@ -30,20 +24,11 @@ impl Workspace {
             Uuid::parse_str(request_key).is_ok_and(|key| key.to_string() == request_key),
             "A canonical UUID request key is required",
         )?;
-        let existing: Option<String> = self
-            .conn
-            .query_row(
-                "SELECT body FROM records WHERE kind='processing_request' AND id=?",
-                [request_key],
-                |row| row.get(0),
-            )
-            .optional()?;
-        if let Some(existing) = existing {
-            let mapped_id = serde_json::from_str::<String>(&existing)?;
-            let job = self.processing_job(&mapped_id)?;
+        crate::graph_api::endpoint(source)?;
+        crate::graph_api::endpoint(target)?;
+        if let Some(job) = self.graph_request_job(request_key)? {
             require(
-                job.id == mapped_id
-                    && job.request_key == request_key
+                job.request_key == request_key
                     && matches!(&job.input, ProcessingInput::ShortestConnectionPath {source_id,target_id,requested_revision,..} if source_id==source && target_id==target && *requested_revision==expected_revision),
                 "Request key already belongs to another input",
             )?;
@@ -257,7 +242,7 @@ impl Workspace {
         let transaction = self.conn.unchecked_transaction()?;
         let revision = self.revision()?;
         let record = self.graph_analysis_record(key)?;
-        let job = self.processing_job(&record.job_id)?;
+        let job = crate::store::graph_api::load(&self.conn, &record.job_id)?;
         require(
             job.id == record.job_id
                 && job.request_key == record.request_key

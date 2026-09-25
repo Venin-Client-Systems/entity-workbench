@@ -22,6 +22,7 @@ mod docx_snapshots;
 mod evidence;
 use evidence::{all_evidence, find_evidence, get_evidence};
 pub(crate) mod file_identity;
+mod graph_api;
 mod identity;
 // Internal source seam only; no command/worker activation until separately reviewed.
 #[allow(dead_code)]
@@ -505,6 +506,54 @@ impl Workspace {
                 return Ok(serde_json::to_value(
                     self.image_extraction(&extraction_id)?,
                 )?);
+            }
+            Command::QueueGraphPath {
+                expected_revision,
+                source_id,
+                target_id,
+                request_key,
+            } => {
+                return Ok(serde_json::to_value(self.queue_graph_job(
+                    expected_revision,
+                    &source_id,
+                    &target_id,
+                    &request_key,
+                )?)?);
+            }
+            Command::PageGraphJobs {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_graph_jobs(&request, expected_revision)?,
+                )?);
+            }
+            Command::InspectGraphJob { job_id } => {
+                return Ok(serde_json::to_value(self.inspect_graph_job(&job_id)?)?);
+            }
+            Command::CancelGraphJob {
+                job_id,
+                expected_attempt,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.cancel_graph_job(&job_id, expected_attempt)?,
+                )?);
+            }
+            Command::InspectGraphAnalysis {
+                id,
+                expected_request_sha256,
+                expected_result_sha256,
+            } => {
+                return Ok(serde_json::to_value(self.inspect_graph_result(
+                    &id,
+                    &expected_request_sha256,
+                    &expected_result_sha256,
+                )?)?);
+            }
+            Command::RetryGraphPublication { .. } => {
+                return Err(Error::Blocked(
+                    "Graph publication retry requires its owning live coordinator".into(),
+                ));
             }
             Command::QueueDocumentParse {
                 evidence_id,

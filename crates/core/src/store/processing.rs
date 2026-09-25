@@ -22,7 +22,7 @@ const MAX_PENDING: usize = 64;
 const MAX_ATTEMPTS: u32 = 3;
 const PAGE_LIMIT: u32 = 200;
 
-fn supported_job(job: &ProcessingJob) -> Result<()> {
+pub(super) fn supported_job(job: &ProcessingJob) -> Result<()> {
     require(
         job.schema_version == 5
             && matches!(job.input, ProcessingInput::ShortestConnectionPath { .. })
@@ -340,8 +340,29 @@ impl Workspace {
         job_id: &str,
         expected_attempt: u32,
     ) -> Result<ProcessingJob> {
+        self.cancel_job(job_id, expected_attempt, false)
+    }
+
+    pub(crate) fn cancel_graph_processing_job(
+        &mut self,
+        job_id: &str,
+        expected_attempt: u32,
+    ) -> Result<ProcessingJob> {
+        self.cancel_job(job_id, expected_attempt, true)
+    }
+
+    fn cancel_job(
+        &mut self,
+        job_id: &str,
+        expected_attempt: u32,
+        graph_only: bool,
+    ) -> Result<ProcessingJob> {
         let expected = self.revision()?;
-        let mut job = self.processing_job(job_id)?;
+        let mut job = if graph_only {
+            super::graph_api::load(&self.conn, job_id)?
+        } else {
+            self.processing_job(job_id)?
+        };
         attempt(&job, expected_attempt)?;
         if job.state == ProcessingState::Cancelled || job.cancellation_requested {
             return Ok(job);

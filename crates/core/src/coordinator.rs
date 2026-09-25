@@ -201,6 +201,9 @@ impl JobCoordinator {
         if self.shared.stopping.load(Ordering::Acquire) {
             return Err(Error::Blocked("Workspace coordinator is stopping".into()));
         }
+        if graph_api::is_public_command(&command) {
+            return self.dispatch_graph_command(command);
+        }
         if collection::is_public_command(&command) {
             return self.dispatch_collection_command(command);
         }
@@ -359,6 +362,8 @@ impl JobCoordinator {
 mod collection;
 #[path = "coordinator_graph.rs"]
 mod graph;
+#[path = "coordinator_graph_api.rs"]
+mod graph_api;
 #[path = "coordinator_search.rs"]
 mod search;
 

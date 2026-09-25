@@ -446,8 +446,36 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 serde_json::to_value(schemars::schema_for!(WorkspaceView))?,
             ),
             (
+                "graph-job-page-request",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_api::GraphJobPageRequest
+                ))?,
+            ),
+            (
+                "graph-job-page",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_api::GraphJobPage
+                ))?,
+            ),
+            (
+                "graph-job-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_api::GraphJobInspection
+                ))?,
+            ),
+            (
+                "graph-analysis-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::graph_jobs::GraphAnalysisInspection
+                ))?,
+            ),
+            (
                 "command",
-                25,
+                26,
                 serde_json::to_value(schemars::schema_for!(Command))?,
             ),
             (

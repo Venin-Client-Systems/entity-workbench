@@ -490,6 +490,34 @@ pub enum Command {
     InspectImageExtraction {
         extraction_id: String,
     },
+    QueueGraphPath {
+        expected_revision: u64,
+        source_id: String,
+        target_id: String,
+        request_key: String,
+    },
+    PageGraphJobs {
+        request: crate::graph_api::GraphJobPageRequest,
+        expected_revision: Option<u64>,
+    },
+    InspectGraphJob {
+        job_id: String,
+    },
+    CancelGraphJob {
+        job_id: String,
+        expected_attempt: u32,
+    },
+    InspectGraphAnalysis {
+        id: String,
+        expected_request_sha256: String,
+        expected_result_sha256: String,
+    },
+    RetryGraphPublication {
+        job_id: String,
+        expected_attempt: u32,
+        host_attempt_lease: String,
+        request_sha256: String,
+    },
     QueueDocumentParse {
         evidence_id: String,
         request_key: String,

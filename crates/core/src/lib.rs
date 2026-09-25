@@ -17,6 +17,7 @@ pub mod desktop_summary;
 pub mod docx_snapshot;
 pub mod domain;
 pub mod engines;
+pub mod graph_api;
 pub mod graph_jobs;
 pub mod literal_search;
 pub mod local_export;

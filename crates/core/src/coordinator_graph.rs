@@ -15,7 +15,7 @@ pub(super) enum GraphExecution {
     Synthetic(Arc<SyntheticGraph>),
 }
 impl GraphExecution {
-    fn available(&self) -> bool {
+    pub(super) fn available(&self) -> bool {
         !matches!(self, Self::Unavailable)
     }
     fn execute(&self, scratch: &Path, input: &[u8], token: &CancellationToken) -> Result<Vec<u8>> {
@@ -91,7 +91,7 @@ impl ProcessingActivity {
     pub(super) fn allows_resume(&self) -> bool {
         matches!(self.interval, Interval::Open)
     }
-    fn status(&self) -> Option<GraphStatus> {
+    pub(super) fn status(&self) -> Option<GraphStatus> {
         match &self.interval {
             Interval::Open => None,
             Interval::Draining(drain) => Some(GraphStatus {
@@ -454,6 +454,14 @@ pub(super) fn execute_and_publish(shared: &Shared, mut pending: Pending) {
                 .wait(activity)
                 .unwrap_or_else(std::sync::PoisonError::into_inner);
         }
+        // Consumption admits the next settlement now, before waiting for workspace.
+        // A public caller cannot spend another retry slot in that lock handoff.
+        if let Interval::Owned(owned) = &mut activity.interval {
+            owned.status.phase = GraphPhase::Publishing;
+            owned.status.can_retry = false;
+        }
+        #[cfg(test)]
+        shared.graph_wake.notify_all();
         drop(activity);
     }
 }

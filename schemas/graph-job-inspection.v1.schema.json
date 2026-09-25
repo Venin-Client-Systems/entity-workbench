@@ -1,0 +1,478 @@
+{
+  "$defs": {
+    "GraphAvailability": {
+      "enum": [
+        "standalone_unavailable",
+        "runtime_unavailable",
+        "ready",
+        "synthetic_fixture",
+        "recovery_required"
+      ],
+      "type": "string"
+    },
+    "GraphControls": {
+      "additionalProperties": false,
+      "properties": {
+        "can_cancel": {
+          "type": "boolean"
+        },
+        "can_retry_publication": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "can_cancel",
+        "can_retry_publication"
+      ],
+      "type": "object"
+    },
+    "GraphExecutionPhase": {
+      "enum": [
+        "draining",
+        "running",
+        "publishing",
+        "publication_pending",
+        "recovery_required",
+        "unpublished_known_stopped"
+      ],
+      "type": "string"
+    },
+    "GraphExecutionStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "host_attempt_lease": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "phase": {
+          "$ref": "#/$defs/GraphExecutionPhase"
+        },
+        "publication_retries": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "publication_retry_limit": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "request_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "phase",
+        "attempt",
+        "publication_retries",
+        "publication_retry_limit"
+      ],
+      "type": "object"
+    },
+    "GraphResultReference": {
+      "additionalProperties": false,
+      "description": "Discoverable metadata only; full inspection verifies the immutable artifact and originals.",
+      "properties": {
+        "captured_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "published_revision": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "request_sha256": {
+          "type": "string"
+        },
+        "result_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "request_sha256",
+        "result_sha256",
+        "captured_revision",
+        "published_revision"
+      ],
+      "type": "object"
+    },
+    "ProcessingFailure": {
+      "enum": [
+        "interrupted",
+        "input_unavailable",
+        "runtime_unavailable",
+        "worker_failed",
+        "invalid_result",
+        "unsupported_format",
+        "document_failed",
+        "image_decode_failed",
+        "encrypted_document",
+        "pdf_render_failed",
+        "cancelled_by_analyst",
+        "cleanup_failed",
+        "worker_exit_unverified",
+        "recovery_required",
+        "derivative_unavailable",
+        "stale_graph_capture",
+        "scheduling_or_runtime_unavailable"
+      ],
+      "type": "string"
+    },
+    "ProcessingInput": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "operation": {
+              "const": "shortest_connection_path",
+              "type": "string"
+            },
+            "queued_revision": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "requested_revision": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "source_id": {
+              "type": "string"
+            },
+            "target_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "source_id",
+            "target_id",
+            "requested_revision",
+            "queued_revision"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "parse_document",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "image_ocr",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "image_ocr_regions",
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "bytes": {
+              "format": "uint64",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "dpi": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "evidence_id": {
+              "type": "string"
+            },
+            "operation": {
+              "const": "pdf_page_ocr",
+              "type": "string"
+            },
+            "page_number": {
+              "format": "uint32",
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sha256": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "operation",
+            "evidence_id",
+            "sha256",
+            "bytes",
+            "page_number",
+            "dpi"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "ProcessingJob": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "cancellation_requested": {
+          "type": "boolean"
+        },
+        "created_at": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "failure": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProcessingFailure"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "finished_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "input": {
+          "$ref": "#/$defs/ProcessingInput"
+        },
+        "lease": {
+          "description": "Opaque attempt ownership, never supplied by a worker or frontend.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_key": {
+          "type": "string"
+        },
+        "result_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryPolicy"
+        },
+        "schema_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "started_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/ProcessingState"
+        },
+        "updated_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "request_key",
+        "input",
+        "state",
+        "attempt",
+        "retry",
+        "cancellation_requested",
+        "created_at",
+        "updated_at",
+        "detail",
+        "result_ids"
+      ],
+      "type": "object"
+    },
+    "ProcessingState": {
+      "enum": [
+        "queued",
+        "running",
+        "partial",
+        "blocked",
+        "quota_exhausted",
+        "failed",
+        "cancelled",
+        "completed"
+      ],
+      "type": "string"
+    },
+    "RetryPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "automatic": {
+          "description": "Retries always require an explicit analyst request.",
+          "type": "boolean"
+        },
+        "max_attempts": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "automatic",
+        "max_attempts"
+      ],
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "availability": {
+      "$ref": "#/$defs/GraphAvailability"
+    },
+    "controls": {
+      "$ref": "#/$defs/GraphControls"
+    },
+    "execution": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GraphExecutionStatus"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Ephemeral state only when job, attempt and lease match this canonical record."
+    },
+    "job": {
+      "$ref": "#/$defs/ProcessingJob"
+    },
+    "limitations": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "results": {
+      "description": "At most three metadata references, from the same snapshot as the canonical job.",
+      "items": {
+        "$ref": "#/$defs/GraphResultReference"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "maximum": 1,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "workspace_revision",
+    "availability",
+    "job",
+    "results",
+    "controls",
+    "limitations"
+  ],
+  "title": "GraphJobInspection",
+  "type": "object"
+}
