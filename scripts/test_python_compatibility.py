@@ -146,11 +146,11 @@ def validate_engine_diagnostics(value):
 
 def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assigned_names=ASSIGNED):
     # A malformed receipt cannot carry arbitrary strings, file names or identities into public evidence.
-    engine = recipe in ('python-networkx-v1', 'python-transactions-v1')
+    engine = recipe in ('python-networkx-v1', 'python-transactions-v1', 'python-canonical-graph-v1')
     keys = NATIVE_KEYS | ({'engine_diagnostics'} if engine else set())
     require(isinstance(native, dict) and set(native) == keys, 'native-observation-shape')
     require(type(native['schema_version']) is int and native['schema_version'] == 1
-            and recipe in ('python-compatibility-v1', 'python-hostile-v1', 'python-networkx-v1', 'python-transactions-v1') and native['recipe'] == recipe
+            and recipe in ('python-compatibility-v1', 'python-hostile-v1', 'python-networkx-v1', 'python-transactions-v1', 'python-canonical-graph-v1') and native['recipe'] == recipe
             and native['runtime_manifest_sha256'] == MANIFEST
             and native['complete_release'] is False and native['campaign_id'] == campaign
             and canonical_uuid(campaign) and canonical_uuid(native['job_id']) and native['architecture'] == 'aarch64'
@@ -159,7 +159,8 @@ def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assig
     require(native['phase'] in ('not-started', 'runtime-inventory', 'complete',
                                 'confined-hostile' if recipe == 'python-hostile-v1' else 'confined-compatibility')
             and (native['last_worker_checkpoint'] is None or native['last_worker_checkpoint'] in
-                 (('bootstrap', 'versions', 'imports', 'init-ready', 'operation', 'complete') if engine else
+                 (('bootstrap', 'versions', 'metadata', 'imports', 'init-ready', 'operation', 'complete') if recipe == 'python-canonical-graph-v1' else
+                  ('bootstrap', 'versions', 'imports', 'init-ready', 'operation', 'complete') if engine else
                   ('bootstrap', 'versions', 'imports', 'mentions', 'graph', 'transactions', 'plugins', 'complete')))
             and (native['failure'] is None or native['failure'] in
                  ('termination-unverified', 'cleanup-failed', 'quota-exhausted', 'compatibility-failed'))

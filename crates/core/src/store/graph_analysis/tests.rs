@@ -1,87 +1,8 @@
 use super::*;
 use tempfile::TempDir;
 
-fn specimen() -> (TempDir, Workspace, String) {
-    let root = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
-    let mut w = Workspace::open(root.path().join("case")).unwrap();
-    let source = w
-        .import(
-            "synthetic.txt",
-            b"Synthetic retained relationship source\nSecond source line\n",
-        )
-        .unwrap();
-    w.change(None, "synthetic.graph", false, |conn| {
-        for key in ["a", "b", "c", "d", "e", "f"] {
-            put(
-                conn,
-                "entity",
-                key,
-                &Entity {
-                    id: key.into(),
-                    name: format!("Synthetic {key}"),
-                    kind: EntityKind::Person,
-                    identifiers: vec![],
-                    merged_into: None,
-                },
-            )?;
-        }
-        for (key, a, b, state) in [
-            ("r1", "a", "b", ReviewState::Accepted),
-            ("r1-parallel", "b", "a", ReviewState::Accepted),
-            ("r2", "b", "c", ReviewState::Accepted),
-            ("long1", "a", "d", ReviewState::Accepted),
-            ("long2", "d", "e", ReviewState::Accepted),
-            ("long3", "e", "c", ReviewState::Accepted),
-            ("shortcut-rejected", "a", "c", ReviewState::Rejected),
-            ("shortcut-pending", "a", "c", ReviewState::Pending),
-            ("shortcut-deferred", "a", "c", ReviewState::Deferred),
-        ] {
-            let observation = Observation {
-                id: format!("obs-{key}"),
-                entity_id: a.into(),
-                field: "relationship mention".into(),
-                value: "Synthetic corroboration".into(),
-                anchor: SourceAnchor::Text {
-                    evidence_id: source.clone(),
-                    line_start: 1,
-                    line_end: 1,
-                },
-                extraction_quality: Some(0.5),
-                review: ReviewState::Accepted,
-            };
-            put(conn, "observation", &observation.id, &observation)?;
-            let from = if key == "r1" {
-                "2000-01-01"
-            } else {
-                "2025-01-01"
-            };
-            let through = if key == "r1" {
-                "2001-01-01"
-            } else {
-                "2026-01-01"
-            };
-            put(
-                conn,
-                "assertion",
-                key,
-                &Assertion {
-                    id: key.into(),
-                    subject_id: a.into(),
-                    predicate: "recorded alongside".into(),
-                    object_id: b.into(),
-                    observation_ids: vec![observation.id],
-                    valid_from: Some(from.into()),
-                    valid_to: Some(through.into()),
-                    confidence: "Analyst confidence remains separate".into(),
-                    review: state,
-                },
-            )?;
-        }
-        Ok(())
-    })
-    .unwrap();
-    (root, w, source)
-}
+use super::probe_fixture::specimen;
+
 fn capture(w: &Workspace) -> CapturedGraph {
     w.capture_graph_path(w.revision().unwrap(), "a", "c")
         .unwrap()

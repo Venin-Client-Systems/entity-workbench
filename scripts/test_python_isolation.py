@@ -14,6 +14,7 @@ import uuid
 import test_python_compatibility as common
 import relocate_python_prefix as relocation
 import python_engine_receipts as engines
+import python_canonical_graph_receipts as graph
 
 ROOT = common.ROOT
 HOSTILE_TEST = 'engines::supervision::python_probe::hostile::native_python_hostile'
@@ -30,7 +31,7 @@ require = common.require
 
 def source_identity():
     identity = common.source_identity()
-    identity['files'].update({name: common.digest(ROOT / name) for name in EXTRA_SOURCES})
+    identity['files'].update({name: common.digest(ROOT / name) for name in (*EXTRA_SOURCES, *graph.SOURCES)})
     return identity
 
 
@@ -116,11 +117,12 @@ def native_summary(native, campaign, case):
     if case == 'measure': return measurement_summary(native, campaign)
     if case == 'hostile': return hostile_summary(native, campaign)
     if case in engines.RECIPES: return engines.summary(native, campaign, case)
+    if case == 'canonical-graph': return graph.summary(native, campaign)
     return common.failure_summary(native, campaign)
 
 
 def observe(prefix, artifacts, case):
-    require(case in ('measure', 'hostile', 'relocated', 'networkx', 'transactions'), 'unknown-isolation-case')
+    require(case in ('measure', 'hostile', 'relocated', 'networkx', 'transactions', 'canonical-graph'), 'unknown-isolation-case')
     report = {'schema_version': 1, 'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'case': case,
               'campaign_id': str(uuid.uuid4()), 'passed': False, 'complete_release': False, 'failure': None,
               'build_profile': 'release', 'native_test_started': False, 'candidate_started': False,
@@ -128,6 +130,8 @@ def observe(prefix, artifacts, case):
               'runtime_manifest_sha256': common.MANIFEST,
               'unverified': ['Internet-and-DNS-and-IPv6-denial', 'hard-RSS-ceiling', 'supervisor-crash-termination',
                              'canonical-protocol', 'signing-clean-install-platform-matrix', 'complete-notices']}
+    if case == 'canonical-graph':
+        report['unverified'][3] = 'canonical-production-job-publication'
     common.save(artifacts, report)
     try:
         report['phase'] = 'source-identity'; identity = source_identity(); report['source'] = identity
@@ -137,7 +141,7 @@ def observe(prefix, artifacts, case):
         report['original_inventory'] = common.installed.verify(prefix, common.MANIFEST)
         require(report['original_inventory'].get('verified') is True, 'runtime-inventory-failed')
         selected = prefix
-        if case == 'relocated':
+        if case in ('relocated', 'canonical-graph'):
             report['phase'] = 'relocation'; common.save(artifacts, report)
             selected = artifacts / 'moved-prefix'
             report['relocation'] = relocation.relocate(prefix, selected)
@@ -149,7 +153,7 @@ def observe(prefix, artifacts, case):
         report['phase'] = 'compile-release-native-test'; common.save(artifacts, report)
         binary = common.build_binary(artifacts, release=True); report['native_binary_sha256'] = common.digest(binary)
         require(source_identity() == identity, 'source-changed-during-build')
-        test = HASH_TEST if case == 'measure' else HOSTILE_TEST if case == 'hostile' else engines.TESTS[case] if case in engines.RECIPES else common.NATIVE_TEST
+        test = HASH_TEST if case == 'measure' else HOSTILE_TEST if case == 'hostile' else engines.TESTS[case] if case in engines.RECIPES else graph.TEST if case == 'canonical-graph' else common.NATIVE_TEST
         report['native_test'] = test; report['native_test_started'] = True; report['candidate_started'] = case != 'measure'
         report['phase'] = 'trusted-prefix-hash' if case == 'measure' else 'confined-' + case
         report['termination_state'] = 'not-applicable' if case == 'measure' else 'unconfirmed'; common.save(artifacts, report)
@@ -175,6 +179,7 @@ def observe(prefix, artifacts, case):
                     'post-campaign-inventory-failed')
             if case == 'hostile': accept_hostile(native, report['campaign_id'], interpreter)
             elif case in engines.RECIPES: engines.accept(native, report['campaign_id'], interpreter, case)
+            elif case == 'canonical-graph': graph.accept(native, report['campaign_id'], interpreter, artifacts)
             else: common.accept_native(native, report['campaign_id'], interpreter)
         require(completed.returncode == 0, 'native-test-process-failed')
         require(source_identity() == identity and common.digest(binary) == report['native_binary_sha256'], 'source-or-binary-changed')
@@ -203,7 +208,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--prefix', type=Path, required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
-    parser.add_argument('--case', choices=('measure', 'hostile', 'relocated', 'networkx', 'transactions'), required=True)
+    parser.add_argument('--case', choices=('measure', 'hostile', 'relocated', 'networkx', 'transactions', 'canonical-graph'), required=True)
     parser.add_argument('--execute-reviewed-probe', action='store_true')
     args = parser.parse_args()
     if args.case != 'measure' and not args.execute_reviewed_probe:

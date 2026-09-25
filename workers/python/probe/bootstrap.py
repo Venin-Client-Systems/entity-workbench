@@ -44,13 +44,16 @@ def bootstrap_paths(prefix, code, initial):
 
 
 def main(recipe='python-compatibility-v1'):
-    require(recipe in ('python-compatibility-v1', 'python-networkx-v1', 'python-transactions-v1'))
+    require(recipe in ('python-compatibility-v1', 'python-networkx-v1', 'python-transactions-v1', 'python-canonical-graph-v1'))
     job = Path(__file__).resolve().parent.parent
     scratch = job / 'scratch'
     phase = 'bootstrap'
     try:
         assignment = read_json(job / 'input/assignment.json')
-        require(set(assignment) == {'schema_version', 'job_id', 'prefix', 'manifest_sha256'})
+        assignment_fields = {'schema_version', 'job_id', 'prefix', 'manifest_sha256'}
+        if recipe == 'python-canonical-graph-v1':
+            assignment_fields |= {'campaign_id', 'capture_nonce', 'request_identity'}
+        require(set(assignment) == assignment_fields)
         require(assignment['schema_version'] == 1)
         prefix = Path(assignment['prefix'])
         require(prefix.is_absolute() and prefix.resolve() == prefix)
@@ -62,6 +65,8 @@ def main(recipe='python-compatibility-v1'):
             from import_diagnostics import ImportDiagnostics
             diagnostics = ImportDiagnostics(scratch)
             phases = PHASES
+        elif recipe == 'python-canonical-graph-v1':
+            from canonical_graph import PHASES as phases
         else:
             from engine_recipes import PHASES as phases
 
@@ -79,6 +84,9 @@ def main(recipe='python-compatibility-v1'):
         if recipe == 'python-compatibility-v1':
             from compatibility import execute
             checks = execute(read_json(job / 'input/fixture.json'), prefix, job, checkpoint, diagnostics.checkpoint)
+        elif recipe == 'python-canonical-graph-v1':
+            from canonical_graph import execute
+            checks = execute(assignment, read_json(job / 'input/fixture.json'), prefix, job, checkpoint)
         else:
             from engine_recipes import execute
             checks = execute(recipe, read_json(job / 'input/fixture.json'), read_json(job / 'input/expected.json'),

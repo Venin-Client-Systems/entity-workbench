@@ -10,6 +10,7 @@ use std::{
     path::{Component, PathBuf},
 };
 
+mod canonical_graph;
 mod engine_recipes;
 mod hostile;
 use engine_recipes::Recipe;
@@ -383,12 +384,28 @@ fn run(
     observation["runtime_verified"] = true.into();
     let interpreter = read_result(&prefix.join("install/bin/python3.13"), 80 * 1024 * 1024)?;
     observation["candidate_interpreter"] = serde_json::json!({"path":"install/bin/python3.13","bytes":interpreter.len(),"sha256":digest(&interpreter)});
+    let mut canonical = if recipe == Recipe::CanonicalGraph {
+        let context = canonical_graph::Context::new(
+            artifacts,
+            observation["campaign_id"]
+                .as_str()
+                .ok_or_else(|| Error::Validation("Campaign identity missing".into()))?,
+        )?;
+        observation["canonical_capture"] = context.capture();
+        save(output, observation)?;
+        Some(context)
+    } else {
+        None
+    };
     let job = tempfile::tempdir_in(artifacts)?;
     let result = (|| {
         for name in ["code", "input", "scratch"] {
             fs::create_dir(job.path().join(name))?;
         }
-        let assets = recipe.assets();
+        let mut assets: Vec<engine_recipes::AssignedAsset<'_>> = recipe.assets();
+        if let Some(context) = canonical.as_ref() {
+            assets.push(("input/graph-request.json", context.request(), 64 * 1024));
+        }
         for (name, data, maximum) in &assets {
             require(
                 data.len() <= *maximum,
@@ -396,9 +413,11 @@ fn run(
             )?;
             super::super::write_new(&job.path().join(name), data)?;
         }
-        let assignment = serde_json::to_vec(
-            &serde_json::json!({"schema_version":1,"job_id":job_id,"prefix":prefix,"manifest_sha256":MANIFEST}),
-        )?;
+        let mut assignment = serde_json::json!({"schema_version":1,"job_id":job_id,"prefix":prefix,"manifest_sha256":MANIFEST});
+        if let Some(context) = canonical.as_ref() {
+            context.assignment(&mut assignment);
+        }
+        let assignment = serde_json::to_vec(&assignment)?;
         super::super::write_new(&job.path().join("input/assignment.json"), &assignment)?;
         let expanded_profile = profile(prefix, job.path())?;
         super::super::write_new(&job.path().join("worker.sb"), expanded_profile.as_bytes())?;
@@ -416,6 +435,7 @@ fn run(
             );
         }
         observation["assigned_files"] = serde_json::to_value(&assigned)?;
+        drop(assets);
         let stdout = OpenOptions::new()
             .write(true)
             .create_new(true)
@@ -524,10 +544,14 @@ fn run(
             complete_diagnostics,
             "Incomplete Python diagnostic checkpoints",
         )?;
-        let accepted = recipe.accept(
-            &read_result(&job.path().join("scratch/result.json"), RESULT_LIMIT)?,
-            job_id,
-        )?;
+        let accepted = if let Some(context) = canonical.as_mut() {
+            context.read_accept(job.path(), artifacts, job_id, observation)?
+        } else {
+            recipe.accept(
+                &read_result(&job.path().join("scratch/result.json"), RESULT_LIMIT)?,
+                job_id,
+            )?
+        };
         verify_prefix(prefix, MANIFEST, 11_320)?;
         Ok(accepted)
     })();
@@ -589,6 +613,11 @@ fn native_recipe(recipe: Recipe) {
     observation["recipe"] = recipe.identity().into();
     if recipe != Recipe::Compatibility {
         observation["engine_diagnostics"] = serde_json::Value::Null;
+    }
+    if recipe == Recipe::CanonicalGraph {
+        observation["canonical_capture"] = serde_json::Value::Null;
+        observation["graph_output_identity"] = serde_json::Value::Null;
+        observation["wrapper_output_identity"] = serde_json::Value::Null;
     }
     let job_id = observation["job_id"].as_str().unwrap().to_owned();
     save(&mut output, &observation).unwrap();

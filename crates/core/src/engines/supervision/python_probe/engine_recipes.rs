@@ -22,25 +22,29 @@ pub(super) enum Recipe {
     Compatibility,
     Networkx,
     Transactions,
+    CanonicalGraph,
 }
 
-pub(super) type AssignedAsset = (&'static str, &'static [u8], usize);
+pub(super) type AssignedAsset<'a> = (&'static str, &'a [u8], usize);
 impl Recipe {
     pub(super) fn identity(self) -> &'static str {
         match self {
             Self::Compatibility => "python-compatibility-v1",
             Self::Networkx => "python-networkx-v1",
             Self::Transactions => "python-transactions-v1",
+            Self::CanonicalGraph => "python-canonical-graph-v1",
         }
     }
     pub(super) fn phases(self) -> &'static [&'static str] {
         if self == Self::Compatibility {
             &super::PHASES
+        } else if self == Self::CanonicalGraph {
+            &canonical_graph::PHASES
         } else {
             &PHASES
         }
     }
-    pub(super) fn assets(self) -> Vec<AssignedAsset> {
+    pub(super) fn assets(self) -> Vec<AssignedAsset<'static>> {
         let mut assets = vec![
             ("code/bootstrap.py", BOOTSTRAP, 64 * 1024),
             ("code/compatibility.py", COMPATIBILITY, 64 * 1024),
@@ -53,11 +57,23 @@ impl Recipe {
                 br#"{"synthetic":true,"reference":"000123"}"#,
                 64 * 1024,
             ));
+        } else if self == Self::CanonicalGraph {
+            assets.push(("code/engine_recipes.py", SOURCE, 64 * 1024));
+            assets.push((
+                "code/canonical_graph.py",
+                canonical_graph::SOURCE,
+                64 * 1024,
+            ));
+            assets.push((
+                "code/graph_path.py",
+                canonical_graph::GRAPH_ADAPTER,
+                64 * 1024,
+            ));
         } else {
             assets.push(("code/engine_recipes.py", SOURCE, 64 * 1024));
             assets.push(("input/expected.json", EXPECTED, 64 * 1024));
         }
-        if self != Self::Networkx {
+        if matches!(self, Self::Compatibility | Self::Transactions) {
             assets.push(("code/transaction_totals.py", ADAPTER, 32 * 1024));
         }
         assets
@@ -65,6 +81,11 @@ impl Recipe {
     pub(super) fn expected(self) -> Result<serde_json::Value> {
         let expected: Checks = serde_json::from_slice(EXPECTED)?;
         Ok(match self {
+            Self::CanonicalGraph => {
+                return Err(Error::Validation(
+                    "Canonical recipe requires owned capture".into(),
+                ))
+            }
             Self::Compatibility => serde_json::to_value(expected)?,
             Self::Networkx => {
                 serde_json::json!({"versions":expected.versions,"imported_modules":["networkx"],
@@ -77,6 +98,10 @@ impl Recipe {
         })
     }
     pub(super) fn accept(self, bytes: &[u8], job_id: &str) -> Result<serde_json::Value> {
+        require(
+            self != Self::CanonicalGraph,
+            "Canonical recipe requires owned capture",
+        )?;
         if self == Self::Compatibility {
             return Ok(serde_json::to_value(super::accept(bytes, job_id)?)?);
         }
