@@ -291,7 +291,9 @@ impl OwnedBundle {
 
 fn create_directory(path: &Path) -> Result<()> {
     reject_link_ancestors(path)?;
-    let mut builder = fs::DirBuilder::new();
+    let builder = fs::DirBuilder::new();
+    #[cfg(unix)]
+    let mut builder = builder;
     #[cfg(unix)]
     {
         use std::os::unix::fs::DirBuilderExt;

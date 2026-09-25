@@ -43,6 +43,7 @@ pub struct SearchResults {
     pub total: u64,
 }
 
+#[cfg(target_os = "macos")]
 fn write_new(path: &std::path::Path, bytes: &[u8]) -> crate::Result<()> {
     use std::io::Write;
     let mut options = std::fs::OpenOptions::new();
