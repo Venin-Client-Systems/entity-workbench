@@ -8,6 +8,7 @@ pub(crate) mod collection_execution;
 mod collection_html;
 pub(crate) mod collection_jobs;
 pub(crate) mod collection_machine;
+pub mod collection_profile;
 pub mod collection_receipt;
 pub(crate) mod collection_settlement;
 pub mod collection_snapshot;
