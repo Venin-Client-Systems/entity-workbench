@@ -28,14 +28,25 @@ const VERSIONS: &[u8] = include_bytes!("../../../../workers/python/runtime_versi
 pub(crate) struct VerifiedGraphRuntime {
     prefix: PathBuf,
     #[cfg(test)]
-    observation: Option<std::sync::Arc<TestObservation>>,
+    observation: std::sync::OnceLock<std::sync::Arc<TestObservation>>,
 }
 
 impl VerifiedGraphRuntime {
     #[cfg(test)]
-    pub(crate) fn observe(mut self, observation: std::sync::Arc<TestObservation>) -> Self {
-        self.observation = Some(observation);
+    pub(crate) fn observe(self, observation: std::sync::Arc<TestObservation>) -> Self {
+        self.attach_observation(observation)
+            .expect("Native observation already attached");
         self
+    }
+    /// Test host attaches once, before admitting any job; never replaces the capability.
+    #[cfg(test)]
+    pub(crate) fn attach_observation(
+        &self,
+        observation: std::sync::Arc<TestObservation>,
+    ) -> Result<()> {
+        self.observation
+            .set(observation)
+            .map_err(|_| Error::Validation("Native observation already attached".into()))
     }
     pub(crate) fn from_app_engines(root: &Path, cancel: &CancellationToken) -> Result<Self> {
         #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
@@ -46,7 +57,7 @@ impl VerifiedGraphRuntime {
             Ok(Self {
                 prefix,
                 #[cfg(test)]
-                observation: None,
+                observation: std::sync::OnceLock::new(),
             })
         }
         #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
@@ -70,7 +81,7 @@ impl VerifiedGraphRuntime {
             python::cancelled(cancel)?;
             let binding = Binding::new(request)?;
             #[cfg(test)]
-            if let Some(observation) = &self.observation {
+            if let Some(observation) = self.observation.get() {
                 observation.assignment(&binding.job_id, &binding.nonce, request)?;
             }
             let assignment = serde_json::to_vec(&serde_json::json!({
@@ -104,7 +115,7 @@ impl VerifiedGraphRuntime {
                 &assets,
                 cancel,
                 #[cfg(test)]
-                self.observation.as_deref(),
+                self.observation.get().map(std::sync::Arc::as_ref),
                 |job| {
                     let wrapper = python::read_verified(
                         &job.join("scratch/result.json"),
@@ -118,7 +129,7 @@ impl VerifiedGraphRuntime {
                     )?;
                     let graph = binding.accept(&wrapper, graph)?;
                     #[cfg(test)]
-                    if let Some(observation) = &self.observation {
+                    if let Some(observation) = self.observation.get() {
                         observation.accepted(&wrapper, &graph)?;
                     }
                     Ok(graph)

@@ -1,5 +1,34 @@
 use super::*;
 
+#[test]
+fn passive_observer_attaches_once_without_runtime_execution_or_replacement() {
+    let runtime = VerifiedGraphRuntime {
+        prefix: PathBuf::from("not-an-executable-test-prefix"),
+        observation: std::sync::OnceLock::new(),
+    };
+    let first = std::sync::Arc::new(TestObservation::new(false));
+    runtime.attach_observation(first.clone()).unwrap();
+    assert!(runtime
+        .attach_observation(std::sync::Arc::new(TestObservation::new(false)))
+        .is_err());
+    assert!(std::sync::Arc::ptr_eq(
+        runtime.observation.get().unwrap(),
+        &first
+    ));
+    assert_eq!(first.receipt()["execution_calls"], 0);
+    assert_eq!(first.receipt()["launch_count"], 0);
+    let second = std::sync::Arc::new(TestObservation::new(false));
+    let consuming = VerifiedGraphRuntime {
+        prefix: PathBuf::from("not-an-executable-test-prefix"),
+        observation: std::sync::OnceLock::new(),
+    }
+    .observe(second.clone());
+    assert!(std::sync::Arc::ptr_eq(
+        consuming.observation.get().unwrap(),
+        &second
+    ));
+}
+
 fn request() -> Vec<u8> {
     let fixtures: serde_json::Value = serde_json::from_slice(include_bytes!(
         "../../../../../workers/python/fixtures/canonical-graph-cases.v1.json"

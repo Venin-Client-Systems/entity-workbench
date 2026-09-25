@@ -333,12 +333,16 @@ impl JobCoordinator {
 
 #[path = "coordinator_bootstrap.rs"]
 mod bootstrap;
+
 #[path = "coordinator_collection.rs"]
 mod collection;
 #[path = "coordinator_graph.rs"]
 mod graph;
 #[path = "coordinator_graph_api.rs"]
 mod graph_api;
+#[cfg(all(test, target_os = "macos", target_arch = "aarch64"))]
+#[path = "coordinator_native_graph_host_proof.rs"]
+mod native_graph_host_proof;
 #[path = "coordinator_search.rs"]
 mod search;
 
