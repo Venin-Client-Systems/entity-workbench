@@ -2,3 +2,5 @@
 *.png binary
 *.ico binary
 *.icns binary
+# Retain the exact downloaded Windows receipt bytes for its published SHA-256.
+/docs/security/verification/windows-parser-coordinator-2026-09-25.json -text
