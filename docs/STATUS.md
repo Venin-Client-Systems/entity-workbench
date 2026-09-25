@@ -297,3 +297,26 @@ The [Mac negative-DNS correction](discovery/MACOS-DNS-NEGATIVES.md), integrated 
 The [clock-rollback settlement repair](discovery/COLLECTION-COORDINATOR.md), integrated as `8a0a93f`, preserves internal stop intent at the exact reserved request's validated checkpoint when wall time moves backwards. It accepts no supplied timestamp, retains raw response clocks and keeps ordinary timestamp validation strict. Exact-response retry and uncertainty precedence remain intact. This remains a private synthetic execution path; no public command or schema changed.
 
 Combined application source `5c9ad52` passes **435 ordinary core tests**, strict all-target Clippy and formatting, with 23 specialized cases excluded. Python discovery runs 196 tests: 192 pass and four platform checks skip. Nine native-DNS evidence tests also pass normally and under optimization without network requests. The prior 125-browser and hosted platform results retain their exact `0e6d390` source; later publication requires fresh hosted checks.
+## Current continuation — 25 September 2026
+
+The signed-in Figma development copy now contains saved, native editable
+[DOCX catalogue and capture-outcome frames](design/DOCX-SNAPSHOTS-DESIGN.md).
+Both survived reload with byte-identical Figma re-exports. An application
+comparison is in progress. The ordinary generator-2 report has now been visually
+inspected across all three Word pages; long-literal layout and generator-2
+edit/save remain unverified after the native picker stalled.
+
+Published `bdc15be` passed all four
+[source jobs](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36137528865)
+and the separate
+[Windows AppContainer campaign](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36137528676).
+Root validated the new source-bound canonical receipt. These remain development
+observations, with no Windows 11 clean-install or in-flight cancellation claim.
+
+The integrated [Python static preflight](../packaging/PYTHON-INSTALL-PREFLIGHT.md)
+records the proposed installation, all native references and package hooks.
+A finite offline installer is being implemented from those exact inputs; the
+58 wheels remain uninstalled in this observation. The opt-in Windows DNS harness
+is under source review. Complete workflow coverage, runtime confinement,
+packaging, clean-platform testing, signing and human review remain open. All
+twelve complete-release gates are unpassed.

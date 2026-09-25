@@ -210,3 +210,19 @@ whitespace check passed. These checks leave the native Windows campaign unpassed
 The [exact retained receipt](verification/windows-parser-coordinator-2026-09-25.json) passes the existing strict validator: 25 named checks, ten bound synthetic fixtures, ten expected immutable derivatives and four joined coordinators. It covers idempotent queueing, unclaimed queued cancellation, completed/partial/failed/blocked extraction outcomes, restart stability, full evidence-inclusive backup/restore, frozen-backup isolation, runtime corruption/missing/wrong-role refusals, scratch cleanup and unchanged originals/control records/runtime files. The receipt SHA-256 is `0e7aab01efcd4cb81ed1690e4251f1e1981d9cc62f3920700b967ae84a3fcd22`.
 
 Worker and Java engine steps in the same hosted run also passed. [Source campaign 36134296848](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36134296848) passed all four source jobs at head `0e6d390`. Earlier failed campaigns remain evidence. This proves the exercised Windows Server development route; in-flight canonical cancellation is explicitly not proved by this receipt. Windows 11 clean installation, complete bundled runtimes, search/OCR application routing and signed release acceptance remain separate. No complete-release gate changes.
+## Subsequent combined-source campaign — 25 September 2026
+
+[Run 36137528676](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36137528676)
+also passed the worker, real Java engine and canonical coordinator checks at
+published integration `bdc15be`. Its actual clean merge source is
+`f99bf5ff9f2145378aa9e07874c4d61761e864e9`, with tree
+`499259a4c2cca3960349ec17719d48232b4fd4e0`, identical to `bdc15be`.
+GitHub commit readback confirms parents `b12271c` and `bdc15be`; the shallow
+receipt's empty parent list is preserved unchanged.
+
+The [exact receipt](verification/windows-parser-coordinator-bdc15be-2026-09-25.json)
+has SHA-256 `3e9702d8410eec7a4310b6f876ed6251b14624ed75d74e93190b5000f53fbd6c`.
+Root downloaded and revalidated all 25 required checks, ten fixture/derivative
+identities and four coordinator joins. In-flight cancellation remains explicitly
+unproved. This subsequent result retains the earlier successes and failures;
+it does not establish Windows 11 installation or release acceptance.

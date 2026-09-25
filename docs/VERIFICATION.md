@@ -1,6 +1,6 @@
 # Development verification — 2026-09-23
 
-These observations retain the implementation history, not completion of the full plan. The latest combined result is [390 ordinary core tests and 125 real-core browser workflows](#integrated-docx-recovery-and-extraction-v2--25-september-2026).
+These observations retain the implementation history, not completion of the full plan. The latest combined local application check is [435 ordinary core tests](#combined-resolver-settlement-and-wheelhouse-verification--25-september-2026); the later [hosted source and Windows campaigns](#figma-persistence-static-python-layout-and-current-hosted-checks--25-september-2026) passed at `bdc15be`. Results below retain their exact source and platform scope.
 
 | Check | Observed result | Scope |
 |---|---|---|
@@ -507,3 +507,42 @@ Integrated application/script source `5c9ad52` passes **435 ordinary debug-profi
 The private clock-rollback repair `185b043`, integrated as `8a0a93f`, retained a deterministic pre-fix failure and passed exact-ticket, owner, replay, raw-clock, unknown-state and failed-publication retry cases. Its isolated release-profile suite passed 419 ordinary tests with 22 exclusions and strict release Clippy; the combined debug totals above are distinct. No public timestamps, schemas or commands are relaxed. [The coordinator contract](discovery/COLLECTION-COORDINATOR.md) explains the timestamp-free internal cancellation boundary. Handoff SHA-256: `597a2b72834fbe99fa5d066db07015cee47334606b6aa247d5b7a8959c3a01eb`.
 
 [Wheelhouse evidence](../packaging/evidence/python-wheelhouse-2026-09-25.json), integrated as `cb9bbf5`, binds the exact 58 selected official archive downloads and executed-file identities. Nineteen synthetic tests pass normally and under optimization on both installed Python versions. Actual verification streams 319,470,877 expanded bytes and retains 339 files / 97,089,012 bytes; all 58 archives, 174 primary metadata files and 105 notice files independently match their sources. Manifest SHA-256: `171739e9a2d0ae7eb58cb52e29d0d5c35d5e97a4e694482cc91d9f29a4065ea0`. These are uninstalled archives and satisfy zero runnable runtime components. Package-code execution, installation, loader closure, relocation, confinement and complete notices remain unpassed. All twelve release gates remain false.
+## Figma persistence, static Python layout and current hosted checks — 25 September 2026
+
+[Source campaign 36137528865](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36137528865)
+passed all four browser, Apple Silicon, Intel Mac and Windows Server jobs at
+published `bdc15be`. The separate
+[Windows AppContainer campaign 36137528676](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36137528676)
+passed its worker, Java engine and canonical coordinator stages. Root downloaded
+the new receipt, checked its 25 canonical predicates, ten derivatives and four
+joins, and confirmed its actual merge tree equals `bdc15be`. Exact receipt
+SHA-256: `3e9702d8410eec7a4310b6f876ed6251b14624ed75d74e93190b5000f53fbd6c`.
+The [campaign interpretation](security/WINDOWS-PARSER-COORDINATOR.md) preserves
+the platform and in-flight cancellation limitations.
+
+Signed Figma-design handoff `4175252`, integrated as `ece7284`, retains two
+[native editable DOCX frames](design/DOCX-SNAPSHOTS-DESIGN.md), their dimensions,
+native text-control observation and exact Figma exports. Both frame re-exports
+were byte-identical after a normal reload. The historical file's sharing was not
+changed. This establishes those saved specimens, not owner approval, compact
+behavior, complete report design or equality with the application.
+
+The unchanged generator-2 ordinary specimen was inspected across all three
+native Word pages. Exact decimal text, source identities, original CSV text and
+limitations remain visible. A repeated table header sits alone at the bottom of
+page 1, leaving a pagination refinement. The long-literal picker still did not
+open its selected file; generator-2 edit/save remains unverified. The
+[wrapping record](reports/DOCX-WORD-WRAPPING.md) retains the scope and failed
+controls; operator-record SHA-256:
+`c5fdaaac420afdf105dd0c4bdf71d8ae05a4482754a2ec2a4e7a3ae3a2d4b2cf`.
+
+Signed static Python preflight `c3800a4`, integrated as `2de5148`, proposes
+11,037 file locations and analyzes 588 arm64 load-command references at 196
+native paths: 235 local and 353 OS-library references, with none unresolved or
+ambiguous under its documented model. Eleven synthetic tests passed normally
+and under optimization on Python 3.13.11 and 3.14.2. The
+[complete static receipt](../packaging/evidence/python-static-preflight-2026-09-25.json)
+has SHA-256 `2ec8e805fc0b0c815d274ab81f35837bb2f5c689617b3d9e48a5199ac778ef30`.
+No candidate interpreter, package or startup hook was executed, and no package
+was installed. Actual native loads, imports, relocation and confinement remain
+required. All twelve complete-release gates remain false.

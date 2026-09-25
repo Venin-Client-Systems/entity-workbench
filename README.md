@@ -49,7 +49,7 @@ These bootstrap scripts run only on the developer's machine. They are not first-
 4. Create or edit entities in Entities, preserving reference namespaces and leading zeros. Add observations anchored to retained text lines or CSV cells, inspect the exact excerpt and review each observation. Compare any two records; keep them separate, defer the decision or record a reversible merge. Comparison signals use accepted exact values and do not represent identity probabilities.
 5. In Discovery, preview selected HTTPS seed URLs, then collect their public pages. Only selected hosts are in scope. Robots requests and redirects count against the request limit.
 6. Search the imported/collected corpus in Evidence. The macOS bundle supports Boolean, phrase, proximity, fuzzy and fielded Lucene queries.
-7. Save an assessment snapshot. Subsequent corrections flag current findings without changing previous exports.
+7. Save an immutable HTML or editable DOCX assessment snapshot. Explicit native saving verifies the retained artifact before export. Subsequent corrections flag current findings without changing previous snapshots or exports. See [DOCX capture and recovery](docs/design/DOCX-SNAPSHOTS-UI.md).
 
 All repository fixtures, screenshots and automated workflow tests are synthetic. Live network smoke tests use harmless public documentation pages and are excluded from CI.
 

@@ -61,3 +61,24 @@ or approved product-design claim.
 After controls became available, the file picker's explicit Open Finder item action opened the unchanged generator-2 ordinary specimen in Word. The native window identified `generator2-ordinary` in Compatibility Mode; its three-page, 481-word document showed generator `ooxml-foundation-2`. A screenshot of the first-page prose showed ordinary words wrapping at word boundaries, with the reviewed decimal calculation intact. The specimen SHA-256 remains `0b9f69392b57dd1190dea7d45c7fcc16bad97ab9fcf2b9dec3b8350b6fc74fd9`.
 
 A subsequent Whole page zoom action and state read timed out. This updates the earlier inability to open generator 2: opening and the visible first-page prose are now observed, but complete-page inspection, long-literal Word layout and generator-2 edit/save remain unverified. No document content was edited or saved, no app was force-quit and no permission changed. The managed seven-page inspection remains separate evidence.
+
+## Three-page native follow-up — 25 September 2026
+
+The same unchanged ordinary specimen was subsequently inspected across all three
+native Word pages. Page 2 displays the three transaction rows, exact amounts,
+account `001`, review states and full transaction/source identifiers. Page 3
+displays review history, the source catalogue, original CSV text and limitations.
+No clipped content, overlapping text or loss of exact decimal text was observed.
+The table header remains alone at the bottom of page 1 and repeats with its rows
+on page 2; keeping the header with the first data row is a remaining layout
+refinement. Native accessibility scrolling changed the viewport, but repainting
+the following pages required a zoom change. This is an observed control behavior,
+not a diagnosis of the document renderer.
+
+The long-literal specimen remained selected in Word's native file picker with
+Open disabled. Its secondary open action and Return did not open it, and Cancel
+timed out. The final picker state is unconfirmed. No content was edited or saved;
+the ordinary source digest above remains unchanged. The retained operator record
+has SHA-256 `c5fdaaac420afdf105dd0c4bdf71d8ae05a4482754a2ec2a4e7a3ae3a2d4b2cf`.
+Long-literal native layout and generator-2 edit/save remain unverified. Earlier
+generator-1 editability and managed-render evidence retain their original scope.
