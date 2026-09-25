@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "source_commit": "c2dfd80294c5f20efcc23d8e674a3f66c8759a41",
+  "scope": "Combined collection retry transition and Evidence search consumption",
+  "results": {
+    "ui_build": "passed",
+    "browser_cases": 23,
+    "browser_files": [
+      "ui/tests/evidence-search.spec.ts",
+      "ui/tests/durable-collection.spec.ts"
+    ],
+    "rust_reference": "collection-retry-transition.json:555 library plus79 integration tests,31 exclusions; Rust unchanged by subsequent UI commits",
+    "agent_ui_reference": "../discovery/verification/evidence-search-consumption.json:21 cases at source d361dcc"
+  },
+  "retained_private_artifacts": {
+    "build.log": {
+      "bytes": 932,
+      "sha256": "d039007d40a37b1d592e0b34b93a933df1b662ec91c9ca8abab1fa1f1ed31c32"
+    },
+    "build-exit.json": {
+      "bytes": 53,
+      "sha256": "1c4c338f89bbe7b2171d3b02647fdbfe8bef5ce99cc37dafb3dedc88636e97e5"
+    },
+    "browser.log": {
+      "bytes": 3730,
+      "sha256": "48ee3497222abbb4f627efe08f0d3c1507ba39e7675ee141b715e913a1abc90e"
+    },
+    "browser-exit.json": {
+      "bytes": 166,
+      "sha256": "d4a1192c2ce41b63b73f9f0ca5424e161222f1c1046602de6dc7203c0b54ee82"
+    }
+  },
+  "limits": [
+    "Index replies in new search cases are explicitly injected",
+    "No native worker/public-web campaign or new design treatment",
+    "Existing build chunk advisory remains",
+    "Not release acceptance"
+  ],
+  "complete_release": false
+}
