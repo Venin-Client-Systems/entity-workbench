@@ -3,13 +3,12 @@ use crate::{
     domain::Command,
     engines::{CancellationToken, Runtime},
     processing::{ProcessingInput, ProcessingOutput},
-    store::Workspace,
+    store::{CollectionOwnership, Workspace},
     Error, Result,
 };
 use serde_json::Value;
 use std::{
     collections::BTreeMap,
-    fs::File,
     path::Path,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -34,6 +33,8 @@ struct Shared {
     stopping: AtomicBool,
     wake: Condvar,
     executor: Arc<Executor>,
+    ownership: Arc<CollectionOwnership>,
+    collection: Option<Arc<collection::CollectionLane>>,
 }
 
 /// One coordinator per workspace, one or two disposable worker processes at a time.
@@ -41,7 +42,6 @@ pub struct JobCoordinator {
     exports: crate::store::local_exports::NativeExports,
     shared: Arc<Shared>,
     workers: Mutex<Vec<JoinHandle<()>>>,
-    ownership: Mutex<Option<File>>,
 }
 
 impl JobCoordinator {
@@ -74,16 +74,32 @@ impl JobCoordinator {
     }
 
     fn with_executor(
+        workspace: Workspace,
+        concurrency: usize,
+        executor: Arc<Executor>,
+    ) -> Result<Self> {
+        Self::with_execution(workspace, concurrency, executor, None)
+    }
+
+    fn with_execution(
         mut workspace: Workspace,
         concurrency: usize,
         executor: Arc<Executor>,
+        collection: Option<Arc<collection::CollectionExecutor>>,
     ) -> Result<Self> {
         crate::require(
             (1..=2).contains(&concurrency),
             "Processing concurrency must be one or two",
         )?;
-        let ownership = workspace.lock_processing()?;
+        let ownership = Arc::new(workspace.collection_ownership()?);
         workspace.recover_processing_jobs()?;
+        if workspace.processing_execution_suspended()? {
+            ownership.quarantine();
+        }
+        if collection.is_some() && ownership.held() {
+            workspace
+                .recover_collection_transport(&ownership, chrono::Utc::now().timestamp_millis())?;
+        }
         let exports = workspace.start_native_exports()?;
         let shared = Arc::new(Shared {
             workspace: Mutex::new(workspace),
@@ -91,12 +107,14 @@ impl JobCoordinator {
             stopping: AtomicBool::new(false),
             wake: Condvar::new(),
             executor,
+            ownership,
+            collection: collection
+                .map(|executor| Arc::new(collection::CollectionLane::new(executor))),
         });
         let mut coordinator = Self {
             exports,
             shared,
             workers: Mutex::new(Vec::new()),
-            ownership: Mutex::new(Some(ownership)),
         };
         for slot in 0..concurrency {
             let shared = coordinator.shared.clone();
@@ -109,6 +127,18 @@ impl JobCoordinator {
                     thread::Builder::new()
                         .name(format!("processing-worker-{slot}"))
                         .spawn(move || work(shared))?,
+                );
+        }
+        if coordinator.shared.collection.is_some() {
+            let shared = coordinator.shared.clone();
+            coordinator
+                .workers
+                .get_mut()
+                .map_err(|_| Error::Blocked("Worker registry is unavailable".into()))?
+                .push(
+                    thread::Builder::new()
+                        .name("collection-worker".into())
+                        .spawn(move || collection::work(shared))?,
                 );
         }
         Ok(coordinator)
@@ -227,6 +257,9 @@ impl JobCoordinator {
             token.cancel();
         }
         drop(active);
+        if let Some(lane) = &self.shared.collection {
+            lane.cancel_active();
+        }
         self.shared.wake.notify_all();
         let export_cleanup = self.exports.shutdown();
         let mut workers = self
@@ -241,32 +274,35 @@ impl JobCoordinator {
         // held by a descriptor inherited by an unrelated concurrent fork. Keep
         // the worker registry locked until ownership is released, so concurrent
         // shutdown calls cannot release it while this call is still joining.
-        let mut ownership = self
-            .ownership
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
-        if let Some(file) = ownership.as_ref() {
-            file.unlock()?;
-            // A repeated shutdown must never unlock again after another
-            // coordinator has acquired its own handle to the ownership file.
-            *ownership = None;
+        if failed
+            || self
+                .shared
+                .collection
+                .as_ref()
+                .is_some_and(|lane| lane.requires_recovery())
+        {
+            self.shared.ownership.quarantine();
         }
-        export_cleanup?;
         if failed {
             return Err(Error::Interrupted(
-                "A processing executor stopped unexpectedly".into(),
+                "A coordinator executor stopped unexpectedly".into(),
             ));
         }
+        self.shared.ownership.release()?;
+        export_cleanup?;
         Ok(())
     }
 }
+
+#[path = "coordinator_collection.rs"]
+mod collection;
 
 fn work(shared: Arc<Shared>) {
     loop {
         let Ok(mut workspace) = shared.workspace.lock() else {
             return;
         };
-        if shared.stopping.load(Ordering::Acquire) {
+        if shared.stopping.load(Ordering::Acquire) || !shared.ownership.held() {
             return;
         }
         let prepared = match workspace.claim_processing_job() {
@@ -285,7 +321,7 @@ fn work(shared: Arc<Shared>) {
         };
         // A shutdown may have cancelled an empty registry after the initial loop check.
         // Check while holding the same registry lock used by shutdown, before launch.
-        if shared.stopping.load(Ordering::Acquire) {
+        if shared.stopping.load(Ordering::Acquire) || !shared.ownership.held() {
             token.cancel();
         }
         active.insert(prepared.ticket.job_id.clone(), token.clone());
@@ -307,6 +343,9 @@ fn work(shared: Arc<Shared>) {
                 ))
             })
         };
+        if matches!(result, Err(Error::TerminationUnverified(_))) {
+            quarantine_execution(&shared);
+        }
         // Publication is retried without re-running the engine. No duplicate work or side effects.
         loop {
             let Ok(mut workspace) = shared.workspace.lock() else {
@@ -351,6 +390,25 @@ fn work(shared: Arc<Shared>) {
                 .wait_timeout(workspace, Duration::from_millis(100));
         }
     }
+}
+
+/// Never hold the workspace or a token registry while entering this function.
+/// Quarantine blocks both lanes before cancellation, while canonical failure and
+/// already-owned response publication remain possible under the existing mutex.
+fn quarantine_execution(shared: &Shared) {
+    shared.ownership.quarantine();
+    let active = shared
+        .active
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
+    for token in active.values() {
+        token.cancel();
+    }
+    drop(active);
+    if let Some(lane) = &shared.collection {
+        lane.cancel_active();
+    }
+    shared.wake.notify_all();
 }
 
 impl Drop for JobCoordinator {
@@ -461,7 +519,16 @@ mod tests {
                 .unwrap(),
             revision
         );
-        coordinator.shutdown().unwrap();
+        // The mixed fixture contains unfinished synthetic jobs. Startup records
+        // their unverified exit; verified read-only raster access remains available.
+        assert!(coordinator
+            .shared
+            .workspace
+            .lock()
+            .unwrap()
+            .processing_execution_suspended()
+            .unwrap());
+        assert!(coordinator.shutdown().is_err());
         assert!(matches!(
             coordinator.read_image_region_raster(&key),
             Err(Error::Blocked(_))

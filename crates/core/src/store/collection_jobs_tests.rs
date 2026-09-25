@@ -1,5 +1,23 @@
 //! Synthetic only: no broker, DNS, external server or coordinator is started.
 use super::*;
+
+#[test]
+fn poisoned_shared_ownership_is_not_released_by_drop() {
+    let (_temp, workspace) = workspace();
+    let owner = std::sync::Arc::new(workspace.collection_ownership().unwrap());
+    let poisoned = owner.clone();
+    assert!(std::thread::spawn(move || {
+        let _held = poisoned.state.lock().unwrap();
+        panic!("Synthetic ownership-state poison");
+    })
+    .join()
+    .is_err());
+    assert!(!owner.held());
+    assert!(!owner.publication_held());
+    assert!(owner.release().is_err());
+    drop(owner);
+    assert!(workspace.collection_ownership().is_err());
+}
 use tempfile::TempDir;
 const AT: i64 = 1_700_000_000_000;
 fn workspace() -> (TempDir, Workspace) {

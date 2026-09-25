@@ -30,6 +30,12 @@ pub(crate) struct PendingSettlement {
     ownership_lifetime: String,
 }
 impl PendingSettlement {
+    pub(crate) fn request(&self) -> &RequestTicket {
+        &self.request
+    }
+    pub(crate) fn locally_quiescent(&self) -> bool {
+        self.observation.locally_quiescent
+    }
     pub(crate) fn settle(
         &self,
         workspace: &mut Workspace,
@@ -80,7 +86,7 @@ impl CollectionDriver {
     ) -> Result<Option<PendingSettlement>> {
         self.next_with(workspace, owner, cancellation, collection_transport::fetch)
     }
-    fn next_with(
+    pub(crate) fn next_with(
         &mut self,
         workspace: &Mutex<Workspace>,
         owner: &CollectionOwnership,

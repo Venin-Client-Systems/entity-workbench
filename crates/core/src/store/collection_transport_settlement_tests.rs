@@ -300,3 +300,32 @@ fn a_later_canonical_cancel_does_not_misclassify_an_earlier_response_as_clock_re
     assert_eq!(receipt.stop_observed, None);
     assert_eq!(w.view().unwrap().evidence.len(), 1);
 }
+
+#[test]
+fn released_guard_cannot_authorize_settlement_even_with_unchanged_request_and_lifetime() {
+    let (_temp, mut workspace, owner, execution, request) = fixture();
+    let before = workspace
+        .inspect_durable_collection(&execution.job_id)
+        .unwrap();
+    let revision = workspace.revision().unwrap();
+    owner.release().unwrap();
+    assert!(workspace
+        .settle_collection_transport(
+            &request,
+            &complete(now_for_test(), b"Synthetic held response"),
+            &owner
+        )
+        .is_err());
+    assert_eq!(workspace.revision().unwrap(), revision);
+    assert_eq!(
+        workspace
+            .inspect_durable_collection(&execution.job_id)
+            .unwrap(),
+        before
+    );
+    assert!(workspace.view().unwrap().evidence.is_empty());
+}
+
+fn now_for_test() -> i64 {
+    chrono::Utc::now().timestamp_millis()
+}

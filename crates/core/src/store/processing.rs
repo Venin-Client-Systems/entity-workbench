@@ -104,11 +104,20 @@ fn pending_count(conn: &Connection) -> Result<usize> {
 }
 
 fn require_verified_worker_exit(conn: &Connection) -> Result<()> {
-    let unverified: bool = conn.query_row("SELECT EXISTS(SELECT 1 FROM records WHERE kind='processing_job' AND json_extract(body,'$.failure')='worker_exit_unverified')", [], |row| row.get(0))?;
-    if unverified {
+    if worker_exit_unverified(conn)? {
         return Err(Error::Blocked("Document execution is suspended because a previous worker's exit is unverified; verified process recovery is required".into()));
     }
     Ok(())
+}
+
+fn worker_exit_unverified(conn: &Connection) -> Result<bool> {
+    Ok(conn.query_row("SELECT EXISTS(SELECT 1 FROM records WHERE kind='processing_job' AND json_extract(body,'$.failure')='worker_exit_unverified')", [], |row| row.get(0))?)
+}
+
+impl Workspace {
+    pub(crate) fn processing_execution_suspended(&self) -> Result<bool> {
+        worker_exit_unverified(&self.conn)
+    }
 }
 
 fn suspend_queued_jobs(conn: &Connection) -> Result<()> {

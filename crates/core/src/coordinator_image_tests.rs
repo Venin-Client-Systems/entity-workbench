@@ -127,7 +127,8 @@ fn executor_panic_cannot_claim_worker_exit_or_start_queued_work() {
             request_key: uuid::Uuid::new_v4().to_string()
         })
         .is_err());
-    coordinator.shutdown().unwrap();
+    assert!(coordinator.shutdown().is_err());
+    assert!(JobCoordinator::start(Workspace::open(temp.path().join("case")).unwrap(), 1).is_err());
 }
 
 #[test]

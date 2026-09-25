@@ -26,7 +26,7 @@
     "strict_clippy_debug": "passed",
     "strict_clippy_release": "passed",
     "schema_inventory_files_byte_unchanged": 85,
-    "json_schema_files_byte_unchanged": 84,
+    "json_schema_files_byte_unchanged": 83,
     "unchanged_files": {
       "Cargo.toml": true,
       "Cargo.lock": true,
@@ -109,5 +109,6 @@
     "format-first.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "lifecycle-second.log": "78f77af856003aee8c078cdc24786493e0713512e5d83b31f4cca100c9764a9a"
   },
-  "local_ignored_identity_checks_sha256": "5cdc66fbe0104e696eb637e63c027ca349972c557bca71d942c3873ab8de3221"
+  "local_ignored_identity_checks_sha256": "5cdc66fbe0104e696eb637e63c027ca349972c557bca71d942c3873ab8de3221",
+  "inventory_count_correction": "The original value84 counted all JSON files, including runtime-inventory.v1.json. There are83 *.schema.json files; all85 tracked inventory files remain byte-identical. Original identity-check artifact/hash is retained as observed."
 }

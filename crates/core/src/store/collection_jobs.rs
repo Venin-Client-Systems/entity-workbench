@@ -5,14 +5,18 @@ use crate::{
     collection_jobs::*,
     collection_machine::{self, Machine, Promotion},
 };
-use std::fs::File;
+use std::{fs::File, sync::Mutex};
 
 /// Uses the existing coordinator ownership file. This development seam must not
 /// become a second independent coordinator when live execution is integrated.
 pub(crate) struct CollectionOwnership {
     root: PathBuf,
-    file: File,
+    state: Mutex<OwnershipState>,
     lifetime: String,
+}
+struct OwnershipState {
+    file: Option<File>,
+    quarantined: bool,
 }
 impl CollectionOwnership {
     /// Process-local identity of this particular held coordinator lock. Reopening
@@ -20,10 +24,51 @@ impl CollectionOwnership {
     pub(crate) fn lifetime(&self) -> &str {
         &self.lifetime
     }
+    pub(crate) fn held(&self) -> bool {
+        self.state
+            .lock()
+            .is_ok_and(|state| state.file.is_some() && !state.quarantined)
+    }
+    fn publication_held(&self) -> bool {
+        self.state.lock().is_ok_and(|state| state.file.is_some())
+    }
+    pub(crate) fn quarantine(&self) {
+        self.state
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .quarantined = true;
+    }
+    /// Only the coordinator's serialized joined shutdown may release shared ownership.
+    pub(crate) fn release(&self) -> Result<()> {
+        let mut state = self
+            .state
+            .lock()
+            .map_err(|_| Error::Blocked("Coordinator ownership is unavailable".into()))?;
+        require(
+            !state.quarantined,
+            "Coordinator ownership requires process recovery",
+        )?;
+        if let Some(file) = &state.file {
+            file.unlock()?;
+            state.file = None;
+        }
+        Ok(())
+    }
 }
 impl Drop for CollectionOwnership {
     fn drop(&mut self) {
-        let _ = self.file.unlock();
+        let poisoned = self.state.is_poisoned();
+        let state = self
+            .state
+            .get_mut()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+        if let Some(file) = state.file.take() {
+            if poisoned || state.quarantined || file.unlock().is_err() {
+                // An unverified executor must not let another owner start. At most
+                // one locked handle per affected workspace survives until process exit.
+                std::mem::forget(file);
+            }
+        }
     }
 }
 struct Loaded {
@@ -36,14 +81,23 @@ impl Workspace {
     pub(crate) fn collection_ownership(&self) -> Result<CollectionOwnership> {
         Ok(CollectionOwnership {
             root: self.root.clone(),
-            file: self.lock_processing()?,
+            state: Mutex::new(OwnershipState {
+                file: Some(self.lock_processing()?),
+                quarantined: false,
+            }),
             lifetime: id(),
         })
     }
     fn collection_owner(&self, owner: &CollectionOwnership) -> Result<()> {
         require(
-            owner.root == self.root,
-            "Collection ownership belongs to another workspace",
+            owner.root == self.root && owner.held(),
+            "Collection ownership is released, quarantined or belongs to another workspace",
+        )
+    }
+    fn collection_publication_owner(&self, owner: &CollectionOwnership) -> Result<()> {
+        require(
+            owner.root == self.root && owner.publication_held(),
+            "Collection publication ownership is released or belongs to another workspace",
         )
     }
     pub(crate) fn queue_durable_collection(
@@ -134,6 +188,21 @@ impl Workspace {
     }
     pub(crate) fn inspect_durable_collection(&self, job_id: &str) -> Result<DurableCollectionJob> {
         Ok(self.load_collection(job_id)?.job)
+    }
+    pub(crate) fn claim_collection_transport(
+        &mut self,
+        owner: &CollectionOwnership,
+        at_ms: i64,
+    ) -> Result<Option<CollectionTicket>> {
+        self.collection_owner(owner)?;
+        self.collection_transport_available()?;
+        let key: Option<Option<String>> = self.conn.query_row(
+            "SELECT CASE WHEN length(CAST(id AS BLOB))=36 THEN id ELSE NULL END FROM records WHERE kind='collection_run' AND json_extract(body,'$.schema_version')=2 AND json_extract(body,'$.synthetic')=1 AND json_extract(body,'$.checkpoint.state')='queued' ORDER BY sequence LIMIT 1",
+            [], |row| row.get(0)).optional()?;
+        let Some(key) = key else { return Ok(None) };
+        let key = key.ok_or_else(|| Error::Validation("Invalid queued collection key".into()))?;
+        let job = self.inspect_durable_collection(&key)?;
+        self.start_durable_collection(&key, job.checkpoint.generation, owner, at_ms)
     }
     pub(crate) fn start_durable_collection(
         &mut self,
@@ -282,11 +351,26 @@ impl Workspace {
         owner: &CollectionOwnership,
         at_ms: i64,
     ) -> Result<usize> {
+        self.recover_collections(owner, at_ms, false)
+    }
+    pub(crate) fn recover_collection_transport(
+        &mut self,
+        owner: &CollectionOwnership,
+        at_ms: i64,
+    ) -> Result<usize> {
+        self.recover_collections(owner, at_ms, true)
+    }
+    fn recover_collections(
+        &mut self,
+        owner: &CollectionOwnership,
+        at_ms: i64,
+        transport_only: bool,
+    ) -> Result<usize> {
         self.collection_owner(owner)?;
         let keys: Vec<String> = self
             .conn
-            .prepare("SELECT id FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state')='running' ORDER BY sequence LIMIT 9")?
-            .query_map([], |r| r.get(0))?
+            .prepare("SELECT id FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state')='running' AND (?=0 OR (json_extract(body,'$.schema_version')=2 AND json_extract(body,'$.synthetic')=1)) ORDER BY sequence LIMIT 9")?
+            .query_map([transport_only], |r| r.get(0))?
             .collect::<std::result::Result<_, _>>()?;
         require(
             keys.len() <= 8,

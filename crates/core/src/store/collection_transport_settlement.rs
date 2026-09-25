@@ -35,7 +35,7 @@ impl Workspace {
         observation: &Observation,
         owner: &CollectionOwnership,
     ) -> Result<DurableCollectionJob> {
-        self.collection_owner(owner)?;
+        self.collection_publication_owner(owner)?;
         let mut loaded = self.load_collection(&request.run.job_id)?;
         require(
             loaded.job.schema_version == 2 && loaded.job.synthetic,

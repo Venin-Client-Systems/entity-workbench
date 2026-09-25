@@ -152,7 +152,12 @@ fn pdf_running_cancellation_and_panic_do_not_publish_or_hide_unknown_exit() {
             });
         }
         assert!(inspect(&coordinator, &job.id).result_ids.is_empty());
-        coordinator.shutdown().unwrap();
+        if panic {
+            assert!(coordinator.shutdown().is_err());
+            assert!(JobCoordinator::start(Workspace::open(temp.path()).unwrap(), 1).is_err());
+        } else {
+            coordinator.shutdown().unwrap();
+        }
     }
 }
 #[test]
