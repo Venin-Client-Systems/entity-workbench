@@ -16,7 +16,7 @@ on:
       - 'scripts/stage_windows_engines.py'
       - 'scripts/tests/test_windows_engine_staging.py'
       - 'scripts/test_windows_parser_coordinator.py'
-      - 'scripts/tests/test_windows_parser_coordinator.py'
+      - 'scripts/tests/test_windows_coordinator_receipts.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -134,7 +134,7 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          & python -m unittest discover -s scripts/tests -p test_windows_parser_coordinator.py -v
+          & python -m unittest discover -s scripts/tests -p test_windows_coordinator_receipts.py -v
           if ($LASTEXITCODE -ne 0) { throw 'Canonical campaign receipt contract tests failed.' }
       - name: Build the source-bound canonical coordinator probe
         shell: pwsh
