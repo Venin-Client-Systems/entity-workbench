@@ -14,21 +14,14 @@ impl Workspace {
         requests: u32,
         seconds: u64,
     ) -> Result<()> {
-        let (job, start_revision) = self.start_collection(urls, hops, requests, seconds)?;
-        match crate::collection::collect(job.queries.clone(), hops, requests, seconds) {
-            Ok(result) => self.finish_collection(job, start_revision, result),
-            Err(error) => {
-                let mut job = job;
-                job.state = JobState::Failed;
-                job.detail =
-                    format!("Collection failed before a receipt could be completed: {error}");
-                self.change(None, "collection.finish", false, |conn| {
-                    put(conn, "job", &job.id, &job)
-                })
-            }
-        }
+        crate::collection::collect(urls, hops, requests, seconds)?;
+        Err(Error::Blocked(
+            "Synchronous collection publication is disabled".into(),
+        ))
     }
 
+    // Retained for fixed historical receipt fixtures; no live dispatch caller.
+    #[allow(dead_code)]
     fn start_collection(
         &mut self,
         urls: Vec<String>,
@@ -62,6 +55,7 @@ impl Workspace {
         Ok((job, start_revision))
     }
 
+    #[allow(dead_code)]
     fn finish_collection(
         &mut self,
         mut job: CollectionJob,

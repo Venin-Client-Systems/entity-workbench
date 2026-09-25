@@ -1,0 +1,205 @@
+{
+  "$defs": {
+    "AcquisitionMode": {
+      "enum": [
+        "live",
+        "synthetic"
+      ],
+      "type": "string"
+    },
+    "CollectionAvailability": {
+      "enum": [
+        "native_disabled",
+        "standalone_unavailable",
+        "synthetic_fixture",
+        "ready",
+        "recovery_required",
+        "execution_unavailable",
+        "stopping"
+      ],
+      "type": "string"
+    },
+    "CollectionInput": {
+      "additionalProperties": false,
+      "properties": {
+        "max_hops": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_requests": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_seconds": {
+          "format": "uint64",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "urls": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "urls",
+        "max_hops",
+        "max_requests",
+        "max_seconds"
+      ],
+      "type": "object"
+    },
+    "CollectionRunSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "cancellation_requested": {
+          "type": "boolean"
+        },
+        "collector_policy": {
+          "type": "string"
+        },
+        "created_at_ms": {
+          "format": "int64",
+          "type": "integer"
+        },
+        "deadline_at_ms": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "first_started_at_ms": {
+          "format": "int64",
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "frontier_remaining": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "generation": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "type": "string"
+        },
+        "input": {
+          "$ref": "#/$defs/CollectionInput"
+        },
+        "mode": {
+          "$ref": "#/$defs/AcquisitionMode"
+        },
+        "pages_retained": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "record_version": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "requests_used": {
+          "format": "uint32",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "state": {
+          "$ref": "#/$defs/CollectionState"
+        },
+        "updated_at_ms": {
+          "format": "int64",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "record_version",
+        "mode",
+        "collector_policy",
+        "input",
+        "created_at_ms",
+        "updated_at_ms",
+        "state",
+        "generation",
+        "cancellation_requested",
+        "requests_used",
+        "pages_retained",
+        "frontier_remaining"
+      ],
+      "type": "object"
+    },
+    "CollectionState": {
+      "enum": [
+        "queued",
+        "running",
+        "interrupted",
+        "recovery_required",
+        "cancelled",
+        "blocked",
+        "quota_exhausted",
+        "failed",
+        "partial",
+        "successful",
+        "successful_no_results"
+      ],
+      "type": "string"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "availability": {
+      "$ref": "#/$defs/CollectionAvailability"
+    },
+    "native_execution_enabled": {
+      "type": "boolean"
+    },
+    "next_cursor": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rows": {
+      "items": {
+        "$ref": "#/$defs/CollectionRunSummary"
+      },
+      "type": "array"
+    },
+    "schema_version": {
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "scope_count": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "workspace_revision": {
+      "format": "uint64",
+      "minimum": 0,
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "workspace_revision",
+    "availability",
+    "native_execution_enabled",
+    "scope_count",
+    "rows"
+  ],
+  "title": "CollectionRunPage",
+  "type": "object"
+}

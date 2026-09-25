@@ -10,7 +10,7 @@ impl Machine {
         body: Option<&[u8]>,
     ) -> Result<Option<Promotion>> {
         require(
-            self.version == 2 && anchor == self.checkpoint.updated_at_ms,
+            matches!(self.version, 2 | 3) && anchor == self.checkpoint.updated_at_ms,
             "Transport observation has invalid version or clock anchor",
         )?;
         self.running()?;

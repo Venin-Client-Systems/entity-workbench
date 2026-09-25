@@ -1,5 +1,5 @@
-//! Private durable collection protocol. No command, executor or network is activated.
-// This foundation is deliberately not reachable from production dispatch yet.
+//! Durable collection records and private execution tickets.
+//! Public projections are separate; native execution remains disabled.
 #![allow(dead_code)]
 use crate::{collection::validate_seeds, require, Result};
 use serde::{Deserialize, Serialize};
@@ -8,9 +8,42 @@ pub(crate) const MAX_EVENTS: usize = 256;
 pub(crate) const MAX_RECORD_BYTES: usize = 4 * 1024 * 1024;
 pub(crate) const MAX_FRONTIER: usize = 500;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+/// Trusted coordinator configuration, never deserialized from a command.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum CollectionProtocol {
+    FoundationV1,
+    SyntheticV2,
+    SyntheticV3,
+    NativeV3,
+}
+impl CollectionProtocol {
+    pub(crate) fn version(self) -> u32 {
+        match self {
+            Self::FoundationV1 => 1,
+            Self::SyntheticV2 => 2,
+            Self::SyntheticV3 | Self::NativeV3 => 3,
+        }
+    }
+    pub(crate) fn synthetic(self) -> bool {
+        self != Self::NativeV3
+    }
+    pub(crate) fn policy(self) -> &'static str {
+        match self {
+            Self::FoundationV1 => "direct-https-durable-foundation-v1",
+            Self::SyntheticV2 => "direct-https-durable-transport-v2",
+            Self::SyntheticV3 | Self::NativeV3 => crate::collection_api::COLLECTOR_POLICY,
+        }
+    }
+    pub(crate) fn matches(self, job: &DurableCollectionJob) -> bool {
+        job.schema_version == self.version()
+            && job.synthetic == self.synthetic()
+            && job.collector_policy == self.policy()
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct CollectionInput {
+pub struct CollectionInput {
     pub urls: Vec<String>,
     pub max_hops: u32,
     pub max_requests: u32,
@@ -32,9 +65,9 @@ impl CollectionInput {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum CollectionState {
+pub enum CollectionState {
     Queued,
     Running,
     Interrupted,
@@ -47,35 +80,35 @@ pub(crate) enum CollectionState {
     Successful,
     SuccessfulNoResults,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum Purpose {
+pub enum Purpose {
     Robots,
     Seed,
     Link,
     Redirect,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct FrontierEntry {
+pub struct FrontierEntry {
     pub url: String,
     pub hop: u32,
     pub redirects: u32,
     pub purpose: Purpose,
     pub parent: Option<u32>,
 }
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum TransportFailure {
+pub enum TransportFailure {
     Network,
     Policy,
     Quota,
     Interrupted,
 }
 /// Sanitized acquisition facts; raw headers and incomplete body bytes are absent.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
-pub(crate) enum FetchRecord {
+pub enum FetchRecord {
     Complete {
         status: u16,
         media_type: Option<String>,
@@ -91,9 +124,9 @@ pub(crate) enum FetchRecord {
         reason: TransportFailure,
     },
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(tag = "state", rename_all = "snake_case", deny_unknown_fields)]
-pub(crate) enum RequestProgress {
+pub enum RequestProgress {
     Reserved,
     Settled {
         ended_at_ms: i64,
@@ -208,12 +241,35 @@ pub(crate) struct DurableCollectionJob {
     pub id: String,
     pub request_key: String,
     pub collector_policy: String,
-    /// This unactivated foundation can only publish synthetic specimens.
+    /// Trusted mode: v1/v2 require synthetic; v3 permits only configured policy/mode tuples.
     pub synthetic: bool,
     pub input: CollectionInput,
     pub created_at_ms: i64,
     pub events: Vec<CollectionEvent>,
     pub checkpoint: CollectionCheckpoint,
+}
+impl DurableCollectionJob {
+    pub(crate) fn protocol(&self) -> Result<CollectionProtocol> {
+        [
+            CollectionProtocol::FoundationV1,
+            CollectionProtocol::SyntheticV2,
+            CollectionProtocol::SyntheticV3,
+            CollectionProtocol::NativeV3,
+        ]
+        .into_iter()
+        .find(|p| p.matches(self))
+        .ok_or_else(|| {
+            crate::Error::Validation("Unsupported durable collection mode/policy/version".into())
+        })
+    }
+    pub(crate) fn transport_protocol(&self) -> Result<CollectionProtocol> {
+        let protocol = self.protocol()?;
+        require(
+            protocol != CollectionProtocol::FoundationV1,
+            "Transport requires a v2/v3 run",
+        )?;
+        Ok(protocol)
+    }
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct CollectionTicket {

@@ -11,28 +11,28 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct CandidateSnapshot {
+pub struct CandidateSnapshot {
     pub addresses: Vec<SocketAddr>,
     pub method: String,
     pub authoritative_complete_set: bool,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct ResolverUncertainty {
+pub struct ResolverUncertainty {
     pub method: String,
     pub caller_context: CallerContextState,
 }
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum HttpDelivery {
+pub enum HttpDelivery {
     DefinitivelyBeforeHttp,
     MayHaveBeenSent,
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
-pub(crate) enum ReceiptOutcome {
+pub enum ReceiptOutcome {
     Complete {
         head: ResponseHead,
         sha256: String,
@@ -43,9 +43,9 @@ pub(crate) enum ReceiptOutcome {
         head: Option<ResponseHead>,
     },
 }
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct TransportReceipt {
+pub struct TransportReceipt {
     pub schema_version: u32,
     pub outcome: ReceiptOutcome,
     pub phase: Phase,
@@ -64,7 +64,7 @@ fn delivery(phase: Phase) -> HttpDelivery {
     }
 }
 impl TransportReceipt {
-    pub fn from_observation(observation: &Observation) -> Self {
+    pub(crate) fn from_observation(observation: &Observation) -> Self {
         Self {
             schema_version: 1,
             outcome: match &observation.outcome {
@@ -99,6 +99,16 @@ impl TransportReceipt {
             stop_observed: observation.stop_observed,
             locally_quiescent: observation.locally_quiescent,
         }
+    }
+    pub(crate) fn validate_mode(&self, synthetic: bool) -> Result<()> {
+        require(
+            synthetic
+                || self
+                    .resolved
+                    .as_ref()
+                    .is_none_or(|r| r.method != "synthetic_fixed_candidates"),
+            "Live collection cannot contain synthetic resolver observations",
+        )
     }
     pub fn stopped_for(&self, reason: StopReason) -> bool {
         self.stop_observed == Some(reason)

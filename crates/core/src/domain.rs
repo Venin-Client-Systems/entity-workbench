@@ -506,6 +506,34 @@ pub enum Command {
     Search {
         query: String,
     },
+    PreviewCollection {
+        input: crate::collection_api::CollectionInput,
+    },
+    QueueCollection {
+        input: crate::collection_api::CollectionInput,
+        preview_sha256: String,
+        request_key: String,
+    },
+    PageCollectionRuns {
+        request: crate::collection_api::CollectionRunPageRequest,
+        expected_revision: Option<u64>,
+    },
+    InspectCollectionRun {
+        job_id: String,
+    },
+    CancelCollection {
+        job_id: String,
+        expected_generation: u32,
+    },
+    ResumeCollection {
+        job_id: String,
+        expected_generation: u32,
+    },
+    RetryCollectionSettlement {
+        job_id: String,
+        expected_generation: u32,
+        request_sequence: u32,
+    },
     CollectWeb {
         urls: Vec<String>,
         max_hops: u32,

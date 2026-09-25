@@ -27,25 +27,25 @@ const MAX_ADDRESSES: usize = 64;
 static LIVE_REQUEST: Mutex<()> = Mutex::new(());
 static RECOVERY_REQUIRED: AtomicBool = AtomicBool::new(false);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum CallerContextState {
+pub enum CallerContextState {
     ReleasedAfterCompletion,
     RetainedPendingCompletion,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum Phase {
+pub enum Phase {
     BeforeRequest,
     Pacing,
     Dns,
     ConnectTlsHeaders,
     Body,
 }
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub(crate) enum StopReason {
+pub enum StopReason {
     Cancelled,
     Deadline,
     Timeout,
@@ -58,9 +58,9 @@ pub(crate) enum StopReason {
     RecoveryRequired,
     Busy,
 }
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, schemars::JsonSchema)]
 #[serde(deny_unknown_fields)]
-pub(crate) struct ResponseHead {
+pub struct ResponseHead {
     pub status: u16,
     pub media_type: Option<String>,
     pub redirect_url: Option<String>,

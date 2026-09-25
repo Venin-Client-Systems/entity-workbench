@@ -2,6 +2,7 @@
 pub mod analytics;
 pub mod citation_catalogue;
 pub mod collection;
+pub mod collection_api;
 pub(crate) mod collection_execution;
 pub(crate) mod collection_jobs;
 pub(crate) mod collection_machine;

@@ -1,10 +1,11 @@
-//! Private synthetic lane owned by JobCoordinator. No public activation or live transport injection.
+//! Collection lane owned by JobCoordinator. Native production transport remains disabled.
 #![allow(dead_code)]
 use super::*;
 use crate::{
     collection_execution::{CollectionDriver, PendingSettlement},
     collection_jobs::{
-        CollectionInput, CollectionState, CollectionTicket, DurableCollectionJob, RequestTicket,
+        CollectionInput, CollectionProtocol, CollectionState, CollectionTicket,
+        DurableCollectionJob, RequestTicket,
     },
     collection_transport::{ExecutionWindow, Observation},
 };
@@ -52,11 +53,13 @@ pub(super) struct CollectionLane {
     state: Mutex<LaneState>,
     wake: Condvar,
     executor: Arc<CollectionExecutor>,
+    protocol: CollectionProtocol,
 }
 impl CollectionLane {
-    pub(super) fn new(executor: Arc<CollectionExecutor>) -> Self {
+    pub(super) fn new(executor: Arc<CollectionExecutor>, protocol: CollectionProtocol) -> Self {
         Self {
             executor,
+            protocol,
             state: Mutex::new(LaneState {
                 status: CollectionLaneStatus {
                     phase: LanePhase::Idle,
@@ -111,7 +114,12 @@ impl JobCoordinator {
         processing: Arc<Executor>,
         collection: Arc<CollectionExecutor>,
     ) -> Result<Self> {
-        Self::with_execution(workspace, 1, processing, Some(collection))
+        Self::with_execution(
+            workspace,
+            1,
+            processing,
+            Some((collection, CollectionProtocol::SyntheticV2)),
+        )
     }
     fn collection_lane(&self) -> Result<&CollectionLane> {
         self.shared
@@ -141,7 +149,8 @@ impl JobCoordinator {
             !lane.requires_recovery(),
             "Collection lane requires recovery",
         )?;
-        let result = workspace.queue_collection_transport(input, request_key, now())?;
+        let result =
+            workspace.queue_collection_protocol(input, request_key, now(), lane.protocol)?;
         drop(workspace);
         self.shared.wake.notify_all();
         Ok(result)
@@ -214,10 +223,8 @@ impl JobCoordinator {
         )?;
         let job = workspace.inspect_durable_collection(id)?;
         crate::require(
-            job.schema_version == 2
-                && job.synthetic
-                && job.checkpoint.state == CollectionState::Interrupted,
-            "Only an interrupted synthetic v2 run can resume",
+            lane.protocol.matches(&job) && job.checkpoint.state == CollectionState::Interrupted,
+            "Only an interrupted matching-policy run can resume",
         )?;
         state.admitted =
             workspace.start_durable_collection(id, generation, &self.shared.ownership, now())?;
@@ -311,7 +318,7 @@ fn run(shared: &Shared, lane: &CollectionLane) -> Result<()> {
             .map_err(|_| Error::Blocked("Collection lane is unavailable".into()))?;
         let execution = match state.admitted.take() {
             Some(ticket) => Some(ticket),
-            None => workspace.claim_collection_transport(&shared.ownership, now())?,
+            None => workspace.claim_collection_protocol(&shared.ownership, now(), lane.protocol)?,
         };
         let Some(execution) = execution else {
             drop(state);
@@ -466,3 +473,7 @@ fn publish(
 #[cfg(test)]
 #[path = "coordinator_collection_tests.rs"]
 mod tests;
+
+#[path = "coordinator_collection_api.rs"]
+mod public_api;
+pub(super) use public_api::is_public_command;

@@ -1,4 +1,4 @@
-//! Unactivated canonical durable-collection foundation. No public dispatch hooks.
+//! Canonical durable collection operations; execution tickets remain private.
 #![allow(dead_code)]
 use super::*;
 use crate::{
@@ -106,7 +106,7 @@ impl Workspace {
         request_key: &str,
         at_ms: i64,
     ) -> Result<DurableCollectionJob> {
-        self.queue_collection_version(input, request_key, at_ms, 1)
+        self.queue_collection_protocol(input, request_key, at_ms, CollectionProtocol::FoundationV1)
     }
     pub(crate) fn queue_collection_transport(
         &mut self,
@@ -114,14 +114,14 @@ impl Workspace {
         request_key: &str,
         at_ms: i64,
     ) -> Result<DurableCollectionJob> {
-        self.queue_collection_version(input, request_key, at_ms, 2)
+        self.queue_collection_protocol(input, request_key, at_ms, CollectionProtocol::SyntheticV2)
     }
-    fn queue_collection_version(
+    pub(crate) fn queue_collection_protocol(
         &mut self,
         input: CollectionInput,
         request_key: &str,
         at_ms: i64,
-        version: u32,
+        protocol: CollectionProtocol,
     ) -> Result<DurableCollectionJob> {
         require(
             canonical_uuid(request_key),
@@ -131,40 +131,19 @@ impl Workspace {
         collection_machine::valid_time(at_ms)?;
         let tx = self.conn.unchecked_transaction()?;
         let revision: u64 = tx.query_row("SELECT revision FROM meta", [], |r| r.get(0))?;
-        let existing: Option<String> = tx
-            .query_row(
-                "SELECT CASE WHEN length(CAST(body AS BLOB))<=80 THEN body ELSE 'null' END FROM records WHERE kind='collection_run_key' AND id=?",
-                [request_key],
-                |r| r.get(0),
-            )
-            .optional()?;
-        if let Some(body) = existing {
-            require(body.len() <= 80, "Malformed collection request mapping")?;
-            let key: String = serde_json::from_str(&body)?;
-            let loaded = load(&self.root, &tx, &key, revision)?;
-            require(
-                loaded.job.request_key == request_key
-                    && loaded.job.input == input
-                    && loaded.job.schema_version == version,
-                "Collection request key belongs to another input",
-            )?;
-            return Ok(loaded.job);
+        if let Some(job) = find_request(&self.root, &tx, &input, request_key, revision, protocol)? {
+            return Ok(job);
         }
         let pending: u64 = tx.query_row("SELECT count(*) FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state') IN ('queued','running','interrupted')", [], |r| r.get(0))?;
         require(pending < 8, "Durable collection pending-job limit reached")?;
         drop(tx);
-        let machine = Machine::new_version(&input, at_ms, version, false)?;
+        let machine = Machine::new_version(&input, at_ms, protocol.version(), false)?;
         let job = DurableCollectionJob {
-            schema_version: version,
+            schema_version: protocol.version(),
             id: id(),
             request_key: request_key.into(),
-            collector_policy: if version == 1 {
-                "direct-https-durable-foundation-v1"
-            } else {
-                "direct-https-durable-transport-v2"
-            }
-            .into(),
-            synthetic: true,
+            collector_policy: protocol.policy().into(),
+            synthetic: protocol.synthetic(),
             input,
             created_at_ms: at_ms,
             events: Vec::new(),
@@ -176,6 +155,25 @@ impl Workspace {
             put(conn, "collection_run", &job.id, &job)
         })?;
         Ok(job)
+    }
+    /// Recovery of an already committed queue acknowledgement; never admits new work.
+    pub(crate) fn existing_collection_request(
+        &self,
+        input: &CollectionInput,
+        request_key: &str,
+        protocol: CollectionProtocol,
+    ) -> Result<Option<DurableCollectionJob>> {
+        require(
+            canonical_uuid(request_key),
+            "Canonical collection request UUID required",
+        )?;
+        require(
+            input.clone().normalized()? == *input,
+            "Collection input is not canonical",
+        )?;
+        let tx = self.conn.unchecked_transaction()?;
+        let revision: u64 = tx.query_row("SELECT revision FROM meta", [], |r| r.get(0))?;
+        find_request(&self.root, &tx, input, request_key, revision, protocol)
     }
     fn load_collection(&self, job_id: &str) -> Result<Loaded> {
         require(
@@ -194,14 +192,23 @@ impl Workspace {
         owner: &CollectionOwnership,
         at_ms: i64,
     ) -> Result<Option<CollectionTicket>> {
+        self.claim_collection_protocol(owner, at_ms, CollectionProtocol::SyntheticV2)
+    }
+    pub(crate) fn claim_collection_protocol(
+        &mut self,
+        owner: &CollectionOwnership,
+        at_ms: i64,
+        protocol: CollectionProtocol,
+    ) -> Result<Option<CollectionTicket>> {
         self.collection_owner(owner)?;
         self.collection_transport_available()?;
         let key: Option<Option<String>> = self.conn.query_row(
-            "SELECT CASE WHEN length(CAST(id AS BLOB))=36 THEN id ELSE NULL END FROM records WHERE kind='collection_run' AND json_extract(body,'$.schema_version')=2 AND json_extract(body,'$.synthetic')=1 AND json_extract(body,'$.checkpoint.state')='queued' ORDER BY sequence LIMIT 1",
-            [], |row| row.get(0)).optional()?;
+            "SELECT CASE WHEN length(CAST(id AS BLOB))=36 THEN id ELSE NULL END FROM records WHERE kind='collection_run' AND json_extract(body,'$.schema_version')=? AND json_extract(body,'$.synthetic')=? AND json_extract(body,'$.checkpoint.state')='queued' ORDER BY sequence LIMIT 1",
+            params![protocol.version(), protocol.synthetic()], |row| row.get(0)).optional()?;
         let Some(key) = key else { return Ok(None) };
         let key = key.ok_or_else(|| Error::Validation("Invalid queued collection key".into()))?;
         let job = self.inspect_durable_collection(&key)?;
+        require(protocol.matches(&job), "Queued collection policy changed")?;
         self.start_durable_collection(&key, job.checkpoint.generation, owner, at_ms)
     }
     pub(crate) fn start_durable_collection(
@@ -351,26 +358,26 @@ impl Workspace {
         owner: &CollectionOwnership,
         at_ms: i64,
     ) -> Result<usize> {
-        self.recover_collections(owner, at_ms, false)
+        self.recover_collections(owner, at_ms, None)
     }
     pub(crate) fn recover_collection_transport(
         &mut self,
         owner: &CollectionOwnership,
         at_ms: i64,
     ) -> Result<usize> {
-        self.recover_collections(owner, at_ms, true)
+        self.recover_collections(owner, at_ms, Some(CollectionProtocol::SyntheticV2))
     }
-    fn recover_collections(
+    pub(crate) fn recover_collections(
         &mut self,
         owner: &CollectionOwnership,
         at_ms: i64,
-        transport_only: bool,
+        protocol: Option<CollectionProtocol>,
     ) -> Result<usize> {
         self.collection_owner(owner)?;
         let keys: Vec<String> = self
             .conn
-            .prepare("SELECT id FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state')='running' AND (?=0 OR (json_extract(body,'$.schema_version')=2 AND json_extract(body,'$.synthetic')=1)) ORDER BY sequence LIMIT 9")?
-            .query_map([transport_only], |r| r.get(0))?
+            .prepare("SELECT id FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state')='running' AND (? IS NULL OR (json_extract(body,'$.schema_version')=? AND json_extract(body,'$.synthetic')=?)) ORDER BY sequence LIMIT 9")?
+            .query_map(params![protocol.map(|p| p.version()), protocol.map(|p| p.version()), protocol.map(|p| p.synthetic())], |r| r.get(0))?
             .collect::<std::result::Result<_, _>>()?;
         require(
             keys.len() <= 8,
@@ -379,6 +386,10 @@ impl Workspace {
         let mut count = 0;
         for key in keys {
             let mut loaded = self.load_collection(&key)?;
+            require(
+                protocol.is_none_or(|p| p.matches(&loaded.job)),
+                "Recovered collection policy changed",
+            )?;
             if loaded.job.checkpoint.state == CollectionState::Running {
                 append(&mut loaded, CollectionEvent::Recover { at_ms }, None)?;
                 self.publish_collection(&loaded, None, None)?;
@@ -470,6 +481,31 @@ impl Workspace {
             },
         )
     }
+}
+fn find_request(
+    root: &Path,
+    conn: &Connection,
+    input: &CollectionInput,
+    request_key: &str,
+    revision: u64,
+    protocol: CollectionProtocol,
+) -> Result<Option<DurableCollectionJob>> {
+    let existing: Option<String> = conn.query_row(
+        "SELECT CASE WHEN length(CAST(body AS BLOB))<=80 THEN body ELSE 'null' END FROM records WHERE kind='collection_run_key' AND id=?",
+        [request_key], |r| r.get(0)).optional()?;
+    let Some(body) = existing else {
+        return Ok(None);
+    };
+    let key: String = serde_json::from_str(&body)?;
+    require(canonical_uuid(&key), "Malformed collection request mapping")?;
+    let loaded = load(root, conn, &key, revision)?;
+    require(
+        loaded.job.request_key == request_key
+            && loaded.job.input == *input
+            && protocol.matches(&loaded.job),
+        "Collection request key belongs to another input or mode/policy",
+    )?;
+    Ok(Some(loaded.job))
 }
 fn expected_generation(job: &DurableCollectionJob, generation: u32) -> Result<()> {
     if job.checkpoint.generation != generation {
@@ -649,3 +685,6 @@ mod tests;
 
 #[path = "collection_transport_settlement.rs"]
 mod transport_settlement;
+
+#[path = "collection_api.rs"]
+mod public_api;

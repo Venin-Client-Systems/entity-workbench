@@ -557,6 +557,30 @@ impl Workspace {
                 )?;
                 return Ok(serde_json::to_value(result)?);
             }
+            Command::PreviewCollection { input } => {
+                return Ok(serde_json::to_value(crate::collection_api::preview(
+                    input,
+                )?)?)
+            }
+            Command::PageCollectionRuns {
+                request,
+                expected_revision,
+            } => {
+                return Ok(serde_json::to_value(
+                    self.page_collection_runs(&request, expected_revision)?,
+                )?)
+            }
+            Command::InspectCollectionRun { job_id } => {
+                return Ok(serde_json::to_value(self.inspect_collection_run(&job_id)?)?)
+            }
+            Command::QueueCollection { .. }
+            | Command::CancelCollection { .. }
+            | Command::ResumeCollection { .. }
+            | Command::RetryCollectionSettlement { .. } => {
+                return Err(Error::Blocked(
+                    "Durable collection controls require an enabled persistent coordinator".into(),
+                ))
+            }
             Command::CollectWeb {
                 urls,
                 max_hops,

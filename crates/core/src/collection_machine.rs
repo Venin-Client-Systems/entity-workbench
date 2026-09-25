@@ -35,7 +35,11 @@ impl Machine {
             input.clone().normalized()? == *input,
             "Collection input is not canonical",
         )?;
-        if version == 2 && replaying {
+        require(
+            matches!(version, 1..=3),
+            "Unsupported collection state machine version",
+        )?;
+        if matches!(version, 2 | 3) && replaying {
             require(at_ms >= 0, "Invalid collection timestamp")?;
         } else {
             valid_time(at_ms)?;
@@ -102,7 +106,7 @@ impl Machine {
             return self.observe_transport(*clock_anchor_ms, *sequence, receipt, body);
         }
         let at = event.at_ms();
-        if self.version == 2 && self.replaying {
+        if matches!(self.version, 2 | 3) && self.replaying {
             require(at >= 0, "Invalid collection timestamp")?;
         } else {
             valid_time(at)?;
@@ -115,7 +119,7 @@ impl Machine {
     /// This remains usable after a rollback makes that anchor appear future-dated.
     pub(crate) fn cancel_reserved_at_checkpoint(&mut self) -> Result<CollectionEvent> {
         require(
-            self.version == 2
+            matches!(self.version, 2 | 3)
                 && self.checkpoint.state == CollectionState::Running
                 && self
                     .checkpoint
@@ -182,7 +186,7 @@ impl Machine {
             } => {
                 require(
                     self.version == 1,
-                    "V2 requires a lossless transport receipt",
+                    "V2/v3 require a lossless transport receipt",
                 )?;
                 self.running()?;
                 let request = self
@@ -608,12 +612,9 @@ pub(crate) fn replay(
     job: &DurableCollectionJob,
     mut original: impl FnMut(&ChargedRequest, &FetchRecord) -> Result<Option<Vec<u8>>>,
 ) -> Result<Machine> {
+    job.protocol()?;
     require(
-        matches!(
-            (job.schema_version, job.collector_policy.as_str()),
-            (1, "direct-https-durable-foundation-v1") | (2, "direct-https-durable-transport-v2")
-        ) && job.synthetic
-            && canonical_uuid(&job.id)
+        canonical_uuid(&job.id)
             && canonical_uuid(&job.request_key)
             && job.events.len() <= MAX_EVENTS,
         "Unsupported or malformed durable collection record",
@@ -638,13 +639,14 @@ pub(crate) fn replay(
                 sequence, receipt, ..
             } => {
                 require(
-                    job.schema_version == 2,
+                    matches!(job.schema_version, 2 | 3),
                     "V1 cannot contain transport receipts",
                 )?;
                 require(
                     chrono::DateTime::from_timestamp_millis(receipt.observed_wall_ms).is_some(),
                     "Transport clock sample is not representable",
                 )?;
+                receipt.validate_mode(job.synthetic)?;
                 Some((*sequence, receipt.fetch_record()))
             }
             _ => None,

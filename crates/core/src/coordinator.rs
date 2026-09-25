@@ -85,7 +85,10 @@ impl JobCoordinator {
         mut workspace: Workspace,
         concurrency: usize,
         executor: Arc<Executor>,
-        collection: Option<Arc<collection::CollectionExecutor>>,
+        collection: Option<(
+            Arc<collection::CollectionExecutor>,
+            crate::collection_jobs::CollectionProtocol,
+        )>,
     ) -> Result<Self> {
         crate::require(
             (1..=2).contains(&concurrency),
@@ -96,9 +99,14 @@ impl JobCoordinator {
         if workspace.processing_execution_suspended()? {
             ownership.quarantine();
         }
-        if collection.is_some() && ownership.held() {
-            workspace
-                .recover_collection_transport(&ownership, chrono::Utc::now().timestamp_millis())?;
+        if let Some((_, protocol)) = &collection {
+            if ownership.held() {
+                workspace.recover_collections(
+                    &ownership,
+                    chrono::Utc::now().timestamp_millis(),
+                    Some(*protocol),
+                )?;
+            }
         }
         let exports = workspace.start_native_exports()?;
         let shared = Arc::new(Shared {
@@ -108,8 +116,9 @@ impl JobCoordinator {
             wake: Condvar::new(),
             executor,
             ownership,
-            collection: collection
-                .map(|executor| Arc::new(collection::CollectionLane::new(executor))),
+            collection: collection.map(|(executor, protocol)| {
+                Arc::new(collection::CollectionLane::new(executor, protocol))
+            }),
         });
         let mut coordinator = Self {
             exports,
@@ -163,6 +172,9 @@ impl JobCoordinator {
     ) -> Result<Value> {
         if self.shared.stopping.load(Ordering::Acquire) {
             return Err(Error::Blocked("Workspace coordinator is stopping".into()));
+        }
+        if collection::is_public_command(&command) {
+            return self.dispatch_collection_command(command);
         }
         let cancel = match &command {
             Command::CancelProcessingJob { job_id, .. } => Some(job_id.clone()),

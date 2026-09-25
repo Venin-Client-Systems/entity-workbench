@@ -14,10 +14,7 @@ impl Workspace {
     ) -> Result<DurableCollectionJob> {
         self.collection_publication_owner(owner)?;
         let mut loaded = self.load_collection(&request.run.job_id)?;
-        require(
-            loaded.job.schema_version == 2 && loaded.job.synthetic,
-            "Anchored cancellation requires synthetic v2 run",
-        )?;
+        loaded.job.transport_protocol()?;
         check_ticket(&loaded.job, &request.run)?;
         require(
             matches!(
@@ -41,7 +38,7 @@ impl Workspace {
         Ok(loaded.job)
     }
 
-    pub(super) fn collection_transport_available(&self) -> Result<()> {
+    pub(crate) fn collection_transport_available(&self) -> Result<()> {
         let quarantined: bool = self.conn.query_row(
             "SELECT EXISTS(SELECT 1 FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state')='recovery_required')",
             [], |row| row.get(0))?;
@@ -58,10 +55,7 @@ impl Workspace {
         self.collection_owner(owner)?;
         self.collection_transport_available()?;
         let loaded = self.load_collection(&ticket.job_id)?;
-        require(
-            loaded.job.schema_version == 2 && loaded.job.synthetic,
-            "Transport driver requires synthetic v2 run",
-        )?;
+        loaded.job.transport_protocol()?;
         check_ticket(&loaded.job, ticket)?;
         Ok(loaded.job)
     }
@@ -73,16 +67,14 @@ impl Workspace {
     ) -> Result<DurableCollectionJob> {
         self.collection_publication_owner(owner)?;
         let mut loaded = self.load_collection(&request.run.job_id)?;
-        require(
-            loaded.job.schema_version == 2 && loaded.job.synthetic,
-            "Transport settlement requires synthetic v2 run",
-        )?;
+        loaded.job.transport_protocol()?;
         let charged = charged_request(&loaded, request)?.clone();
         let receipt = TransportReceipt::from_observation(observation);
         let body = match &observation.outcome {
             Outcome::Complete { body, .. } => Some(body.as_slice()),
             _ => None,
         };
+        receipt.validate_mode(loaded.job.synthetic)?;
         receipt.validate(&request.url, &loaded.job.input, body)?;
         if let RequestProgress::Observed { receipt: previous } = &charged.progress {
             require(

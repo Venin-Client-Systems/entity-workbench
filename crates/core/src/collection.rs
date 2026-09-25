@@ -1,18 +1,17 @@
-//! The only live HTTP transport. All requests are explicit, bounded and DNS-pinned.
+//! Shared static collection rules and historical synthetic receipt tests.
+//! Legacy synchronous live collection is disabled during the durable cutover.
+#[cfg(test)]
+use crate::collection_receipt::{FetchOutcome, RequestPurpose};
 use crate::{
-    collection_receipt::{AcquisitionMode, FetchOutcome, RequestPurpose, RequestReceipt},
-    policy::{self, DiscoveryBudget},
-    require, Error, Result,
+    collection_receipt::{AcquisitionMode, RequestReceipt},
+    policy, require, Error, Result,
 };
-use reqwest::{blocking::Client, redirect::Policy};
 use scraper::{Html, Selector};
 use serde::Serialize;
+#[cfg(test)]
 use std::{
     collections::{BTreeMap, HashSet, VecDeque},
-    io::Read,
-    net::{SocketAddr, ToSocketAddrs},
-    sync::mpsc,
-    time::{Duration, Instant},
+    time::Instant,
 };
 use url::Url;
 pub(crate) const PAGE_BYTES: usize = 2 * 1024 * 1024;
@@ -54,12 +53,7 @@ pub fn validate_seeds(seeds: &[String]) -> Result<Vec<Url>> {
         .map(|raw| policy::validate_https_url(raw))
         .collect()
 }
-struct Broker {
-    hosts: Vec<String>,
-    budget: DiscoveryBudget,
-    started: Instant,
-    last_request: Option<Instant>,
-}
+#[cfg(test)]
 struct Fetched {
     status: u16,
     body: Vec<u8>,
@@ -67,6 +61,7 @@ struct Fetched {
     content_type: String,
     complete: bool,
 }
+#[cfg(test)]
 trait Transport {
     fn mode(&self) -> AcquisitionMode {
         AcquisitionMode::Synthetic
@@ -74,122 +69,6 @@ trait Transport {
     fn fetch(&mut self, url: &Url, hop: u32) -> Result<Fetched>;
     fn requests_used(&self) -> u32;
     fn elapsed_seconds(&self) -> u64;
-}
-impl Transport for Broker {
-    fn mode(&self) -> AcquisitionMode {
-        AcquisitionMode::Live
-    }
-    fn requests_used(&self) -> u32 {
-        self.budget.used
-    }
-    fn elapsed_seconds(&self) -> u64 {
-        self.started.elapsed().as_secs()
-    }
-    fn fetch(&mut self, url: &Url, hop: u32) -> Result<Fetched> {
-        self.budget
-            .reserve(hop, self.started.elapsed().as_secs(), u32::MAX)?;
-        policy::validate_https_url(url.as_str())?;
-        let remaining = self
-            .budget
-            .seconds
-            .saturating_sub(self.started.elapsed().as_secs());
-        if remaining == 0 {
-            return Err(Error::QuotaExhausted(
-                "Collection time limit exhausted".into(),
-            ));
-        }
-        let host = url
-            .host_str()
-            .ok_or_else(|| Error::Validation("Missing host".into()))?
-            .to_string();
-        require(
-            self.hosts.contains(&host),
-            "Redirect or link leaves the selected hosts",
-        )?;
-        let (sender, receiver) = mpsc::sync_channel(1);
-        let dns_host = host.clone();
-        std::thread::spawn(move || {
-            let result = (dns_host.as_str(), 443)
-                .to_socket_addrs()
-                .map(|i| i.collect::<Vec<SocketAddr>>());
-            let _ = sender.send(result);
-        });
-        let addresses = receiver
-            .recv_timeout(Duration::from_secs(5.min(remaining)))
-            .map_err(|_| Error::Network("DNS resolution timed out".into()))??;
-        let hosts: Vec<_> = self.hosts.iter().map(String::as_str).collect();
-        policy::validate_destination(
-            url.as_str(),
-            &addresses.iter().map(|a| a.ip()).collect::<Vec<_>>(),
-            &hosts,
-        )?;
-        if let Some(last) = self.last_request {
-            let delay = Duration::from_secs(1).saturating_sub(last.elapsed());
-            if !delay.is_zero() {
-                std::thread::sleep(delay);
-            }
-        }
-        let remaining = self
-            .budget
-            .seconds
-            .saturating_sub(self.started.elapsed().as_secs());
-        if remaining == 0 {
-            return Err(Error::QuotaExhausted(
-                "Collection time limit exhausted".into(),
-            ));
-        }
-        let client = Client::builder()
-            .no_proxy()
-            .redirect(Policy::none())
-            .referer(false)
-            .https_only(true)
-            .timeout(Duration::from_secs(15.min(remaining)))
-            .connect_timeout(Duration::from_secs(5.min(remaining)))
-            .resolve_to_addrs(&host, &addresses)
-            .user_agent("EntityWorkbench/0.1 (analyst-directed public collection)")
-            .build()
-            .map_err(|_| Error::Network("TLS transport could not initialise".into()))?;
-        self.last_request = Some(Instant::now());
-        let response = client
-            .get(url.as_str())
-            .header("Accept", "text/html, text/plain;q=0.9")
-            .send()
-            .map_err(|_| {
-                Error::Network("HTTPS request failed; TLS verification remains enabled".into())
-            })?;
-        let status = response.status().as_u16();
-        let redirect = response
-            .headers()
-            .get("location")
-            .and_then(|h| h.to_str().ok())
-            .map(str::to_owned);
-        let content_type = response
-            .headers()
-            .get("content-type")
-            .and_then(|h| h.to_str().ok())
-            .unwrap_or("")
-            .to_string();
-        let declared_within_limit = response
-            .content_length()
-            .is_none_or(|size| size <= PAGE_BYTES as u64);
-        let mut body = vec![];
-        let complete = declared_within_limit
-            && response
-                .take((PAGE_BYTES + 1) as u64)
-                .read_to_end(&mut body)
-                .is_ok()
-            && body.len() <= PAGE_BYTES;
-        if !complete {
-            body.clear();
-        }
-        Ok(Fetched {
-            status,
-            body,
-            redirect,
-            content_type,
-            complete,
-        })
-    }
 }
 // Only parsed media type and a policy-validated redirect target are retained;
 // cookies, authentication headers and unsafe Location values never enter receipts.
@@ -202,6 +81,7 @@ pub(crate) fn media_type(raw: &str) -> Option<String> {
     .then_some(value)
 }
 
+#[cfg(test)]
 struct Trace {
     started_at: String,
     wall: chrono::DateTime<chrono::Utc>,
@@ -209,6 +89,7 @@ struct Trace {
     requests: Vec<RequestReceipt>,
     responses: Vec<ResponseBody>,
 }
+#[cfg(test)]
 impl Trace {
     fn new() -> Self {
         let wall = chrono::Utc::now();
@@ -368,30 +249,20 @@ pub fn collect(
     requests: u32,
     seconds: u64,
 ) -> Result<CollectionResult> {
-    let seeds = validate_seeds(&seeds)?;
-    require(
-        hops <= 2 && requests > 0 && requests <= 50 && seconds > 0 && seconds <= 600,
-        "Collection bounds exceed policy",
-    )?;
-    let broker = Broker {
-        hosts: seeds
-            .iter()
-            .filter_map(|s| s.host_str().map(str::to_owned))
-            .collect(),
-        budget: DiscoveryBudget {
-            hops,
-            requests,
-            seconds,
-            used: 0,
-        },
-        started: Instant::now(),
-        last_request: None,
-    };
-    collect_with_transport(seeds, hops, requests, seconds, broker)
+    crate::collection_api::preview(crate::collection_api::CollectionInput {
+        urls: seeds,
+        max_hops: hops,
+        max_requests: requests,
+        max_seconds: seconds,
+    })?;
+    Err(Error::Blocked(
+        "Synchronous collection is disabled; durable execution requires an enabled coordinator"
+            .into(),
+    ))
 }
 
-// The production path always supplies the DNS-pinned HTTPS broker. This internal
-// seam lets synthetic tests exercise stop reasons without any live networking.
+// Historical synthetic receipt tests only; no alternate production network path.
+#[cfg(test)]
 fn collect_with_transport(
     seeds: Vec<Url>,
     hops: u32,
@@ -649,11 +520,13 @@ fn collect_with_transport(
 }
 
 #[derive(Default)]
+#[cfg(test)]
 struct Outcome {
     exhausted: bool,
     blocked: bool,
     failed: bool,
 }
+#[cfg(test)]
 impl Outcome {
     fn record_error(&mut self, error: &Error) {
         match error {
