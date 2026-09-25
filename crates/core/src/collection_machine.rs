@@ -18,14 +18,28 @@ pub(crate) struct Machine {
     input: CollectionInput,
     hosts: Vec<String>,
     policies: BTreeMap<String, Option<String>>,
+    version: u32,
+    replaying: bool,
 }
 impl Machine {
     pub fn new(input: &CollectionInput, at_ms: i64) -> Result<Self> {
+        Self::new_version(input, at_ms, 1, false)
+    }
+    pub(crate) fn new_version(
+        input: &CollectionInput,
+        at_ms: i64,
+        version: u32,
+        replaying: bool,
+    ) -> Result<Self> {
         require(
             input.clone().normalized()? == *input,
             "Collection input is not canonical",
         )?;
-        valid_time(at_ms)?;
+        if version == 2 && replaying {
+            require(at_ms >= 0, "Invalid collection timestamp")?;
+        } else {
+            valid_time(at_ms)?;
+        }
         let frontier = input
             .urls
             .iter()
@@ -49,6 +63,8 @@ impl Machine {
             })
             .collect();
         Ok(Self {
+            version,
+            replaying,
             input: input.clone(),
             hosts,
             policies: BTreeMap::new(),
@@ -77,14 +93,27 @@ impl Machine {
         event: &CollectionEvent,
         body: Option<&[u8]>,
     ) -> Result<Option<Promotion>> {
+        if let CollectionEvent::TransportObserved {
+            clock_anchor_ms,
+            sequence,
+            receipt,
+        } = event
+        {
+            return self.observe_transport(*clock_anchor_ms, *sequence, receipt, body);
+        }
         let at = event.at_ms();
-        valid_time(at)?;
+        if self.version == 2 && self.replaying {
+            require(at >= 0, "Invalid collection timestamp")?;
+        } else {
+            valid_time(at)?;
+        }
         require(
             at >= self.checkpoint.updated_at_ms,
             "Collection clock moved backwards",
         )?;
         let mut promotion = None;
         match event {
+            CollectionEvent::TransportObserved { .. } => unreachable!("handled above"),
             CollectionEvent::Start { lease, .. } => {
                 require(
                     self.checkpoint.state == CollectionState::Queued && canonical_uuid(lease),
@@ -121,6 +150,10 @@ impl Machine {
             CollectionEvent::Complete {
                 sequence, result, ..
             } => {
+                require(
+                    self.version == 1,
+                    "V2 requires a lossless transport receipt",
+                )?;
                 self.running()?;
                 let request = self
                     .checkpoint
@@ -546,32 +579,53 @@ pub(crate) fn replay(
     mut original: impl FnMut(&ChargedRequest, &FetchRecord) -> Result<Option<Vec<u8>>>,
 ) -> Result<Machine> {
     require(
-        job.schema_version == 1
-            && job.synthetic
-            && job.collector_policy == "direct-https-durable-foundation-v1"
+        matches!(
+            (job.schema_version, job.collector_policy.as_str()),
+            (1, "direct-https-durable-foundation-v1") | (2, "direct-https-durable-transport-v2")
+        ) && job.synthetic
             && canonical_uuid(&job.id)
             && canonical_uuid(&job.request_key)
             && job.events.len() <= MAX_EVENTS,
         "Unsupported or malformed durable collection record",
     )?;
-    let mut machine = Machine::new(&job.input, job.created_at_ms)?;
+    let mut machine =
+        Machine::new_version(&job.input, job.created_at_ms, job.schema_version, true)?;
     for event in &job.events {
-        // Validate before the loader uses a completion time as acquisition metadata.
-        valid_time(event.at_ms())?;
+        // The v2 receipt's raw wall sample may be backwards. Its clock anchor
+        // identifies the prior valid journal state, not an invented completion time.
+        if job.schema_version == 1 {
+            valid_time(event.at_ms())?;
+        }
         require(
             event.at_ms() >= machine.checkpoint.updated_at_ms,
             "Collection clock moved backwards",
         )?;
-        let body = if let CollectionEvent::Complete {
-            sequence, result, ..
-        } = event
-        {
+        let completion = match event {
+            CollectionEvent::Complete {
+                sequence, result, ..
+            } => Some((*sequence, result.clone())),
+            CollectionEvent::TransportObserved {
+                sequence, receipt, ..
+            } => {
+                require(
+                    job.schema_version == 2,
+                    "V1 cannot contain transport receipts",
+                )?;
+                require(
+                    chrono::DateTime::from_timestamp_millis(receipt.observed_wall_ms).is_some(),
+                    "Transport clock sample is not representable",
+                )?;
+                Some((*sequence, receipt.fetch_record()))
+            }
+            _ => None,
+        };
+        let body = if let Some((sequence, result)) = completion {
             let request = machine
                 .checkpoint
                 .requests
-                .get(*sequence as usize)
+                .get(sequence as usize)
                 .ok_or_else(|| Error::Validation("Completion has no charged reservation".into()))?;
-            original(request, result)?
+            original(request, &result)?
         } else {
             None
         };
@@ -581,5 +635,9 @@ pub(crate) fn replay(
         machine.checkpoint == job.checkpoint,
         "Stored collection checkpoint differs from verified event replay",
     )?;
+    machine.replaying = false;
     Ok(machine)
 }
+
+#[path = "collection_machine_transport.rs"]
+mod transport;

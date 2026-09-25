@@ -6,6 +6,7 @@ use crate::{
     engines::CancellationToken,
     policy,
 };
+use serde::{Deserialize, Serialize};
 use std::{
     future::Future,
     net::SocketAddr,
@@ -26,13 +27,15 @@ const MAX_ADDRESSES: usize = 64;
 static LIVE_REQUEST: Mutex<()> = Mutex::new(());
 static RECOVERY_REQUIRED: AtomicBool = AtomicBool::new(false);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub(crate) enum CallerContextState {
     ReleasedAfterCompletion,
     RetainedPendingCompletion,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub(crate) enum Phase {
     BeforeRequest,
     Pacing,
@@ -40,7 +43,8 @@ pub(crate) enum Phase {
     ConnectTlsHeaders,
     Body,
 }
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub(crate) enum StopReason {
     Cancelled,
     Deadline,
@@ -54,7 +58,8 @@ pub(crate) enum StopReason {
     RecoveryRequired,
     Busy,
 }
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub(crate) struct ResponseHead {
     pub status: u16,
     pub media_type: Option<String>,
@@ -413,6 +418,9 @@ async fn http(
     phase: &mut Phase,
     head: &mut Option<ResponseHead>,
 ) -> Result<Vec<u8>, StopReason> {
+    // Relative Location is interpreted against the selected source URL, never
+    // the cfg(test) loopback port used to exercise the same connector.
+    let source_url = url.clone();
     let (url, pins) = configuration.target(url, pins)?;
     let request_deadline = Instant::now() + Duration::from_secs(15).min(window.remaining());
     let builder = reqwest::Client::builder()
@@ -464,7 +472,7 @@ async fn http(
         .get("location")
         .and_then(|h| h.to_str().ok())
         .filter(|h| h.len() <= 2048)
-        .and_then(|h| url.join(h).ok())
+        .and_then(|h| source_url.join(h).ok())
         .and_then(|u| policy::validate_https_url(u.as_str()).ok())
         .map(|u| u.to_string());
     let identity_encoding = response
@@ -507,4 +515,4 @@ async fn http(
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

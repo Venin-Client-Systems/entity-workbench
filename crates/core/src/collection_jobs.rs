@@ -38,6 +38,7 @@ pub(crate) enum CollectionState {
     Queued,
     Running,
     Interrupted,
+    RecoveryRequired,
     Cancelled,
     Blocked,
     QuotaExhausted,
@@ -97,6 +98,9 @@ pub(crate) enum RequestProgress {
     Settled {
         ended_at_ms: i64,
         result: FetchRecord,
+    },
+    Observed {
+        receipt: crate::collection_settlement::TransportReceipt,
     },
     InterruptedUnknown {
         recovered_at_ms: i64,
@@ -166,6 +170,11 @@ pub(crate) enum CollectionEvent {
         sequence: u32,
         result: FetchRecord,
     },
+    TransportObserved {
+        clock_anchor_ms: i64,
+        sequence: u32,
+        receipt: crate::collection_settlement::TransportReceipt,
+    },
     Cancel {
         at_ms: i64,
     },
@@ -179,6 +188,9 @@ pub(crate) enum CollectionEvent {
 impl CollectionEvent {
     pub fn at_ms(&self) -> i64 {
         match self {
+            Self::TransportObserved {
+                clock_anchor_ms, ..
+            } => *clock_anchor_ms,
             Self::Start { at_ms, .. }
             | Self::Resume { at_ms, .. }
             | Self::Advance { at_ms }

@@ -871,3 +871,100 @@ fn unknown_resolver_completion_suspends_further_attempts_without_false_cancel_ac
         assert!(recovery.load(Ordering::Acquire));
     }
 }
+
+/// Fixed TLS fixture reused by the canonical integration tests. No endpoint is
+/// admitted by the production destination policy or production entrypoint.
+pub(crate) fn canonical_tls(
+    ticket: &RequestTicket,
+    input: &CollectionInput,
+    window: ExecutionWindow,
+    not_before: Instant,
+    cancel: &CancellationToken,
+    response: Vec<u8>,
+    cancel_complete: bool,
+) -> Observation {
+    canonical_response(
+        ticket,
+        input,
+        window,
+        not_before,
+        cancel,
+        Mode::Response(response),
+        cancel_complete,
+    )
+}
+
+pub(crate) fn canonical_truncated_tls(
+    ticket: &RequestTicket,
+    input: &CollectionInput,
+    window: ExecutionWindow,
+    not_before: Instant,
+    cancel: &CancellationToken,
+    response: Vec<u8>,
+) -> Observation {
+    canonical_response(
+        ticket,
+        input,
+        window,
+        not_before,
+        cancel,
+        Mode::Truncated(response),
+        false,
+    )
+}
+
+fn canonical_response(
+    ticket: &RequestTicket,
+    input: &CollectionInput,
+    window: ExecutionWindow,
+    not_before: Instant,
+    cancel: &CancellationToken,
+    mode: Mode,
+    cancel_complete: bool,
+) -> Observation {
+    let mut server = Server::start(mode);
+    let mut configuration = server.configuration();
+    if cancel_complete {
+        configuration.endpoint.as_mut().unwrap().cancel_on_complete = Some(cancel.clone());
+    }
+    let resolver = FixedResolver::public();
+    let observed = execute(
+        ticket,
+        input,
+        window,
+        not_before,
+        cancel,
+        &resolver,
+        &configuration,
+    );
+    assert_eq!(resolver.calls.load(Ordering::SeqCst), 1);
+    assert_eq!(server.finish().requests.len(), 1);
+    observed
+}
+
+/// Exercises the real initial stop check, with no listener or external resolver.
+pub(crate) fn canonical_before_http(
+    ticket: &RequestTicket,
+    input: &CollectionInput,
+    window: ExecutionWindow,
+    not_before: Instant,
+    cancel: &CancellationToken,
+) -> Observation {
+    let resolver = FixedResolver::public();
+    let recovery = AtomicBool::new(false);
+    let observed = execute(
+        ticket,
+        input,
+        window,
+        not_before,
+        cancel,
+        &resolver,
+        &Configuration {
+            recovery_required: &recovery,
+            endpoint: None,
+        },
+    );
+    assert_eq!(resolver.calls.load(Ordering::SeqCst), 0);
+    assert_eq!(observed.phase, Phase::BeforeRequest);
+    observed
+}

@@ -12,6 +12,14 @@ use std::fs::File;
 pub(crate) struct CollectionOwnership {
     root: PathBuf,
     file: File,
+    lifetime: String,
+}
+impl CollectionOwnership {
+    /// Process-local identity of this particular held coordinator lock. Reopening
+    /// the same workspace must not authorize an older driver's pending bytes.
+    pub(crate) fn lifetime(&self) -> &str {
+        &self.lifetime
+    }
 }
 impl Drop for CollectionOwnership {
     fn drop(&mut self) {
@@ -29,6 +37,7 @@ impl Workspace {
         Ok(CollectionOwnership {
             root: self.root.clone(),
             file: self.lock_processing()?,
+            lifetime: id(),
         })
     }
     fn collection_owner(&self, owner: &CollectionOwnership) -> Result<()> {
@@ -42,6 +51,23 @@ impl Workspace {
         input: CollectionInput,
         request_key: &str,
         at_ms: i64,
+    ) -> Result<DurableCollectionJob> {
+        self.queue_collection_version(input, request_key, at_ms, 1)
+    }
+    pub(crate) fn queue_collection_transport(
+        &mut self,
+        input: CollectionInput,
+        request_key: &str,
+        at_ms: i64,
+    ) -> Result<DurableCollectionJob> {
+        self.queue_collection_version(input, request_key, at_ms, 2)
+    }
+    fn queue_collection_version(
+        &mut self,
+        input: CollectionInput,
+        request_key: &str,
+        at_ms: i64,
+        version: u32,
     ) -> Result<DurableCollectionJob> {
         require(
             canonical_uuid(request_key),
@@ -63,7 +89,9 @@ impl Workspace {
             let key: String = serde_json::from_str(&body)?;
             let loaded = load(&self.root, &tx, &key, revision)?;
             require(
-                loaded.job.request_key == request_key && loaded.job.input == input,
+                loaded.job.request_key == request_key
+                    && loaded.job.input == input
+                    && loaded.job.schema_version == version,
                 "Collection request key belongs to another input",
             )?;
             return Ok(loaded.job);
@@ -71,12 +99,17 @@ impl Workspace {
         let pending: u64 = tx.query_row("SELECT count(*) FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state') IN ('queued','running','interrupted')", [], |r| r.get(0))?;
         require(pending < 8, "Durable collection pending-job limit reached")?;
         drop(tx);
-        let machine = Machine::new(&input, at_ms)?;
+        let machine = Machine::new_version(&input, at_ms, version, false)?;
         let job = DurableCollectionJob {
-            schema_version: 1,
+            schema_version: version,
             id: id(),
             request_key: request_key.into(),
-            collector_policy: "direct-https-durable-foundation-v1".into(),
+            collector_policy: if version == 1 {
+                "direct-https-durable-foundation-v1"
+            } else {
+                "direct-https-durable-transport-v2"
+            }
+            .into(),
             synthetic: true,
             input,
             created_at_ms: at_ms,
@@ -110,6 +143,7 @@ impl Workspace {
         at_ms: i64,
     ) -> Result<Option<CollectionTicket>> {
         self.collection_owner(owner)?;
+        self.collection_transport_available()?;
         let mut loaded = self.load_collection(job_id)?;
         expected_generation(&loaded.job, generation)?;
         let running: bool = self.conn.query_row("SELECT EXISTS(SELECT 1 FROM records WHERE kind='collection_run' AND json_extract(body,'$.checkpoint.state')='running')", [], |r| r.get(0))?;
@@ -140,6 +174,7 @@ impl Workspace {
         at_ms: i64,
     ) -> Result<Option<RequestTicket>> {
         self.collection_owner(owner)?;
+        self.collection_transport_available()?;
         let mut loaded = self.load_collection(&execution.job_id)?;
         check_ticket(&loaded.job, execution)?;
         append(&mut loaded, CollectionEvent::Advance { at_ms }, None)?;
@@ -165,6 +200,10 @@ impl Workspace {
     ) -> Result<DurableCollectionJob> {
         self.collection_owner(owner)?;
         let mut loaded = self.load_collection(&request.run.job_id)?;
+        require(
+            loaded.job.schema_version == 1,
+            "V2 requires a lossless transport receipt",
+        )?;
         let charged = loaded
             .job
             .checkpoint
@@ -200,39 +239,8 @@ impl Workspace {
             },
             bytes,
         )?;
-        let evidence = if let FetchRecord::Complete {
-            sha256,
-            bytes: expected,
-            ..
-        } = &result
-        {
-            let existing = bounded_evidence(&self.conn, sha256)?;
-            let mut evidence = existing.unwrap_or_else(|| Evidence {
-                id: sha256.clone(),
-                name: "http-response.bin".into(),
-                sha256: sha256.clone(),
-                bytes: *expected,
-                media_type: "application/octet-stream".into(),
-                origin_group: sha256.clone(),
-                imported_at: stamp(at_ms),
-                extraction_status: "acquisition_only".into(),
-                text: None,
-                acquisitions: Vec::new(),
-            });
-            require(
-                evidence.id == *sha256 && evidence.sha256 == *sha256 && evidence.bytes == *expected,
-                "Existing evidence differs from response identity",
-            )?;
-            retain_original(&self.root, &evidence, bytes.expect("complete response"))?;
-            evidence.acquisitions.push(Acquisition {
-                job_id: loaded.job.id.clone(),
-                url: request.url.clone(),
-                retrieved_at: stamp(at_ms),
-            });
-            Some(evidence)
-        } else {
-            None
-        };
+        let evidence =
+            self.retain_collection_response(&loaded.job.id, &request.url, at_ms, &result, bytes)?;
         self.publish_collection(&loaded, evidence, promotion)?;
         Ok(loaded.job)
     }
@@ -294,6 +302,52 @@ impl Workspace {
             }
         }
         Ok(count)
+    }
+    fn retain_collection_response(
+        &self,
+        job_id: &str,
+        url: &str,
+        at_ms: i64,
+        result: &FetchRecord,
+        bytes: Option<&[u8]>,
+    ) -> Result<Option<Evidence>> {
+        Ok(
+            if let FetchRecord::Complete {
+                sha256,
+                bytes: expected,
+                ..
+            } = result
+            {
+                let existing = bounded_evidence(&self.conn, sha256)?;
+                let mut evidence = existing.unwrap_or_else(|| Evidence {
+                    id: sha256.clone(),
+                    name: "http-response.bin".into(),
+                    sha256: sha256.clone(),
+                    bytes: *expected,
+                    media_type: "application/octet-stream".into(),
+                    origin_group: sha256.clone(),
+                    imported_at: stamp(at_ms),
+                    extraction_status: "acquisition_only".into(),
+                    text: None,
+                    acquisitions: Vec::new(),
+                });
+                require(
+                    evidence.id == *sha256
+                        && evidence.sha256 == *sha256
+                        && evidence.bytes == *expected,
+                    "Existing evidence differs from response identity",
+                )?;
+                retain_original(&self.root, &evidence, bytes.expect("complete response"))?;
+                evidence.acquisitions.push(Acquisition {
+                    job_id: job_id.to_owned(),
+                    url: url.to_owned(),
+                    retrieved_at: stamp(at_ms),
+                });
+                Some(evidence)
+            } else {
+                None
+            },
+        )
     }
     fn publish_collection(
         &mut self,
@@ -413,6 +467,9 @@ fn load(root: &Path, conn: &Connection, key: &str, revision: u64) -> Result<Load
                     CollectionEvent::Complete {
                         at_ms, sequence, ..
                     } if *sequence == request.sequence => Some(*at_ms),
+                    CollectionEvent::TransportObserved {
+                        sequence, receipt, ..
+                    } if *sequence == request.sequence => Some(receipt.observed_wall_ms),
                     _ => None,
                 })
                 .ok_or_else(|| Error::Validation("No settled acquisition time".into()))?;
@@ -505,3 +562,6 @@ fn response_record<'a>(
 #[cfg(test)]
 #[path = "collection_jobs_tests.rs"]
 mod tests;
+
+#[path = "collection_transport_settlement.rs"]
+mod transport_settlement;
