@@ -3,19 +3,63 @@ use super::*;
 use std::collections::BTreeMap;
 
 const SOURCE_METADATA_BYTES: u64 = 16 * 1024 * 1024;
-struct Source {
-    evidence: Evidence,
-    metadata_sha256: String,
+pub(super) struct Source {
+    pub(super) evidence: Evidence,
+    pub(super) metadata_sha256: String,
 }
 /// Owned, bounded canonical input. No live SQLite transaction/connection escapes.
 /// This type is neither deserializable nor cloneable.
-pub(super) struct CapturedRun {
+pub(super) struct CapturedInput {
     root: PathBuf,
-    ownership_lifetime: String,
+    pub(super) raw: String,
     pub(super) job: DurableCollectionJob,
     record_sha256: String,
     pub(super) revision: u64,
-    sources: BTreeMap<String, Source>,
+    pub(super) sources: BTreeMap<String, Source>,
+}
+
+pub(super) struct CapturedRun {
+    input: CapturedInput,
+    ownership_lifetime: String,
+}
+// Existing mutation callers can inspect inert input; only capture_run constructs
+// the owner-bound wrapper. Read-only captures never acquire this wrapper.
+impl std::ops::Deref for CapturedRun {
+    type Target = CapturedInput;
+    fn deref(&self) -> &Self::Target {
+        &self.input
+    }
+}
+
+pub(super) struct SnapshotCapture(CapturedInput);
+pub(super) struct SnapshotPrepared(CapturedInput);
+pub(super) fn capture_snapshot(workspace: &Workspace, key: &str) -> Result<SnapshotCapture> {
+    capture_input(workspace, key)?
+        .map(SnapshotCapture)
+        .ok_or_else(|| Error::Validation("Durable snapshot requires a v4 record".into()))
+}
+impl SnapshotCapture {
+    pub(super) fn prepare(self) -> Result<SnapshotPrepared> {
+        self.0.replay()?;
+        Ok(SnapshotPrepared(self.0))
+    }
+}
+impl SnapshotPrepared {
+    pub(super) fn input(&self) -> &CapturedInput {
+        &self.0
+    }
+    pub(super) fn revalidate(&self, workspace: &Workspace, conn: &Connection) -> Result<()> {
+        let capture = &self.0;
+        require(workspace.root == capture.root, "Snapshot workspace changed")?;
+        let revision: u64 = conn.query_row("SELECT revision FROM meta", [], |r| r.get(0))?;
+        require(revision == capture.revision, "Snapshot revision changed")?;
+        let (_, raw) = read_job(conn, &capture.job.id)?;
+        require(
+            hash(raw.as_bytes()) == capture.record_sha256,
+            "Snapshot run changed",
+        )?;
+        capture.validate_sources(conn)
+    }
 }
 
 /// Consumed replay proof, constructed only from an owned canonical capture.
@@ -29,6 +73,12 @@ pub(super) fn capture_run(
     owner: &CollectionOwnership,
 ) -> Result<Option<CapturedRun>> {
     workspace.collection_publication_owner(owner)?;
+    Ok(capture_input(workspace, key)?.map(|input| CapturedRun {
+        input,
+        ownership_lifetime: owner.lifetime().into(),
+    }))
+}
+fn capture_input(workspace: &Workspace, key: &str) -> Result<Option<CapturedInput>> {
     let tx = workspace.conn.unchecked_transaction()?;
     let revision = tx.query_row("SELECT revision FROM meta", [], |row| row.get(0))?;
     let (job, raw) = read_job(&tx, key)?;
@@ -95,9 +145,9 @@ pub(super) fn capture_run(
             },
         );
     }
-    Ok(Some(CapturedRun {
+    Ok(Some(CapturedInput {
         root: workspace.root.clone(),
-        ownership_lifetime: owner.lifetime().into(),
+        raw: raw.clone(),
         job,
         record_sha256: hash(raw.as_bytes()),
         revision,
@@ -106,7 +156,16 @@ pub(super) fn capture_run(
 }
 impl CapturedRun {
     pub(super) fn prepare(self) -> Result<PreparedRun> {
-        let machine = collection_machine::replay(&self.job, |request, result| {
+        let machine = self.input.replay()?;
+        Ok(PreparedRun {
+            capture: self,
+            machine,
+        })
+    }
+}
+impl CapturedInput {
+    fn replay(&self) -> Result<Machine> {
+        collection_machine::replay(&self.job, |request, result| {
             if let FetchRecord::Complete { sha256, bytes, .. } = result {
                 let source = self.sources.get(sha256).ok_or_else(|| {
                     Error::Validation("Original absent from collection capture".into())
@@ -117,11 +176,19 @@ impl CapturedRun {
             } else {
                 Ok(None)
             }
-        })?;
-        Ok(PreparedRun {
-            capture: self,
-            machine,
         })
+    }
+    fn validate_sources(&self, conn: &Connection) -> Result<()> {
+        for (key, source) in &self.sources {
+            let (raw, _) = bounded_evidence_raw(conn, key)?
+                .ok_or_else(|| Error::Validation("Captured source disappeared".into()))?;
+            require(
+                hash(raw.as_bytes()) == source.metadata_sha256,
+                "Captured source metadata changed; prepare collection again",
+            )?;
+            read_original(&self.root, &source.evidence)?;
+        }
+        Ok(())
     }
 }
 impl PreparedRun {
@@ -144,18 +211,10 @@ impl PreparedRun {
         let (current, raw) = read_job(&tx, &capture.job.id)?;
         // An unrelated canonical revision may advance. Every captured source row
         // must still be exact; originals are rehashed through the bounded reader.
-        for (key, source) in &capture.sources {
-            let (raw, _) = bounded_evidence_raw(&tx, key)?
-                .ok_or_else(|| Error::Validation("Captured source disappeared".into()))?;
-            require(
-                hash(raw.as_bytes()) == source.metadata_sha256,
-                "Captured source metadata changed; prepare collection again",
-            )?;
-            read_original(&workspace.root, &source.evidence)?;
-        }
+        capture.input.validate_sources(&tx)?;
         let exact = hash(raw.as_bytes()) == capture.record_sha256;
         let mut loaded = Loaded {
-            job: capture.job,
+            job: capture.input.job,
             machine: before,
             revision,
         };

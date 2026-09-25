@@ -741,3 +741,6 @@ mod reservation;
 
 #[path = "collection_cancellation.rs"]
 mod cancellation;
+
+#[path = "collection_snapshot.rs"]
+mod snapshot;

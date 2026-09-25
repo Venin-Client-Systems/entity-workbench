@@ -10,6 +10,7 @@ pub(crate) mod collection_jobs;
 pub(crate) mod collection_machine;
 pub mod collection_receipt;
 pub(crate) mod collection_settlement;
+pub mod collection_snapshot;
 pub(crate) mod collection_transport;
 pub mod coordinator;
 pub mod desktop_summary;

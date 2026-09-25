@@ -50,6 +50,33 @@ fn main() {
 }
 fn run() -> workbench_core::Result<serde_json::Value> {
     let arg = std::env::args().nth(1).unwrap_or_default();
+    if matches!(
+        arg.as_str(),
+        "snapshot-durable-collection"
+            | "export-durable-collection"
+            | "inspect-durable-collection-export"
+    ) {
+        let args: Vec<String> = std::env::args().collect();
+        let export = arg == "export-durable-collection";
+        workbench_core::require(
+            args.len() == if export { 5 } else { 4 },
+            "Unexpected durable collection development arguments",
+        )?;
+        let workspace = Workspace::open(&args[2])?;
+        return if export {
+            Ok(serde_json::to_value(
+                workspace.export_durable_collection(&args[3], &args[4])?,
+            )?)
+        } else if arg == "snapshot-durable-collection" {
+            Ok(serde_json::to_value(
+                workspace.durable_collection_snapshot(&args[3])?,
+            )?)
+        } else {
+            Ok(serde_json::to_value(
+                workspace.inspect_durable_collection_export(&args[3])?,
+            )?)
+        };
+    }
     #[cfg(debug_assertions)]
     if arg == "seed-image-region-review" {
         let path = std::env::args().nth(2).ok_or_else(|| {
@@ -140,6 +167,27 @@ fn run() -> workbench_core::Result<serde_json::Value> {
                 1,
                 serde_json::to_value(schemars::schema_for!(
                     workbench_core::transaction_csv::TransactionCsvExport
+                ))?,
+            ),
+            (
+                "durable-collection-snapshot",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_snapshot::DurableCollectionSnapshot
+                ))?,
+            ),
+            (
+                "durable-collection-export",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_snapshot::DurableCollectionExport
+                ))?,
+            ),
+            (
+                "durable-collection-export-inspection",
+                1,
+                serde_json::to_value(schemars::schema_for!(
+                    workbench_core::collection_snapshot::DurableCollectionExportInspection
                 ))?,
             ),
             (
