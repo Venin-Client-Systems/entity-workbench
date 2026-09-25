@@ -1,0 +1,478 @@
+{
+  "schema_version": 1,
+  "policy": "fixed-owned-response-cancellation-v1",
+  "passed": true,
+  "outcome": "passed",
+  "phase": "complete",
+  "events": [
+    {
+      "details": {
+        "fixture_bytes": 863,
+        "fixture_sha256": "1b728541f9939c78bd3432482c1b5894ff70ffc017ebbe07a2f4b0535ba99371",
+        "handshake_seconds": 5,
+        "max_hops": 0,
+        "max_requests": 2,
+        "max_seconds": 20,
+        "proof_boundary": "owned_response_before_body_consumption",
+        "synthetic": false
+      },
+      "kind": "start",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "job_id": "6895855c-f641-45b3-a211-8d23d5f0392d",
+        "preview": {
+          "collector_policy": "direct-https-durable-v3",
+          "disclosure": {
+            "automatic_case_contents": false,
+            "connection_metadata": true,
+            "dns_hostnames": true,
+            "followed_hosts": "selected_hosts_only",
+            "selected_and_followed_urls": true
+          },
+          "input": {
+            "max_hops": 0,
+            "max_requests": 2,
+            "max_seconds": 20,
+            "urls": [
+              "https://raw.githubusercontent.com/Venin-Client-Systems/entity-workbench/df4dbff063d274effb9fa6385095938751bb300e/fixtures/brief.txt"
+            ]
+          },
+          "preview_sha256": "7967046d24ac9f1c863eab6a3b1718f0ecf2f741d4502b4c5b685caa5ef192f6",
+          "robots_urls": [
+            "https://raw.githubusercontent.com/robots.txt"
+          ],
+          "schema_version": 1,
+          "selected_hosts": [
+            "raw.githubusercontent.com"
+          ]
+        },
+        "production_native_enabled": false,
+        "record_version": 3,
+        "request_key": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+        "synthetic": false
+      },
+      "kind": "queued",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "generation": 1,
+        "job_id": "6895855c-f641-45b3-a211-8d23d5f0392d",
+        "sequence": 0,
+        "url": "https://raw.githubusercontent.com/robots.txt"
+      },
+      "kind": "launch",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "receipt": {
+          "elapsed_milliseconds": 2552,
+          "http_delivery": "may_have_been_sent",
+          "locally_quiescent": true,
+          "observed_wall_ms": 1790352906463,
+          "outcome": {
+            "bytes": 14,
+            "head": {
+              "identity_encoding": true,
+              "media_type": "text/plain",
+              "redirect_url": null,
+              "status": 404
+            },
+            "kind": "complete",
+            "sha256": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"
+          },
+          "phase": "body",
+          "resolved": {
+            "addresses": [
+              "185.199.110.133:443",
+              "185.199.111.133:443",
+              "185.199.109.133:443",
+              "185.199.108.133:443"
+            ],
+            "authoritative_complete_set": false,
+            "method": "macos_dns_service_observed_batch"
+          },
+          "resolver_uncertainty": null,
+          "schema_version": 1,
+          "stop_observed": null
+        },
+        "sequence": 0
+      },
+      "kind": "observation",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "generation": 1,
+        "job_id": "6895855c-f641-45b3-a211-8d23d5f0392d",
+        "sequence": 1,
+        "url": "https://raw.githubusercontent.com/Venin-Client-Systems/entity-workbench/df4dbff063d274effb9fa6385095938751bb300e/fixtures/brief.txt"
+      },
+      "kind": "launch",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "head": {
+          "identity_encoding": true,
+          "media_type": "text/plain",
+          "redirect_url": null,
+          "status": 200
+        },
+        "sequence": 1
+      },
+      "kind": "response_headers",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "generation": 1,
+        "job_id": "6895855c-f641-45b3-a211-8d23d5f0392d",
+        "sequence": 1
+      },
+      "kind": "cancel_intent",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "cancellation_requested": true,
+        "generation": 1,
+        "job_id": "6895855c-f641-45b3-a211-8d23d5f0392d",
+        "requests_used": 2,
+        "state": "running"
+      },
+      "kind": "cancel_acknowledged",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "receipt": {
+          "elapsed_milliseconds": 1356,
+          "http_delivery": "may_have_been_sent",
+          "locally_quiescent": true,
+          "observed_wall_ms": 1790352907842,
+          "outcome": {
+            "head": {
+              "identity_encoding": true,
+              "media_type": "text/plain",
+              "redirect_url": null,
+              "status": 200
+            },
+            "kind": "stopped",
+            "reason": "cancelled"
+          },
+          "phase": "body",
+          "resolved": {
+            "addresses": [
+              "[2606:50c0:8002::154]:443",
+              "[2606:50c0:8003::154]:443",
+              "[2606:50c0:8001::154]:443",
+              "[2606:50c0:8000::154]:443",
+              "185.199.110.133:443",
+              "185.199.111.133:443",
+              "185.199.109.133:443",
+              "185.199.108.133:443"
+            ],
+            "authoritative_complete_set": false,
+            "method": "macos_dns_service_observed_batch"
+          },
+          "resolver_uncertainty": null,
+          "schema_version": 1,
+          "stop_observed": "cancelled"
+        },
+        "sequence": 1
+      },
+      "kind": "observation",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    },
+    {
+      "details": {
+        "acquisition_valid": true,
+        "backup_restored_verified": true,
+        "cancel_acknowledgement": {
+          "cancellation_requested": true,
+          "generation": 1,
+          "job_id": "6895855c-f641-45b3-a211-8d23d5f0392d",
+          "requests_used": 2,
+          "state": "running"
+        },
+        "canonical_record_sha256": "fe4c2c4f8ef66afaa8b4721e8cade17dd3a82fdbe859c8899a94941d62aeeb45",
+        "control_failed": false,
+        "elapsed_milliseconds": 3985,
+        "fixture_bytes": 863,
+        "fixture_sha256": "1b728541f9939c78bd3432482c1b5894ff70ffc017ebbe07a2f4b0535ba99371",
+        "gate": {
+          "cancellation_observed": true,
+          "handshake_expired": false,
+          "notification_failed": false,
+          "reached_headers": true
+        },
+        "guard": {
+          "admitted": 2,
+          "refused": false
+        },
+        "inspection": {
+          "availability": "standalone_unavailable",
+          "controls": {
+            "can_cancel": false,
+            "can_resume": false,
+            "can_retry_settlement": false
+          },
+          "execution": {
+            "phase": "unavailable",
+            "publication_retries": 0,
+            "publication_retry_limit": 3,
+            "request_sequence": null
+          },
+          "limitations": [
+            "Collection records access facts, not permission, relevance, source independence or accepted observations.",
+            "Static text is unreviewed; original response bytes remain authoritative. No accepted page-region anchors are created.",
+            "Identical original bytes share evidence metadata. Later supported media interpretation may replace its current text; this is not an immutable web-text derivative.",
+            "Historical v1/v2 specimens remain read-only and cannot resume through public controls."
+          ],
+          "native_execution_enabled": false,
+          "requests": [
+            {
+              "entry": {
+                "hop": 0,
+                "parent": null,
+                "purpose": "robots",
+                "redirects": 0,
+                "url": "https://raw.githubusercontent.com/robots.txt"
+              },
+              "generation": 1,
+              "original": {
+                "bytes": 14,
+                "evidence_id": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed",
+                "sha256": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"
+              },
+              "progress": {
+                "receipt": {
+                  "elapsed_milliseconds": 2552,
+                  "http_delivery": "may_have_been_sent",
+                  "locally_quiescent": true,
+                  "observed_wall_ms": 1790352906463,
+                  "outcome": {
+                    "bytes": 14,
+                    "head": {
+                      "identity_encoding": true,
+                      "media_type": "text/plain",
+                      "redirect_url": null,
+                      "status": 404
+                    },
+                    "kind": "complete",
+                    "sha256": "d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed"
+                  },
+                  "phase": "body",
+                  "resolved": {
+                    "addresses": [
+                      "185.199.110.133:443",
+                      "185.199.111.133:443",
+                      "185.199.109.133:443",
+                      "185.199.108.133:443"
+                    ],
+                    "authoritative_complete_set": false,
+                    "method": "macos_dns_service_observed_batch"
+                  },
+                  "resolver_uncertainty": null,
+                  "schema_version": 1,
+                  "stop_observed": null
+                },
+                "state": "observed"
+              },
+              "reserved_at_ms": 1790352903910,
+              "sequence": 0
+            },
+            {
+              "entry": {
+                "hop": 0,
+                "parent": null,
+                "purpose": "seed",
+                "redirects": 0,
+                "url": "https://raw.githubusercontent.com/Venin-Client-Systems/entity-workbench/df4dbff063d274effb9fa6385095938751bb300e/fixtures/brief.txt"
+              },
+              "generation": 1,
+              "original": null,
+              "progress": {
+                "receipt": {
+                  "elapsed_milliseconds": 1356,
+                  "http_delivery": "may_have_been_sent",
+                  "locally_quiescent": true,
+                  "observed_wall_ms": 1790352907842,
+                  "outcome": {
+                    "head": {
+                      "identity_encoding": true,
+                      "media_type": "text/plain",
+                      "redirect_url": null,
+                      "status": 200
+                    },
+                    "kind": "stopped",
+                    "reason": "cancelled"
+                  },
+                  "phase": "body",
+                  "resolved": {
+                    "addresses": [
+                      "[2606:50c0:8002::154]:443",
+                      "[2606:50c0:8003::154]:443",
+                      "[2606:50c0:8001::154]:443",
+                      "[2606:50c0:8000::154]:443",
+                      "185.199.110.133:443",
+                      "185.199.111.133:443",
+                      "185.199.109.133:443",
+                      "185.199.108.133:443"
+                    ],
+                    "authoritative_complete_set": false,
+                    "method": "macos_dns_service_observed_batch"
+                  },
+                  "resolver_uncertainty": null,
+                  "schema_version": 1,
+                  "stop_observed": "cancelled"
+                },
+                "state": "observed"
+              },
+              "reserved_at_ms": 1790352906482,
+              "sequence": 1
+            }
+          ],
+          "run": {
+            "cancellation_requested": true,
+            "collector_policy": "direct-https-durable-v3",
+            "created_at_ms": 1790352903905,
+            "deadline_at_ms": 1790352923907,
+            "first_started_at_ms": 1790352903907,
+            "frontier_remaining": 0,
+            "generation": 1,
+            "id": "6895855c-f641-45b3-a211-8d23d5f0392d",
+            "input": {
+              "max_hops": 0,
+              "max_requests": 2,
+              "max_seconds": 20,
+              "urls": [
+                "https://raw.githubusercontent.com/Venin-Client-Systems/entity-workbench/df4dbff063d274effb9fa6385095938751bb300e/fixtures/brief.txt"
+              ]
+            },
+            "mode": "live",
+            "pages_retained": 0,
+            "record_version": 3,
+            "request_key": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+            "requests_used": 2,
+            "state": "cancelled",
+            "updated_at_ms": 1790352907842
+          },
+          "schema_version": 1,
+          "workspace_revision": 7
+        },
+        "observations_unchanged": true,
+        "ownership_released": true,
+        "passed": true,
+        "production_native_enabled": false,
+        "proof_boundary": "owned_response_before_body_consumption",
+        "receipt_settled_exactly": true,
+        "reopened_verified": true,
+        "response_head": {
+          "identity_encoding": true,
+          "media_type": "text/plain",
+          "redirect_url": null,
+          "status": 200
+        },
+        "shutdown_ok": true,
+        "synthetic": false,
+        "terminal_resume_refused": true
+      },
+      "kind": "final",
+      "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+      "policy": "fixed-owned-response-cancellation-v1",
+      "source": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71"
+    }
+  ],
+  "at": "2026-09-25T16:14:57.688558+00:00",
+  "nonce": "e9827b19-b426-4376-be15-5b319b8ae1bf",
+  "complete_release": false,
+  "scope": {
+    "host": "raw.githubusercontent.com",
+    "seed": "https://raw.githubusercontent.com/Venin-Client-Systems/entity-workbench/df4dbff063d274effb9fa6385095938751bb300e/fixtures/brief.txt",
+    "robots": "https://raw.githubusercontent.com/robots.txt",
+    "fixture_sha256": "1b728541f9939c78bd3432482c1b5894ff70ffc017ebbe07a2f4b0535ba99371"
+  },
+  "limits": {
+    "charged_attempts": 2,
+    "transport_launches": 2,
+    "hops": 0,
+    "cooperative_seconds": 20,
+    "outer_native_seconds": 30,
+    "owned_process_stop_seconds": 5,
+    "offline_build_seconds": 600,
+    "retries": 0,
+    "response_handshake_seconds": 5
+  },
+  "claims": {
+    "production_activation": false,
+    "broad_discovery_benchmark": false,
+    "complete_dns_rrset": false,
+    "provider_quiescence": false,
+    "owned_response_cancellation_verified": true,
+    "windows_native": false,
+    "body_already_buffered_by_os_or_client_possible": true,
+    "complete_activation_gate": false
+  },
+  "proof_boundary": "owned_response_before_body_consumption",
+  "platform": {
+    "os": "Darwin",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "source": {
+    "revision": "040f5cf0c8ac8180077d3ed73ee28b18e80d7a71",
+    "tree": "b785973089d66e490dd259c584d4298561e6035d",
+    "signature_verified": true,
+    "allowed_signers_sha256": "5059083df7c2bbba0a4d1791ded8c8ce8c28e4469581c4a773c391b2bc14dd6e",
+    "lockfile_sha256": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+    "shared_runner_sha256": "d28a992bfd94a83099fe98eee47bc3f963cde90b39f79cdbad2826f1808f3f86",
+    "runner_sha256": "b2aa6627c47d63275e0694f91f760c9500a51cbdcbfaa47d61eaf0b7616a245e",
+    "validator_sha256": "623a1272dddfec0b73e1e5cc2f08462aee1eca0233dc4edf5030beb654bbf189",
+    "native_test_sha256": "a1d34f80ca71455b6e419438d71cb73ff30f2af940ddd6b1363260e04a66da60",
+    "cancellation_runner_sha256": "e7c19767366a8e14f2104d0ede1a47bc6554377bdb53a2db3fa530bda72f825e",
+    "cancellation_validator_sha256": "33e69240a5ec3f8ccde0dd7f47bc41ecb97081ac6de7340e4e7bb70cd30374a8",
+    "cancellation_native_test_sha256": "e906c72026258b84634617ed42fbc4303e2080095a82be5ced3cb15d35b05f61",
+    "cancellation_gate_sha256": "fdcf10c3df14b2fc2b7f5cfb5b63d615239549f08a0fc584c2c281ca6771e857",
+    "transport_sha256": "5db71fbc4dc9c735fb385aa2a82a87af9bc696917a1ef0a83473b62fac3fd4b6"
+  },
+  "compiler": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+  "dns_header_sha256": "61871d4fc1ea6ebc5430e116739a55f9913458962d4c71e8924f2b2a802cbc88",
+  "binary_sha256": "71943cac4b758a8a5a0e83ad1cfa8a554077485d0b898b82ada09cb853335711",
+  "native_exit_code": 0,
+  "owned_process_elapsed_ms": 5006,
+  "source_unchanged_after": true,
+  "binary_unchanged_after": true,
+  "logs": {
+    "build.log": {
+      "sha256": "43aae3db2b76d23c2f06db6d904fe4b31c4a34ce6fbb31a85505704180fbc7a4",
+      "bytes": 203250
+    },
+    "native.log": {
+      "sha256": "295412c018a9401d3c05008c93d9a5d0ef0a8c47063982ad0c9592ddd0e2a4cf",
+      "bytes": 9752
+    }
+  }
+}

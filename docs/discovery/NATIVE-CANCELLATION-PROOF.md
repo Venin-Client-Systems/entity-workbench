@@ -1,6 +1,6 @@
 # Fixed owned-response cancellation proof
 
-This is **source-only preparation** for one separately reviewed, opt-in Mac cancellation observation. No native DNS or public HTTPS request was made for this change. Production `NATIVE_COLLECTION_ENABLED` remains false; normal startup has no live collection lane, public admission remains unavailable, and the old synchronous collector stays disabled. No command, schema, source-selection policy or normal runtime timing override changes.
+One separately reviewed, opt-in Mac cancellation observation passed at clean signed source `040f5cf0`. Its [actual receipt](verification/native-cancellation-first-2026-09-26.json) and [independent recovery checks](verification/native-cancellation-first-root-checks.json) are retained below. The initial implementation and ordinary verification were source-only; the later native observation made the two fixed requests. Production `NATIVE_COLLECTION_ENABLED` remains false; normal startup has no live collection lane, public admission remains unavailable, and the old synchronous collector stays disabled. No command, schema, source-selection policy or normal runtime timing override changes.
 
 The proof targets **one owned response after verified HTTPS headers, before application body consumption**. Its test hook pauses there while the real coordinator commits cancellation intent and signals the existing token. The hook returns normally after observing that token; the ordinary transport body wait must then produce `Stopped(Cancelled)`. It does not synthesize a cancellation outcome. The server may already have sent the entire small response, and the OS or HTTP client may have buffered it. A passing future observation would establish cancellation and disposal of that owned response at this point, **not** interruption of server delivery, stalled wire reads, every DNS/TLS/request phase, Windows cancellation, or the complete production activation gate.
 
@@ -67,3 +67,22 @@ python3 -O -m unittest discover -s scripts/tests -p 'test_native_*receipts.py' -
 ```
 
 Even after a successful future Mac observation, activation still requires separately reviewed coverage of other native cancellation phases, Windows provider-uncertain outcomes, retained unpublished settlement/recovery and installed-platform behavior. Existing synthetic coordinator coverage remains distinct from native evidence. No production or release gate changes here.
+
+## First actual native cancellation — 26 September 2026
+
+Exactly one invocation at clean signed source `040f5cf0c8ac8180077d3ed73ee28b18e80d7a71`, tree `b785973089d66e490dd259c584d4298561e6035d`, passed on macOS 26.6.2 arm64. The source and native binary remained unchanged. Campaign `e9827b19-b426-4376-be15-5b319b8ae1bf` created canonical run `6895855c-f641-45b3-a211-8d23d5f0392d`. No retry, alternate source, redirect, hop or normal application activation occurred.
+
+The first request retained the complete 404 robots response: 14 bytes, SHA-256 `d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed`. The seed request reached verified identity-encoded status-200 headers. The controller durably acknowledged cancellation with both attempts charged. The ordinary transport then returned body-phase `Stopped(Cancelled)`, with local closure confirmed and no resolver uncertainty. The native response gate observed cancellation without handshake expiry. **No seed original, digest, text or page was retained.**
+
+The run became terminal `Cancelled`, released coordinator ownership after joined shutdown, and retained the exact receipts on reopen and evidence-inclusive backup/restore. A terminal resume under newly held ordinary coordinator ownership was refused without changing revision or canonical bytes. Accepted observations remained empty. The native campaign took 3,985 ms; the entire owned process exited 0 after 5,006 ms. These are one-run elapsed observations, not latency targets or a resource benchmark.
+
+Root independently decoded the exact native event log, reran the offline cancellation validator and checked retained log hashes. Read-only SQLite integrity and all six tables matched exactly across the source, backup and restored workspaces: zero derivative objects, seven events, six history entries, one metadata entry, three records and three sequence entries. Each original store contained only the exact 14-byte robots original; every copy hashed to its filename. These independent checks made no further network requests.
+
+| Bound artifact | SHA-256 |
+| --- | --- |
+| Native test binary | `71943cac4b758a8a5a0e83ad1cfa8a554077485d0b898b82ada09cb853335711` |
+| [Actual outer receipt](verification/native-cancellation-first-2026-09-26.json) | `32303f54b87f26fd42226d821b08485bac0df7f4b0f3fe12cbaba47a42313a50` |
+| [Independent checks](verification/native-cancellation-first-root-checks.json) | `ad6c3cedd029cd3250f67159d4018242fbe54a6809e5ec0dbbf3749ce9cf0b53` |
+| Retained native log | `295412c018a9401d3c05008c93d9a5d0ef0a8c47063982ad0c9592ddd0e2a4cf` |
+
+This proves the stated owned-response cancellation point. The OS/client may already have buffered response bytes, so it does not prove interrupted server delivery or every native HTTP/DNS/TLS phase. It also does not establish Windows execution, shared DNS-provider quiescence, broader web coverage, complete activation or a release gate. Previous positive/negative evidence remains unchanged.
