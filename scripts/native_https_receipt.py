@@ -69,16 +69,28 @@ def decode(output):
 
 
 def validate(events, source, nonce, exit_code):
+    _validate(events, source, nonce, exit_code, cancellation=False)
+
+
+def _validate(events, source, nonce, exit_code, *, cancellation):
     need(re.fullmatch(r"[0-9a-f]{40}", source) is not None
          and str(uuid.UUID(nonce)) == nonce, "invalid_source_or_nonce")
-    need(type(exit_code) is int and exit_code == 0 and [e.get("kind") for e in events] == ORDER,
+    order = [e.get("kind") for e in events]
+    cancel_prefix = ["start", "queued", "launch", "observation", "launch", "response_headers", "cancel_intent"]
+    cancel_orders = [cancel_prefix + middle + ["final"] for middle in
+                     (["cancel_acknowledged", "observation"], ["observation", "cancel_acknowledged"])]
+    need(type(exit_code) is int and exit_code == 0
+         and (order in cancel_orders if cancellation else order == ORDER),
          "native_failure_or_incomplete_campaign")
     for event in events:
-        need(event.get("policy") == POLICY and event.get("source") == source
+        need(event.get("policy") == ("fixed-owned-response-cancellation-v1" if cancellation else POLICY) and event.get("source") == source
              and event.get("nonce") == nonce, "source_nonce_or_policy_mismatch")
-    start, queued, _, _, _, _, final = [e["details"] for e in events]
-    need(exact(start, {"fixture_sha256": FIXTURE_SHA, "fixture_bytes": FIXTURE_BYTES,
-                   "max_requests": 2, "max_hops": 0, "max_seconds": 20, "synthetic": False}),
+    start, queued, final = (events[index]["details"] for index in (0, 1, -1))
+    expected_start = {"fixture_sha256": FIXTURE_SHA, "fixture_bytes": FIXTURE_BYTES,
+                      "max_requests": 2, "max_hops": 0, "max_seconds": 20, "synthetic": False}
+    if cancellation:
+        expected_start.update(proof_boundary="owned_response_before_body_consumption", handshake_seconds=5)
+    need(exact(start, expected_start),
          "fixed_scope_changed")
     scope = {"urls": [SEED], "max_hops": 0, "max_requests": 2, "max_seconds": 20}
     preview = queued["preview"]
@@ -115,9 +127,9 @@ def validate(events, source, nonce, exit_code):
          and run["id"] == queued["job_id"] and run["request_key"] == nonce
          and run["record_version"] == 3 and run["mode"] == "live"
          and run["collector_policy"] == "direct-https-durable-v3" and exact(run["input"], scope)
-         and run["state"] == "successful" and run["generation"] == 1
-         and run["requests_used"] == 2 and run["pages_retained"] == 1
-         and run["cancellation_requested"] is False, "canonical_run_mismatch")
+         and run["state"] == ("cancelled" if cancellation else "successful") and run["generation"] == 1
+         and run["requests_used"] == 2 and run["pages_retained"] == (0 if cancellation else 1)
+         and run["cancellation_requested"] is cancellation, "canonical_run_mismatch")
     need(type(run["first_started_at_ms"]) is int
          and run["deadline_at_ms"] == run["first_started_at_ms"] + 20000,
          "first_deadline_not_preserved")
@@ -127,9 +139,13 @@ def validate(events, source, nonce, exit_code):
         need(type(value) is int, "noninteger_canonical_count_or_version")
     requests = inspection["requests"]
     need(len(requests) == 2, "wrong_canonical_request_count")
+    launches = [e["details"] for e in events if e["kind"] == "launch"]
+    observations = [e["details"] for e in events if e["kind"] == "observation"]
+    if cancellation:
+        _validate_cancellation_control(events, final, run, observations[1]["receipt"])
     for index, request in enumerate(requests):
-        launch = events[2 + 2 * index]["details"]
-        observed = events[3 + 2 * index]["details"]
+        launch = launches[index]
+        observed = observations[index]
         url = [ROBOTS, SEED][index]
         need(exact(launch, {"sequence": index, "url": url, "job_id": run["id"], "generation": 1}),
              "unapproved_launch")
@@ -138,14 +154,15 @@ def validate(events, source, nonce, exit_code):
                                       "purpose": ["robots", "seed"][index], "parent": None}),
              "canonical_request_ancestry_changed")
         need(request["progress"]["state"] == "observed" and observed["sequence"] == index
-             and request["progress"]["receipt"] == observed["receipt"], "settlement_changed_observation")
+             and exact(request["progress"]["receipt"], observed["receipt"]), "settlement_changed_observation")
         receipt = observed["receipt"]
         for value in (request["sequence"], request["generation"], request["reserved_at_ms"],
                       receipt["schema_version"], receipt["observed_wall_ms"]):
             need(type(value) is int, "noninteger_request_identity_or_clock")
         need(receipt["schema_version"] == 1 and receipt["phase"] == "body"
              and receipt["http_delivery"] == "may_have_been_sent"
-             and receipt["locally_quiescent"] is True and receipt["stop_observed"] is None
+             and receipt["locally_quiescent"] is True
+             and receipt["stop_observed"] == ("cancelled" if cancellation and index == 1 else None)
              and receipt["resolver_uncertainty"] is None, "incomplete_or_uncertain_transport")
         need(type(receipt["elapsed_milliseconds"]) is int and 0 <= receipt["elapsed_milliseconds"] <= 20000
              and request["reserved_at_ms"] <= receipt["observed_wall_ms"] < run["deadline_at_ms"],
@@ -159,6 +176,10 @@ def validate(events, source, nonce, exit_code):
             need(address.port == 443 and ipaddress.ip_address(address.hostname).is_global,
                  "unsafe_observed_candidate")
         outcome = receipt["outcome"]
+        if cancellation and index == 1:
+            need(exact(outcome, {"kind": "stopped", "reason": "cancelled", "head": final["response_head"]})
+                 and request["original"] is None, "cancelled_response_has_body_or_wrong_stop")
+            continue
         need(outcome["kind"] == "complete" and digest(outcome["sha256"])
              and type(outcome["bytes"]) is int and 0 <= outcome["bytes"] <= 2 * 1024 * 1024,
              "complete_body_identity_missing")
@@ -170,3 +191,26 @@ def validate(events, source, nonce, exit_code):
         if index == 1:
             need(outcome["sha256"] == FIXTURE_SHA and outcome["bytes"] == FIXTURE_BYTES,
                  "published_synthetic_fixture_changed")
+
+
+def _validate_cancellation_control(events, final, run, observed):
+    need(final.get("terminal_resume_refused") is True and final.get("control_failed") is False,
+         "terminal_resume_or_controller_unproven")
+    need(final.get("proof_boundary") == "owned_response_before_body_consumption"
+         and exact(final.get("gate"), {"reached_headers": True, "notification_failed": False,
+                  "cancellation_observed": True, "handshake_expired": False}),
+         "response_gate_not_observed_or_failed")
+    head = final["response_head"]
+    need(type(head.get("status")) is int and head["status"] == 200
+         and head["identity_encoding"] is True and head["redirect_url"] is None,
+         "cancellation_response_not_usable")
+    need(exact(events[5]["details"], {"sequence": 1, "head": head})
+         and exact(events[6]["details"], {"job_id": run["id"], "generation": 1, "sequence": 1}),
+         "cancellation_intent_or_response_mismatch")
+    ack = next(e["details"] for e in events if e["kind"] == "cancel_acknowledged")
+    # cancel_collection returns the committed running record before it signals the token.
+    need(exact(ack, {"job_id": run["id"], "generation": 1, "cancellation_requested": True,
+                    "requests_used": 2, "state": "running"})
+         and exact(final["cancel_acknowledgement"], ack), "cancellation_not_durably_acknowledged")
+    need(exact(observed.get("outcome"), {"kind": "stopped", "reason": "cancelled", "head": head}),
+         "ordinary_transport_did_not_observe_cancellation")

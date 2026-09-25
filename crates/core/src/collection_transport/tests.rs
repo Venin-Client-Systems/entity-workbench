@@ -507,6 +507,77 @@ fn local_tls_headers_and_body_cancellation_closes_owned_connections() {
 }
 
 #[test]
+fn fixed_cancellation_header_gate_uses_real_token_wait_and_closes_owned_tls_response() {
+    let mut server = Server::start(Mode::BodyStall);
+    let (gate, received) = cancellation_probe::ResponseGate::new();
+    let cancel = CancellationToken::default();
+    let controller_token = cancel.clone();
+    let controller = thread::spawn(move || {
+        let head = received.recv_timeout(Duration::from_secs(3)).unwrap();
+        assert_eq!(head.status, 200);
+        controller_token.cancel();
+    });
+    let mut configuration = server.configuration();
+    configuration.response_gate = Some(&gate);
+    let (ticket, input) = input("collection.invalid");
+    let observation = execute(
+        &ticket,
+        &input,
+        window(Duration::from_secs(3)),
+        Instant::now(),
+        &cancel,
+        &FixedResolver::public(),
+        &configuration,
+    );
+    controller.join().unwrap();
+    stopped(&observation, StopReason::Cancelled);
+    assert_eq!(observation.phase, Phase::Body);
+    assert_eq!(observation.stop_observed, Some(StopReason::Cancelled));
+    assert!(matches!(
+        observation.outcome,
+        Outcome::Stopped { head: Some(_), .. }
+    ));
+    let state = gate.state();
+    assert!(state.reached_headers && state.cancellation_observed);
+    assert!(!state.handshake_expired && !state.notification_failed);
+    let server = server.finish();
+    assert_eq!(server.requests.len(), 1);
+    assert!(server.closed);
+}
+
+#[test]
+fn fixed_cancellation_missing_controller_or_expired_handshake_never_fabricates_cancelled() {
+    let head = ResponseHead {
+        status: 200,
+        media_type: None,
+        redirect_url: None,
+        identity_encoding: true,
+    };
+    let runtime = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let token = CancellationToken::default();
+    let (gate, receiver) = cancellation_probe::ResponseGate::new();
+    assert_eq!(
+        runtime.block_on(gate.pause(&head, &token, Duration::ZERO)),
+        Err(StopReason::Timeout)
+    );
+    assert_eq!(receiver.try_recv().unwrap(), head);
+    assert!(!token.is_cancelled());
+    assert!(gate.state().handshake_expired);
+    assert!(!gate.state().cancellation_observed);
+    let (gate, receiver) = cancellation_probe::ResponseGate::new();
+    drop(receiver);
+    assert_eq!(
+        runtime.block_on(gate.pause(&head, &token, Duration::from_secs(1))),
+        Err(StopReason::Policy)
+    );
+    assert!(gate.state().notification_failed);
+    assert!(!gate.state().cancellation_observed);
+}
+
+#[test]
 fn complete_empty_error_redirect_and_encoded_bodies_are_exact_and_never_followed() {
     for (status, extra, body, encoding) in [
         (200, "", b"synthetic\0bytes".as_slice(), true),
@@ -838,6 +909,7 @@ fn unknown_resolver_completion_suspends_further_attempts_without_false_cancel_ac
         let configuration = Configuration {
             recovery_required: &recovery,
             endpoint: None,
+            response_gate: None,
         };
         let resolver = Unverified(AtomicUsize::new(0), context);
         let (ticket, input) = input("collection.invalid");
@@ -962,6 +1034,7 @@ pub(crate) fn canonical_before_http(
         &Configuration {
             recovery_required: &recovery,
             endpoint: None,
+            response_gate: None,
         },
     );
     assert_eq!(resolver.calls.load(Ordering::SeqCst), 0);

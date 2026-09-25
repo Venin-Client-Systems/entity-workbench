@@ -185,6 +185,8 @@ struct Configuration<'a> {
     recovery_required: &'a AtomicBool,
     #[cfg(test)]
     endpoint: Option<tests::TestEndpoint>,
+    #[cfg(test)]
+    response_gate: Option<&'a cancellation_probe::ResponseGate>,
 }
 impl Default for Configuration<'static> {
     fn default() -> Self {
@@ -192,6 +194,8 @@ impl Default for Configuration<'static> {
             recovery_required: &RECOVERY_REQUIRED,
             #[cfg(test)]
             endpoint: None,
+            #[cfg(test)]
+            response_gate: None,
         }
     }
 }
@@ -252,6 +256,24 @@ pub(crate) fn fetch(
     not_before: Instant,
     cancellation: &CancellationToken,
 ) -> Observation {
+    fetch_configured(
+        ticket,
+        input,
+        window,
+        not_before,
+        cancellation,
+        &Configuration::default(),
+    )
+}
+
+fn fetch_configured(
+    ticket: &RequestTicket,
+    input: &CollectionInput,
+    window: ExecutionWindow,
+    not_before: Instant,
+    cancellation: &CancellationToken,
+    configuration: &Configuration<'_>,
+) -> Observation {
     if RECOVERY_REQUIRED.load(Ordering::Acquire) {
         return unstarted(StopReason::RecoveryRequired);
     }
@@ -275,7 +297,7 @@ pub(crate) fn fetch(
         not_before,
         cancellation,
         &resolver::NativeResolver,
-        &Configuration::default(),
+        configuration,
     )
 }
 
@@ -491,6 +513,15 @@ async fn http(
     });
     *phase = Phase::Body;
     configuration.body_started();
+    #[cfg(test)]
+    if let Some(gate) = configuration.response_gate {
+        gate.pause(
+            head.as_ref().expect("observed response head"),
+            cancellation,
+            window.remaining(),
+        )
+        .await?;
+    }
     if response
         .content_length()
         .is_some_and(|bytes| bytes > PAGE_BYTES as u64)
@@ -514,5 +545,7 @@ async fn http(
     Ok(body)
 }
 
+#[cfg(test)]
+pub(crate) mod cancellation_probe;
 #[cfg(test)]
 pub(crate) mod tests;

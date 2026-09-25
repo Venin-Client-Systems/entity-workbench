@@ -15,6 +15,7 @@ from test_native_collection_transport import (
     save, evidence_failure,
 )
 import native_https_receipt as receipt
+import native_cancellation_receipt as cancellation_receipt
 
 ROOT = Path(__file__).resolve().parents[1]
 TEST = "coordinator::native_https_proof::native_durable_https_campaign"
@@ -95,8 +96,24 @@ def build_binary(artifact, source):
     return binaries[0].resolve(strict=True)
 
 
-def observe(artifact, approved, signers):
-    report = {"schema_version": 1, "policy": receipt.POLICY, "passed": False,
+def observe(artifact, approved, signers, *, cancellation=False):
+    # Two closed compiled profiles. No caller-supplied URL, test name or budget.
+    profile = cancellation_receipt if cancellation else receipt
+    cancellation_claim = "owned_response_cancellation_verified" if cancellation else "active_http_cancellation_verified"
+    def source_identity():
+        result = identity(signers)
+        if cancellation:
+            for name, relative in (
+                ("cancellation_runner", "scripts/test_native_collection_cancellation.py"),
+                ("cancellation_validator", "scripts/native_cancellation_receipt.py"),
+                ("cancellation_native_test", "crates/core/src/coordinator_native_https_cancellation.rs"),
+                ("cancellation_gate", "crates/core/src/collection_transport/cancellation_probe.rs"),
+                ("transport", "crates/core/src/collection_transport.rs"),
+            ):
+                result[name + "_sha256"] = digest(ROOT / relative)
+        return result
+
+    report = {"schema_version": 1, "policy": profile.POLICY, "passed": False,
               "outcome": "incomplete", "phase": "authorization", "events": [],
               "at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "nonce": artifact.name, "complete_release": False,
@@ -108,13 +125,18 @@ def observe(artifact, approved, signers):
                          "offline_build_seconds": 600, "retries": 0},
               "claims": {"production_activation": False, "broad_discovery_benchmark": False,
                          "complete_dns_rrset": False, "provider_quiescence": False,
-                         "active_http_cancellation_verified": False, "windows_native": False}}
+                         cancellation_claim: False, "windows_native": False}}
+    if cancellation:
+        report["proof_boundary"] = "owned_response_before_body_consumption"
+        report["limits"]["response_handshake_seconds"] = 5
+        report["claims"]["body_already_buffered_by_os_or_client_possible"] = True
+        report["claims"]["complete_activation_gate"] = False
     binary = None
     native_log = artifact / "native.log"
     try:
         save(artifact, report)
         if not approved:
-            raise Failure("explicit_fixed_https_opt_in_required")
+            raise Failure("explicit_fixed_cancellation_opt_in_required" if cancellation else "explicit_fixed_https_opt_in_required")
         if str(uuid.UUID(report["nonce"])) != report["nonce"]:
             raise Failure("noncanonical_campaign_nonce")
         report["phase"] = "platform"
@@ -123,7 +145,7 @@ def observe(artifact, approved, signers):
         if platform.system() != "Darwin":
             raise Failure("native_macos_required")
         report["phase"] = "source"
-        report["source"] = identity(signers)
+        report["source"] = source_identity()
         report["compiler"] = text_command(["rustc", "--version"])
         sdk = Path(text_command(["xcrun", "--show-sdk-path"]))
         report["dns_header_sha256"] = digest(sdk / "usr/include/dns_sd.h")
@@ -133,23 +155,23 @@ def observe(artifact, approved, signers):
         save(artifact, report)
         binary = build_binary(artifact, report["source"]["revision"])
         report["binary_sha256"] = digest(binary)
-        if identity(signers) != report["source"]:
+        if source_identity() != report["source"]:
             raise Failure("source_changed_before_native_run")
         report["phase"] = "native"
         save(artifact, report)
-        environment = dict(os.environ, EW_NATIVE_HTTPS_PROOF=receipt.POLICY,
+        environment = dict(os.environ, EW_NATIVE_HTTPS_PROOF=profile.POLICY,
                            EW_NATIVE_HTTPS_SOURCE=report["source"]["revision"],
                            EW_NATIVE_HTTPS_NONCE=report["nonce"])
         started = time.monotonic()
         try:
             report["native_exit_code"] = run_logged(
-                [str(binary), TEST, "--exact", "--ignored", "--nocapture", "--test-threads=1"],
+                [str(binary), cancellation_receipt.TEST if cancellation else TEST, "--exact", "--ignored", "--nocapture", "--test-threads=1"],
                 native_log, 30, environment)
         finally:
             report["owned_process_elapsed_ms"] = round((time.monotonic() - started) * 1000)
         if not retain_events(report, native_log):
             raise Failure("partial_event_decode_failed")
-        receipt.validate(report["events"], report["source"]["revision"], report["nonce"], report["native_exit_code"])
+        profile.validate(report["events"], report["source"]["revision"], report["nonce"], report["native_exit_code"])
         report.update(passed=True, outcome="passed", phase="complete")
     except Failure as error:
         report.update(outcome="failed", failure=str(error))
@@ -162,7 +184,7 @@ def observe(artifact, approved, signers):
     finally:
         if "source" in report:
             try:
-                report["source_unchanged_after"] = identity(signers) == report["source"]
+                report["source_unchanged_after"] = source_identity() == report["source"]
                 if not report["source_unchanged_after"]:
                     evidence_failure(report, "source_changed_during_observation")
             except (Failure, OSError, ValueError, subprocess.SubprocessError):
@@ -186,10 +208,14 @@ def observe(artifact, approved, signers):
                 retain_events(report, native_log)
         except (OSError, Failure, ValueError, KeyError, TypeError):
             evidence_failure(report, "partial_log_parse_failed")
+        if cancellation:
+            # Narrow claim derived only after source/binary post-verification.
+            report["claims"][cancellation_claim] = report["passed"]
         try:
             save(artifact, report)
         except OSError:
             evidence_failure(report, "final_report_write_failed")
+            report["claims"][cancellation_claim] = False
     return report
 
 

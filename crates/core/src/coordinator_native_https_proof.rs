@@ -69,13 +69,14 @@ struct Context {
     source: String,
     nonce: String,
     emit: bool,
+    policy: &'static str,
 }
 impl Context {
     fn event(&self, kind: &str, details: Value) {
         if self.emit {
             println!(
                 "{PREFIX}{}",
-                json!({"policy":POLICY,"source":self.source,
+                json!({"policy":self.policy,"source":self.source,
                 "nonce":self.nonce,"kind":kind,"details":details})
             );
         }
@@ -103,6 +104,29 @@ fn campaign(
     context: &Context,
     protocol: CollectionProtocol,
     executor: Arc<collection::CollectionExecutor>,
+) -> Result<Value> {
+    campaign_controlled(
+        root,
+        context,
+        protocol,
+        executor,
+        Expected::Successful,
+        |_, _| Ok(()),
+    )
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Expected {
+    Successful,
+    Cancelled,
+}
+fn campaign_controlled(
+    root: &Path,
+    context: &Context,
+    protocol: CollectionProtocol,
+    executor: Arc<collection::CollectionExecutor>,
+    expected: Expected,
+    mut controller: impl FnMut(&JobCoordinator, &str) -> Result<()>,
 ) -> Result<Value> {
     crate::require(
         !NATIVE_COLLECTION_ENABLED,
@@ -180,7 +204,16 @@ fn campaign(
             protocol,
         )),
     )?;
+    let mut control_failed = false;
     loop {
+        if controller(&coordinator, &queued.id).is_err() {
+            control_failed = true;
+            context.event(
+                "controller_failed",
+                json!({"reason":"cancellation_control_failed"}),
+            );
+            break;
+        }
         let job = coordinator.inspect_collection_job(&queued.id)?;
         let status = coordinator.collection_status()?;
         if !matches!(
@@ -215,10 +248,35 @@ fn campaign(
     drop(coordinator);
     let mut reopened_verified = false;
     let mut backup_restored_verified = false;
+    let mut terminal_resume_refused = expected == Expected::Successful;
     if shutdown_ok && ownership_released {
         let mut reopened = Workspace::open(root.join("workspace"))?;
         reopened_verified = reopened.inspect_durable_collection(&queued.id)? == canonical
             && reopened.inspect_collection_run(&queued.id)?.requests == inspection.requests;
+        if expected == Expected::Cancelled {
+            // A normal offline coordinator owns the reopen check. It has no collection lane.
+            let check = JobCoordinator::start(Workspace::open(root.join("workspace"))?, 1)?;
+            {
+                let mut workspace = check
+                    .shared
+                    .workspace
+                    .lock()
+                    .map_err(|_| Error::Blocked("Reopen check unavailable".into()))?;
+                let revision = workspace.revision()?;
+                terminal_resume_refused = matches!(
+                    workspace.start_durable_collection(
+                        &queued.id,
+                        canonical.checkpoint.generation,
+                        &check.shared.ownership,
+                        now()
+                    ),
+                    Err(Error::Conflict(_))
+                ) && workspace.revision()? == revision
+                    && workspace.inspect_durable_collection(&queued.id)? == canonical;
+            }
+            check.shutdown()?;
+            drop(check);
+        }
         let backup = reopened.backup()?;
         let restored = Workspace::restore(&backup, &root.join("restored"))?;
         backup_restored_verified = restored.inspect_durable_collection(&queued.id)? == canonical
@@ -235,8 +293,15 @@ fn campaign(
         && receipts.iter().zip(&inspection.requests).all(|(receipt, request)| {
             matches!(&request.progress, RequestProgress::Observed { receipt: stored } if receipt == stored)
         });
-    let acquisition_valid = successful_acquisition(&inspection, protocol.synthetic());
-    let passed = shutdown_ok
+    let acquisition_valid = match expected {
+        Expected::Successful => successful_acquisition(&inspection, protocol.synthetic()),
+        Expected::Cancelled => {
+            cancellation::cancelled_acquisition(&inspection, protocol.synthetic())
+        }
+    };
+    let passed = !control_failed
+        && terminal_resume_refused
+        && shutdown_ok
         && ownership_released
         && reopened_verified
         && backup_restored_verified
@@ -245,8 +310,7 @@ fn campaign(
         && acquisition_valid
         && !guard.refused
         && guard.admitted == 2;
-    Ok(
-        json!({"passed":passed,"synthetic":protocol.synthetic(),"inspection":inspection,
+    let mut report = json!({"passed":passed,"synthetic":protocol.synthetic(),"inspection":inspection,
         "guard":{"admitted":guard.admitted,"refused":guard.refused},
         "shutdown_ok":shutdown_ok,"ownership_released":ownership_released,
         "reopened_verified":reopened_verified,"backup_restored_verified":backup_restored_verified,
@@ -254,8 +318,12 @@ fn campaign(
         "acquisition_valid":acquisition_valid,"elapsed_milliseconds":started.elapsed().as_millis(),
         "fixture_sha256":FIXTURE_SHA,"fixture_bytes":FIXTURE.len(),
         "canonical_record_sha256":crate::store::hash(&serde_json::to_vec(&canonical)?),
-        "production_native_enabled":NATIVE_COLLECTION_ENABLED}),
-    )
+        "production_native_enabled":NATIVE_COLLECTION_ENABLED});
+    if expected == Expected::Cancelled {
+        report["terminal_resume_refused"] = json!(terminal_resume_refused);
+        report["control_failed"] = json!(control_failed);
+    }
+    Ok(report)
 }
 fn successful_acquisition(inspection: &CollectionRunInspection, synthetic: bool) -> bool {
     let expected_mode = if synthetic {
@@ -377,6 +445,7 @@ fn native_durable_https_campaign() {
         source: source.into(),
         nonce,
         emit: true,
+        policy: POLICY,
     };
     context.event(
         "start",
@@ -490,6 +559,7 @@ fn fixed_https_orchestration_replays_and_restores_real_synthetic_canonical_recei
         source: "offline".into(),
         nonce: uuid::Uuid::new_v4().to_string(),
         emit: false,
+        policy: POLICY,
     };
     let report = campaign(
         temp.path(),
@@ -511,6 +581,7 @@ fn fixed_https_orchestration_preserves_robots_refusal_and_changed_fixture_as_fai
             source: "offline".into(),
             nonce: uuid::Uuid::new_v4().to_string(),
             emit: false,
+            policy: POLICY,
         };
         let report = campaign(
             temp.path(),
@@ -536,6 +607,7 @@ fn fixed_https_orchestration_retains_unknown_completion_without_recovery_claims(
         source: "offline".into(),
         nonce: uuid::Uuid::new_v4().to_string(),
         emit: false,
+        policy: POLICY,
     };
     let report = campaign(
         temp.path(),
@@ -569,3 +641,6 @@ fn fixed_https_orchestration_retains_unknown_completion_without_recovery_claims(
     assert_eq!(report["inspection"]["run"]["state"], "recovery_required");
     assert_eq!(report["inspection"]["requests"][0]["original"], Value::Null);
 }
+
+#[path = "coordinator_native_https_cancellation.rs"]
+mod cancellation;
