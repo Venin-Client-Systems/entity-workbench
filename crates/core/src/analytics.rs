@@ -85,6 +85,31 @@ pub fn validate_transaction(t: &Transaction) -> Result<()> {
         "Account and original description are required",
     )
 }
+/// A transfer excludes money from spending totals only when both reviewed rows
+/// identify each other and exactly offset within one currency across accounts.
+pub(crate) fn verified_transfer_peer<'a>(
+    t: &Transaction,
+    lookup: &BTreeMap<&str, &'a Transaction>,
+) -> Result<Option<&'a Transaction>> {
+    let Some(peer) = t
+        .transfer_peer
+        .as_deref()
+        .and_then(|id| lookup.get(id))
+        .copied()
+    else {
+        return Ok(None);
+    };
+    let value = amount(&t.amount)?;
+    Ok((peer.id != t.id
+        && peer.transfer_peer.as_deref() == Some(&t.id)
+        && t.review == ReviewState::Accepted
+        && peer.review == ReviewState::Accepted
+        && t.account != peer.account
+        && t.currency == peer.currency
+        && !value.is_zero()
+        && amount(&peer.amount)? == -value)
+        .then_some(peer))
+}
 #[derive(Debug, Serialize)]
 pub struct Total {
     pub currency: String,
@@ -117,12 +142,25 @@ struct BalanceWindow<'a> {
     transaction_ids: Vec<String>,
 }
 pub fn analyse(transactions: &[Transaction]) -> Result<Analysis> {
+    let mut lookup = BTreeMap::new();
+    for t in transactions {
+        validate_transaction(t)?;
+        require(
+            !t.id.is_empty() && lookup.insert(t.id.as_str(), t).is_none(),
+            "Transaction identifiers must be nonempty and unique",
+        )?;
+    }
+    for t in transactions {
+        require(
+            t.transfer_peer.is_none() || verified_transfer_peer(t, &lookup)?.is_some(),
+            "Transfer marker requires a verified reciprocal pair in the complete transaction snapshot",
+        )?;
+    }
     let mut groups: BTreeMap<String, (Decimal, Decimal, Vec<String>, Vec<String>)> =
         BTreeMap::new();
     let mut previous: BTreeMap<(&str, &str, &str), BalanceWindow> = BTreeMap::new();
     let mut checks = vec![];
     for t in transactions {
-        validate_transaction(t)?;
         let a = amount(&t.amount)?;
         // Source order is authoritative. Accumulate rows without a balance;
         // comparing only the next balanced row would report a false discrepancy.

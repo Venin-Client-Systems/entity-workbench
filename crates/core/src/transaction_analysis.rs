@@ -291,29 +291,6 @@ fn hints(description: &str, value: Decimal) -> (Option<CashRule>, Option<RefundR
     };
     (cash, refund)
 }
-fn verified_peer<'a>(
-    t: &Transaction,
-    lookup: &BTreeMap<&str, &'a Transaction>,
-) -> Result<Option<&'a Transaction>> {
-    let Some(peer) = t
-        .transfer_peer
-        .as_deref()
-        .and_then(|id| lookup.get(id))
-        .copied()
-    else {
-        return Ok(None);
-    };
-    let value = analytics::amount(&t.amount)?;
-    Ok((peer.id != t.id
-        && peer.transfer_peer.as_deref() == Some(&t.id)
-        && t.review == ReviewState::Accepted
-        && peer.review == ReviewState::Accepted
-        && t.account != peer.account
-        && t.currency == peer.currency
-        && !value.is_zero()
-        && analytics::amount(&peer.amount)? == -value)
-        .then_some(peer))
-}
 fn recurring(
     rows: &mut [&Transaction],
     request: &TransactionAnalysisRequest,
@@ -433,7 +410,7 @@ pub fn analyze(
         let value = analytics::amount(&t.amount)?;
         let label = description_group(&t.description);
         let (cash_rule, refund_rule) = hints(&label, value);
-        let peer = verified_peer(t, &lookup)?;
+        let peer = analytics::verified_transfer_peer(t, &lookup)?;
         let currency = currencies.entry(t.currency.clone()).or_default();
         currency.scope_count += 1;
         let disposition = match t.review {

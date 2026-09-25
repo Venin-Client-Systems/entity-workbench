@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "base_revision": "3875aeaad2a4cd8b5a60f8a88facd70745041232",
+  "change": "Reject invalid transfer markers in summary/report calculation using shared verified pair rule",
+  "scope": [
+    "shared Rust transfer pair predicate",
+    "complete-snapshot summary validation",
+    "three regression tests"
+  ],
+  "before": {
+    "passed": 1,
+    "failed": 2,
+    "expected": "Reproduces silently excluded invalid markers and ambiguous identifiers"
+  },
+  "after": {
+    "focused_passed": 3,
+    "ordinary_core_passed": 476,
+    "native_or_specialized_ignored": 26,
+    "failed": 0,
+    "strict_all_target_core_clippy": "passed",
+    "historical_html_docx_byte_invariance": "passed",
+    "independent_source_review": "no actionable findings"
+  },
+  "implementation_errors_retained": [
+    "initial test fixture used nonexistent anchor variant; corrected before reproduction",
+    "first post-change command used incorrect package name; corrected command ran actual tests"
+  ],
+  "logs": {
+    "before": {
+      "sha256": "214922d45522d0b319bff45d65031017be3629e4e974275688bcae77b8ef4bf9",
+      "bytes": 837
+    },
+    "reproduced": {
+      "sha256": "06a3e208b851e802967427ccbd8b4a042df693d10f3b0c3816776d04d745d6bf",
+      "bytes": 1670
+    },
+    "after": {
+      "sha256": "a4c3be1be8bc28a333f27a318c6747db0847dcb8e28060f299a41836d88a1ee1",
+      "bytes": 83
+    },
+    "after-corrected": {
+      "sha256": "c05d53ecb45bfcdae0e548e3b9130753fdf6cdc358208ac46b4b22bf44cdf3d2",
+      "bytes": 6419
+    },
+    "core": {
+      "sha256": "ce1cd7cc70edce7dd02c4ef185ab08c10e0fd10e5d2d2ee7e90db513b8495cdc",
+      "bytes": 58918
+    },
+    "clippy": {
+      "sha256": "b2ea371cffd4c76afac1047e66c21e9843c666f50579757d1e0a00f974f65fef",
+      "bytes": 5076
+    }
+  },
+  "files": {
+    "crates/core/src/analytics.rs": "e8d85c0f3b94560b8591adace5a99cb22c5939c17b114ce2901c048df534d529",
+    "crates/core/src/transaction_analysis.rs": "d9c52a105b4e8efc4dfa4846df46af9db0eecdd3a476b2e7d3e036bdcf108e1d",
+    "crates/core/tests/summary_transfers.rs": "29e4565573f0e3ca7717d10c2a20e12a5dfcc5abc14694c3d3f96b76a02db63d"
+  },
+  "claims": {
+    "complete_release": false,
+    "schema_change": false,
+    "native_UI": false,
+    "new_performance_claim": false
+  }
+}
