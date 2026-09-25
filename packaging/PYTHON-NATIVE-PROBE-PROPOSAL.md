@@ -1,7 +1,8 @@
 # Proposed first confined Python compatibility probe
 
-Status: **proposal for root review; not implemented or executed by the offline
-installer**. The assembled prefix has only file-integrity evidence. The existing
+Status: **reviewed proposal with an unexecuted test-only implementation**. See
+[the source contract](../docs/security/PYTHON-COMPATIBILITY-PROBE.md). The offline
+installer does not execute it. The assembled prefix has only file-integrity evidence. The existing
 `workers/python/worker.py` envelope is experimental and is not a canonical
 protocol or permission boundary. No application adapter activation follows from
 this proposal.
@@ -90,7 +91,9 @@ pass after a failure.
 
 Further constrain fixed probe inputs to at most 64 KiB bootstrap, 64 KiB probe
 code, 32 KiB adapter, 64 KiB JSON fixtures and 1 MiB synthetic Parquet. Accept at
-most 1 MiB structured result and bounded 128 KiB diagnostic streams. Include
+most 1 MiB structured result and 128 KiB per diagnostic stream after confirmed
+reaping. This diagnostic bound is an acceptance/read limit; the 64 MiB file and
+128 MiB job-tree limits apply during execution. Include
 all assigned files in the job-tree monitor. The source/profile/fixture/binary/
 runtime identities, fresh job nonce, outcome, exit/termination status and every
 required assertion belong in an initially unsuccessful receipt. Timeout,

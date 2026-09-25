@@ -13,6 +13,8 @@ use std::{
 };
 
 pub(super) mod ocr;
+#[cfg(test)]
+mod python_probe;
 
 const FILE_BYTES: u64 = 64 * 1024 * 1024;
 const TREE_BYTES: u64 = 128 * 1024 * 1024;
