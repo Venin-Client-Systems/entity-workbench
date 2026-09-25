@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "source_commit": "090a350ea875ef09be5bc0bd310f188745fef118",
+  "source_tree": "d11d0869b15658458c821fe5e3870986c5d6a264",
+  "complete_release": false,
+  "scope": "Combined development source: durable collection UI, CSV core/native saves, Python plans and test harness",
+  "host": {
+    "os": "macOS",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "checks": {
+    "core": {
+      "passed": 473,
+      "library": 397,
+      "integration": 76,
+      "failed": 0,
+      "ignored_specialized": 26,
+      "command": "cargo test -p workbench-core --locked --offline"
+    },
+    "clippy": {
+      "passed": true,
+      "command": "cargo clippy -p workbench-core --all-targets --locked --offline -- -D warnings"
+    },
+    "python": {
+      "run": 280,
+      "passed": 276,
+      "skipped": 4,
+      "failed": 0,
+      "command": "python3 -m unittest discover -s scripts/tests -v"
+    },
+    "ui_build": {
+      "passed": true,
+      "large_chunk_warning": true
+    },
+    "browser": {
+      "passed": 138,
+      "failed": 0,
+      "elapsed_report": "5.3m",
+      "command": "npm run test:ui",
+      "real_core": true
+    },
+    "desktop": {
+      "command": "cargo test -p entity-workbench --locked --offline",
+      "compiled": true,
+      "test_cases": 0,
+      "native_application_run": false
+    },
+    "release_gate": {
+      "exit": 1,
+      "policy_valid": true,
+      "passed": 0,
+      "unpassed": 12
+    }
+  },
+  "logs": {
+    "core": {
+      "bytes": 58408,
+      "sha256": "af9f4f7075fabba1f7853c71c0b62f0a0dec4f2344b0bb9ab8a9f21dcc47a453"
+    },
+    "clippy": {
+      "bytes": 185,
+      "sha256": "58f22d2c691b5f8b673306e4b0c588a67ad18337007b4f4dd212d6e078c87cf9"
+    },
+    "python": {
+      "bytes": 47364,
+      "sha256": "5a255a516463108590f920c4390594edfa6fdfda960517ee20c956ca55672395"
+    },
+    "ui-build": {
+      "bytes": 932,
+      "sha256": "f5194ea82ad0bdaa20856ad47fd6b0073c5c862d17cf6c6e821c5d959951544b"
+    },
+    "ui": {
+      "bytes": 21322,
+      "sha256": "e912af13ee4cd8f8546809d2abc9e6089fd42e3e76ba284d51ec4e7b5f111841"
+    },
+    "desktop": {
+      "bytes": 498,
+      "sha256": "f44d5259950073c9685620a6b80df2ed9541edc888f2094471276f94094661ce"
+    },
+    "release": {
+      "bytes": 995,
+      "sha256": "aee8799ecb394c8f6ba859602f14cbdad1133374b433e535412bc824b7382c7a"
+    }
+  },
+  "separate_native_observations": {
+    "python_hostile": "packaging/evidence/python-hostile-first-2026-09-26.json",
+    "python_relocation": "packaging/evidence/python-relocation-first-2026-09-26.json",
+    "meaning": "Earlier exact signed source1abcc5e; not rerun by ordinary integration tests."
+  },
+  "design_readback": {
+    "source_commit": "02483514c9070cc4f2eb2ce63dee1b16bc6b71a9",
+    "frozen_source_digests_verified": 27,
+    "retained_artifact_digests_verified": 17,
+    "manifest_sha256": "222ef02333576eca83bb456fbe918dd47a4ee97a019a68d870e7268733ef02e3",
+    "root_visual_review": [
+      "figma-preview.png",
+      "app-preview.png"
+    ],
+    "post_reload_equality": false
+  },
+  "unverified": [
+    "Native CSV UI/save on actual compiled desktop",
+    "Live durable collection execution and broad coverage",
+    "Relocated analytical compatibility",
+    "Clean installers, signed helpers and full supported platform runtime matrix"
+  ]
+}
