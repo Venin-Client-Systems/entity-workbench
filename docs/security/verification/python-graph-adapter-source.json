@@ -1,0 +1,326 @@
+{
+  "base_commit": "93eccb3ae7d25585a90db7785cb11457720311f4",
+  "candidate_runtime_executed": false,
+  "checks": [
+    {
+      "command": "cargo test -p workbench-core --locked",
+      "ignored": 31,
+      "integration_passed": 79,
+      "library_passed": 521,
+      "outcome": "passed",
+      "source_commit": "80ff5ee8920791b29596741b0b6836073541a9e6"
+    },
+    {
+      "command": "cargo clippy -p workbench-core --all-targets --locked -- -D warnings",
+      "outcome": "passed",
+      "source_commit": "80ff5ee8920791b29596741b0b6836073541a9e6"
+    },
+    {
+      "command": "cargo clippy -p workbench-core --all-targets --release --locked -- -D warnings",
+      "outcome": "passed",
+      "source_commit": "80ff5ee8920791b29596741b0b6836073541a9e6"
+    },
+    {
+      "command": "cargo fmt --all --check",
+      "outcome": "passed",
+      "source_commit": "80ff5ee8920791b29596741b0b6836073541a9e6"
+    },
+    {
+      "command": "python3 -B -m unittest discover -s scripts/tests",
+      "outcome": "passed",
+      "passed": 341,
+      "skipped": 4,
+      "source_commit": "80ff5ee8920791b29596741b0b6836073541a9e6"
+    },
+    {
+      "command": "python3 -B -O -m unittest discover -s scripts/tests",
+      "outcome": "passed",
+      "passed": 341,
+      "skipped": 4,
+      "source_commit": "80ff5ee8920791b29596741b0b6836073541a9e6"
+    },
+    {
+      "command": "cargo test -p workbench-core --locked engines:: --lib",
+      "ignored": 23,
+      "outcome": "passed",
+      "passed": 61,
+      "source_phase": "final engine source before signature"
+    },
+    {
+      "command": "cargo clippy -p workbench-core --target x86_64-pc-windows-gnu --lib --locked -- -D warnings",
+      "outcome": "environment_preparation_failed",
+      "reason": "x86_64-w64-mingw32-gcc unavailable; Rust cross-target verification not established"
+    },
+    {
+      "command": "trusted SSH signature verification",
+      "outcome": "passed"
+    },
+    {
+      "command": "public audit of staged source",
+      "files": 23,
+      "outcome": "passed"
+    }
+  ],
+  "historical_schemas": {
+    "baseline_commit": "93eccb3ae7d25585a90db7785cb11457720311f4",
+    "changed": [],
+    "files": 102,
+    "manifest_artifact": "artifacts/python-graph-adapter/historical-schemas.json"
+  },
+  "limits": [
+    "No candidate interpreter execution or native app attachment in this slice",
+    "Windows local cross-check did not complete; hosted platform verification still required",
+    "Development sandbox-exec mechanism is not the signed-helper release boundary",
+    "Exact-source finite native app-recipe/coordinator proof remains pending",
+    "Successful return requires full pre/post inventory; failed/cancelled wait makes no post-integrity claim",
+    "Preparation and hashing are cooperatively cancellable and outside the child30second wall budget",
+    "Equivalent-user path races are not an OS security boundary",
+    "Intel Mac and Windows Python runtime/confinement, packaging/notices and hardRSS/supervisor-crash containment remain separate gates"
+  ],
+  "normal_graph_execution": "unavailable",
+  "peer_review": {
+    "final_report": "No remaining concrete blocker in bounded source review; not owner approval or release approval",
+    "findings_repaired": [
+      "explicit coordinator-owned private scratch root",
+      "Interrupted cancellation without error-string matching",
+      "no verified-after claim or post reads on cancelled/failed waits"
+    ],
+    "kind": "agent_source_review",
+    "reviewer_role": "parent integration agent"
+  },
+  "probe_source_binding": {
+    "artifact": "artifacts/python-graph-adapter/probe-source-identity.json",
+    "files": 41,
+    "historical_receipts_modified": false,
+    "includes_shared_inventory_profile_staging_wait_identity_bootstrap_helpers": true
+  },
+  "public_network_campaign_executed": false,
+  "raw_local_artifacts": {
+    "artifacts/python-graph-adapter/clippy-clean-source.log": {
+      "bytes": 219,
+      "sha256": "e2ab85321eb95c2754121b1b84e19adf59665d3a904f77b4af4402464f991325"
+    },
+    "artifacts/python-graph-adapter/core-clean-source.log": {
+      "bytes": 74725,
+      "sha256": "0afe054884458f9b48dd0038fa55f9cc338846028e7187a18627dd4a53fcc3ef"
+    },
+    "artifacts/python-graph-adapter/engines-final.log": {
+      "bytes": 11003,
+      "sha256": "baf690b2f0b7dd72ebae0364f4bea3f6604450ae7fcc4e7aa05ccd779291526e"
+    },
+    "artifacts/python-graph-adapter/engines-initial-failure.log": {
+      "bytes": 11668,
+      "sha256": "312a270010575977c365652f70c3d9570abf6f903365d5bf68c64cc0d1ec4798"
+    },
+    "artifacts/python-graph-adapter/fmt-clean-source.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "artifacts/python-graph-adapter/graph-source-final.log": {
+      "bytes": 103,
+      "sha256": "0e628cb3078fa3ef493bd5a6614aae5fc2e52bb11383774d0738b3c32af009c1"
+    },
+    "artifacts/python-graph-adapter/historical-schemas.json": {
+      "bytes": 11829,
+      "sha256": "e4abed49b17f4f6d0dcfcc76acc8f82b0a9524a8e536af71f2ad79940e580426"
+    },
+    "artifacts/python-graph-adapter/probe-source-identity.json": {
+      "bytes": 4914,
+      "sha256": "34282326d762a65b0d4e15a211e719f58e86d4a26153804a8c1ab6ff59ff897c"
+    },
+    "artifacts/python-graph-adapter/public-audit-source.log": {
+      "bytes": 40,
+      "sha256": "b12305e97c6c5a8d6403bde9acade0e9a3557c998fa260220223dbfa146398ab"
+    },
+    "artifacts/python-graph-adapter/python-clean-source.log": {
+      "bytes": 974,
+      "sha256": "659073a2f7ec026feff22bcaec60757fd586ee22957417b46e466a35bce27871"
+    },
+    "artifacts/python-graph-adapter/python-optimized-clean-source.log": {
+      "bytes": 974,
+      "sha256": "00f5d306d651a5b41e73003220edc6a72ec4ba77e445b93ab03ed6b2392c9550"
+    },
+    "artifacts/python-graph-adapter/release-clippy-clean-source.log": {
+      "bytes": 210,
+      "sha256": "2d1b57aa5c90da0c4abab126b58ba454be5bf9d05febd30c6c36f86541cb9396"
+    },
+    "artifacts/python-graph-adapter/signature-source.log": {
+      "bytes": 95,
+      "sha256": "5f3f0d9f099255a8b0687a2dc0a0908eae975996f949d495203bf5e85992c355"
+    },
+    "artifacts/python-graph-adapter/windows-clippy.log": {
+      "bytes": 5288,
+      "sha256": "e7ae159c548e127790d2311e699e5214aa1d13bd816a9c602dce6bbecba48313"
+    }
+  },
+  "recorded_at_utc": "2026-09-25T18:46:10.427113+00:00",
+  "retained_initial_failure": {
+    "artifact": "artifacts/python-graph-adapter/engines-initial-failure.log",
+    "failed": 1,
+    "finding": "New test temporary directory did not satisfy explicit0700 requirement",
+    "ignored": 23,
+    "passed": 60,
+    "repair": "Fixture and new application assignment request0700 explicitly; production admission bound unchanged",
+    "source_phase": "initial draft before explicit private scratch fixture mode"
+  },
+  "runtime_contract": {
+    "application_request_bytes": 1048576,
+    "historical_canonical_probe_request_bytes": 65536,
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "networkx": "3.6.1",
+    "platform": "macos-aarch64 only",
+    "preparation_included_in_wall_limit": false,
+    "python": "3.13.15",
+    "raw_graph_result_bytes": 131072,
+    "supervised_child_wall_seconds": 30,
+    "wrapper_bytes": 65536
+  },
+  "schema_version": 1,
+  "scope": "Fixed app-owned Python graph adapter source foundation; no application activation or candidate campaign",
+  "source_commit": "80ff5ee8920791b29596741b0b6836073541a9e6",
+  "source_files": {
+    "crates/core/src/engines.rs": {
+      "bytes": 8829,
+      "sha256": "c3944d4ebcc93f01e493d255437c26b488678b43e9148e50bfd8b01c380038ba"
+    },
+    "crates/core/src/engines/python_graph.rs": {
+      "bytes": 9934,
+      "sha256": "808b1a27f4b7a1baee3d7c3c87c949bff87d47b9d71720fa3a34998e1789f4a7"
+    },
+    "crates/core/src/engines/python_graph/tests.rs": {
+      "bytes": 5570,
+      "sha256": "20b71de0f848ea07d5c363332f7ef12938e2a3de32ce8e270e73cc64ccfeff5c"
+    },
+    "crates/core/src/engines/supervision.rs": {
+      "bytes": 20508,
+      "sha256": "c3b0f4eeb21d5b25ab04ae2f5830a4499f74c7776edff1f1ab1111154b49bd30"
+    },
+    "crates/core/src/engines/supervision/python.rs": {
+      "bytes": 14743,
+      "sha256": "23ad228a22ba625b63faffa87eb04b857e396e6639c5d35e8db2a80cc4641079"
+    },
+    "crates/core/src/engines/supervision/python/tests.rs": {
+      "bytes": 6758,
+      "sha256": "030e477614d6c4a93b83fb1dfec9cdc2b5c107c8535959d99ec64bb5cbf454ae"
+    },
+    "crates/core/src/engines/supervision/python_probe.rs": {
+      "bytes": 22797,
+      "sha256": "787a47527c883efab32910b619a199a65f99127eb1c131be4707099ade824ef1"
+    },
+    "crates/core/src/engines/supervision/python_probe/engine_recipes.rs": {
+      "bytes": 8413,
+      "sha256": "4937f3384dbe74a59a90859e3f955ca039102974e59e0069515523c53e92b66a"
+    },
+    "crates/core/src/store.rs": {
+      "bytes": 44110,
+      "sha256": "78d04a141f20823f62937cadae9d4f40260cb14b12c5f3c953a24272f0f2a837"
+    },
+    "crates/core/src/store/file_identity.rs": {
+      "bytes": 2877,
+      "sha256": "132adfcaf5b19dd449cb30def22ec58751ce8116b2e1a788f9d555ef457444d8"
+    },
+    "docs/security/PYTHON-GRAPH-ADAPTER.md": {
+      "bytes": 9246,
+      "sha256": "ba6b1976bbf350431c38f7f7bff2f5fdd3416f878d21f1f8ab39e494c1b35538"
+    },
+    "scripts/python_canonical_graph_receipts.py": {
+      "bytes": 7779,
+      "sha256": "6e92aaad04914e981be157ebd74f1fac7bdbabe92b925fc1ff16e3b5917a1531"
+    },
+    "scripts/python_engine_receipts.py": {
+      "bytes": 4093,
+      "sha256": "554deb23a1c4c00f8b1b321afa11b8947de9adaf898685294060d368c5a59bb5"
+    },
+    "scripts/test_python_compatibility.py": {
+      "bytes": 22687,
+      "sha256": "4f20dc81aa792458a688aff6c08211dae8fc20382a21d4abcf3980eb5d0dbe77"
+    },
+    "scripts/tests/test_python_engine_recipes.py": {
+      "bytes": 13551,
+      "sha256": "4d1770cd1316d46e0ab1223f17b80a4db44fed73701f03e7bfe26b033c66d920"
+    },
+    "scripts/tests/test_python_graph_worker.py": {
+      "bytes": 7740,
+      "sha256": "04800a9676de17cedb0d95806c2f8d20aa64a8c98adc793f9077bcc92265b776"
+    },
+    "scripts/tests/test_python_probe_contracts.py": {
+      "bytes": 20109,
+      "sha256": "cbb7a07fabfbde577040afbc5ced34a4a55d6f285bba09f5110cd004feb24e43"
+    },
+    "workers/python/graph_worker.py": {
+      "bytes": 4565,
+      "sha256": "bc134f998b777749bfc5ba876ce78a7165453976df41f17a3cb3bacec3bdb0cc"
+    },
+    "workers/python/probe/bootstrap.py": {
+      "bytes": 4684,
+      "sha256": "08b8e052100fbdf24c3fa8f37a61ab2fe1fe98a0f9fc8da5b8558b4a16b439a8"
+    },
+    "workers/python/probe/canonical_graph.py": {
+      "bytes": 3764,
+      "sha256": "877bb9d172c436101c8d2113699a6eba46b7c9126f20adb48b7f3df0536a1a47"
+    },
+    "workers/python/probe/compatibility.py": {
+      "bytes": 5429,
+      "sha256": "6116c7614810b8c6c47e60fc65c57367fbd8ac037d2152a193fef311cd2b3919"
+    },
+    "workers/python/runtime_support.py": {
+      "bytes": 2573,
+      "sha256": "5ed69131c17c93cfb3d80a1d6d5e11c2a41a06d64691d84c226fee0859d9b45d"
+    },
+    "workers/python/runtime_versions.json": {
+      "bytes": 1416,
+      "sha256": "13ec94eb7e1fac2b4f5a3130552a132c50f73799a6e680151a3dc4ab7499f349"
+    }
+  },
+  "source_tree": "1ad7b000deaf0a77a4792c50e3350ecf6501ef12",
+  "test_executables": {
+    "target/debug/deps/assessment_workflows-412bc75d16d76f5f": {
+      "bytes": 24153560,
+      "sha256": "bc4ba09302e0f31022c5cef0e443b7bc223a5206623f74bf1056d700b38a5539"
+    },
+    "target/debug/deps/desktop_summary_cli-6eee4e59481b5389": {
+      "bytes": 1850168,
+      "sha256": "36b2e16f601ef380d25e8aa42452582a58daa3e1d7c248f5911dafa592c2fbaa"
+    },
+    "target/debug/deps/ew_dev-98e4c7c8ea71bbe0": {
+      "bytes": 1018584,
+      "sha256": "33cb3b797017e26f647991a48525839e3ec2cb0cbbd91ac6af398798c080f3a5"
+    },
+    "target/debug/deps/identity_workflows-f77c823baeca36d9": {
+      "bytes": 12537808,
+      "sha256": "02b9eb8412802c105c21494a7bb392ac7bfa5ae6b63c942df6863d5ad617afa0"
+    },
+    "target/debug/deps/report_calculations-683ae60520e124bc": {
+      "bytes": 14635448,
+      "sha256": "c8675b46e33c795e992550b7c460f6231dbee12f0d3963ba39f8cbce5ce3309f"
+    },
+    "target/debug/deps/report_docx-b7b6d0a6e10b397b": {
+      "bytes": 13098544,
+      "sha256": "b0335fe1ab283a7c4ce89eeadcdf4d886831c001725cdd8bd75bf040474e26bd"
+    },
+    "target/debug/deps/statement_mapping-5eb03692d34c992c": {
+      "bytes": 12076336,
+      "sha256": "08b831c17843026439cef0247c11dfd998d8e29466739ed1b3b39de785ec8e0a"
+    },
+    "target/debug/deps/summary_transfers-d0aa11781854339a": {
+      "bytes": 1939040,
+      "sha256": "07ced5496cb7c786219349cd7b0ff9838e336f53c245e2324120207c4edf5c13"
+    },
+    "target/debug/deps/transaction_comparison-3664b01b40f13ccb": {
+      "bytes": 24576328,
+      "sha256": "64b0a88d32c4b7ccd38550c297f0c77e358807d9142f97d19f4251ee733fa95f"
+    },
+    "target/debug/deps/transaction_patterns-7dc63455fe924719": {
+      "bytes": 24577080,
+      "sha256": "0bc3ecdaf238e63be6993b0c746ea97f3a983761a0603bc1658e46d35160872f"
+    },
+    "target/debug/deps/workbench_core-3b02699a934d9ff3": {
+      "bytes": 58715872,
+      "sha256": "8f1287e953ec5c46114a3b19c8365997aa44a6b9ce3174d6b1c97d4333992853"
+    },
+    "target/debug/deps/workflows-6497e415c8ecb733": {
+      "bytes": 19030808,
+      "sha256": "0f08962d4530b5199e5e52f602c86a03a3ff158e7ef8de5335a0893eb3ea822d"
+    }
+  }
+}
