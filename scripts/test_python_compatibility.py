@@ -90,16 +90,18 @@ def asset_identity(value, maximum, path=None):
             and (path is None or value['path'] == path))
 
 
-def failure_summary(native, campaign):
+def failure_summary(native, campaign, *, recipe="python-compatibility-v1", assigned_names=ASSIGNED):
     # A malformed receipt cannot carry arbitrary strings, file names or identities into public evidence.
     require(isinstance(native, dict) and set(native) == NATIVE_KEYS, 'native-observation-shape')
     require(type(native['schema_version']) is int and native['schema_version'] == 1
-            and native['recipe'] == 'python-compatibility-v1' and native['runtime_manifest_sha256'] == MANIFEST
+            and recipe in ('python-compatibility-v1', 'python-hostile-v1') and native['recipe'] == recipe
+            and native['runtime_manifest_sha256'] == MANIFEST
             and native['complete_release'] is False and native['campaign_id'] == campaign
             and canonical_uuid(campaign) and canonical_uuid(native['job_id']) and native['architecture'] == 'aarch64'
             and type(native['runtime_verified']) is bool and type(native['diagnostics_within_bound']) is bool,
             'native-observation-identity')
-    require(native['phase'] in ('not-started', 'runtime-inventory', 'confined-compatibility', 'complete')
+    require(native['phase'] in ('not-started', 'runtime-inventory', 'complete',
+                                'confined-hostile' if recipe == 'python-hostile-v1' else 'confined-compatibility')
             and (native['last_worker_checkpoint'] is None or native['last_worker_checkpoint'] in
                  ('bootstrap', 'versions', 'imports', 'mentions', 'graph', 'transactions', 'plugins', 'complete'))
             and (native['failure'] is None or native['failure'] in
@@ -120,7 +122,7 @@ def failure_summary(native, campaign):
     require(all(native[key] is None or type(native[key]) is int and 0 <= native[key] <= 86_400_000
                 for key in ('preparation_elapsed_ms', 'supervised_elapsed_ms')), 'unsafe-elapsed-observation')
     assigned = native['assigned_files']
-    require(isinstance(assigned, dict) and set(assigned) <= set(ASSIGNED)
+    require(isinstance(assigned, dict) and set(assigned) <= set(assigned_names)
             and all(asset_identity(value, 64 * 1024) for value in assigned.values()), 'unsafe-assigned-identity')
     return {key: native[key] for key in NATIVE_KEYS - {'result'}}
 
@@ -180,8 +182,10 @@ def run_logged(command, path, timeout, environment=None):
     return result
 
 
-def build_binary(artifacts):
+def build_binary(artifacts, release=False):
     command = ['cargo', 'test', '--offline', '--locked', '-p', 'workbench-core', '--lib', '--no-run', '--message-format=json']
+    if release:
+        command.append('--release')
     log = artifacts / 'build.log'
     result = run_logged(command, log, 300)
     require(result.returncode == 0, 'source-compilation-failed')
@@ -194,6 +198,8 @@ def build_binary(artifacts):
             item = json.loads(line)
             if (item.get('reason') == 'compiler-artifact' and item.get('profile', {}).get('test') is True
                     and item.get('target', {}).get('name') == 'workbench_core' and item.get('executable')):
+                require(not release or item['profile'].get('opt_level') == '3'
+                        and item['profile'].get('debug_assertions') is False, 'wrong-native-build-profile')
                 binaries.add(Path(item['executable']))
     require(len(binaries) == 1, 'ambiguous-compiled-native-test')
     binary = binaries.pop()

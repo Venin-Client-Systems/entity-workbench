@@ -1,0 +1,68 @@
+{
+  "base_commit": "99bc497a53dca31e8c3f70c27d7dbddacd164bd9",
+  "compatibility_recipe_files_unchanged": [
+    "workers/python/probe/bootstrap.py",
+    "workers/python/probe/compatibility.py",
+    "workers/python/probe/fixture.json",
+    "workers/python/probe/expected.json"
+  ],
+  "complete_release": false,
+  "observed_on": "2026-09-26",
+  "schema_version": 1,
+  "scope": "EW-07 hostile/relocation source contracts",
+  "source_binding": "individual-file-sha256-before-commit",
+  "source_files": {
+    "crates/core/src/engines/supervision/python_probe.rs": "052cfbc2a15dfb8ca77c2e76701c0eb997031baa2054e8aa8686445401caf521",
+    "crates/core/src/engines/supervision/python_probe/hostile.rs": "e224d3bfcb65186b456665562f6aee5412984ff10b3004e56985e85e06f55566",
+    "crates/core/src/engines/supervision/python_probe/listeners.rs": "0e42e0d9e36bdfde6fd12393be61119e9a2f7b8a805bc3b391f8caaa5874c502",
+    "docs/security/PYTHON-ISOLATION-PROBE.md": "fc3f806cd6fbe4e1cb734689f10d7cbdef1f4aba00f74c04eeb7ce43ac4911af",
+    "scripts/relocate_python_prefix.py": "a38098d0b38ba1e5f939455e8b85522c12d47a417f83405b3d37a2a29c7841c5",
+    "scripts/test_python_compatibility.py": "70b4a597a5c72cf6645afa4fc5c73c1bcb677d509929d40d4a3ac57dcefe08d9",
+    "scripts/test_python_isolation.py": "e3255d993d8299076132ede9c6c866ef6bb3a634a021529d820b537e2ce8167c",
+    "scripts/tests/test_python_isolation_contracts.py": "6333d8647dfc96fc25efab2153ab0a2b15c3995321e7ef233d916b1d0be1bc04",
+    "workers/python/probe/hostile.py": "a9bbe45f54da18c3e900ab00dff870df67558e3d639f3ef2e3cd17a583506555"
+  },
+  "tests": {
+    "Python_contracts": [
+      {
+        "host_version": "3.13.11",
+        "optimized": false,
+        "passed": 31
+      },
+      {
+        "host_version": "3.13.11",
+        "optimized": true,
+        "passed": 31
+      },
+      {
+        "host_version": "3.14.2",
+        "optimized": false,
+        "passed": 31
+      },
+      {
+        "host_version": "3.14.2",
+        "optimized": true,
+        "passed": 31
+      }
+    ],
+    "cargo_fmt_check": "passed",
+    "ordinary_Rust_contracts": {
+      "ignored": 3,
+      "passed": 10
+    },
+    "strict_core_all_targets_clippy": "passed"
+  },
+  "this_revision_candidate_executed": false,
+  "time_zone": "Australia/Adelaide",
+  "trusted_release_measurement": "not-started",
+  "unverified": [
+    "Python-hostile-file-and-loopback-controls",
+    "fresh-prefix-relocation-compatibility",
+    "Internet-DNS-IPv6-denial",
+    "hard-RSS-ceiling",
+    "supervisor-crash-termination",
+    "canonical-protocol",
+    "clean-signed-platform-releases",
+    "complete-notices"
+  ]
+}

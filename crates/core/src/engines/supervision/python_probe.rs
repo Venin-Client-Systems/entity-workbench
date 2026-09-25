@@ -10,6 +10,9 @@ use std::{
     path::{Component, PathBuf},
 };
 
+mod hostile;
+mod listeners;
+
 const MANIFEST: &str = "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822";
 const BOOTSTRAP: &[u8] = include_bytes!("../../../../../workers/python/probe/bootstrap.py");
 const COMPATIBILITY: &[u8] = include_bytes!("../../../../../workers/python/probe/compatibility.py");
@@ -770,4 +773,43 @@ fn python_probe_quota_categories_never_expose_unrecognized_error_text() {
         None
     );
     assert_eq!(quota_kind(&Error::Validation("private".into())), None);
+}
+
+#[test]
+#[ignore = "explicit trusted Rust prefix hashing measurement; never executes Python"]
+fn native_python_prefix_hash_measurement() {
+    assert!(
+        !cfg!(debug_assertions),
+        "Measurement requires recorded release profile"
+    );
+    let prefix = PathBuf::from(
+        std::env::var_os("WORKBENCH_TEST_PYTHON_PREFIX").expect("Explicit prefix required"),
+    );
+    let artifacts = PathBuf::from(
+        std::env::var_os("WORKBENCH_TEST_PYTHON_ARTIFACTS").expect("Fresh artifacts required"),
+    );
+    let campaign = std::env::var("WORKBENCH_TEST_PYTHON_CAMPAIGN").expect("Campaign required");
+    assert_eq!(
+        uuid::Uuid::parse_str(&campaign).unwrap().to_string(),
+        campaign
+    );
+    reject_linked_ancestors(&artifacts).unwrap();
+    let mut output = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(artifacts.join("native-report.json"))
+        .unwrap();
+    let mut observation = serde_json::json!({"schema_version":1,"recipe":"trusted-prefix-hash-v1","campaign_id":campaign,
+        "measurement_id":uuid::Uuid::new_v4().to_string(),"manifest_sha256":MANIFEST,"passed":false,"complete_release":false,
+        "candidate_executed":false,"build_profile":"release","debug_assertions":false,"elapsed_ms":null,"failure":null});
+    save(&mut output, &observation).unwrap();
+    let started = Instant::now();
+    let verified = verify_prefix(&prefix, MANIFEST, 11_320);
+    observation["elapsed_ms"] = elapsed_ms(started).into();
+    match verified {
+        Ok(()) => observation["passed"] = true.into(),
+        Err(_) => observation["failure"] = "prefix-verification-failed".into(),
+    }
+    save(&mut output, &observation).unwrap();
+    assert_eq!(observation["passed"], true, "{observation}");
 }
