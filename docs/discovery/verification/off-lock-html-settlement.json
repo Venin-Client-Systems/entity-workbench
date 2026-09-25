@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "scope": "EW-22 / #25 private v4 coordinator settlement replay and interpretation outside the workspace mutex; synthetic local-fixture verification only",
+  "source": {
+    "commit": "61399effff794f63c0aca0d13d54ad0e9bf7818e",
+    "tree": "9298fa78bbfabe9b85af4c5b31834cd0393d4192",
+    "base_commit": "7285484a6c0a9d882f2febdf678e2e3a5aad5165",
+    "files_sha256": {
+      "crates/core/src/collection_execution.rs": "07109dba0a56d9d6a497e584302b8515443ed5a3847447d3adc7e11782c87c32",
+      "crates/core/src/collection_machine.rs": "2d3406f2b3a5745e934a959640694c49481776a6f64dcc7c067d55fec27cd70e",
+      "crates/core/src/coordinator_collection.rs": "9383f7e45ba4033df4169318148e2ce98b0f5b08b7aec6e6733cadf4a9ecb6cd",
+      "crates/core/src/coordinator_collection_api_tests.rs": "1f8deb41968c2e17aed4cd8fe73f1330f1f63af88a19bf846fd04c804de2e9e2",
+      "crates/core/src/store.rs": "0f5417a100b1e0f5c1833ec65257f612606e5222dd9cfc24003a0b1aea424c00",
+      "crates/core/src/store/collection_jobs.rs": "4ad382b44214fb9d69773ed7b33d0f05d999aca62cf5ebea8e000806d2096da7",
+      "crates/core/src/store/collection_preparation.rs": "b24c0da4eb22113cd02dff9cad56f190549b86c308848b80e6c03e29ec6c9784",
+      "crates/core/src/store/collection_preparation_tests.rs": "8bb2617af064cd27882cb5a5d520b8bf8d138a308a347a361f1f673a7bf99832",
+      "crates/core/src/store/collection_transport_settlement.rs": "665b3b2e488025a461adff0255182fa61b666848bb45a903733c9733d2259bc2",
+      "docs/discovery/BOUNDED-HTML-INTERPRETATION.md": "efe5fca80444fa1d8c44b678ce86bbaa4c883e0cc1162bc730c87d5b17ce16c1",
+      "docs/discovery/OFF-LOCK-HTML-SETTLEMENT.md": "431bd0b8f90fc2d74e7f2ba059be548f7f3ed81c40fba893fbfed6f4bded3758"
+    },
+    "signature_verified": true,
+    "signing_key_fingerprint": "SHA256:4ExWyAylBHkF7uICEH9EoVGA9DZyqCDrHDyiPIodK5Y"
+  },
+  "host": {
+    "system": "Darwin",
+    "version": "26.6.2",
+    "architecture": "arm64"
+  },
+  "results": {
+    "core": {
+      "command": "cargo test -p workbench-core --locked --offline",
+      "passed": 540,
+      "failed": 0,
+      "ignored": 30,
+      "log": "core.log"
+    },
+    "focused_collection": {
+      "command": "cargo test -p workbench-core --locked --offline --lib collection",
+      "passed": 143,
+      "failed": 0,
+      "ignored": 2,
+      "log": "collection-focused-after.log"
+    },
+    "new_regressions": {
+      "store_groups": 8,
+      "coordinator_groups": 2,
+      "covered": [
+        "bounded captured metadata and reference count before decode",
+        "same-length pending body substitution at prepare and commit",
+        "exact single canonical Cancel suffix and forged checkpoint refusal",
+        "unrelated workspace revision with exact input/source identity",
+        "ownership replacement and source metadata/original changes",
+        "failed publication rollback and explicit reprepare without new acquisition",
+        "crash/reopen with charged unknown request and unchanged deadline",
+        "backup/restore and exact already-settled idempotence",
+        "stop and canonical cancellation after clock rollback retain raw receipt/body",
+        "real local TLS complete receipt, canonical cancellation while preparation is paused",
+        "joined shutdown holds ownership until paused preparation finishes"
+      ]
+    },
+    "clippy_debug": {
+      "command": "cargo clippy -p workbench-core --all-targets --locked --offline -- -D warnings",
+      "passed": true,
+      "log": "clippy-debug.log"
+    },
+    "clippy_release": {
+      "command": "cargo clippy -p workbench-core --release --all-targets --locked --offline -- -D warnings",
+      "passed": true,
+      "log": "clippy-release.log"
+    },
+    "format": {
+      "command": "cargo fmt --all -- --check",
+      "passed": true,
+      "log": "fmt.log"
+    },
+    "public_source_audit": {
+      "staged_files": 11,
+      "passed": true,
+      "log": "source-audit.log"
+    },
+    "historical_schemas": {
+      "base": "7285484a6c0a9d882f2febdf678e2e3a5aad5165",
+      "tracked_files": 100,
+      "schema_json_files": 98,
+      "unchanged": true,
+      "files_sha256": {
+        "schemas/README.md": "19e04046245de2fca9757349b53cfa9f0f9e7a32f4f6b8ada2c725b758cfe5ab",
+        "schemas/account-flow-request.v1.schema.json": "3c4baf019f54d6edfe2f8a13d149b5d1897d92c40e2473b48763a791b0df0564",
+        "schemas/account-flows.v1.schema.json": "bab4a1961d68c2030fcd08b2e7fce94477efc8806adc4669a642f93396073a46",
+        "schemas/analysis-manifest.v1.schema.json": "65a749c8c10ea3a3c86b4982c99bff43cd82ca7e8872466381f3209df1908c63",
+        "schemas/citation-catalogue-page.v1.schema.json": "75f95824f59a69e7f8ce836ab5e75a49c19446e662bd50abd3f3b9d6512c8ec4",
+        "schemas/citation-catalogue-request.v1.schema.json": "61c582c165ed3230bf2fc55dab8549d8b7da1d844681373fabb58950f0d650bd",
+        "schemas/citation-selections-request.v1.schema.json": "8c1e24de311e62ffbb9d4cda108d7d5eebbde6d40167371e216e4ed065a6dc96",
+        "schemas/citation-selections.v1.schema.json": "f14a21642f5fbbab8aa2478b7cee104eb10ccb0159ba800f069daf8270b2f051",
+        "schemas/collection-preview.v1.schema.json": "56b85de6ad0379f88931554e215a74d2737b25af544d117f7985f6999c944752",
+        "schemas/collection-receipt.v1.schema.json": "227a93dc7446f32eddebf051f2a689c8032ed028756cc370ed9fd191554bab45",
+        "schemas/collection-run-inspection.v1.schema.json": "1f84aca15f0e7427f5758cdf746e4f6daa888a1196d26ddabcbfe8f8c902ac0f",
+        "schemas/collection-run-page-request.v1.schema.json": "8e8d36fd4c269e4f693f0e018c838ac6240400dff892f1afd8441c3a99041163",
+        "schemas/collection-run-page.v1.schema.json": "97a852dd0ff65ec8cf5f9f01316b9baa379b91d7b5d85111abd430a300cc1d5a",
+        "schemas/command.v1.schema.json": "d8608ccd594c43202d4d8075ff25c62a9fe94aac808d531d02e8451b38fe9d6e",
+        "schemas/command.v10.schema.json": "882799cb76f14f5713618dcde8aeafe8439c9ec36a69b02395e826aad34322e4",
+        "schemas/command.v11.schema.json": "554ae9ac9308771ba53521037870f91d902cc6762343f543aab4ab2d629e5242",
+        "schemas/command.v12.schema.json": "e1a52d89c8dd9544686d233548ec97d683d1621908da07ab97899e18e579383f",
+        "schemas/command.v13.schema.json": "033c91cecdc7996c1c1a7dbea3de6447b22abc261a61aaa41b937323c2afacdc",
+        "schemas/command.v14.schema.json": "2b113e80cab45f41fa5c7c6aaebcdaf946ef7e433a7dab3f4e1202a6d605f08f",
+        "schemas/command.v15.schema.json": "48f296bdb45e08e6105626a6e63d28f11096940505380d2e6af9160b0bdc76e8",
+        "schemas/command.v16.schema.json": "2bace5da1a0b964db9122e0cc668a75ed8a3ade947c0ec7d0a36471fb7d189ef",
+        "schemas/command.v17.schema.json": "c85bed4f16f33fff522d24ed3bedb71d56b2ed0b07be47f21a3487121566fc93",
+        "schemas/command.v18.schema.json": "432174a9c4c0ce814f2daf98b92c7b8e41dfdcf42d345e497975298f4535673a",
+        "schemas/command.v19.schema.json": "12ec61dbb085cc3aa4538a45cfc078bc8ff078ba9d5af6f723524ee9531f5a93",
+        "schemas/command.v2.schema.json": "3b181439ea5dfc8b4110672569a2a373b55688a87d012ddf93e70441d8069af3",
+        "schemas/command.v20.schema.json": "b450d02c8ecd6a8c7485289eae9187d27f8430038339dbce88f0482a9757b066",
+        "schemas/command.v21.schema.json": "ec0d508bdfdd617d1d4f2eaeae0e51d5f010c9ae27c6f3008a6897bc656896e6",
+        "schemas/command.v22.schema.json": "851fa3e1b5354a715ce6977c46424fa965097f83c00d891c98eda873819c35f1",
+        "schemas/command.v23.schema.json": "987474747ee8a54556e54bcd7f4762981ad4c79500f5fd281df7fc0d92274259",
+        "schemas/command.v24.schema.json": "4e2a9500c23599266c8e5da3c4532612e11d39e23d10a595ba7ff76381985e97",
+        "schemas/command.v25.schema.json": "3d581f2238abc74905b48d99abbdb09a7369290ec1e1cca35957860c34b9f4e4",
+        "schemas/command.v3.schema.json": "5f238782302718eba8e869cfe3575cdb9e8727e33c194d919858e441593ae5e0",
+        "schemas/command.v4.schema.json": "097fd9910aa5f0bb8fefda2c5c8b817fc78391b25278c3e153cdb8ea007907c1",
+        "schemas/command.v5.schema.json": "d14aff6ba1251730419f9f9d99a9962c2db447510c6fc90ff5d1de6e30ebb886",
+        "schemas/command.v6.schema.json": "f39ecb324514042a282f33363934ee59e65fc259db88925e0106a1d13c3bcc2d",
+        "schemas/command.v7.schema.json": "7676d12e60cfec19a2d9d177f52650e26bb4328da287dfc3d89ffbd187e46d5e",
+        "schemas/command.v8.schema.json": "1452c1472f9eace65983a01488db9ba8c23d28193f4b6dbe1532e90710cf73b4",
+        "schemas/command.v9.schema.json": "9db44e411fde9f8197ddd86aca064cd3e4913afe665cc3fe325a8c0a382f4a56",
+        "schemas/desktop-summary-response.v1.schema.json": "f65fb25adb13b0a082fdc9d886f6d0e15b5ad6d8e39871a14e34c69ef4e51d20",
+        "schemas/discarded-export.v1.schema.json": "430392de33e526e6edb7e961fedbb02232afa9037f970c8e0cb8d0442a148efe",
+        "schemas/discarded-export.v2.schema.json": "25f2c813c4821aa0a1c1fe42bdb0e17730e625b02be123488a11e358955af385",
+        "schemas/docx-capture-resolution.v1.schema.json": "e13677b8c03e06af0eb9ba87e57054bbf31949ec7e079c1e6946bea2d72923a3",
+        "schemas/docx-snapshot-inspection.v1.schema.json": "55cb9c76f588950032b076d266e9d7c3c167685d4fb3869a2b472cdfccde635c",
+        "schemas/docx-snapshot-page-request.v1.schema.json": "44524ca11c43eaa93e1b37907348e427a94c75ad1d927854cf3c8394605d8ba4",
+        "schemas/docx-snapshot-page.v1.schema.json": "6697aad31ec9718ace88d2a6e2149a4cc0bd7ae37464fec7271b7c23800f183d",
+        "schemas/docx-snapshot.v1.schema.json": "99ecebfe7907e03772bfd69231281190ebfe2f6846b09264bda3ae45ef4d12e0",
+        "schemas/extraction.v1.schema.json": "802221db4e0b53333be9f1e25e3e96f6ea272acfbf35d495592fc0f4ff30c0e9",
+        "schemas/extraction.v2.schema.json": "29af330d9b22671e7c68c312683b52db897655c4e5293a7fc512b0245a2ecc04",
+        "schemas/identity-comparison.v1.schema.json": "a6eeb057dd88a7d10e7d0f10ca37fd2fe45f1657e797d32d8f9c46c25386da6f",
+        "schemas/image-extraction.v1.schema.json": "ecf8eff2270b10f43ee1669a12817a9335f3d103481173c2edf50e67994c9cb9",
+        "schemas/image-region-extraction.v1.schema.json": "6e18fe3b6989a9a392b176fbb6e5362b1a621e37d9fdcfb3f9c31087675b0225",
+        "schemas/image-region-inspection.v1.schema.json": "0244915ae37a2a264378c3e579c8d05428abb1803f99de70534968f4481ff4fb",
+        "schemas/image-region-result.v1.schema.json": "c078e654c7ba92b644309283f81ae79364db78d92a748dcd057b5b62d3ac9262",
+        "schemas/ledger-summary.v1.schema.json": "652e82237816f0480ea2e3f55b6c09352284e24c3592b1059e50d8c37bfd38d0",
+        "schemas/native-export-request.v1.schema.json": "4e194c1c1da927d47819326ae531f58803c94cd5ee0bb1a4b800b8ed93fa95c5",
+        "schemas/native-export-request.v2.schema.json": "38e03a42cf7594e89f78ded5cb3373c4d2f040ec63dbbacef23a23cea06181ea",
+        "schemas/pdf-extraction.v1.schema.json": "9f12c9e8d9e849524e14d7e11675254126e9bf74722158d93f1eccc372e6991a",
+        "schemas/prepared-export.v1.schema.json": "96b32edb3907a6c46e6824aca90685c07c4a0b030f7f9ccf873d36e4afc21484",
+        "schemas/prepared-export.v2.schema.json": "97f4337c6b0010ab1397a3ea3dc26f37f5dc9b5afb701f8894fcb85c31601b48",
+        "schemas/processing-job.v1.schema.json": "9ee0f7498b53f73acb64a26ca88fd51cf9626ea29433e4e4798befc25cf89b92",
+        "schemas/processing-job.v2.schema.json": "bec8c024a3411cb2d714eec423f03fd9291f7196e9a5d06ce46990d1494b37f9",
+        "schemas/processing-job.v3.schema.json": "73a84aa15e1a0508adf68a99037845d8949746cba526652094956d6b5eecdc50",
+        "schemas/processing-job.v4.schema.json": "7078484db3e7d677ad47c849c8aed3968eb268a1214b3ab79bcd99a854bb89b7",
+        "schemas/release-evidence.v1.schema.json": "4a4afebf10f8208547c59136d23f3e9cda4b8baa8556316dc387427f24eaae45",
+        "schemas/release-ledger.v2.schema.json": "b240bf5ea8dad0f9830a810d8e8dce304b01eb6f12468fdc126a8a4d99025045",
+        "schemas/release-review.v1.schema.json": "e0bb7d5ec24e5b58289d9bd8941beab11aa38cc76b4ee9045911b80b5bdc28bd",
+        "schemas/review-decision-page-request.v1.schema.json": "86bc68261c265240c87ea3510c9b85bd5ecb0b0ed5cd7564fee6a4ef9aa1778f",
+        "schemas/review-decision-page.v1.schema.json": "d7f0591434c5f5c28b6e9f4fe5efa28d99f6bbfded92e9e80b2093c7c9b22930",
+        "schemas/runtime-inventory.v1.json": "d9194436f5cb293a9846aa435ee16987ee8e1f4d7185180f29cec8b11c311861",
+        "schemas/saved-export-receipt.v1.schema.json": "aaa9e1951fd4423fa32900f3bc62706e332ef93112af6a9d3374bac4e2ba321b",
+        "schemas/saved-export-receipt.v2.schema.json": "6c08bee696c49dfcd82fe9d7f51fafa5bb78781fa85ca6a9bb1af744f03fec93",
+        "schemas/source-excerpt.v1.schema.json": "9af773ab3d70d3bcb63ec88adc2bc765a2497236fd010b4a19ab88b0e7a3826e",
+        "schemas/statement-mapping.v1.schema.json": "ab8784833e8a28540d95aec813a6b1f2f16947c71111f61514e53f364b63482d",
+        "schemas/statement-preview.v1.schema.json": "c1ccce8fc0adf3afbdb01728486101e977b40d6788852b8baf61827fc7f1b8da",
+        "schemas/statement-sample.v1.schema.json": "695ee6c7de69307efb83183e333f97684af8e7f412c3aa82ea6210b640d26f86",
+        "schemas/transaction-analysis-request.v1.schema.json": "64c500e020cc7023730a8aba6ae2534c439b54c59f98b46d40a8b33689883e88",
+        "schemas/transaction-analysis.v1.schema.json": "bc378590e029c0f96ac6aff007aec1891312359544eab4a76107209b32080329",
+        "schemas/transaction-balances-request.v1.schema.json": "f3a4c489461634387645d12540b731afd7760a9db434e9880613a793abf12b72",
+        "schemas/transaction-balances.v1.schema.json": "2f31f0853c9a8149e8e9a7d1c8a99f42e941e5595b43a21c73a1b8d0f89cd5ef",
+        "schemas/transaction-comparison-request.v1.schema.json": "936b7414845e7bd6d41a1cbaca5990cab003508eca948c56fd9ff566c7f9a674",
+        "schemas/transaction-comparison.v1.schema.json": "b06d6671e027e41558a4afad7bf76a27d705c2032445fd8a0d8d91d40047ade8",
+        "schemas/transaction-csv-export.v1.schema.json": "0d34c43e0294b9c46382c7ba5cd1c1223189679797fad344175887a4a1fc1479",
+        "schemas/transaction-csv-request.v1.schema.json": "340289aba5b4fa3d1db80d47ac1a4003885e743205acc1c996f7e9a1e662e110",
+        "schemas/transaction-export-request.v1.schema.json": "1f80018d874b3d0c4746f8d973aa6d2de2b2f70a4712a33220b625907001a83a",
+        "schemas/transaction-export.v1.schema.json": "2eea6854be8277f06a37a845d6f0c48b772855aafa561c77d6d0ce1cbba41ac5",
+        "schemas/transaction-facet-page.v1.schema.json": "a0b307926383ce28fc20373b552e0851e35807abf2ce0bfef24c0706cc034c97",
+        "schemas/transaction-facet-request.v1.schema.json": "6a0523cd6f96e98027da516bb23c2ddc7a1dd88c3663e12de81ee06ae0037ccf",
+        "schemas/transaction-page-request.v1.schema.json": "f7c6b74a797ef43d504f2b9cc4a96b5b126e9327153fa333c9673f484b7ad352",
+        "schemas/transaction-page.v1.schema.json": "82840294aa2a5c20a3171986a3a0e3488f4cf44b4c21ed5818683a7d9da9dc1a",
+        "schemas/transaction-search-page.v1.schema.json": "8669b70041ed56035c7731f062eb5dc573bf28b8529dc0e5c1d9acdce1bcab17",
+        "schemas/transaction-search-request.v1.schema.json": "6cecadec322f8b3406ea3792c8140f88859f9c82f4436f0c9698985c8e0b8e76",
+        "schemas/transaction-sources-request.v1.schema.json": "0532ec9a611efe8b6344f9098e42a2c789cd59ca6403aeb397acb1c85ac7ef42",
+        "schemas/transaction-sources.v1.schema.json": "b1dc19658e6a224fca532bdc830e1f74fcea7cf889350883a82bb624e11dbbf3",
+        "schemas/transfer-candidates-page.v1.schema.json": "d03937352d98b21f557a6c88ab7ee3a5c11593741e4ed5f88a4f3a11a72e3259",
+        "schemas/transfer-candidates-request.v1.schema.json": "d7577ce2d859c28a1c12ed6f18c09e6527a06afc069279fa8ffd92a7a575a979",
+        "schemas/worker-request.v1.schema.json": "5d4b3af75397b5cc907dcae3b98b7d9d17b5f971576bcb7df2eb9eaff9781717",
+        "schemas/workspace-presentation.v1.schema.json": "5141dcaa851478662e259c97c70f0fb5f9a307ceae026c7e33d5c5b7bf773637",
+        "schemas/workspace.v1.schema.json": "e8a4c82b2f6fedf4b48124a2317654f49c4cd607d9634e6841b36e1e79216ea3",
+        "schemas/workspace.v2.schema.json": "967cc4fbad79b10dd8b3f838cbdf4684cb0654e0cb0aa39e3ef0055f2173db24",
+        "schemas/workspace.v3.schema.json": "0cebcc5770da82e93d089cda85af1fe195deff83a315603b25038cc9b0e17a9a"
+      }
+    },
+    "fixed_native_proof_source_unchanged": {
+      "crates/core/src/coordinator_native_https_proof.rs": "93873e751b3eee7d352eaa3c67dbeb14665682154fb100d45ea85bf93d8c9725",
+      "crates/core/src/coordinator_native_https_cancellation.rs": "e906c72026258b84634617ed42fbc4303e2080095a82be5ced3cb15d35b05f61"
+    },
+    "bounded_peer_review": {
+      "performed": true,
+      "scope": "Read-only source review of capture bounds, receipt/source/owner binding, exact cancellation suffix, pending ownership, write revision race, rollback repair and remaining mutex work",
+      "remaining_concrete_blockers": 0,
+      "independent_tests_or_platform_execution": false
+    }
+  },
+  "retained_prior_attempts": [
+    {
+      "log": "rollback-before.log",
+      "outcome": "5 passed, 2 failed",
+      "meaning": "Both new prepared-settlement rollback regressions failed before the repair with future-timestamp rejection; exact source gap retained."
+    },
+    {
+      "log": "collection-focused.log",
+      "outcome": "compile failure",
+      "meaning": "New joined-shutdown test attempted to call private store reader/root. Fixed the test to inspect its owned fixture bytes after canonical replay; no production visibility change."
+    },
+    {
+      "log": "preparation-tests.log",
+      "outcome": "10 matched tests passed with one unused_mut warning",
+      "meaning": "Intermediate preparation cases before rollback repair and final tests. Warning corrected; compile overlapped another agent campaign build/preparation only, before its native phase. No benchmark claim."
+    },
+    {
+      "log": "initial.log",
+      "outcome": "initial focused public API suite passed",
+      "meaning": "Intermediate compatibility check, superseded by final full suite."
+    },
+    {
+      "log": "preparation-after.log",
+      "outcome": "7 preparation tests passed",
+      "meaning": "Immediate repaired rollback proof; final suite also includes subsequent source-capture bound and coordinator checks."
+    }
+  ],
+  "retained_artifacts": {
+    "clippy-debug.log": {
+      "bytes": 5070,
+      "sha256": "64e6279bb93c06f666232052b4d64d5bf9fff7ff0a9ed5b7a5e326021ab696a6"
+    },
+    "clippy-release.log": {
+      "bytes": 5930,
+      "sha256": "e9c6331c9cc67efd5f6a00f64c60b16ad36c03e7588c96cfb9804f7a5a3a609c"
+    },
+    "collection-focused-after.log": {
+      "bytes": 17967,
+      "sha256": "670fa0055d00a4f0acbaaa1bd50fe355a862475f5a1d8fb7a625b9df87ef54e2"
+    },
+    "collection-focused.log": {
+      "bytes": 1390,
+      "sha256": "9c03d212b9c31d2c1a75645ae5789fc3576eb9efe7a843fe428e5c8296e628a7"
+    },
+    "core.log": {
+      "bytes": 67273,
+      "sha256": "e2fd790abc7305cfeead3b69a5ce5fcb568667dc36e8f366adc74f00ea7e9986"
+    },
+    "fmt.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "historical-schema-identity.json": {
+      "bytes": 11665,
+      "sha256": "f21bd3786b01d6f7944afa4f7e634e85b6938dbaa65af74f1bca5aad285e7a4b"
+    },
+    "initial.log": {
+      "bytes": 7117,
+      "sha256": "d91dcbb0440652331e08cd6cf9db8452009509b8e7e363de2cfb0423a6999650"
+    },
+    "preparation-after.log": {
+      "bytes": 1311,
+      "sha256": "b78a701cc4202dcb1ec6f812ef3c595e337c5330c874bae78866fd138a78a595"
+    },
+    "preparation-tests.log": {
+      "bytes": 2109,
+      "sha256": "3a8b85ec82b963fb3320d18337103b9d96cfa1d5bd220bcbc8ae453f0bfc7a00"
+    },
+    "rollback-before.log": {
+      "bytes": 2142,
+      "sha256": "0dcc3e1db1312496e904822f117c7d4197ab36b225953d80c189e119e2207263"
+    },
+    "source-audit.log": {
+      "bytes": 40,
+      "sha256": "39379a20a71aeb051751f06b4b896bd29db8a6d2a624b491e08dd7b764ea2b81"
+    },
+    "source-signature.log": {
+      "bytes": 99,
+      "sha256": "31145e3d2a3745af2933cf698776934a97d3c4cb271929540892a170047327f3"
+    }
+  },
+  "limits": [
+    "No native DNS, public HTTPS, browser or platform-specific execution in this slice; normal native collection and every release gate remain disabled/unchanged.",
+    "Existing bounded parser work is not cooperatively preempted by cancellation. Result publication suppresses promotion after canonical cancellation; joined shutdown still waits for preparation.",
+    "Inspect, cancel, start and advance still replay historical HTML while holding the workspace mutex. Capture metadata and commit original rehash/write/sync and canonical publication also hold it.",
+    "16 MiB aggregate serialized source metadata and 50-reference capture limits may refuse otherwise individually readable histories; pending receipt remains owned for explicit recovery, with no automatic fetch retry.",
+    "Bounds describe serialized input/admission quantities, not hard total RSS, filesystem latency, elapsed time or cancellation deadline.",
+    "No record/schema/protocol migration or changed historical interpretation. Frozen v3 native proof is not permission to activate v4."
+  ]
+}
