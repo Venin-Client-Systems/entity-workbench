@@ -748,90 +748,95 @@ fn legacy_backups_accept_actual_omitted_or_format_two_manifests_but_reject_expli
 }
 
 #[test]
-fn generator_one_snapshot_still_inspects_exports_and_restores_after_generator_two_capture() {
+fn historical_snapshots_still_inspect_export_and_restore_after_generator_three_capture() {
     use crate::local_export::NativeExportRequest;
-    let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
-    let mut workspace = Workspace::open(temp.path().join("case")).unwrap();
-    let document = ReportDocument::from_json(include_bytes!(
-        "../../../tests/fixtures/report-generator1.json"
-    ))
-    .unwrap();
-    let evidence = &document.content.evidence[0];
-    workspace
-        .import(&evidence.name, evidence.text.as_ref().unwrap().as_bytes())
-        .unwrap();
-    while workspace.revision().unwrap() < document.workspace_revision {
-        let revision = workspace.revision().unwrap();
+    for (fixture, expected_digest) in [
+        (
+            include_bytes!("../../../tests/fixtures/report-generator1.json").as_slice(),
+            "c839120c7646195012e57119be34dcca7ad27e32a032ad734ca47680cfc1c75d",
+        ),
+        (
+            include_bytes!("../../../tests/fixtures/report-generator2.json").as_slice(),
+            "0b9f69392b57dd1190dea7d45c7fcc16bad97ab9fcf2b9dec3b8350b6fc74fd9",
+        ),
+    ] {
+        let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
+        let mut workspace = Workspace::open(temp.path().join("case")).unwrap();
+        let document = ReportDocument::from_json(fixture).unwrap();
+        let evidence = &document.content.evidence[0];
         workspace
-            .import(
-                &format!("synthetic-{revision}.txt"),
-                format!("Synthetic later source {revision}").as_bytes(),
-            )
+            .import(&evidence.name, evidence.text.as_ref().unwrap().as_bytes())
             .unwrap();
-    }
-    let json = document.to_json().unwrap();
-    let bytes = report_docx::render(&document).unwrap();
-    assert_eq!(
-        hash(&bytes),
-        "c839120c7646195012e57119be34dcca7ad27e32a032ad734ca47680cfc1c75d"
-    );
-    let old = DocxSnapshotRecord {
-        schema_version: 1,
-        id: document.report_id.clone(),
-        workspace_revision: document.workspace_revision,
-        created_at: document.created_at.clone(),
-        template_version: document.template_version.clone(),
-        generator_version: document.generator_version.clone(),
-        document: reference(ReportArtifactKind::ReportDocumentJsonV1, &json).unwrap(),
-        docx: reference(ReportArtifactKind::ReportDocxV1, &bytes).unwrap(),
-    };
-    // Install a fixed historical fixture, using the same private CAS/catalogue
-    // operations as publication. No public arbitrary-finish hook is introduced.
-    for (reference, content) in refs(&old).iter().zip([json.as_slice(), bytes.as_slice()]) {
-        files::retain_object(&workspace.root, reference, content).unwrap();
-    }
-    workspace
-        .change(None, "test.historical_docx", false, |conn| {
-            for reference in refs(&old) {
-                files::catalog_object(conn, &reference)?;
-            }
-            put(conn, KIND, &old.id, &old)
-        })
-        .unwrap();
-    assert_eq!(
-        inspect(&workspace, &old)
-            .unwrap()
-            .document
-            .to_json()
-            .unwrap(),
-        json
-    );
-    let new = save(&mut workspace);
-    assert_eq!(new.generator_version, "ooxml-foundation-2");
-    assert_eq!(read(&workspace, &old).unwrap(), bytes);
-    assert_eq!(
+        while workspace.revision().unwrap() < document.workspace_revision {
+            let revision = workspace.revision().unwrap();
+            workspace
+                .import(
+                    &format!("synthetic-{revision}.txt"),
+                    format!("Synthetic later source {revision}").as_bytes(),
+                )
+                .unwrap();
+        }
+        let json = document.to_json().unwrap();
+        let bytes = report_docx::render(&document).unwrap();
+        assert_eq!(hash(&bytes), expected_digest);
+        let old = DocxSnapshotRecord {
+            schema_version: 1,
+            id: document.report_id.clone(),
+            workspace_revision: document.workspace_revision,
+            created_at: document.created_at.clone(),
+            template_version: document.template_version.clone(),
+            generator_version: document.generator_version.clone(),
+            document: reference(ReportArtifactKind::ReportDocumentJsonV1, &json).unwrap(),
+            docx: reference(ReportArtifactKind::ReportDocxV1, &bytes).unwrap(),
+        };
+        // Install a fixed historical fixture, using the same private CAS/catalogue
+        // operations as publication. No public arbitrary-finish hook is introduced.
+        for (reference, content) in refs(&old).iter().zip([json.as_slice(), bytes.as_slice()]) {
+            files::retain_object(&workspace.root, reference, content).unwrap();
+        }
         workspace
-            .save_docx_snapshot(&old.id, old.workspace_revision)
-            .unwrap(),
-        old
-    );
-    let exports = workspace.start_native_exports().unwrap();
-    let prepared = exports
-        .prepare(|| {
-            workspace.native_export_content(NativeExportRequest::DocxReport {
-                report_id: old.id.clone(),
-                expected_document_sha256: old.document.sha256.clone(),
-                expected_docx_sha256: old.docx.sha256.clone(),
+            .change(None, "test.historical_docx", false, |conn| {
+                for reference in refs(&old) {
+                    files::catalog_object(conn, &reference)?;
+                }
+                put(conn, KIND, &old.id, &old)
             })
-        })
-        .unwrap();
-    let receipt = exports
-        .commit(&prepared.ticket, &old.docx.sha256, old.docx.bytes)
-        .unwrap();
-    assert_eq!(fs::read(&receipt.location).unwrap(), bytes);
-    exports.shutdown().unwrap();
-    let backup = workspace.backup().unwrap();
-    let restored = Workspace::restore(&backup, &temp.path().join("restored")).unwrap();
-    assert_eq!(read(&restored, &old).unwrap(), bytes);
-    assert_eq!(inspect(&restored, &new).unwrap().snapshot, new);
+            .unwrap();
+        assert_eq!(
+            inspect(&workspace, &old)
+                .unwrap()
+                .document
+                .to_json()
+                .unwrap(),
+            json
+        );
+        let new = save(&mut workspace);
+        assert_eq!(new.generator_version, "ooxml-foundation-3");
+        assert_eq!(read(&workspace, &old).unwrap(), bytes);
+        assert_eq!(
+            workspace
+                .save_docx_snapshot(&old.id, old.workspace_revision)
+                .unwrap(),
+            old
+        );
+        let exports = workspace.start_native_exports().unwrap();
+        let prepared = exports
+            .prepare(|| {
+                workspace.native_export_content(NativeExportRequest::DocxReport {
+                    report_id: old.id.clone(),
+                    expected_document_sha256: old.document.sha256.clone(),
+                    expected_docx_sha256: old.docx.sha256.clone(),
+                })
+            })
+            .unwrap();
+        let receipt = exports
+            .commit(&prepared.ticket, &old.docx.sha256, old.docx.bytes)
+            .unwrap();
+        assert_eq!(fs::read(&receipt.location).unwrap(), bytes);
+        exports.shutdown().unwrap();
+        let backup = workspace.backup().unwrap();
+        let restored = Workspace::restore(&backup, &temp.path().join("restored")).unwrap();
+        assert_eq!(read(&restored, &old).unwrap(), bytes);
+        assert_eq!(inspect(&restored, &new).unwrap().snapshot, new);
+    }
 }

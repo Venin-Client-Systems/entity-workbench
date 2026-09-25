@@ -13,11 +13,15 @@ pub const MAX_TRANSACTIONS: usize = 5_000;
 pub const MAX_RECORDS: usize = 10_000;
 pub const MAX_REFERENCES: usize = 10_000;
 pub const TEMPLATE_VERSION: &str = "assessment-foundation-1";
-pub const GENERATOR_VERSION: &str = "ooxml-foundation-2";
+pub const GENERATOR_VERSION: &str = "ooxml-foundation-3";
 pub(crate) const LEGACY_GENERATOR_VERSION: &str = "ooxml-foundation-1";
+pub(crate) const WRAPPING_GENERATOR_VERSION: &str = "ooxml-foundation-2";
 
 pub(crate) fn supported_generator(value: &str) -> bool {
-    matches!(value, GENERATOR_VERSION | LEGACY_GENERATOR_VERSION)
+    matches!(
+        value,
+        GENERATOR_VERSION | LEGACY_GENERATOR_VERSION | WRAPPING_GENERATOR_VERSION
+    )
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]

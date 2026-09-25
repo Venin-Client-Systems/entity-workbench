@@ -615,7 +615,9 @@ fn styles(generator: &str) -> Result<Vec<u8>> {
         }
         x.empty("w:next", &[("w:val", "Normal")])?;
         x.start("w:pPr", &[])?;
-        if next {
+        // A repeating table header must stay with the first data row where it
+        // fits. Keep old generator styles byte-identical for retained reports.
+        if next || (id == "TableHeader" && generator == crate::report_document::GENERATOR_VERSION) {
             x.empty("w:keepNext", &[])?;
         }
         if id == "Heading1" {

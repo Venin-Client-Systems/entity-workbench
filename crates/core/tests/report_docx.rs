@@ -320,7 +320,7 @@ fn retained_anchor_variants_and_literal_whitespace_survive_frozen_roundtrip() {
 }
 
 #[test]
-fn generator_one_is_byte_stable_and_new_captures_use_word_level_wrapping() {
+fn historical_generators_are_byte_stable_and_new_headers_keep_their_first_row() {
     use sha2::{Digest, Sha256};
     let legacy =
         ReportDocument::from_json(include_bytes!("fixtures/report-generator1.json")).unwrap();
@@ -339,7 +339,7 @@ fn generator_one_is_byte_stable_and_new_captures_use_word_level_wrapping() {
     );
 
     let current = document();
-    assert_eq!(current.generator_version, "ooxml-foundation-2");
+    assert_eq!(current.generator_version, "ooxml-foundation-3");
     let current_parts = parts(&report_docx::render(&current).unwrap());
     assert_eq!(
         current_parts["word/styles.xml"]
@@ -348,8 +348,41 @@ fn generator_one_is_byte_stable_and_new_captures_use_word_level_wrapping() {
         7
     );
     assert!(!current_parts["word/styles.xml"].contains("<w:wordWrap w:val=\"off\"/>"));
+    let second =
+        ReportDocument::from_json(include_bytes!("fixtures/report-generator2.json")).unwrap();
+    let second_bytes = report_docx::render(&second).unwrap();
+    assert_eq!(
+        format!("{:x}", Sha256::digest(&second_bytes)),
+        "0b9f69392b57dd1190dea7d45c7fcc16bad97ab9fcf2b9dec3b8350b6fc74fd9"
+    );
+    let second_parts = parts(&second_bytes);
+    for (styles, keep_header) in [
+        (&old_parts["word/styles.xml"], false),
+        (&second_parts["word/styles.xml"], false),
+        (&current_parts["word/styles.xml"], true),
+    ] {
+        let header = styles
+            .split("w:styleId=\"TableHeader\"")
+            .nth(1)
+            .unwrap()
+            .split("</w:style>")
+            .next()
+            .unwrap();
+        assert_eq!(header.contains("<w:keepNext/>"), keep_header);
+        let body = styles
+            .split("w:styleId=\"Small\"")
+            .nth(1)
+            .unwrap()
+            .split("</w:style>")
+            .next()
+            .unwrap();
+        assert!(
+            !body.contains("<w:keepNext/>"),
+            "Data rows must remain free to paginate"
+        );
+    }
     let mut unsupported = legacy;
-    unsupported.generator_version = "ooxml-foundation-3".into();
+    unsupported.generator_version = "ooxml-foundation-4".into();
     assert!(unsupported.validate().is_err());
     assert!(report_docx::render(&unsupported).is_err());
 }
