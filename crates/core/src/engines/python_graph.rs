@@ -10,6 +10,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
+#[cfg(test)]
+mod observation;
+#[cfg(test)]
+pub(crate) use observation::TestObservation;
+
 const RECIPE: &str = "python-graph-job-v1";
 const MANIFEST: &str = "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822";
 const REQUEST_LIMIT: usize = 1024 * 1024;
@@ -22,16 +27,27 @@ const VERSIONS: &[u8] = include_bytes!("../../../../workers/python/runtime_versi
 /// execution verifies it again. No caller is installed by this source slice.
 pub(crate) struct VerifiedGraphRuntime {
     prefix: PathBuf,
+    #[cfg(test)]
+    observation: Option<std::sync::Arc<TestObservation>>,
 }
 
 impl VerifiedGraphRuntime {
+    #[cfg(test)]
+    pub(crate) fn observe(mut self, observation: std::sync::Arc<TestObservation>) -> Self {
+        self.observation = Some(observation);
+        self
+    }
     pub(crate) fn from_app_engines(root: &Path, cancel: &CancellationToken) -> Result<Self> {
         #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
         {
             let prefix = root.join("python");
             super::supervision::python::verify_prefix(&prefix, MANIFEST, 11_320, cancel)
                 .map_err(unavailable)?;
-            Ok(Self { prefix })
+            Ok(Self {
+                prefix,
+                #[cfg(test)]
+                observation: None,
+            })
         }
         #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
         {
@@ -53,6 +69,10 @@ impl VerifiedGraphRuntime {
             use super::supervision::python;
             python::cancelled(cancel)?;
             let binding = Binding::new(request)?;
+            #[cfg(test)]
+            if let Some(observation) = &self.observation {
+                observation.assignment(&binding.job_id, &binding.nonce, request)?;
+            }
             let assignment = serde_json::to_vec(&serde_json::json!({
                 "schema_version": 1, "recipe": RECIPE, "job_id": binding.job_id,
                 "prefix": self.prefix, "manifest_sha256": MANIFEST,
@@ -78,19 +98,32 @@ impl VerifiedGraphRuntime {
                 ("input/assignment.json", &assignment, WRAPPER_LIMIT),
                 ("input/graph-request.json", request, REQUEST_LIMIT),
             ];
-            python::execute_graph(&self.prefix, scratch_root, &assets, cancel, |job| {
-                let wrapper = python::read_verified(
-                    &job.join("scratch/result.json"),
-                    WRAPPER_LIMIT as u64,
-                    cancel,
-                )?;
-                let graph = python::read_verified(
-                    &job.join("scratch/graph-result.json"),
-                    RESULT_LIMIT as u64,
-                    cancel,
-                )?;
-                binding.accept(&wrapper, graph)
-            })
+            python::execute_graph(
+                &self.prefix,
+                scratch_root,
+                &assets,
+                cancel,
+                #[cfg(test)]
+                self.observation.as_deref(),
+                |job| {
+                    let wrapper = python::read_verified(
+                        &job.join("scratch/result.json"),
+                        WRAPPER_LIMIT as u64,
+                        cancel,
+                    )?;
+                    let graph = python::read_verified(
+                        &job.join("scratch/graph-result.json"),
+                        RESULT_LIMIT as u64,
+                        cancel,
+                    )?;
+                    let graph = binding.accept(&wrapper, graph)?;
+                    #[cfg(test)]
+                    if let Some(observation) = &self.observation {
+                        observation.accepted(&wrapper, &graph)?;
+                    }
+                    Ok(graph)
+                },
+            )
         }
         #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
         {

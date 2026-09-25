@@ -21,7 +21,7 @@ import install_python_offline as assembler
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = '4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822'
 NATIVE_TEST = 'engines::supervision::python_probe::native_python_compatibility'
-SOURCES = ('crates/core/src/engines/python_graph.rs', 'crates/core/src/engines/supervision/python.rs', 'crates/core/src/store/file_identity.rs',
+SOURCES = ('crates/core/src/engines/python_graph/observation.rs', 'crates/core/src/engines/python_graph.rs', 'crates/core/src/engines/supervision/python.rs', 'crates/core/src/store/file_identity.rs',
            'crates/core/src/engines.rs', 'crates/core/src/engines/ocr.rs',
            'workers/python/graph_worker.py', 'workers/python/runtime_versions.json',
            'workers/python/runtime_support.py', 'crates/core/src/engines/supervision.rs', 'crates/core/src/engines/supervision/python_probe.rs',

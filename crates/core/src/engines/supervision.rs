@@ -322,9 +322,16 @@ fn wait_assigned(
     timeout: Duration,
     cancellation: Option<&super::CancellationToken>,
 ) -> Result<ExitStatus> {
-    wait_assigned_with_cancellation(child, job, index, timeout, cancellation, || {
-        Error::Blocked("Local worker cancelled".into())
-    })
+    wait_assigned_with_cancellation(
+        child,
+        job,
+        index,
+        timeout,
+        cancellation,
+        || Error::Blocked("Local worker cancelled".into()),
+        #[cfg(test)]
+        None,
+    )
 }
 
 fn wait_assigned_with_cancellation(
@@ -334,6 +341,7 @@ fn wait_assigned_with_cancellation(
     timeout: Duration,
     cancellation: Option<&super::CancellationToken>,
     cancelled: fn() -> Error,
+    #[cfg(test)] observation: Option<&super::python_graph::TestObservation>,
 ) -> Result<ExitStatus> {
     let mut group = ProcessGroup {
         child,
@@ -341,6 +349,10 @@ fn wait_assigned_with_cancellation(
     };
     let started = Instant::now();
     let outcome = (|| {
+        #[cfg(test)]
+        if let Some(observation) = observation {
+            observation.launched(group.child.id())?;
+        }
         loop {
             if cancellation.is_some_and(super::CancellationToken::is_cancelled) {
                 return Err(cancelled());
@@ -362,6 +374,10 @@ fn wait_assigned_with_cancellation(
             if info.si_pid != 0 {
                 return Ok(());
             }
+            #[cfg(test)]
+            if let Some(observation) = observation {
+                observation.alive(group.child.id(), cancellation)?;
+            }
             if started.elapsed() >= timeout {
                 return Err(Error::QuotaExhausted(
                     "Local worker wall-time limit exhausted".into(),
@@ -378,7 +394,12 @@ fn wait_assigned_with_cancellation(
     })();
     // Early policy/cancellation errors also require explicit termination evidence.
     // A failed confirmation takes precedence over the original execution error.
-    let status = group.stop_and_reap()?;
+    let stopped = group.stop_and_reap();
+    #[cfg(test)]
+    if let Some(observation) = observation {
+        observation.stopped(stopped.is_ok());
+    }
+    let status = stopped?;
     outcome?;
     Ok(status)
 }

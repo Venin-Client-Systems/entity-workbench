@@ -227,12 +227,17 @@ pub(in crate::engines) fn execute_graph<T>(
     scratch_root: &Path,
     assets: &[AssetInput<'_>],
     cancel: &CancellationToken,
+    #[cfg(test)] observation: Option<&super::super::python_graph::TestObservation>,
     accept: impl FnOnce(&Path) -> Result<T>,
 ) -> Result<T> {
     cancelled(cancel)?;
     validate_scratch_root(scratch_root)?;
     verify_prefix(prefix, MANIFEST, FILE_COUNT, cancel)
         .map_err(super::super::python_graph::unavailable)?;
+    #[cfg(test)]
+    if let Some(observation) = observation {
+        observation.inventory(false);
+    }
     let job = tempfile::Builder::new()
         .prefix("graph-job-")
         .permissions(fs::Permissions::from_mode(0o700))
@@ -247,6 +252,10 @@ pub(in crate::engines) fn execute_graph<T>(
         cancelled(cancel)?;
         let mut command = command(prefix, job.path(), "graph_worker.py", None)?;
         cancelled(cancel)?;
+        #[cfg(test)]
+        if let Some(observation) = observation {
+            observation.prepared(&expanded, serde_json::to_value(&assigned)?)?;
+        }
         let child = command.spawn()?;
         let status = wait_assigned_with_cancellation(
             child,
@@ -255,6 +264,8 @@ pub(in crate::engines) fn execute_graph<T>(
             Duration::from_secs(30),
             Some(cancel),
             || Error::Interrupted("Local worker cancelled".into()),
+            #[cfg(test)]
+            observation,
         );
         after_confirmed(status, |status| {
             // Cancellation and supervisor failures cannot become successful output.
@@ -262,6 +273,10 @@ pub(in crate::engines) fn execute_graph<T>(
             check_tree(job.path(), 0, &mut 0, &mut 0)?;
             verify_assigned(job.path(), &assigned, cancel)?;
             verify_prefix(prefix, MANIFEST, FILE_COUNT, cancel)?;
+            #[cfg(test)]
+            if let Some(observation) = observation {
+                observation.inventory(true);
+            }
             if !status.success() {
                 return Err(Error::InvalidWorkerResult(
                     "Fixed graph worker failed".into(),
@@ -272,7 +287,12 @@ pub(in crate::engines) fn execute_graph<T>(
             Ok(result)
         })
     })();
-    finish_job(job, result)
+    let finished = finish_job(job, result);
+    #[cfg(test)]
+    if let Some(observation) = observation {
+        observation.cleaned(&finished);
+    }
+    finished
 }
 
 #[cfg(test)]

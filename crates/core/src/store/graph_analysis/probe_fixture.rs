@@ -8,7 +8,7 @@ pub(crate) fn specimen() -> (TempDir, Workspace, String) {
     (root, workspace, source)
 }
 
-fn seed_case(path: &Path) -> Result<(Workspace, String)> {
+pub(crate) fn seed_case(path: &Path) -> Result<(Workspace, String)> {
     let mut w = Workspace::open(path)?;
     let source = w.import(
         "synthetic.txt",

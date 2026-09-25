@@ -280,5 +280,8 @@ fn bounded_json(value: &impl Serialize, maximum: usize) -> Result<Vec<u8>> {
 
 #[cfg(test)]
 pub(crate) mod probe_fixture;
+
+#[cfg(test)]
+pub(crate) mod coordinator_fixture;
 #[cfg(test)]
 mod tests;

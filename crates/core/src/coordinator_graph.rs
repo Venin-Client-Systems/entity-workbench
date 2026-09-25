@@ -520,3 +520,7 @@ pub(super) fn finish_shutdown(activity: &mut ProcessingActivity) {
         activity.interval = Interval::Open;
     }
 }
+
+#[cfg(all(test, target_os = "macos", target_arch = "aarch64"))]
+#[path = "coordinator_native_graph_proof.rs"]
+mod native_graph_proof;
