@@ -46,7 +46,10 @@ Both databases returned `integrity_check = ok`, remained at revision 3 and retai
 exactly their three evidence records and originals. Root independently matched the
 healthy index identities and the refusal workspace's intent/sentinel identities.
 This later check adds independent database inspection to the runner's receipt
-validation; it did not rerun Java.
+validation; it did not rerun Java. A second agent independently reviewed the
+retained source, executable, events, both databases, originals, index and runtime
+and found no concrete mismatch. Agent review is not independent human release
+approval.
 
 The 269-file Java/Search inventory contained 168,201,487 bytes and had digest
 `cb3f7cc163a851eec4f70ba11c96029458524e8465210720a57f318503aef9a7`.
