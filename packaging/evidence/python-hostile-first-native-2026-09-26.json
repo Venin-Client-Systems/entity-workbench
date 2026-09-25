@@ -1,0 +1,111 @@
+{
+  "architecture": "aarch64",
+  "assigned_files": {
+    "code/bootstrap.py": {
+      "bytes": 5634,
+      "sha256": "a9bbe45f54da18c3e900ab00dff870df67558e3d639f3ef2e3cd17a583506555"
+    },
+    "input/assignment.json": {
+      "bytes": 726,
+      "sha256": "e7f6819a6afa4acf08efdadaf03526bdf3814985068e255373b215748c924b54"
+    },
+    "input/sentinel.txt": {
+      "bytes": 34,
+      "sha256": "13fe4ea3b63e7620be4c559c4a03f3355a81865ea4ced1651c3a914d38ae3342"
+    }
+  },
+  "campaign_id": "7a7a1381-2930-470d-a866-9f5c3dd5f108",
+  "candidate_interpreter": {
+    "bytes": 18005560,
+    "path": "install/bin/python3.13",
+    "sha256": "3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc"
+  },
+  "complete_release": false,
+  "diagnostics_within_bound": true,
+  "exit_code": 0,
+  "failure": null,
+  "host_controls": {
+    "after": true,
+    "before": true
+  },
+  "job_id": "873499aa-4a24-479d-bb48-8ddf2623d38d",
+  "last_import_checkpoint": null,
+  "last_worker_checkpoint": "complete",
+  "network_observer": {
+    "tcp": {
+      "after": 1,
+      "before": 1,
+      "confined": 0,
+      "errors": 0,
+      "unexpected": 0
+    },
+    "udp": {
+      "after": 1,
+      "before": 1,
+      "confined": 0,
+      "errors": 0,
+      "unexpected": 0
+    }
+  },
+  "passed": true,
+  "phase": "complete",
+  "post_runtime_verified": true,
+  "preparation_elapsed_ms": 3763,
+  "profile_sha256": "c865e5ff95e5a06b0df5382051df9c94185763a2e26256657f49196737fb7403",
+  "quota_kind": null,
+  "recipe": "python-hostile-v1",
+  "result": {
+    "assigned_read": true,
+    "files": {
+      "original_write_open": {
+        "errno": 1,
+        "opened": false,
+        "read_completed": false
+      },
+      "prefix_write_open": {
+        "errno": 1,
+        "opened": false,
+        "read_completed": false
+      },
+      "sibling_read": {
+        "errno": 1,
+        "opened": false,
+        "read_completed": false
+      }
+    },
+    "isolated": true,
+    "job_id": "873499aa-4a24-479d-bb48-8ddf2623d38d",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "network": {
+      "tcp": {
+        "attempted": true,
+        "connected": false,
+        "errno": 1,
+        "received_echo": false,
+        "send_accepted": false,
+        "socket_created": true
+      },
+      "udp": {
+        "attempted": true,
+        "connected": false,
+        "errno": 1,
+        "received_echo": false,
+        "send_accepted": false,
+        "socket_created": true
+      }
+    },
+    "no_bytecode": true,
+    "no_site": true,
+    "python_version": "3.13.15",
+    "recipe": "python-hostile-v1",
+    "schema_version": 1,
+    "scratch_roundtrip": true,
+    "sentinel_sha256": "13fe4ea3b63e7620be4c559c4a03f3355a81865ea4ced1651c3a914d38ae3342",
+    "verified_paths": true
+  },
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "runtime_verified": true,
+  "schema_version": 1,
+  "supervised_elapsed_ms": 194,
+  "termination_state": "confirmed"
+}

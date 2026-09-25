@@ -162,6 +162,59 @@ are retained verbatim. Campaign identity was
 Compiler artifact metadata required optimization level three and disabled debug
 assertions; the measured Rust test separately asserted release compilation.
 Source/binary identities were rechecked after acceptance. The outer native-test
-limit remains 120 seconds and all worker limits remain unchanged. Hostile and
-relocation candidate tests still require final source review and separate native
-observations; neither has passed merely because this measurement did.
+limit remains 120 seconds and all worker limits remain unchanged. At that point, hostile and relocation candidate tests still required final source
+review and separate native observations; neither was established by the hashing
+measurement. Their subsequent observations are recorded below.
+
+## First hostile and relocated campaigns — 2026-09-26
+
+At the same clean signed source
+`1abcc5efd15d9d8d702d19ddfc159195f4503e85` on macOS 26.6.2 arm64, exactly one
+hostile campaign ran, followed conditionally by exactly one fresh relocated
+compatibility campaign. They used the unchanged release binary
+`e2b40682fe1891163bca734080483dfc52fd46261ec6393db2e032029fecb28f`,
+profile generator, runtime manifest, permissions and limits. There was no retry.
+
+The **hostile campaign passed**. Its
+[outer receipt](../../packaging/evidence/python-hostile-first-2026-09-26.json) and
+[native receipt](../../packaging/evidence/python-hostile-first-native-2026-09-26.json)
+are retained verbatim. Assigned read and scratch round-trip controls passed.
+Sibling content read, original write-open and prefix interpreter write-open were
+all denied with Darwin `EPERM` (1). TCP and UDP sockets were created, but their
+connect/send attempts failed with `EPERM`; neither returned an echo. Each host
+listener counted before=1, after=1, confined=0, unexpected=0 and errors=0. Both
+parent file controls passed, the worker exited zero, termination/cleanup were
+confirmed and no job or sentinel directories remained. These results apply to
+the fixed synthetic file and IPv4-loopback cases; Internet/DNS/IPv6 denial is
+still unverified.
+
+The runner independently verified the unchanged original prefix before starting
+the dependent relocated campaign. The copy operation preserved all 11,320 files
+and 601,821,300 bytes with the original manifest and all 58 installed RECORDs.
+Source and moved inventories passed independent verification before execution.
+The **relocated compatibility campaign failed** at the 30-second worker wall
+limit. Its [outer receipt](../../packaging/evidence/python-relocation-first-2026-09-26.json)
+and [native receipt](../../packaging/evidence/python-relocation-first-native-2026-09-26.json)
+are also retained verbatim. Bootstrap/path/version checks completed, followed
+by the duckdb and networkx import boundaries. The final boundary was
+`spacy:before`; `quota_kind` was `wall-time`. No structured compatibility result
+was accepted. No conclusion about the underlying spaCy wait or the earlier
+original-prefix failure follows from this checkpoint alone.
+
+| Observation | Hostile | Relocated compatibility |
+| --- | --- | --- |
+| Campaign | `7a7a1381-2930-470d-a866-9f5c3dd5f108` | `5e4039a9-0d9e-469d-ac52-165041609f08` |
+| Job | `873499aa-4a24-479d-bb48-8ddf2623d38d` | `87379460-e187-4862-ab12-e6b67d84cf5e` |
+| Preparation | 3,763 ms | 3,580 ms |
+| Spawn through reaping | 194 ms | 30,044 ms |
+| Complete native test | 8.26 s | 33.69 s |
+| Termination / cleanup | Confirmed | Confirmed |
+| Native receipt SHA-256 | `0758e8f1852da232a449ac0be5e81636fc5a84a074ed7c98452fd25f25ca4c58` | `93cb1be3b9a35f1b8b099b3ef204d9d9409d238864990658a69977bddd3ac4f6` |
+
+Both campaigns retained empty stdout/stderr streams. Original and moved prefixes
+passed independent post-execution verification with unchanged bytes and RECORDs.
+The relocation artifact retains only the verified `moved-prefix` directory; its
+worker assignment was cleaned. Prefix integrity does not constitute a successful
+relocation runtime result. The failed campaign remains unpassed, and all release
+gates and canonical activation remain unchanged. These are individual observed
+timings, not product performance claims.
