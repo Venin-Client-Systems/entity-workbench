@@ -3,35 +3,51 @@
   "observed_date": "2026-09-25",
   "tool": "Figma Design, controlled through CUA",
   "file_id": "CphN4aTS8IXSVlKX7zDJtg",
-  "file_name": "Entity Workbench — development design",
+  "file_name": "Entity Workbench \u2014 development design",
   "contract_source_commit": "bdc15be874b5e40d631561254131297d412a68ad",
   "assets": [
     {
       "path": "figma-catalogue.png",
       "frame_id": "2002:2",
-      "frame_name": "21 / Instrument — DOCX snapshot catalogue",
+      "frame_name": "21 / Instrument \u2014 DOCX snapshot catalogue",
       "width": 1120,
       "height": 1300,
-      "position": { "x": 34500, "y": -500 },
-      "bytes": 127500,
-      "sha256": "d7e7f023ded563078126c78547225ed01bee8f430bd7d691a5cb012d167826c8",
-      "fresh_load_export_sha256": "d7e7f023ded563078126c78547225ed01bee8f430bd7d691a5cb012d167826c8"
+      "position": {
+        "x": 34500,
+        "y": -500
+      },
+      "bytes": 127714,
+      "sha256": "da7c33547040eae74a91c23ca3f6175fb9334dad88a3867b2057d3fd59e4a59d",
+      "fresh_load_export_sha256": "da7c33547040eae74a91c23ca3f6175fb9334dad88a3867b2057d3fd59e4a59d",
+      "initial_design_sha256": "d7e7f023ded563078126c78547225ed01bee8f430bd7d691a5cb012d167826c8",
+      "corrected_pre_reload_export_available": true
     },
     {
       "path": "figma-capture-outcomes.png",
       "frame_id": "2002:58",
-      "frame_name": "22 / Instrument — DOCX capture outcomes",
+      "frame_name": "22 / Instrument \u2014 DOCX capture outcomes",
       "width": 1120,
       "height": 1480,
-      "position": { "x": 36000, "y": -500 },
-      "bytes": 137033,
-      "sha256": "351f1904e071215ba57ec2c64dc9be5b71c0bb4d2e6f7ce7fcd8b37afd5ce3d1",
-      "fresh_load_export_sha256": "351f1904e071215ba57ec2c64dc9be5b71c0bb4d2e6f7ce7fcd8b37afd5ce3d1"
+      "position": {
+        "x": 36000,
+        "y": -500
+      },
+      "bytes": 137467,
+      "sha256": "f604888f3d5eab5c46b37055f34931804b4886159fef6898dbed3c364ecd676f",
+      "fresh_load_export_sha256": "f604888f3d5eab5c46b37055f34931804b4886159fef6898dbed3c364ecd676f",
+      "initial_design_sha256": "351f1904e071215ba57ec2c64dc9be5b71c0bb4d2e6f7ce7fcd8b37afd5ce3d1",
+      "corrected_pre_reload_export_available": false
     }
   ],
   "verification": {
     "native_editable_text_node": "2002:96",
-    "observed_text_controls": ["Text", "Typography", "Inter", "Bold", "16 px"],
+    "observed_text_controls": [
+      "Text",
+      "Typography",
+      "Inter",
+      "Bold",
+      "16 px"
+    ],
     "renamed_file_survived_reload": true,
     "both_named_frames_survived_reload": true,
     "exported_before_and_after_reload": true,
@@ -39,6 +55,17 @@
     "clipping_or_overlap_observed": false,
     "application_code_changed": false,
     "new_implementation_comparison_performed": false,
-    "owner_sign_off": false
+    "owner_sign_off": false,
+    "scope": "Initial design-only handoff; later implementation evidence is recorded in comparison.json."
+  },
+  "wording_followup": {
+    "outcome": "workspace refresh, explicitly limited to an open application",
+    "catalogue": "assessment- basename matches native export recipe",
+    "native_text_nodes": [
+      "2002:71",
+      "2002:51"
+    ],
+    "both_corrected_frames_exported_after_fresh_load": true,
+    "outcome_before_reload_export_completed": false
   }
 }

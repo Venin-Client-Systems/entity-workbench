@@ -50,6 +50,33 @@ const catalogue = () =>
   });
 const panel = (page: Page) =>
   page.getByRole("region", { name: "Editable DOCX snapshots", exact: true });
+async function recordDesignState(page: Page, name: string) {
+  const output = resolve("output/playwright/docx-design");
+  mkdirSync(output, { recursive: true });
+  const result = await new AxeBuilder({ page })
+    .include('[aria-label="Editable DOCX snapshots"]')
+    .analyze();
+  expect(result.violations).toEqual([]);
+  writeFileSync(
+    resolve(output, `${name}.accessibility.json`),
+    JSON.stringify(
+      {
+        violations: result.violations.map((item) => item.id),
+        manual_review_rules: result.incomplete.map((item) => item.id),
+        scope: "Editable DOCX snapshots",
+      },
+      null,
+      2,
+    ),
+  );
+  await panel(page).screenshot({
+    path: resolve(output, `${name}.png`),
+    // The native path is real, verified and machine-specific. Public design
+    // comparison retains the receipt status but masks this private local path.
+    mask: [panel(page).locator("[data-native-export-location]")],
+    maskColor: "#d8dcd8",
+  });
+}
 async function navigate(page: Page, name: "Assessment" | "Overview") {
   await page
     .getByRole("navigation")
@@ -80,6 +107,7 @@ test("DOCX catalogue distinguishes empty and failed reads, creates a canonical s
   fixture();
   await open(page);
   await expect(panel(page)).toContainText("No DOCX snapshots recorded.");
+  await recordDesignState(page, "empty-desktop");
   const calls: string[] = [];
   page.on("request", (request) => {
     if (request.url().endsWith("/api/workbench"))
@@ -104,12 +132,14 @@ test("DOCX catalogue distinguishes empty and failed reads, creates a canonical s
     calls.filter((action) => action === "save_docx_snapshot"),
   ).toHaveLength(1);
   expect(calls).not.toContain("inspect_docx_snapshot");
+  await recordDesignState(page, "catalogue-desktop");
   await page.screenshot({
     path: resolve(captures, "catalogue-desktop.png"),
     fullPage: true,
   });
   await page.setViewportSize({ width: 960, height: 1000 });
   await panel(page).scrollIntoViewIfNeeded();
+  await recordDesignState(page, "catalogue-compact");
   await page.screenshot({
     path: resolve(captures, "catalogue-compact.png"),
     fullPage: true,
@@ -143,6 +173,7 @@ test("DOCX catalogue distinguishes empty and failed reads, creates a canonical s
     "Synthetic unavailable catalogue",
   );
   await expect(panel(page)).not.toContainText("No DOCX snapshots recorded.");
+  await recordDesignState(page, "unavailable-compact");
   fail = false;
   await panel(page)
     .getByRole("button", { name: "Retry DOCX catalogue read", exact: true })
@@ -171,6 +202,21 @@ test("bounded catalogue pages retain exact canonical order without omissions and
   });
   await open(page);
   await expect(panel(page)).toContainText("1–20 of 43 DOCX snapshots");
+  const firstCard = await panel(page)
+    .locator("[data-docx-id]")
+    .first()
+    .boundingBox();
+  const controls = await panel(page)
+    .getByRole("group", { name: "DOCX catalogue pages" })
+    .boundingBox();
+  const metadata = await panel(page)
+    .getByText("Retained metadata catalogue", { exact: true })
+    .boundingBox();
+  expect(firstCard).not.toBeNull();
+  expect(controls).not.toBeNull();
+  expect(metadata).not.toBeNull();
+  expect(controls!.y + controls!.height).toBeLessThan(firstCard!.y);
+  expect(metadata!.y + metadata!.height).toBeLessThan(firstCard!.y);
   const ids = () =>
     panel(page)
       .locator("[data-docx-id]")
@@ -178,8 +224,12 @@ test("bounded catalogue pages retain exact canonical order without omissions and
         elements.map((el) => el.getAttribute("data-docx-id")),
       );
   const seen = await ids();
-  await panel(page).getByRole("button", { name: "Next DOCX page" }).click();
+  await panel(page).getByRole("button", { name: "Next DOCX page" }).focus();
+  await page.keyboard.press("Enter");
   await expect(panel(page)).toContainText("21–40 of 43 DOCX snapshots");
+  await expect(
+    panel(page).getByRole("status").filter({ hasText: "21–40 of 43" }),
+  ).toBeFocused();
   seen.push(...(await ids()));
   hold = true;
   await panel(page).getByRole("button", { name: "Next DOCX page" }).click();
@@ -198,7 +248,9 @@ test("bounded catalogue pages retain exact canonical order without omissions and
   seen.push(...(await ids()));
   expect(seen).toEqual(records.map((row) => row.id));
   expect(new Set(seen).size).toBe(43);
-  await panel(page).getByRole("button", { name: "Previous DOCX page" }).click();
+  await panel(page)
+    .getByRole("button", { name: "Back to previous DOCX page" })
+    .click();
   await expect(panel(page)).toContainText("21–40 of 43 DOCX snapshots");
   await panel(page).getByRole("button", { name: "First DOCX page" }).click();
   await expect(panel(page)).toContainText("1–20 of 43 DOCX snapshots");
@@ -229,6 +281,13 @@ test("lost creation acknowledgement survives navigation and retries only the sam
     .getByRole("button", { name: "Capture DOCX snapshot", exact: true })
     .click();
   await expect(panel(page)).toContainText("Capture completion is unconfirmed:");
+  await expect(panel(page)).toContainText(
+    "Workspace refresh does not create a new capture.",
+  );
+  await expect(panel(page)).toContainText(
+    "only while this application remains open",
+  );
+  await recordDesignState(page, "uncertain-desktop");
   expect(catalogue().total_count).toBe(1);
   await navigate(page, "Overview");
   const changed = addSource();
@@ -286,6 +345,7 @@ test("creation completes after unmount and failed refresh remains a saved snapsh
   await expect(panel(page)).toContainText(
     "Workspace refresh failed; the snapshot is saved.",
   );
+  await recordDesignState(page, "saved-refresh-failed-desktop");
   expect(writes).toBe(1);
   rejectRefresh = false;
   await panel(page)
@@ -386,6 +446,7 @@ test("typed later-revision absence permits only an explicit new capture and reta
   ).toBeEnabled();
   expect(requests).toHaveLength(1);
   expect(catalogue().total_count).toBe(0);
+  await recordDesignState(page, "later-revision-absence-desktop");
   await panel(page)
     .getByRole("button", { name: "Start a new DOCX snapshot" })
     .click();
@@ -433,6 +494,7 @@ test("typed absence at the same revision never enables a replacement and retries
   await expect(
     panel(page).getByRole("button", { name: "Start a new DOCX snapshot" }),
   ).toHaveCount(0);
+  await recordDesignState(page, "same-revision-absence-desktop");
   await panel(page)
     .getByRole("button", { name: "Retry same DOCX capture" })
     .click();
@@ -660,6 +722,7 @@ test("typed native DOCX save recovers lost commit acknowledgement and preserves 
       expected_docx_sha256: row.docx.sha256,
     });
     await panel(page).scrollIntoViewIfNeeded();
+    await recordDesignState(page, "native-receipt-desktop");
     await page.screenshot({
       path: resolve(captures, "native-save-receipt.png"),
       fullPage: true,

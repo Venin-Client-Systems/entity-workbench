@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { command } from "./api";
+import "./docx-snapshots.css";
 import { DocxCapture } from "./docx-capture";
 import {
   validateDocxPage,
@@ -55,7 +56,10 @@ export function DocxSnapshots({
     setRefreshing(false);
   }
   return (
-    <section className="panel" aria-label="Editable DOCX snapshots">
+    <section
+      className="panel docx-snapshots"
+      aria-label="Editable DOCX snapshots"
+    >
       <div className="panel-heading">
         <h2>Editable DOCX snapshots</h2>
         <button
@@ -87,7 +91,7 @@ export function DocxSnapshots({
         </p>
       )}
       {saved.phase === "uncertain" && (
-        <div>
+        <div className="docx-capture-state">
           {saved.error && (
             <p className="alert error" role="alert">
               Capture completion is unconfirmed: {saved.error}
@@ -95,10 +99,10 @@ export function DocxSnapshots({
           )}
           <p>
             Retry retains request <code>{saved.request!.id}</code> and captured
-            revision {saved.request!.revision}. Refresh does not create a new
-            capture. If that revision was rejected, retry cannot substitute the
-            current revision. Request recovery is retained only while this
-            application remains open.
+            revision {saved.request!.revision}. Workspace refresh does not
+            create a new capture. If that revision was rejected, retry cannot
+            substitute the current revision. Request recovery is retained only
+            while this application remains open.
           </p>
           <button
             className="button"
@@ -193,18 +197,20 @@ export function DocxSnapshots({
           {refreshError}
         </p>
       )}
+      <div className="docx-catalogue-context">
+        <p className="docx-instrument-label">Retained metadata catalogue</p>
+        <p>
+          Listing a snapshot does not verify its original sources or artifact
+          bytes. Native saving verifies the frozen document and DOCX; it never
+          regenerates a report from the current workspace.
+        </p>
+      </div>
       <Catalogue
         key={`${revision}:${reload}`}
         revision={revision}
         disabled={busy || refreshing}
         capture={capture}
       />
-      <p className="context-note">
-        This catalogue reads retained metadata. Listing a snapshot does not
-        verify its original sources or artifact bytes. Native saving verifies
-        the frozen document and DOCX; it never regenerates a report from the
-        current workspace.
-      </p>
     </section>
   );
 }
@@ -319,15 +325,71 @@ function Catalogue({
         Newest publication first · 20 snapshots per page · catalogue revision{" "}
         {revision}
       </p>
-      <p role="status" tabIndex={-1} ref={status}>
-        {loading
-          ? "Loading DOCX catalogue…"
-          : page
-            ? page.total_count === 0
-              ? "No DOCX snapshots recorded."
-              : `${offset + 1}–${offset + page.rows.length} of ${page.total_count} DOCX snapshots`
-            : "DOCX catalogue unavailable."}
-      </p>
+      <div className="docx-catalogue-toolbar">
+        <p role="status" tabIndex={-1} ref={status}>
+          {loading
+            ? "Loading DOCX catalogue…"
+            : page
+              ? page.total_count === 0
+                ? "No DOCX snapshots recorded."
+                : `${offset + 1}–${offset + page.rows.length} of ${page.total_count} DOCX snapshots`
+              : "DOCX catalogue unavailable."}
+        </p>
+        <div
+          className="inline-actions"
+          role="group"
+          aria-label="DOCX catalogue pages"
+        >
+          <button
+            className="button"
+            disabled={locked || !page || offset === 0}
+            aria-label="First DOCX page"
+            onClick={() => void read(first, true)}
+          >
+            First
+          </button>
+          <button
+            className="button"
+            disabled={locked || !page || !attempt.previous.length}
+            aria-label="Back to previous DOCX page"
+            onClick={() => {
+              const previous = attempt.previous.at(-1);
+              if (previous)
+                void read(
+                  {
+                    position: previous,
+                    previous: attempt.previous.slice(0, -1),
+                  },
+                  true,
+                );
+            }}
+          >
+            Back
+          </button>
+          <button
+            className="button"
+            disabled={locked || !page?.next_cursor}
+            aria-label="Next DOCX page"
+            onClick={() => {
+              if (page?.next_cursor)
+                void read(
+                  {
+                    position: {
+                      cursor: page.next_cursor,
+                      offset: offset + page.rows.length,
+                    },
+                    previous: [...attempt.previous, attempt.position].slice(
+                      -100,
+                    ),
+                  },
+                  true,
+                );
+            }}
+          >
+            Next
+          </button>
+        </div>
+      </div>
       {error && (
         <div>
           <p className="alert error" role="alert">
@@ -349,48 +411,6 @@ function Catalogue({
       {page?.rows.map((row) => (
         <SnapshotCard key={row.id} row={row} />
       ))}
-      <div className="inline-actions" aria-label="DOCX catalogue pages">
-        <button
-          className="button"
-          disabled={locked || !page || offset === 0}
-          onClick={() => void read(first, true)}
-        >
-          First DOCX page
-        </button>
-        <button
-          className="button"
-          disabled={locked || !page || !attempt.previous.length}
-          onClick={() => {
-            const previous = attempt.previous.at(-1);
-            if (previous)
-              void read(
-                { position: previous, previous: attempt.previous.slice(0, -1) },
-                true,
-              );
-          }}
-        >
-          Previous DOCX page
-        </button>
-        <button
-          className="button"
-          disabled={locked || !page?.next_cursor}
-          onClick={() => {
-            if (page?.next_cursor)
-              void read(
-                {
-                  position: {
-                    cursor: page.next_cursor,
-                    offset: offset + page.rows.length,
-                  },
-                  previous: [...attempt.previous, attempt.position].slice(-100),
-                },
-                true,
-              );
-          }}
-        >
-          Next DOCX page
-        </button>
-      </div>
       {attempt.previous[0]?.offset > 0 && (
         <p className="muted">
           Back navigation retains 100 page positions. First DOCX page remains
@@ -427,8 +447,7 @@ function SnapshotCard({ row }: { row: DocxSnapshot }) {
         throw new Error("DOCX view closed while preparing the file.");
       const receipt = await commitNativeExport(prepared);
       committed = true;
-      if (mounted.current)
-        setNotice(`Saved immutable DOCX: ${receipt.location}`);
+      if (mounted.current) setNotice(receipt.location);
     } catch (cause) {
       if (mounted.current) setError(String(cause));
     } finally {
@@ -448,23 +467,35 @@ function SnapshotCard({ row }: { row: DocxSnapshot }) {
     }
   }
   return (
-    <article className="list-card" data-docx-id={row.id}>
-      <span className="pill">SOURCE REV {row.workspace_revision}</span>
-      <h3>
+    <article className="list-card docx-snapshot-card" data-docx-id={row.id}>
+      <div className="docx-snapshot-heading">
+        <h3>Source revision {row.workspace_revision}</h3>
         <time dateTime={row.created_at}>{row.created_at}</time>
-      </h3>
-      <p>
-        Snapshot <code>{row.id}</code>
-      </p>
-      <p>
-        Document SHA-256 <code>{row.document.sha256}</code>
-      </p>
-      <p>
-        DOCX SHA-256 <code>{row.docx.sha256}</code> ·{" "}
-        {row.docx.bytes.toLocaleString()} bytes
-      </p>
+      </div>
+      <dl className="docx-snapshot-identities">
+        <div>
+          <dt>Snapshot</dt>
+          <dd>
+            <code>{row.id}</code>
+          </dd>
+        </div>
+        <div>
+          <dt>Document SHA-256</dt>
+          <dd>
+            <code>{row.document.sha256}</code>
+          </dd>
+        </div>
+        <div>
+          <dt>DOCX SHA-256</dt>
+          <dd>
+            <code>{row.docx.sha256}</code>
+          </dd>
+        </div>
+      </dl>
       <p className="muted">
-        Template {row.template_version} · generator {row.generator_version}
+        {row.docx.bytes.toLocaleString()} bytes · Template{" "}
+        {row.template_version}
+        {" · "}generator {row.generator_version}
       </p>
       {nativeExportsAvailable() ? (
         <button
@@ -486,7 +517,8 @@ function SnapshotCard({ row }: { row: DocxSnapshot }) {
       )}
       {notice && (
         <p className="alert" role="status">
-          {notice}
+          <strong>Saved immutable DOCX:</strong>{" "}
+          <code data-native-export-location>{notice}</code>
         </p>
       )}
     </article>

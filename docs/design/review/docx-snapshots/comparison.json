@@ -1,0 +1,341 @@
+{
+  "format_version": 1,
+  "observed_date": "2026-09-25",
+  "base_commit": "41752523eaf6e450be068809c73db0be3123e57f",
+  "source_binding": "Base commit plus exact listed source file hashes; this manifest is committed with the repair.",
+  "source_files": [
+    {
+      "path": "ui/src/DocxSnapshots.tsx",
+      "bytes": 17191,
+      "sha256": "a3aae2fc32aba5aaa71466d0be82ae164cfa649c56e8ce1536d5bf1450b72b60"
+    },
+    {
+      "path": "ui/src/docx-snapshots.css",
+      "bytes": 1975,
+      "sha256": "b7c46d4330409b20c6b021e4eaaad45ef83bc94784a299b2989fd8d8d12f5e54"
+    },
+    {
+      "path": "ui/tests/docx-snapshots.spec.ts",
+      "bytes": 27639,
+      "sha256": "f3c2e37bb2c321a01143c2d4a4357d1d8265a694d432b08ccf4a0576c8c6f984"
+    },
+    {
+      "path": "ui/src/docx-capture.ts",
+      "bytes": 5167,
+      "sha256": "d3d29d6dd43f1f73af71003afb7ff969c395228f16cde38c8adb47a13d45d5ed"
+    },
+    {
+      "path": "ui/src/native-export.ts",
+      "bytes": 7277,
+      "sha256": "a650b3d91bde1ecf6c6df7998b7b45c9d5c9996329e56132e06a9acb8e76135f"
+    },
+    {
+      "path": "ui/tests/global-setup.ts",
+      "bytes": 479,
+      "sha256": "1eb9c2844065ed08771eea3b641d349f0c3ed159398b621920e399b89588539b"
+    },
+    {
+      "path": "playwright.config.ts",
+      "bytes": 464,
+      "sha256": "e8197a3e29418cfc2a59bd02052626c02154957b46c567b0e380ee7dec20d574"
+    },
+    {
+      "path": "package-lock.json",
+      "bytes": 62701,
+      "sha256": "5f262879fbb9792559952bc8d27aaa1273f8c21d8b0a1b8898a460b5fb9b700f"
+    },
+    {
+      "path": "Cargo.lock",
+      "bytes": 131293,
+      "sha256": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32"
+    },
+    {
+      "path": "crates/core/examples/native_export_session.rs",
+      "bytes": 2539,
+      "sha256": "e349a2c211234d51fcd80e795c4bd401da34a9ba883dd073009e521128725136"
+    }
+  ],
+  "environment": {
+    "node": "v26.7.0",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "playwright": "1.63.0",
+    "axe": "4.13.0",
+    "os_version": "26.6.2",
+    "rustc": "rustc 1.90.0 (1159e78c4 2025-09-14)",
+    "browser_executable": {
+      "path": "Google Chrome for Testing",
+      "bytes": 52112,
+      "sha256": "8319963f6625accf51c0dd4f55091ceaf9f09ed39e7a52fed4fae12b2a6b668a"
+    }
+  },
+  "compiled_helpers": [
+    {
+      "path": "ew-dev",
+      "bytes": 37908856,
+      "sha256": "f80e78b7f391cea86108567b728f4e9576a5176c2485b652a4a8388b6eaf7f2f"
+    },
+    {
+      "path": "native_export_session",
+      "bytes": 37564680,
+      "sha256": "904c94378c92e0ada15318cc6a8cb78c6d3694bfdef70f44f80cd1e21e592613"
+    }
+  ],
+  "checks": [
+    {
+      "path": "docx-baseline.log",
+      "bytes": 2982,
+      "sha256": "64875e89fd88efc58f1a396fdb7279d3f4b914410d1101039379023a9d0de7ca",
+      "scope": "baseline",
+      "outcome": "passed",
+      "retained_locally": true,
+      "tests_passed": 13,
+      "tests_failed": 0,
+      "runner_reported_seconds": 42.5
+    },
+    {
+      "path": "docx-final-label.log",
+      "bytes": 2640,
+      "sha256": "b3e91c85a8e695b2bc14ffa33cf5d7112a1a9545737ac3a5561575867c7373e3",
+      "scope": "full suite after label repair",
+      "outcome": "passed",
+      "retained_locally": true,
+      "tests_passed": 13,
+      "tests_failed": 0,
+      "runner_reported_seconds": 22.3
+    },
+    {
+      "path": "docx-receipt-final.log",
+      "bytes": 766,
+      "sha256": "978d6fe73d86927979ab4d08fee8c5035bf08c5941b59eba043fa9bc4b6063b0",
+      "scope": "affected receipt workflow after final receipt CSS",
+      "outcome": "passed",
+      "retained_locally": true,
+      "tests_passed": 1,
+      "tests_failed": 0,
+      "runner_reported_seconds": 6.1
+    },
+    {
+      "path": "build-final-receipt.log",
+      "bytes": 932,
+      "sha256": "519892d0f07089d1076a2c54c735ae5ce9bcc1f64ced46184be63bc2b4256278",
+      "scope": "final production build",
+      "outcome": "passed",
+      "retained_locally": true
+    }
+  ],
+  "application_captures": [
+    {
+      "path": "application/catalogue-compact.png",
+      "bytes": 91441,
+      "sha256": "7a3053dc7fddaf0813d563235c16d525922bca42ddcb2783be51e3d77a3882a0",
+      "width": 720,
+      "height": 773,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 960,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/catalogue-compact.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/catalogue-desktop.png",
+      "bytes": 90970,
+      "sha256": "224302e43d95d11e0ff74d09ff387172966688c383100b51870b69bffbf58b53",
+      "width": 1200,
+      "height": 751,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/catalogue-desktop.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/empty-desktop.png",
+      "bytes": 46237,
+      "sha256": "7e806d8abc8ae0043d199e628a04792f2aab689a0478ca48ba69fd36d934b88a",
+      "width": 1200,
+      "height": 359,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/empty-desktop.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/later-revision-absence-desktop.png",
+      "bytes": 90215,
+      "sha256": "26a7f7bfb7d4368e9d330981bca70ed51bb8f37ab44d47c634745002dd0df802",
+      "width": 1200,
+      "height": 653,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/later-revision-absence-desktop.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/native-receipt-desktop.png",
+      "bytes": 85078,
+      "sha256": "ba65e3a47c728f0df1a312243043f341b01109452675f00567d7791e8ce4cc9c",
+      "width": 1200,
+      "height": 799,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "machine_path_masked": true,
+      "accessibility": {
+        "path": "application/native-receipt-desktop.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/same-revision-absence-desktop.png",
+      "bytes": 82132,
+      "sha256": "25f75fa8f694ea82924e49c32718c1609f685adff133762436770ef8073d79af",
+      "width": 1200,
+      "height": 596,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/same-revision-absence-desktop.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/saved-refresh-failed-desktop.png",
+      "bytes": 75535,
+      "sha256": "134c1084f576dc449b55d49372c21fc6dc767ef8e40ff086a9d2dcd4f4b9eec3",
+      "width": 1200,
+      "height": 577,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/saved-refresh-failed-desktop.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/unavailable-compact.png",
+      "bytes": 69087,
+      "sha256": "906ada898f2d15df3e3915d182369a782c85c5ad1e99ac9718889a08542de184",
+      "width": 720,
+      "height": 598,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 960,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/unavailable-compact.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    },
+    {
+      "path": "application/uncertain-desktop.png",
+      "bytes": 74640,
+      "sha256": "04887081ad8e7c1a2c39ad7cac14a67a3c014c5ba28a3faf66be98e0be2c138d",
+      "width": 1200,
+      "height": 580,
+      "visually_inspected": true,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "machine_path_masked": false,
+      "accessibility": {
+        "path": "application/uncertain-desktop.accessibility.json",
+        "bytes": 89,
+        "sha256": "a0eb0073897911b76ef5ffb93e5ae959f5206d54e67bf30c1fec07eafa131ba0",
+        "violations": [],
+        "manual_review_rules": [],
+        "scope": "Editable DOCX snapshots"
+      }
+    }
+  ],
+  "figma_assets": [
+    {
+      "path": "figma-catalogue.png",
+      "bytes": 127714,
+      "sha256": "da7c33547040eae74a91c23ca3f6175fb9334dad88a3867b2057d3fd59e4a59d"
+    },
+    {
+      "path": "figma-capture-outcomes.png",
+      "bytes": 137467,
+      "sha256": "f604888f3d5eab5c46b37055f34931804b4886159fef6898dbed3c364ecd676f"
+    }
+  ],
+  "limits": [
+    "Browser Chromium panel tests, not a new native WebKit or Word observation.",
+    "Axe panel scope does not prove screen-reader or voice-control behavior.",
+    "Compact application evidence is not a compact editable Figma specimen.",
+    "No 200 percent zoom, complete keyboard traversal, owner approval or full release claim."
+  ],
+  "final_changes_after_full_suite": [
+    "Whitespace-only test formatting.",
+    "Receipt location display:block and spacing; the affected native-session browser workflow passed afterward."
+  ],
+  "public_evidence_policy": "Synthetic fixtures. Exact machine-specific native destination is masked only in the public panel screenshot; real path and bytes remain validated by the test."
+}
