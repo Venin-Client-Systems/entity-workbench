@@ -1,0 +1,47 @@
+{
+  "acceptance_sha256": "a9317213ff034fe82b03ca7c1d84ea724c143fc0417dafb4a015869e0fbd3448",
+  "actual_window_observation": "separate CUA evidence required; not inferred by this audit",
+  "all_canonical_record_tables_empty": true,
+  "bundle_files_unchanged": 11323,
+  "campaign_id": "a020f3bc-cb6a-47ca-9321-d324bdeb50e8",
+  "complete_release": false,
+  "database_identity": {
+    "bytes": 36864,
+    "sha256": "c898b6ce7a514633dba266aacaa86b6d440b02644dbf8b8ed227d3d12da880a0"
+  },
+  "database_integrity": "ok",
+  "executable_identity": {
+    "bytes": 15181104,
+    "sha256": "d70f5dc6bd3b009252f56796c53e58b19c1ed593439afe6ad956be35c5d0f27c"
+  },
+  "full_canonical_equals_independent_fresh_baseline": true,
+  "originals": 0,
+  "os_exit_sha256": "a53c7d753969ead5ff72836a09c3c5c0bd6699e5eef4981755639e0ffd4d774e",
+  "passed": true,
+  "prefix_inventories": {
+    "bundle": {
+      "bytes": 601821300,
+      "files": 11320,
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822"
+    },
+    "copy": {
+      "bytes": 601821300,
+      "files": 11320,
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822"
+    },
+    "original": {
+      "bytes": 601821300,
+      "files": 11320,
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822"
+    }
+  },
+  "prelaunch_sha256": "28e827cc232520a028d3a84c67a20a4e9b8c60ec1ef7172ee4ddeb99ed044c87",
+  "processing_lock_reacquired_without_write": true,
+  "schema_version": 1,
+  "schema_version_actual": 5,
+  "scope": "One unsigned development package startup and normal shutdown; no packaged graph worker execution or release acceptance",
+  "source": "0cf52f720259890f1395275f271fc8d94486e65c",
+  "source_files_verified": 1401,
+  "source_tree": "d3d10040e48fb43f33a699b7176c32d84a4e16c1",
+  "workspace_revision": 0
+}

@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "kind": "packaged_graph_startup_observation",
+  "complete_release": false,
+  "source": "0cf52f720259890f1395275f271fc8d94486e65c",
+  "source_tree": "d3d10040e48fb43f33a699b7176c32d84a4e16c1",
+  "campaign_id": "a020f3bc-cb6a-47ca-9321-d324bdeb50e8",
+  "host": {
+    "os": "macOS",
+    "version": "26.6.2",
+    "build": "25G83",
+    "architecture": "arm64"
+  },
+  "build": {
+    "exit_code": 0,
+    "offline_locked": true,
+    "no_sign": true,
+    "seconds": 313.0719075000379,
+    "fresh_target": true,
+    "resource_entries": [
+      "engines/python",
+      "icon.icns"
+    ],
+    "wait_limit_seconds": 1800
+  },
+  "execution": {
+    "launches": 1,
+    "automatic_retries": 0,
+    "graph_submissions": 0,
+    "owned_os_process_reaped": true,
+    "exit_code": 0,
+    "seconds": 44.383532249950804,
+    "timed_out": false,
+    "wait_limit_seconds": 300,
+    "timeout_teardown_seconds_per_signal": 10,
+    "proof_events": [
+      {
+        "details": {
+          "availability": "ready",
+          "graph_job_count": 0,
+          "resource_location": "app_bundle",
+          "workspace_revision": 0
+        },
+        "event": "constructor_ready",
+        "kind": "development_graph_startup_proof",
+        "schema_version": 1
+      },
+      {
+        "details": {
+          "bundled_document_finished": true,
+          "window_created": true
+        },
+        "event": "bundled_window_ready",
+        "kind": "development_graph_startup_proof",
+        "schema_version": 1
+      },
+      {
+        "details": {
+          "bundled_window_ready": true,
+          "joined": true,
+          "passed": true,
+          "unchanged_empty_graph_catalogue": true
+        },
+        "event": "shutdown",
+        "kind": "development_graph_startup_proof",
+        "schema_version": 1
+      }
+    ]
+  },
+  "native_window": {
+    "schema_version": 1,
+    "method": "Root observed native CUA accessibility tree and screenshot in the conversation",
+    "separate_png_export_retained": false,
+    "app_identifier": "org.entityworkbench.graphstartupproof.a020f3bc-cb6a-47ca-9321-d324bdeb50e8",
+    "native_window_title": "Entity Workbench \u00b7 Development",
+    "bundled_document_url": "tauri://localhost",
+    "observed_ui": {
+      "section": "Overview",
+      "heading": "Investigation overview",
+      "revision": 0,
+      "evidence_items": 0,
+      "entities": 0,
+      "transactions_to_review": 0,
+      "open_collection_gaps": 0,
+      "synthetic_seed_button": "Load synthetic investigation"
+    },
+    "screenshot_observation": "Rendered graphite navigation, square amber controls and empty workspace instruments were visible; no blank window or error dialog",
+    "actions": "Read-only app/window observation followed by normal Command-Q; no seed, import or graph submission",
+    "cua_quit_result": "App quit",
+    "limitations": "Operator observation, not independent human design approval; screenshot is conversation evidence and has no retained standalone PNG hash"
+  },
+  "executable_identity": {
+    "bytes": 15181104,
+    "sha256": "d70f5dc6bd3b009252f56796c53e58b19c1ed593439afe6ad956be35c5d0f27c"
+  },
+  "root_audit_sha256": "38df367f12cb0d6e1a59f0104d0edc70de8565948c1f91e890234ec6b347923c",
+  "artifact_identities": {
+    "build.log": {
+      "bytes": 12332,
+      "sha256": "a717332b3090a3dcb9fb0dafad2f180d5aebec4cd5976665c8f0773fc13eaa89"
+    },
+    "build-exit.json": {
+      "bytes": 70,
+      "sha256": "3bb69ef0e7c7677c866dca29581387b0776a8dd4f6dfa4c0f356f504ee036880"
+    },
+    "merged-config.json": {
+      "bytes": 1375,
+      "sha256": "38ff2d4fb57823b352e238fe6a594834045dd71bb818ee1189905c419a0df3de"
+    },
+    "config-identity.json": {
+      "bytes": 99,
+      "sha256": "81255d32507694fae66ea6d421dbcb936a4da3f79d20dfdc4a53f898fdf2e88a"
+    },
+    "prelaunch.json": {
+      "bytes": 2699,
+      "sha256": "28e827cc232520a028d3a84c67a20a4e9b8c60ec1ef7172ee4ddeb99ed044c87"
+    },
+    "source-before.json": {
+      "bytes": 220983,
+      "sha256": "730a1acf3fe6ddcaa686e90a47763f9a899254d19c32400359af7cbdee9834ad"
+    },
+    "bundle-inventory-before.json": {
+      "bytes": 2598421,
+      "sha256": "9aa989a25d4f639a911b401d2ac722e5db56e12cfe641d21701ac1aa12c96511"
+    },
+    "relocation.json": {
+      "bytes": 686,
+      "sha256": "c56810f99772529ce3e648388fc22ec03ce87181ea01a1e16c067e6f10e1575d"
+    },
+    "retained-packaged-startup-plan.json": {
+      "bytes": 2406,
+      "sha256": "1886f81557c68612b92adab9c8f547c52c4bb42c6299e03f03abfbff9d835275"
+    },
+    "retained-prepare_packaged_startup.py": {
+      "bytes": 6862,
+      "sha256": "6ec5986e4a5dc02a455a8aaa024328d2d258312f94cc35f31c01ebf4ec7755ef"
+    },
+    "retained-launch_packaged_startup.py": {
+      "bytes": 5373,
+      "sha256": "260b539c1dd1feec1c9512b040e3bbd59b7bafa2fec86d2aedd31ee5e97fa710"
+    },
+    "launch-intent.json": {
+      "bytes": 541,
+      "sha256": "9e19e9810e1ad9f128196cc4e2b51b9d140d1a8b30b20eae9dad933691c3d351"
+    },
+    "launched-process.json": {
+      "bytes": 366,
+      "sha256": "8800083d95266c295628360900fbfb891b9f95a92a2ac16823779e93fefe1c5e"
+    },
+    "os-exit.json": {
+      "bytes": 124,
+      "sha256": "a53c7d753969ead5ff72836a09c3c5c0bd6699e5eef4981755639e0ffd4d774e"
+    },
+    "app-exit.json": {
+      "bytes": 1041,
+      "sha256": "a9317213ff034fe82b03ca7c1d84ea724c143fc0417dafb4a015869e0fbd3448"
+    },
+    "app.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "app.stderr": {
+      "bytes": 609,
+      "sha256": "4d863707843cbd0279ba96d50f7f48d645fb9c695c84cd13e98d4f5d968a940f"
+    },
+    "native-window-observation.json": {
+      "bytes": 1115,
+      "sha256": "f7aa9a69973a4ba030657e004da142172553f754a0fe0980d5cdbe0578131a0e"
+    },
+    "closed-canonical.json": {
+      "bytes": 1494,
+      "sha256": "75a9643f2f4d73eec1f545868845987c5806fc0dee51d66e0b8b8de5f84addd6"
+    }
+  },
+  "remaining": [
+    "Packaged graph worker submission/execution",
+    "Graph interface and default graph activation",
+    "Complete runtime bundles and all three clean installs",
+    "Signed helpers, signing, notarization and release acceptance"
+  ]
+}
