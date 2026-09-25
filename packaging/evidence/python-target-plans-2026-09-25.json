@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "scope": "source-file-bound offline target metadata verification",
+  "base_commit": "df4dbff063d274effb9fa6385095938751bb300e",
+  "sources": {
+    "scripts/verify_python_target_plans.py": {
+      "bytes": 6915,
+      "sha256": "6713de2b21695cfc5b1313f777c14c330dd5be803a4486e510b973393d384172"
+    },
+    "scripts/tests/test_python_target_plans.py": {
+      "bytes": 4458,
+      "sha256": "2d2bb7ff6f72e89578862f9a76061959d4882da05666f8effc7ce26e2a8356fc"
+    },
+    "workers/python/uv.lock": {
+      "bytes": 114801,
+      "sha256": "5fe63f3b0597df585840b9e6757c87a76754b52aa1570cb401cb48113ac81eb4"
+    },
+    "workers/python/pyproject.toml": {
+      "bytes": 300,
+      "sha256": "a6b11f5ca5d427d963be6f63dd62c4c40f602c14e3252447a04be109de0b5375"
+    },
+    "packaging/plans/python-macos-x86_64-wheels.v1.json": {
+      "bytes": 21964,
+      "sha256": "b8fda7f8e0db9fbdf688b552b1fbbfb42e6d24ef78c81d7f1bf6d4883e0640f9"
+    },
+    "packaging/plans/python-windows-x86_64-wheels.v1.json": {
+      "bytes": 22357,
+      "sha256": "9d422f9c7f3d5903dd2a29aec47d67b5de91417406528a1dbe5f01144839ff3a"
+    },
+    "packaging/plans/python-macos-arm64-wheels.v1.json": {
+      "bytes": 21902,
+      "sha256": "983ac846a79e4985218b3f2582445abeac18de90fc3108c06fcb29b60928580e"
+    }
+  },
+  "verification": {
+    "schema_version": 1,
+    "verified": true,
+    "scope": "locked wheel metadata only",
+    "targets": [
+      {
+        "target": "macos-x86_64",
+        "plan_sha256": "b8fda7f8e0db9fbdf688b552b1fbbfb42e6d24ef78c81d7f1bf6d4883e0640f9",
+        "packages": 58,
+        "archive_bytes_declared": 110032930
+      },
+      {
+        "target": "windows-x86_64",
+        "plan_sha256": "9d422f9c7f3d5903dd2a29aec47d67b5de91417406528a1dbe5f01144839ff3a",
+        "packages": 60,
+        "archive_bytes_declared": 102969632
+      }
+    ],
+    "archives_downloaded": false,
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "complete_release": false
+  },
+  "uv": {
+    "version": "uv 0.11.32 (Homebrew 2026-07-23 aarch64-apple-darwin)",
+    "development_python": "3.13.11",
+    "network": "disabled by --offline",
+    "sync": "--dry-run",
+    "project_environment_created": false,
+    "observations": {
+      "macos-x86_64": {
+        "dependency_set_matches": true,
+        "packages": 58,
+        "raw_log": {
+          "bytes": 6037,
+          "sha256": "70c113018e81e00b6a39c69ade30cd17ef905c7a12ae77a00377e1e2cb1925ae"
+        }
+      },
+      "windows-x86_64": {
+        "dependency_set_matches": true,
+        "packages": 60,
+        "raw_log": {
+          "bytes": 1412,
+          "sha256": "ec5247fb03c03a7383320b429e1bcd60e199483c6d16a9cc645201de219e7ef2"
+        }
+      }
+    }
+  },
+  "tests": {
+    "ordinary_passed": 5,
+    "optimized_passed": 5,
+    "logs": {
+      "target-plan-tests.log": {
+        "bytes": 1044,
+        "sha256": "d109f1919b0ba2dda747fcd8c95c8211ce5a65a345fe30dc6d48979cc5073064"
+      },
+      "target-plan-tests-optimized.log": {
+        "bytes": 1044,
+        "sha256": "e852f2663a4998844c2eb7739396bca70614f05fbd523eb419c2c290fa68f715"
+      }
+    }
+  },
+  "limitations": [
+    "Metadata identities and declared sizes have not been checked against new downloads.",
+    "Frozen dry runs compare package name/version sets, not exact selected wheel artifacts.",
+    "Candidate interpreters and packages were not executed.",
+    "No minimum OS, native compatibility, installer or release acceptance claim."
+  ],
+  "complete_release": false
+}
