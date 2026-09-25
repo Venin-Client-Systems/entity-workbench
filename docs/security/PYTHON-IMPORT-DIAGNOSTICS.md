@@ -1,9 +1,10 @@
-# Bounded Python import diagnostics — source-only increment
+# Bounded Python import diagnostics
 
-EW-07 / issue #11. This changes only the fixed test harness. The candidate
-interpreter has **not** executed with this diagnostic revision. It does not
-activate a canonical worker, establish reliable startup, or change a release gate.
-The original runtime, moved runtime and all prior receipts remain unchanged.
+EW-07 / issue #11. This changes only the fixed test harness. The first native
+relocated diagnostic observation at signed source `4d76120` failed its unchanged
+30-second wall-time limit. It does not activate a canonical worker, establish
+reliable startup, or change a release gate. The original runtime, moved runtime
+and all prior receipts remain unchanged.
 
 The retained [relocation failure](../../packaging/evidence/python-relocation-first-native-2026-09-26.json)
 exhausted the **whole worker's 30-second wall limit**, with a final
@@ -132,8 +133,8 @@ directly. Coverage includes ordered timing, equal/regressing/invalid clocks,
 sixteen-event saturation, ignored unsafe arguments, reentrancy, no-clobber writes,
 observer failure versus original import exception, malformed/partial/duplicate
 records, links, excess names/counts and retention of the original wall-time
-failure with validated partial diagnostics. Native ignored tests remain unrun
-until a clean signed source and exact execution recipe receive separate review.
+failure with validated partial diagnostics. Native ignored tests require a clean signed source and separately reviewed exact
+execution recipe. The one later native observation is recorded below.
 
 At this source handoff, 41 targeted Python contract tests pass on the trusted
 host Python 3.13.11 and 3.14.2, both normally and with `-O`. Full Python 3.13
@@ -141,3 +142,76 @@ discovery passes in both modes: 269 tests, including four explicit platform/inpu
 skips. The ordinary Rust probe selection passes 13 tests, with all three explicit
 native tests ignored. Strict core Clippy across all targets and Rust formatting
 checks pass. These are source checks, not a new candidate-runtime observation.
+
+
+## First relocated diagnostic observation — failed, retained
+
+One reviewed invocation ran at signed source
+`4d76120a5fb918491db7aed8bdf04c0a31cd44f5`, tree
+`760e6df990402c0ee33acad590333d6f2b7d5fd3`, on macOS 26.6.2 arm64. No retry or
+hostile rerun followed. Other agents confirmed their heavy builds had finished
+before this campaign; that condition does not establish a cause for any timing.
+The release build finished in its unchanged 300-second allowance (reported
+3m 12s). The native test finished in 33.27s, within the unchanged 120-second
+outer allowance, and failed with `quota-exhausted` / `wall-time`.
+
+The [outer receipt](../../packaging/evidence/python-relocation-diagnostic-first-2026-09-26.json)
+and [native receipt](../../packaging/evidence/python-relocation-diagnostic-first-native-2026-09-26.json)
+are byte-identical copies of the retained observations. The
+[integrity record](../../packaging/evidence/python-relocation-diagnostic-first-integrity-2026-09-26.json)
+binds their hashes and the retained build/test logs. Campaign
+`ed8ab917-827a-4b02-9b7f-06bfc643679e` and job
+`78484cec-7ea8-4b00-9112-e8949b4b3e78` agree across the receipts. The release test
+binary SHA-256 is
+`e331d409d69e72d1d9a46c74a448dd6a4a60a5c95fc5de3c53b4ea12b4a75f31`;
+the actual expanded profile SHA-256 is
+`cd036054d896173fc5b56fd4c0232b4924007daae614803112ad7d6d5099da49`.
+Assigned code/input identities and the interpreter identity are retained in full.
+
+Preparation took 3,185 ms. Spawn through confirmed termination took 30,020 ms.
+Five valid direct-import checkpoints and sixteen valid import-attempt records
+were collected after reaping. The paired observations permit only these
+completed direct-import durations:
+
+| Direct import | Elapsed delta | Process CPU delta |
+| --- | ---: | ---: |
+| DuckDB | 736 ms | 24 ms |
+| NetworkX | 307 ms | 306 ms |
+
+The `spacy:before` checkpoint was at elapsed 1,208 ms / CPU 468 ms and has no
+matching after checkpoint. Later selected attempts included `spacy.language`
+at 7,626 / 1,024 ms, `spacy.cli` at 28,661 / 1,363 ms, and `weasel` at
+29,320 / 1,560 ms. These are attempt timestamps, not completion times or
+attribution of the time between them. In particular, the 21,035 ms wall-time
+interval between the language and CLI attempts has only 339 ms additional
+process CPU time. That observation does not support attributing the full interval
+to CPU-bound source compilation; it also cannot distinguish filesystem/native
+loading waits, scheduling, or other causes without further evidence. No process
+CPU measurement exists at the final kill. The observer's separate native cost
+has not been measured.
+
+The version-check phase completed, but the combined import phase did not. No
+mention, graph, exact-total, plugin-resolution or final compatibility result was
+published; the later direct Click, Splink and PyArrow imports were not reached.
+Their absence is not a negative assertion about those individual engines.
+Both candidate stdout and stderr were empty. The original wall-time failure
+remains primary; termination and cleanup were confirmed, and no job directory
+remains. The verified moved prefix is deliberately retained.
+
+Independent readers completed **both** post-campaign prefix checks: each remains
+11,320 ordinary files / 601,821,300 bytes / 58 installed RECORDs at manifest
+`4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822`.
+A final read-only check also confirmed the source tree and native binary were
+unchanged, the parent/native receipt contract was valid, and the invocation's
+captured JSON exactly matched the saved outer receipt. The inventory's
+`assembled-unexecuted` / `package_code_executed: false` fields describe the
+installer's assembly operation; they do not negate the explicitly recorded
+candidate execution in this campaign.
+
+This adds a distinct failed observation alongside the original timeout, original
+success, hostile success and first relocation timeout. It leaves reliable
+relocated startup, canonical Python protocol integration, wider network-denial
+coverage, hard RSS control, clean installation, signing and release acceptance
+unverified. A future single-engine recipe must have its own source, assertions,
+budget and actual observations; it cannot relabel this combined campaign as a
+success.

@@ -1,0 +1,310 @@
+{
+  "build_profile": "release",
+  "campaign_id": "ed8ab917-827a-4b02-9b7f-06bfc643679e",
+  "candidate_started": true,
+  "case": "relocated",
+  "complete_release": false,
+  "failure": "native-compatibility-failed",
+  "native": {
+    "architecture": "aarch64",
+    "assigned_files": {
+      "code/bootstrap.py": {
+        "bytes": 3560,
+        "sha256": "e63fba80e04fc1c657ab7617eec547e060a7d4787333fab6073500131abd7fe9"
+      },
+      "code/compatibility.py": {
+        "bytes": 5557,
+        "sha256": "4c0e3b4976c58b7bc3ed466f6c40901bafc5c999a5a5d9039c6bd8f7287815b2"
+      },
+      "code/import_diagnostics.py": {
+        "bytes": 3653,
+        "sha256": "cb4a7986be418dd43e10907cad0c4f09c560c7fde7fc58d71ba641a497e0b9b9"
+      },
+      "code/transaction_totals.py": {
+        "bytes": 6219,
+        "sha256": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+      },
+      "input/assignment.json": {
+        "bytes": 330,
+        "sha256": "4bfbf18626b03d209470fcb3b6f17618caefeeeffff5f137eb02f695882159a4"
+      },
+      "input/fixture.json": {
+        "bytes": 6531,
+        "sha256": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85"
+      },
+      "input/reader.json": {
+        "bytes": 39,
+        "sha256": "81397bb1545f39b9289b7aaa1bab237930aea9921d0ece5dbdccd77255c3cc1a"
+      }
+    },
+    "campaign_id": "ed8ab917-827a-4b02-9b7f-06bfc643679e",
+    "candidate_interpreter": {
+      "bytes": 18005560,
+      "path": "install/bin/python3.13",
+      "sha256": "3824cedc3661caad0c4cfcf238fa0bed53903f7794d1c7ea431117a9829d45dc"
+    },
+    "complete_release": false,
+    "diagnostics_within_bound": true,
+    "exit_code": null,
+    "failure": "quota-exhausted",
+    "import_diagnostics": {
+      "attempts": [
+        {
+          "elapsed_ms": 1210,
+          "module": "thinc",
+          "ordinal": 0,
+          "process_cpu_ms": 470
+        },
+        {
+          "elapsed_ms": 1210,
+          "module": "numpy",
+          "ordinal": 1,
+          "process_cpu_ms": 470
+        },
+        {
+          "elapsed_ms": 1214,
+          "module": "numpy._core._multiarray_umath",
+          "ordinal": 2,
+          "process_cpu_ms": 474
+        },
+        {
+          "elapsed_ms": 3182,
+          "module": "catalogue",
+          "ordinal": 3,
+          "process_cpu_ms": 626
+        },
+        {
+          "elapsed_ms": 3185,
+          "module": "confection",
+          "ordinal": 4,
+          "process_cpu_ms": 630
+        },
+        {
+          "elapsed_ms": 3197,
+          "module": "srsly",
+          "ordinal": 5,
+          "process_cpu_ms": 641
+        },
+        {
+          "elapsed_ms": 3909,
+          "module": "pydantic_core",
+          "ordinal": 6,
+          "process_cpu_ms": 708
+        },
+        {
+          "elapsed_ms": 3924,
+          "module": "pydantic_core._pydantic_core",
+          "ordinal": 7,
+          "process_cpu_ms": 722
+        },
+        {
+          "elapsed_ms": 4186,
+          "module": "thinc.compat",
+          "ordinal": 8,
+          "process_cpu_ms": 800
+        },
+        {
+          "elapsed_ms": 4291,
+          "module": "thinc.backends.numpy_ops",
+          "ordinal": 9,
+          "process_cpu_ms": 905
+        },
+        {
+          "elapsed_ms": 5105,
+          "module": "blis.cy",
+          "ordinal": 10,
+          "process_cpu_ms": 907
+        },
+        {
+          "elapsed_ms": 5105,
+          "module": "blis",
+          "ordinal": 11,
+          "process_cpu_ms": 907
+        },
+        {
+          "elapsed_ms": 7183,
+          "module": "spacy.pipeline",
+          "ordinal": 12,
+          "process_cpu_ms": 980
+        },
+        {
+          "elapsed_ms": 7626,
+          "module": "spacy.language",
+          "ordinal": 13,
+          "process_cpu_ms": 1024
+        },
+        {
+          "elapsed_ms": 28661,
+          "module": "spacy.cli",
+          "ordinal": 14,
+          "process_cpu_ms": 1363
+        },
+        {
+          "elapsed_ms": 29320,
+          "module": "weasel",
+          "ordinal": 15,
+          "process_cpu_ms": 1560
+        }
+      ],
+      "checkpoints": [
+        {
+          "boundary": "before",
+          "elapsed_ms": 164,
+          "module": "duckdb",
+          "process_cpu_ms": 137
+        },
+        {
+          "boundary": "after",
+          "elapsed_ms": 900,
+          "module": "duckdb",
+          "process_cpu_ms": 161
+        },
+        {
+          "boundary": "before",
+          "elapsed_ms": 900,
+          "module": "networkx",
+          "process_cpu_ms": 161
+        },
+        {
+          "boundary": "after",
+          "elapsed_ms": 1207,
+          "module": "networkx",
+          "process_cpu_ms": 467
+        },
+        {
+          "boundary": "before",
+          "elapsed_ms": 1208,
+          "module": "spacy",
+          "process_cpu_ms": 468
+        }
+      ],
+      "valid": true
+    },
+    "job_id": "78484cec-7ea8-4b00-9112-e8949b4b3e78",
+    "last_import_checkpoint": {
+      "boundary": "before",
+      "module": "spacy"
+    },
+    "last_worker_checkpoint": "imports",
+    "passed": false,
+    "phase": "confined-compatibility",
+    "preparation_elapsed_ms": 3185,
+    "profile_sha256": "cd036054d896173fc5b56fd4c0232b4924007daae614803112ad7d6d5099da49",
+    "quota_kind": "wall-time",
+    "recipe": "python-compatibility-v1",
+    "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "runtime_verified": true,
+    "schema_version": 1,
+    "supervised_elapsed_ms": 30020,
+    "termination_state": "confirmed"
+  },
+  "native_binary_sha256": "e331d409d69e72d1d9a46c74a448dd6a4a60a5c95fc5de3c53b4ea12b4a75f31",
+  "native_report_sha256": "5f6fd8b2c28a2aac2ffb7c3e57dc6f6c1ee842c7f8d4cc46e45c0429801a746c",
+  "native_test": "engines::supervision::python_probe::native_python_compatibility",
+  "native_test_started": true,
+  "observed_at": "2026-09-25T15:17:29.074794+00:00",
+  "original_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "passed": false,
+  "phase": "confined-relocated",
+  "platform": {
+    "architecture": "arm64",
+    "os": "Darwin",
+    "version": "26.6.2"
+  },
+  "post_original_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "post_selected_inventory": {
+    "bytes": 601821300,
+    "complete_release": false,
+    "files": 11320,
+    "installation_state": "assembled-unexecuted",
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "package_code_executed": false,
+    "runtime_components_satisfied": [],
+    "verified": true,
+    "wheels": 58
+  },
+  "relocation": {
+    "bytes": 601821300,
+    "candidate_executed": false,
+    "complete_release": false,
+    "copied": true,
+    "failure": null,
+    "files": 11320,
+    "immutable_source_verified": true,
+    "independent_verification": {
+      "bytes": 601821300,
+      "complete_release": false,
+      "files": 11320,
+      "installation_state": "assembled-unexecuted",
+      "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+      "package_code_executed": false,
+      "runtime_components_satisfied": [],
+      "verified": true,
+      "wheels": 58
+    },
+    "manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+    "preceding_failure": null,
+    "schema_version": 1
+  },
+  "runtime_manifest_sha256": "4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822",
+  "schema_version": 1,
+  "source": {
+    "commit": "4d76120a5fb918491db7aed8bdf04c0a31cd44f5",
+    "files": {
+      "Cargo.lock": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+      "Cargo.toml": "89847b7032161f966c912e89558392b084a9380c69b8a6185148909ef579d8c1",
+      "crates/core/src/engines/supervision.rs": "f597996166b4f709893a18fceafcbc65559953cce423c754fd214fc75df08bb8",
+      "crates/core/src/engines/supervision/python_probe.rs": "a280a92fd131c25479b58852ab5ac06d9a2e6419906e81f2f4a81fd6c3198b84",
+      "crates/core/src/engines/supervision/python_probe/hostile.rs": "e224d3bfcb65186b456665562f6aee5412984ff10b3004e56985e85e06f55566",
+      "crates/core/src/engines/supervision/python_probe/import_diagnostics.rs": "84dfd7fda8cf1f6268650fcaa9abb7a0292e669050f796946be0bc8fcd6fb522",
+      "crates/core/src/engines/supervision/python_probe/listeners.rs": "0e42e0d9e36bdfde6fd12393be61119e9a2f7b8a805bc3b391f8caaa5874c502",
+      "scripts/install_python_offline.py": "ab9e13018b58959489841cefe49284262afe6456bdcbf86afb23bd0956f2d15d",
+      "scripts/relocate_python_prefix.py": "a38098d0b38ba1e5f939455e8b85522c12d47a417f83405b3d37a2a29c7841c5",
+      "scripts/stage_python_runtime.py": "27e73847781debd137bb1b1052c502dae556d4f5827be8032690e243d7db808a",
+      "scripts/test_python_compatibility.py": "514a2fbad3b0f786bfabe7a865bdf40ee7e6a36e447a5ac5857d7c34632a7ede",
+      "scripts/test_python_isolation.py": "e3255d993d8299076132ede9c6c866ef6bb3a634a021529d820b537e2ce8167c",
+      "scripts/verify_python_install.py": "0a91737064f1add1ebe36ee8e17bda9ba6b29d3afbf34126bbcc1001cd0a46bd",
+      "scripts/verify_runtime_bundle.py": "0e72dd2766c432e23093267ce2e831829f2a1b883df1cc581d16aaf54d27f327",
+      "workers/python/probe/bootstrap.py": "e63fba80e04fc1c657ab7617eec547e060a7d4787333fab6073500131abd7fe9",
+      "workers/python/probe/compatibility.py": "4c0e3b4976c58b7bc3ed466f6c40901bafc5c999a5a5d9039c6bd8f7287815b2",
+      "workers/python/probe/expected.json": "6c88fcf93736dd8a2af9226d3f5317dfb1025ca14e2fe00f0c4cb5b8ebc74aff",
+      "workers/python/probe/fixture.json": "631b28df2562b464ea82486183ed4a190747e71f536ee74310ec13a22cee4e85",
+      "workers/python/probe/hostile.py": "a9bbe45f54da18c3e900ab00dff870df67558e3d639f3ef2e3cd17a583506555",
+      "workers/python/probe/import_diagnostics.py": "cb4a7986be418dd43e10907cad0c4f09c560c7fde7fc58d71ba641a497e0b9b9",
+      "workers/python/transaction_totals.py": "cf5aa673e96677c33e8b0c4d014369b70c93eee007f643b71c0933c2e06cc067"
+    },
+    "parents": [
+      "4190a27285ee8985e8e144967a28ce6f9f6ef52b"
+    ],
+    "tree": "760e6df990402c0ee33acad590333d6f2b7d5fd3"
+  },
+  "termination_state": "confirmed",
+  "unverified": [
+    "Internet-and-DNS-and-IPv6-denial",
+    "hard-RSS-ceiling",
+    "supervisor-crash-termination",
+    "canonical-protocol",
+    "signing-clean-install-platform-matrix",
+    "complete-notices"
+  ]
+}
