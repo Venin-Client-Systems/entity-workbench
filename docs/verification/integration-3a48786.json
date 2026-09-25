@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "scope": "Exclusive graph scheduling, fixed Python adapter, private capability composition and lossless durable collection exports",
+  "source_commit": "3a487864d453ca2301a7b416a14c860141c7ca36",
+  "source_tree": "5477c0cd3731c0ed1fcef4e35b3aad7af2d11b31",
+  "checks": {
+    "rust": {
+      "passed": 633,
+      "library": 554,
+      "integration": 79,
+      "ignored_native_or_specialized": 31,
+      "failed": 0
+    },
+    "clippy": "strict all targets passed",
+    "formatting": "passed",
+    "python": {
+      "total": 345,
+      "passed": 341,
+      "skipped": 4,
+      "failed": 0,
+      "mode": "normal",
+      "note": "Optimized adapter checks remain separately bound to signed adapter source; synthetic negative-fixture output is not an actual native campaign"
+    },
+    "ui_build": "passed with existing large-chunk warning",
+    "browser": {
+      "passed": 47,
+      "failed": 0,
+      "files": [
+        "durable-collection.spec.ts",
+        "document-jobs.spec.ts",
+        "image-jobs.spec.ts",
+        "image-regions.spec.ts",
+        "pdf-jobs.spec.ts"
+      ],
+      "scope": "Real-core development browser flows with existing explicitly synthetic workers/refusal cases; no native execution proven"
+    },
+    "release_gates": {
+      "changed": false,
+      "passed": 0,
+      "unpassed": 12
+    }
+  },
+  "retained_invocation_error": {
+    "log": "ui-build",
+    "cause": "Root invoked npm with ui prefix even though package.json lives at repository root; ENOENT before build",
+    "repair": "Unchanged source passed npm run build from repository root",
+    "product_build_failure": false
+  },
+  "handoff_checks": {
+    "scheduler": {
+      "source": "d744550ba1821616e66cb5d85961979c1bf43fe4",
+      "source_files": 10,
+      "historical_files": 102,
+      "raw_public_log_pairs": 18,
+      "root_difference": "Only reviewed composition commit 14c1fe49c3d692b2830f8a27882954370a44be4c changes coordinator_graph.rs"
+    },
+    "adapter": {
+      "source": "80ff5ee8920791b29596741b0b6836073541a9e6",
+      "source_files": 23,
+      "historical_files": 102,
+      "raw_artifacts": 14,
+      "test_executables": 12,
+      "root_bytes_exact": true
+    },
+    "export": {
+      "source": "5d181b5addcc844beddd427ec6bb38833b0897cb",
+      "source_files": 12,
+      "historical_files": 102,
+      "new_schemas": 3,
+      "raw_artifacts": 20,
+      "root_bytes_exact": true
+    },
+    "all_signatures_verified": true,
+    "review": "Root source review with repaired boundary findings; separate agent read-only review of root composition; not independent release/security approval"
+  },
+  "local_logs": {
+    "core": {
+      "bytes": 78586,
+      "sha256": "7f6963ac49770e5f0bc240612ca3ec9dc8714a4bae1b10b490f90c406ae80fc5",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "workbench-core",
+        "--locked"
+      ],
+      "exit_code": 0
+    },
+    "clippy": {
+      "bytes": 185,
+      "sha256": "67d572397e7a755ec96fd517ac4c9fdee88e252cfbfce604d4751788d491cb6d",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "workbench-core",
+        "--all-targets",
+        "--locked",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0
+    },
+    "fmt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit_code": 0
+    },
+    "python": {
+      "bytes": 974,
+      "sha256": "17ff0195389044b5472fb4bcd8ff628c8628403fc440b5e42294b745fa847a0a",
+      "command": [
+        "python3",
+        "-B",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests"
+      ],
+      "exit_code": 0
+    },
+    "ui-build": {
+      "bytes": 544,
+      "sha256": "712f601f807d959fc0bf8564f997d441f16cc209543b9a2602f12fcb712b938f",
+      "command": [
+        "npm",
+        "--prefix",
+        "ui",
+        "run",
+        "build"
+      ],
+      "exit_code": 254
+    },
+    "ui-build-corrected": {
+      "bytes": 932,
+      "sha256": "59a76d3dae4d4961cd5d56eedda3aec27978de2a9aa24e03c948f8a72e3dfacb",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 0
+    },
+    "browser": {
+      "bytes": 7574,
+      "sha256": "2f00d1f9c21c34743d89270fb48d32fb6aa7917d0a74939e992b12a0955beccf",
+      "command": [
+        "npm",
+        "run",
+        "test:ui",
+        "--",
+        "ui/tests/durable-collection.spec.ts",
+        "ui/tests/document-jobs.spec.ts",
+        "ui/tests/image-jobs.spec.ts",
+        "ui/tests/image-regions.spec.ts",
+        "ui/tests/pdf-jobs.spec.ts"
+      ],
+      "exit_code": 0
+    },
+    "release-policy": {
+      "bytes": 984,
+      "sha256": "e06ca70607453955d732a9e6dbee53c3e4e4a2a56d5116053ad95fd2101e3dee",
+      "command": [
+        "python3",
+        "scripts/release_gate.py",
+        "--check-policy"
+      ],
+      "exit_code": 0
+    }
+  },
+  "limits": [
+    "Normal desktop graph and durable collection runtime activation remain unavailable",
+    "No candidate interpreter/native app or public-network campaign executed for this integration",
+    "Graph capture and prefix preparation are separate from the child 30-second interval; documented synchronous original I/O has no latency guarantee",
+    "Durable export is synchronous store/development API only, with no public UI or canonical record",
+    "Hosted source checks for earlier 4bdcb5b passed; this new head requires its own checks",
+    "Clean supported-platform installation, signed helpers, complete packaging and independent release review remain open"
+  ],
+  "complete_release": false
+}
