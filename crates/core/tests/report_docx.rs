@@ -77,7 +77,7 @@ fn frozen_roundtrip_is_deterministic_editable_and_has_only_fixed_internal_parts(
     assert!(main.contains("<w:pgSz w:w=\"12240\" w:h=\"15840\"/>"));
     assert!(main.contains("<w:tblW w:w=\"9360\" w:type=\"dxa\"/>"));
     assert!(p["word/styles.xml"].contains("<w:sz w:val=\"22\"/>"));
-    assert!(p["word/styles.xml"].contains("<w:wordWrap w:val=\"off\"/>"));
+    assert!(p["word/styles.xml"].contains("<w:wordWrap w:val=\"on\"/>"));
     assert!(main.contains("<w:tab/>"));
     assert!(main.contains("<w:br/>"));
     assert!(p["word/styles.xml"].contains("w:styleId=\"Title\""));
@@ -317,4 +317,39 @@ fn retained_anchor_variants_and_literal_whitespace_survive_frozen_roundtrip() {
     let main = &parts(&report_docx::render(&d).unwrap())["word/document.xml"];
     assert!(main.contains("&#13;"));
     assert!(main.contains("#literal &gt; content"));
+}
+
+#[test]
+fn generator_one_is_byte_stable_and_new_captures_use_word_level_wrapping() {
+    use sha2::{Digest, Sha256};
+    let legacy =
+        ReportDocument::from_json(include_bytes!("fixtures/report-generator1.json")).unwrap();
+    let old_bytes = report_docx::render(&legacy).unwrap();
+    assert_eq!(
+        format!("{:x}", Sha256::digest(&old_bytes)),
+        "c839120c7646195012e57119be34dcca7ad27e32a032ad734ca47680cfc1c75d"
+    );
+    assert_eq!(legacy.generator_version, "ooxml-foundation-1");
+    let old_parts = parts(&old_bytes);
+    assert_eq!(
+        old_parts["word/styles.xml"]
+            .matches("<w:wordWrap w:val=\"off\"/>")
+            .count(),
+        7
+    );
+
+    let current = document();
+    assert_eq!(current.generator_version, "ooxml-foundation-2");
+    let current_parts = parts(&report_docx::render(&current).unwrap());
+    assert_eq!(
+        current_parts["word/styles.xml"]
+            .matches("<w:wordWrap w:val=\"on\"/>")
+            .count(),
+        7
+    );
+    assert!(!current_parts["word/styles.xml"].contains("<w:wordWrap w:val=\"off\"/>"));
+    let mut unsupported = legacy;
+    unsupported.generator_version = "ooxml-foundation-3".into();
+    assert!(unsupported.validate().is_err());
+    assert!(report_docx::render(&unsupported).is_err());
 }

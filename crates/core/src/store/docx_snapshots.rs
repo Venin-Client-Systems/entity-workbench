@@ -21,7 +21,7 @@ fn validate(record: &DocxSnapshotRecord) -> Result<()> {
     require(
         record.schema_version == 1
             && record.template_version == report_document::TEMPLATE_VERSION
-            && record.generator_version == report_document::GENERATOR_VERSION,
+            && report_document::supported_generator(&record.generator_version),
         "Unsupported DOCX snapshot format",
     )?;
     require(

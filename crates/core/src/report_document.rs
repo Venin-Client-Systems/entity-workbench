@@ -13,7 +13,12 @@ pub const MAX_TRANSACTIONS: usize = 5_000;
 pub const MAX_RECORDS: usize = 10_000;
 pub const MAX_REFERENCES: usize = 10_000;
 pub const TEMPLATE_VERSION: &str = "assessment-foundation-1";
-pub const GENERATOR_VERSION: &str = "ooxml-foundation-1";
+pub const GENERATOR_VERSION: &str = "ooxml-foundation-2";
+pub(crate) const LEGACY_GENERATOR_VERSION: &str = "ooxml-foundation-1";
+
+pub(crate) fn supported_generator(value: &str) -> bool {
+    matches!(value, GENERATOR_VERSION | LEGACY_GENERATOR_VERSION)
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
@@ -146,7 +151,7 @@ impl ReportDocument {
         require(
             self.schema_version == 1
                 && self.template_version == TEMPLATE_VERSION
-                && self.generator_version == GENERATOR_VERSION,
+                && supported_generator(&self.generator_version),
             "Unsupported frozen report format",
         )?;
         metadata(&self.report_id, &self.created_at)?;

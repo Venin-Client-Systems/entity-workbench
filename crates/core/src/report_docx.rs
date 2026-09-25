@@ -26,7 +26,7 @@ pub fn render(document: &ReportDocument) -> Result<Vec<u8>> {
     let mut xml = DocumentWriter::new(document)?;
     xml.body(document)?;
     let body = xml.xml.finish();
-    let styles = styles()?;
+    let styles = styles(&document.generator_version)?;
     let core = properties(document)?;
     let mut archive = ZipWriter::new(BoundedArchive::new(MAX_DOCX_BYTES));
     let options = SimpleFileOptions::default()
@@ -596,7 +596,7 @@ fn anchor_label(anchor: &SourceAnchor) -> String {
     }
 }
 
-fn styles() -> Result<Vec<u8>> {
+fn styles(generator: &str) -> Result<Vec<u8>> {
     let mut x = Xml::new()?;
     x.start("w:styles", &[("xmlns:w", W)])?;
     for (id, name, size, bold, next) in [
@@ -624,9 +624,15 @@ fn styles() -> Result<Vec<u8>> {
         if id == "Heading2" {
             x.empty("w:outlineLvl", &[("w:val", "1")])?;
         }
-        // Character-level wrapping prevents a long identifier or literal selector
-        // from extending beyond the page without inserting characters into its text.
-        x.empty("w:wordWrap", &[("w:val", "off")])?;
+        // In WordprocessingML, "off" allows character-level line breaks, even
+        // inside ordinary prose. Preserve generator 1 exactly for old artifacts.
+        // Generator 2 keeps normal word boundaries without changing literal text.
+        let wrapping = if generator == crate::report_document::LEGACY_GENERATOR_VERSION {
+            "off"
+        } else {
+            "on"
+        };
+        x.empty("w:wordWrap", &[("w:val", wrapping)])?;
         x.empty(
             "w:spacing",
             &[

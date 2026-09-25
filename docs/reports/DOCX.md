@@ -9,7 +9,9 @@ It does not complete report assembly, DOCX publication, exhibits or the release 
 ## Frozen contract and calculations
 
 `ReportDocument` format 1 records the supplied report UUID, workspace revision,
-creation time, template `assessment-foundation-1` and generator `ooxml-foundation-1`.
+creation time, template `assessment-foundation-1` and generator `ooxml-foundation-2`
+for new captures. The reader and renderer retain generator `ooxml-foundation-1`
+support so historical artifacts still verify against their original bytes.
 Its content retains questions and alternatives, findings and both citation lists,
 transactions, entities, observations, evidence metadata/text/acquisitions, identity
 and merge decisions, and review history. Input vector order is retained. The frozen
@@ -74,7 +76,10 @@ Native paragraphs/runs/tables and bookmarks remain editable. The fixed review
 layout uses Letter pages, one-inch margins, 11-point body text, black headings,
 9-point table/metadata text, visible table borders and repeated table headers.
 Modest rows and location paragraphs are kept together; long records can flow over
-pages. Character wrapping avoids changing literal content merely to fit a margin.
+pages. Generator 2 enables word-level wrapping for ordinary prose without inserting
+characters into literal text. Generator 1 retains its original character-level
+wrapping for byte-identical historical verification. See the
+[Word wrapping repair](DOCX-WORD-WRAPPING.md) for the native observation and limits.
 Arial is requested by name; no font is embedded. Font fallback and layout depend
 on the reader. This is not an approved or complete product font pack, reusable
 analyst template system, accessibility certification or universal Word-processor
