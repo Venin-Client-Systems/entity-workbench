@@ -16,7 +16,7 @@ This is an initial integrated development implementation. None of the three mile
 | Assessment | Question/hypothesis authoring, alternatives/gaps, multiple supporting/contradictory citations, explicit finding review and re-review, source inspection, immutable self-contained HTML snapshots with versioned transaction calculation/source links and complete review partitions, JSON transaction export; canonical immutable DOCX snapshots with frozen model/artifact storage, paged capture/save interface and typed uncertain-request recovery; metadata-only desktop report catalogue, verified explicit immutable HTML retrieval and bounded finding-history pages with native verification; revision-bound citation catalogue and exact selected metadata readers adopted in assessment forms | Actual native DOCX/Word checks and remaining report design, CSV/Parquet/graph exports; report assembly and exhibit controls |
 | Java engines | Separate parser/search/PDF-render JVMs; hash-bound text/PDF/DOCX extraction; bounded selected-page scan rendering with crop/rotation/raster provenance; supervised Lucene jobs with request-specific access, acknowledgement validation, damaged-index recovery, cancellation and explicit cleanup; actual hostile Mac development probes; separate Windows Server AppContainer parser/search recipe campaign with real document/query and role-boundary results | Python/Chromium compatibility, signed helpers, Intel runtime probes, in-flight Windows canonical cancellation and remaining search/OCR routes, hard aggregate disk/RSS bounds and crash recovery |
 | OCR adapter | Relocated app-local Tesseract 5.5.2 and pinned English model; canonical bounded PGM input; explicit blank/recognized states; exact raster binding; eight actual Mac OCR/hostile-runtime checks; bounded confined PNG/JPEG decoding, original-to-raster binding, immutable canonical image jobs/UI and backup/restore; separate selected-page scan PDF rendering/OCR with canonical jobs/UI; opt-in bounded raster word-region engine and canonical retention/restore | General PDF features, reviewed word anchors, extraction acceptance, additional languages and signed cross-platform distribution |
-| Python engines | Development DuckDB adapter preserves exact decimal scale and Parquet drillthrough; NetworkX reviewed paths and spaCy phrase candidates; exact pinned Apple Silicon CPython archive staged offline with bounded extraction and independent file inventory | Locked wheelhouse and native-library closure; relocation execution; canonical snapshot/protocol and transfer-selection integration; Spatial extension; calibrated Splink; app integration and confinement |
+| Python engines | Development DuckDB adapter preserves exact decimal scale and Parquet drillthrough; NetworkX reviewed paths and spaCy phrase candidates; pinned Apple Silicon CPython and 58 locked wheels assembled offline with independently verified files/RECORDs; static arm64 load-reference review | Actual confined imports and native loading; relocation execution; canonical snapshot/protocol and transfer-selection integration; Spatial extension; calibrated Splink; app integration and confinement |
 | Distribution | All three native targets compile in source CI; Apple Silicon development app with separate Java parser/Lucene/image-decoder/PDF-renderer and English OCR staging; versioned offline runtime inventory producer and validator with explicit component ownership and actual partial-staging rejection | Complete runtime trees and validation on all targets; Windows Fixed WebView2; offline clean-machine tests; signing/notarization |
 | Performance | Actual 100,000-row canonical core baseline on the available 16 GiB M1; complete denominators and exact-money checks; separate payload diagnostic and explicit report retrieval reduce a 198 MB refresh to 84 MB while preserving saved bytes; paired transaction-page measurements with exact response checks and repaired redundant empty-result scan | Remaining large-corpus pagination and native interaction measurements, required 10,000 pages/1,000 scans and concurrent maps/graphs; qualified p95 and total runtime memory |
 
@@ -320,3 +320,37 @@ A finite offline installer is being implemented from those exact inputs; the
 is under source review. Complete workflow coverage, runtime confinement,
 packaging, clean-platform testing, signing and human review remain open. All
 twelve complete-release gates are unpassed.
+
+## Saved report design, installed Python files and native DNS — 25 September 2026
+
+The [DOCX application comparison](design/DOCX-SNAPSHOTS-COMPARISON.md) now
+connects the editable Figma catalogue and capture-outcome frames to the actual
+industrial report interface. Nine captured states have zero reported automated
+accessibility violations; keyboard pagination/focus and exact 20/20/3 catalogue
+pages were checked. Corrected frame text makes workspace refresh and the native
+filename explicit. Compact editable frames, zoom/manual accessibility and final
+design acceptance remain separate work.
+
+The [offline Python installer](../packaging/PYTHON-OFFLINE-INSTALL.md) assembles
+the pinned runtime and all 58 wheels into 11,320 files / 601,821,300 bytes.
+Root's independent reader verifies every file and all installed RECORDs against
+manifest `4dc6fd171e842d1f9254be7fc5cb16e2e01203896403dcd9839a8aec69dad822`.
+No candidate interpreter or package code has run. The first confined compatibility
+probe is being implemented; runtime functionality, relocation and canonical
+integration remain unproved. The missing zlib-ng notice reference is
+[explained at the upstream metadata-generation level](../packaging/PYTHON-ZLIB-NOTICE-REVIEW.md),
+with original metadata and unresolved final notice review preserved.
+
+The single [native Windows DNS campaign](discovery/WINDOWS-NATIVE-DNS-PROOF.md)
+passes all five cases on Windows Server 2022. It made three fixed native
+lookups, no HTTP requests and no retries. Pending cancellation released caller
+resources after completion while retaining unverified provider quiescence;
+the transport refused further work. This establishes neither Windows 11
+acceptance nor live durable collection activation.
+
+Integrated application `c2635c3` passes the production UI build and all
+**125 real-core browser workflows**. The full Python suite runs **238 cases:
+234 pass and four platform checks skip**. Unchanged Rust sources retain the
+`bef9f30` result of **438 ordinary core tests**, 23 specialised exclusions and
+strict Clippy. The [integration record](verification/integration-c2635c3.json)
+binds retained logs and source distinctions. Complete-release gates remain false.

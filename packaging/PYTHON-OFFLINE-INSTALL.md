@@ -144,7 +144,8 @@ no-clobber output, independent-reader failure, bounds and cleanup precedence.
 Actual imports, loader behavior, plugin functionality, relocated execution,
 signing, confinement, OS support and canonical integration remain unverified.
 No minimum macOS version is asserted. The missing zlib-ng licence reference in
-upstream CPython metadata remains unresolved; preserving all available notices
-does not establish legal completeness. The separate
+upstream CPython metadata is [explained by its annotation mechanism](PYTHON-ZLIB-NOTICE-REVIEW.md);
+final notice review remains open and the original discrepancy flags are
+preserved. Retaining all available notices does not establish legal completeness. The separate
 [native-probe proposal](PYTHON-NATIVE-PROBE-PROPOSAL.md) is for review before any
 candidate execution, not authorization to enable the application worker.

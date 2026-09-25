@@ -19,6 +19,7 @@ The packaging tools have separate responsibilities:
 | [CPython stager](PYTHON-STAGING.md) | One pinned Apple Silicon full runtime archive | Preserved installation tree, provenance and available notices; interpreter execution and confinement still required |
 | [Wheelhouse stager](PYTHON-WHEELHOUSE.md) | Exactly 58 pinned production wheel archives | Verified unchanged archives and source-linked metadata/notices; packages remain uninstalled and satisfy no runnable component |
 | [Static layout inspector](PYTHON-INSTALL-PREFLIGHT.md) | The pinned CPython tree and original wheel archives | Proposed paths, hooks and arm64 load-command references; no installation, interpreter execution or native loading |
+| [Offline prefix installer](PYTHON-OFFLINE-INSTALL.md) | Verified CPython tree and 58 reviewed wheel archives | Fresh installed tree, truthful RECORDs and independent file verification; candidate execution and confinement still required |
 
 Each tool operates offline and does not execute staged package code. Obtaining
 reviewed build inputs is a separate development step. A successful staging result

@@ -546,3 +546,46 @@ has SHA-256 `2ec8e805fc0b0c815d274ab81f35837bb2f5c689617b3d9e48a5199ac778ef30`.
 No candidate interpreter, package or startup hook was executed, and no package
 was installed. Actual native loads, imports, relocation and confinement remain
 required. All twelve complete-release gates remain false.
+
+## Offline installation and report design integration — 25 September 2026
+
+Application source `c2635c3` passes the production build and **125/125 real-core
+Chromium workflows** (4.7 minutes). The full Python discovery suite runs 238
+tests: 234 pass, four platform-specific checks skip and none fail. The earlier
+`bef9f30` Rust run passes 438 ordinary cases, with 23 specialised exclusions,
+and strict all-target Clippy; the relevant Rust source files are unchanged
+between those revisions. The [integration record](verification/integration-c2635c3.json)
+binds exact retained logs. The build's large-chunk advisory remains; these tests
+are neither native WebKit acceptance nor a performance qualification.
+
+Signed offline-installer handoff `0654a29`, integrated as `c2635c3`, preserves
+the reviewed CPython input and wheel provenance while regenerating only the
+58 primary installed RECORDs. Root's independent verification confirms
+11,320 files / 601,821,300 bytes and the exact installed manifest. All 21
+installer cases pass under normal/optimized development Python 3.13.11 and
+3.14.2. The [receipt](../packaging/evidence/python-offline-install-2026-09-25.json)
+records an assembled, unexecuted development prefix, not a runnable accepted
+release component. Static loader review, actual confined execution and hostile
+boundary verification remain distinct evidence categories.
+
+Signed design/application handoff `a43ec4b`, integrated as `bbffc53`, includes
+two corrected native editable Figma frames and their fresh reload observations.
+The corrected catalogue's before/after exports are byte-identical; only the
+final post-reload outcome export was retained. The [comparison](design/DOCX-SNAPSHOTS-COMPARISON.md)
+records desktop/compact application captures, 13 affected workflow cases and
+one final native-session protocol case, exact pagination, focus and nine axe
+checks. Root visually reviewed the desktop, compact and saved-receipt captures,
+then passed the full browser suite. No owner approval or complete manual
+accessibility acceptance is inferred.
+
+[Native Windows run 36141003773](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36141003773)
+executed the exact signed source `b064c724` once and passed all five DNS cases.
+Root independently validated the five raw events, equality with the native log,
+report SHA-256 `ce0ee3b2dba5611b5052931f1e9e75f6b1925e6c3957e0577d29d47efccf2266`
+and downloaded archive SHA-256
+`1d054916d015a6b88939441a972c15e75dc41ff612f9320c12e2b9bac24876b8`.
+The [source-bound record](discovery/verification/windows-native-dns.json) preserves
+the Windows Server host, exactly three native launches, no HTTP/retry,
+released-after-completion observation, quarantine refusal and unverified
+provider quiescence. Retained-pending-completion was not exercised natively.
+No historical Mac evidence changed and no release gate passed.
