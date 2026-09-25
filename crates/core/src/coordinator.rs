@@ -8,7 +8,6 @@ use crate::{
 };
 use serde_json::Value;
 use std::{
-    collections::BTreeMap,
     path::Path,
     sync::{
         atomic::{AtomicBool, Ordering},
@@ -17,6 +16,9 @@ use std::{
     thread::{self, JoinHandle},
     time::Duration,
 };
+
+#[cfg(test)]
+use std::collections::BTreeMap;
 
 type Executor = dyn Fn(
         Option<Runtime>,
@@ -29,7 +31,9 @@ type Executor = dyn Fn(
     + Sync;
 struct Shared {
     workspace: Mutex<Workspace>,
-    active: Mutex<BTreeMap<String, CancellationToken>>,
+    active: Mutex<graph::ProcessingActivity>,
+    graph_executor: graph::GraphExecution,
+    graph_wake: Condvar,
     stopping: AtomicBool,
     wake: Condvar,
     executor: Arc<Executor>,
@@ -85,6 +89,24 @@ impl JobCoordinator {
     }
 
     fn with_execution(
+        workspace: Workspace,
+        concurrency: usize,
+        executor: Arc<Executor>,
+        collection: Option<(
+            Arc<collection::CollectionExecutor>,
+            crate::collection_jobs::CollectionProtocol,
+        )>,
+    ) -> Result<Self> {
+        Self::with_graph_execution(
+            workspace,
+            concurrency,
+            executor,
+            collection,
+            graph::GraphExecution::Unavailable,
+        )
+    }
+
+    fn with_graph_execution(
         mut workspace: Workspace,
         concurrency: usize,
         executor: Arc<Executor>,
@@ -92,6 +114,7 @@ impl JobCoordinator {
             Arc<collection::CollectionExecutor>,
             crate::collection_jobs::CollectionProtocol,
         )>,
+        graph_executor: graph::GraphExecution,
     ) -> Result<Self> {
         crate::require(
             (1..=2).contains(&concurrency),
@@ -114,7 +137,9 @@ impl JobCoordinator {
         let exports = workspace.start_native_exports()?;
         let shared = Arc::new(Shared {
             workspace: Mutex::new(workspace),
-            active: Mutex::new(BTreeMap::new()),
+            active: Mutex::new(graph::ProcessingActivity::default()),
+            graph_executor,
+            graph_wake: Condvar::new(),
             stopping: AtomicBool::new(false),
             wake: Condvar::new(),
             executor,
@@ -199,6 +224,7 @@ impl JobCoordinator {
                 .active
                 .lock()
                 .map_err(|_| Error::Blocked("Worker cancellation is unavailable".into()))?
+                .tokens
                 .get(&key)
             {
                 token.cancel();
@@ -206,6 +232,7 @@ impl JobCoordinator {
         }
         drop(workspace);
         self.shared.wake.notify_all();
+        self.shared.graph_wake.notify_all();
         Ok(result)
     }
 
@@ -268,7 +295,7 @@ impl JobCoordinator {
             .active
             .lock()
             .unwrap_or_else(std::sync::PoisonError::into_inner);
-        for token in active.values() {
+        for token in active.tokens.values() {
             token.cancel();
         }
         drop(active);
@@ -276,6 +303,7 @@ impl JobCoordinator {
             lane.cancel_active();
         }
         self.shared.wake.notify_all();
+        self.shared.graph_wake.notify_all();
         let export_cleanup = self.exports.shutdown();
         let mut workers = self
             .workers
@@ -285,6 +313,13 @@ impl JobCoordinator {
         for worker in workers.drain(..) {
             failed |= worker.join().is_err();
         }
+        graph::finish_shutdown(
+            &mut self
+                .shared
+                .active
+                .lock()
+                .unwrap_or_else(std::sync::PoisonError::into_inner),
+        );
         // Unlock explicitly: closing our descriptor alone may leave a Unix flock
         // held by a descriptor inherited by an unrelated concurrent fork. Keep
         // the worker registry locked until ownership is released, so concurrent
@@ -311,6 +346,8 @@ impl JobCoordinator {
 
 #[path = "coordinator_collection.rs"]
 mod collection;
+#[path = "coordinator_graph.rs"]
+mod graph;
 
 fn work(shared: Arc<Shared>) {
     loop {
@@ -320,10 +357,46 @@ fn work(shared: Arc<Shared>) {
         if shared.stopping.load(Ordering::Acquire) || !shared.ownership.held() {
             return;
         }
+        let Ok(mut active) = shared.active.lock() else {
+            return;
+        };
+        match graph::admit(
+            &shared,
+            &mut workspace,
+            &mut active,
+            graph::Lane::Processing,
+        ) {
+            Ok(graph::Admission::Graph(job)) => {
+                match graph::claim(&shared, &mut workspace, &mut active, &job) {
+                    Ok(Some(pending)) => {
+                        drop(active);
+                        drop(workspace);
+                        graph::execute_and_publish(&shared, pending);
+                        continue;
+                    }
+                    Ok(None) | Err(_) => {
+                        drop(active);
+                        let _guard = shared
+                            .wake
+                            .wait_timeout(workspace, Duration::from_millis(100));
+                        continue;
+                    }
+                }
+            }
+            Ok(graph::Admission::Open) => {}
+            Ok(graph::Admission::Wait) | Err(_) => {
+                drop(active);
+                let _guard = shared
+                    .wake
+                    .wait_timeout(workspace, Duration::from_millis(100));
+                continue;
+            }
+        }
         let prepared = match workspace.claim_processing_job() {
             Ok(Some(prepared)) => prepared,
             Ok(None) | Err(_) => {
                 // Periodic wake also sees requests queued by another application view.
+                drop(active);
                 let _guard = shared
                     .wake
                     .wait_timeout(workspace, Duration::from_millis(100));
@@ -331,15 +404,14 @@ fn work(shared: Arc<Shared>) {
             }
         };
         let token = CancellationToken::default();
-        let Ok(mut active) = shared.active.lock() else {
-            return;
-        };
         // A shutdown may have cancelled an empty registry after the initial loop check.
         // Check while holding the same registry lock used by shutdown, before launch.
         if shared.stopping.load(Ordering::Acquire) || !shared.ownership.held() {
             token.cancel();
         }
-        active.insert(prepared.ticket.job_id.clone(), token.clone());
+        active
+            .tokens
+            .insert(prepared.ticket.job_id.clone(), token.clone());
         let runtime = workspace.processing_runtime();
         let scratch = workspace.processing_scratch();
         drop(active);
@@ -394,7 +466,7 @@ fn work(shared: Arc<Shared>) {
             let finished = workspace.finish_processing_job(&prepared.ticket, completion);
             if finished.is_ok() || shared.stopping.load(Ordering::Acquire) {
                 if let Ok(mut active) = shared.active.lock() {
-                    active.remove(&prepared.ticket.job_id);
+                    active.tokens.remove(&prepared.ticket.job_id);
                 }
                 break;
             }
@@ -416,7 +488,7 @@ fn quarantine_execution(shared: &Shared) {
         .active
         .lock()
         .unwrap_or_else(std::sync::PoisonError::into_inner);
-    for token in active.values() {
+    for token in active.tokens.values() {
         token.cancel();
     }
     drop(active);
@@ -424,6 +496,7 @@ fn quarantine_execution(shared: &Shared) {
         lane.cancel_active();
     }
     shared.wake.notify_all();
+    shared.graph_wake.notify_all();
 }
 
 impl Drop for JobCoordinator {
@@ -444,6 +517,7 @@ mod tests {
         processing::{ProcessingJob, ProcessingState},
         store::hash,
     };
+    use std::collections::BTreeMap;
     use std::sync::atomic::AtomicUsize;
     use std::time::Instant;
 
@@ -808,7 +882,7 @@ mod tests {
     }
 
     #[test]
-    fn shutdown_between_claim_and_registration_does_not_launch_a_worker() {
+    fn shutdown_while_admission_registry_is_held_does_not_claim_or_launch_a_worker() {
         let dir = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
         let mut workspace = Workspace::open(dir.path()).unwrap();
         let source = workspace
@@ -827,28 +901,31 @@ mod tests {
             )
             .unwrap(),
         );
-        // Pause registration after the canonical claim, without relying on scheduler timing.
+        // Admission now owns activity before any claim, closing the former unregistered
+        // Running window. Hold the real lock order and stop before releasing admission.
+        let mut workspace = coordinator.shared.workspace.lock().unwrap();
         let registry = coordinator.shared.active.lock().unwrap();
-        let job: ProcessingJob = serde_json::from_value(
-            coordinator
-                .dispatch(Command::QueueDocumentParse {
-                    evidence_id: source,
-                    request_key: uuid::Uuid::new_v4().to_string(),
-                })
-                .unwrap(),
-        )
-        .unwrap();
-        let observer = Workspace::open(dir.path()).unwrap();
-        until(|| observer.processing_job(&job.id).unwrap().state == ProcessingState::Running);
+        let job = workspace
+            .queue_document_parse(&source, &uuid::Uuid::new_v4().to_string())
+            .unwrap();
         let stopping = coordinator.clone();
         let shutdown = thread::spawn(move || stopping.shutdown());
         until(|| coordinator.shared.stopping.load(Ordering::Acquire));
+        assert_eq!(
+            workspace.processing_job(&job.id).unwrap().state,
+            ProcessingState::Queued
+        );
         drop(registry);
+        drop(workspace);
         shutdown.join().unwrap().unwrap();
         assert_eq!(launches.load(Ordering::Acquire), 0);
-        assert_eq!(
-            observer.processing_job(&job.id).unwrap().failure,
-            Some(crate::processing::ProcessingFailure::Interrupted)
+        let observer = Workspace::open(dir.path()).unwrap();
+        let unclaimed = observer.processing_job(&job.id).unwrap();
+        assert_eq!(unclaimed.state, ProcessingState::Queued);
+        assert!(
+            unclaimed.lease.is_none()
+                && unclaimed.started_at.is_none()
+                && unclaimed.failure.is_none()
         );
         assert!(coordinator.dispatch(Command::View {}).is_err());
         coordinator.shutdown().unwrap();

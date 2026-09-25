@@ -1,9 +1,7 @@
 //! Owned publication attempt; borrowing authority never escapes this fixed graph lifecycle.
 use super::*;
-#[cfg(test)]
 use crate::processing::ProcessingInput;
 use crate::processing::ProcessingJob;
-#[cfg(test)]
 use crate::processing::ProcessingState;
 use crate::{graph_jobs::*, processing::JobTicket};
 
@@ -15,7 +13,6 @@ pub(crate) struct GraphAttempt {
     queued_revision: u64,
 }
 impl GraphAttempt {
-    #[cfg(test)]
     pub(in crate::store) fn capture_claim(
         root: &Path,
         owner: Uuid,

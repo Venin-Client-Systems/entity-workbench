@@ -15,6 +15,8 @@ mod extraction;
 #[path = "processing_graph.rs"]
 #[allow(dead_code)]
 mod graph;
+#[path = "processing_scheduling.rs"]
+mod scheduling;
 
 const MAX_PENDING: usize = 64;
 const MAX_ATTEMPTS: u32 = 3;

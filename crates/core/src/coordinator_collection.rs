@@ -48,6 +48,7 @@ struct LaneState {
     status: CollectionLaneStatus,
     active: Option<CancellationToken>,
     admitted: Option<CollectionTicket>,
+    current: Option<CollectionTicket>,
     retry_requested: bool,
     requires_recovery: bool,
 }
@@ -55,9 +56,15 @@ pub(super) struct CollectionLane {
     state: Mutex<LaneState>,
     wake: Condvar,
     executor: Arc<CollectionExecutor>,
-    protocol: CollectionProtocol,
+    pub(super) protocol: CollectionProtocol,
     #[cfg(test)]
     preparation_hook: Mutex<Option<Arc<PreparationHook>>>,
+}
+pub(super) struct DrainSnapshot {
+    pub ticket: Option<CollectionTicket>,
+    pub admitted: bool,
+    pub idle: bool,
+    pub faulted: bool,
 }
 impl CollectionLane {
     pub(super) fn new(executor: Arc<CollectionExecutor>, protocol: CollectionProtocol) -> Self {
@@ -76,11 +83,65 @@ impl CollectionLane {
                 },
                 active: None,
                 admitted: None,
+                current: None,
                 retry_requested: false,
                 requires_recovery: false,
             }),
             wake: Condvar::new(),
         }
+    }
+    #[cfg(test)]
+    pub(super) fn scheduling_fixture(
+        &self,
+        phase: LanePhase,
+        ticket: Option<CollectionTicket>,
+        admitted: bool,
+    ) {
+        let mut state = self.state.lock().unwrap();
+        state.status.phase = phase;
+        state.current = if admitted { None } else { ticket.clone() };
+        state.admitted = if admitted { ticket } else { None };
+        state.active = state.current.as_ref().map(|_| CancellationToken::default());
+    }
+    #[cfg(test)]
+    pub(super) fn wait_scheduling_phase(&self, phase: LanePhase) {
+        let deadline = Instant::now() + Duration::from_secs(10);
+        let mut state = self.state.lock().unwrap();
+        while state.status.phase != phase {
+            let left = deadline
+                .checked_duration_since(Instant::now())
+                .expect("Synthetic lane deadline");
+            let (next, timeout) = self.wake.wait_timeout(state, left).unwrap();
+            state = next;
+            assert!(
+                !timeout.timed_out() || state.status.phase == phase,
+                "Synthetic lane deadline"
+            );
+        }
+    }
+    pub(super) fn drain_snapshot(&self) -> Result<DrainSnapshot> {
+        let state = self
+            .state
+            .lock()
+            .map_err(|_| Error::Blocked("Collection lane unavailable".into()))?;
+        Ok(DrainSnapshot {
+            ticket: state.current.clone().or_else(|| state.admitted.clone()),
+            admitted: state.admitted.is_some(),
+            idle: state.status.phase == LanePhase::Idle
+                && state.active.is_none()
+                && state.current.is_none()
+                && state.admitted.is_none()
+                && !state.retry_requested
+                && !state.requires_recovery,
+            faulted: state.requires_recovery
+                || matches!(
+                    state.status.phase,
+                    LanePhase::Faulted
+                        | LanePhase::Unpublished
+                        | LanePhase::RecoveryRequired
+                        | LanePhase::Stopped
+                ),
+        })
     }
     pub(super) fn cancel_active(&self) {
         let state = self
@@ -219,6 +280,15 @@ impl JobCoordinator {
             .lock()
             .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
         self.collection_open()?;
+        let activity = self
+            .shared
+            .active
+            .lock()
+            .map_err(|_| Error::Blocked("Processing activity unavailable".into()))?;
+        crate::require(
+            activity.allows_resume(),
+            "Collection resume is blocked by exclusive graph scheduling",
+        )?;
         let mut state = lane
             .state
             .lock()
@@ -318,6 +388,25 @@ fn run(shared: &Shared, lane: &CollectionLane) -> Result<()> {
             lane.fault(true);
             return Ok(());
         }
+        let mut activity = shared
+            .active
+            .lock()
+            .map_err(|_| Error::Blocked("Processing activity unavailable".into()))?;
+        if !matches!(
+            graph::admit(
+                shared,
+                &mut workspace,
+                &mut activity,
+                graph::Lane::Collection
+            )?,
+            graph::Admission::Open
+        ) {
+            drop(activity);
+            let _guard = shared
+                .wake
+                .wait_timeout(workspace, Duration::from_millis(100));
+            continue;
+        }
         let mut state = lane
             .state
             .lock()
@@ -328,6 +417,7 @@ fn run(shared: &Shared, lane: &CollectionLane) -> Result<()> {
         };
         let Some(execution) = execution else {
             drop(state);
+            drop(activity);
             let _guard = shared
                 .wake
                 .wait_timeout(workspace, Duration::from_millis(100));
@@ -345,8 +435,10 @@ fn run(shared: &Shared, lane: &CollectionLane) -> Result<()> {
             sequence: None,
             publication_retries: 0,
         };
+        state.current = Some(execution.clone());
         let mut driver = CollectionDriver::attach(&workspace, &shared.ownership, execution)?;
         drop(state);
+        drop(activity);
         drop(workspace);
         loop {
             if shared.stopping.load(Ordering::Acquire) {
@@ -399,7 +491,9 @@ fn run(shared: &Shared, lane: &CollectionLane) -> Result<()> {
             .lock()
             .map_err(|_| Error::Blocked("Collection lane is unavailable".into()))?;
         state.active = None;
+        state.current = None;
         state.status.phase = LanePhase::Idle;
+        shared.wake.notify_all();
     }
 }
 
@@ -491,6 +585,7 @@ fn publish(
             .lock()
             .map_err(|_| Error::Blocked("Collection lane is unavailable".into()))?;
         state.status.phase = LanePhase::SettlementPending;
+        lane.wake.notify_all();
         loop {
             if shared.stopping.load(Ordering::Acquire) {
                 drop(state);

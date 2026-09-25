@@ -83,10 +83,11 @@ fn inspection(
     lane: Option<&CollectionLane>,
     state: Option<&LaneState>,
     id: &str,
+    scheduling_open: bool,
 ) -> Result<CollectionRunInspection> {
     let result = workspace.inspect_collection_run(id)?;
     let available = availability(shared, workspace, lane, state)?;
-    decorate_inspection(shared, lane, state, result, available)
+    decorate_inspection(shared, lane, state, result, available, scheduling_open)
 }
 fn decorate_inspection(
     shared: &Shared,
@@ -94,6 +95,7 @@ fn decorate_inspection(
     state: Option<&LaneState>,
     mut result: CollectionRunInspection,
     available: CollectionAvailability,
+    scheduling_open: bool,
 ) -> Result<CollectionRunInspection> {
     let id = result.run.id.as_str();
     result.availability = available;
@@ -120,7 +122,8 @@ fn decorate_inspection(
             result.run.state,
             CollectionState::Queued | CollectionState::Running | CollectionState::Interrupted
         );
-    result.controls.can_resume = matching
+    result.controls.can_resume = scheduling_open
+        && matching
         && executable(available)
         && !result.run.cancellation_requested
         && result.run.state == CollectionState::Interrupted
@@ -169,6 +172,12 @@ impl JobCoordinator {
             .workspace
             .lock()
             .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+        let activity = self
+            .shared
+            .active
+            .lock()
+            .map_err(|_| Error::Blocked("Processing activity unavailable".into()))?;
+        let scheduling_open = activity.allows_resume();
         let lane = self.shared.collection.as_deref();
         let mut state = lane
             .map(|l| {
@@ -193,6 +202,7 @@ impl JobCoordinator {
                 lane,
                 state.as_deref(),
                 &job_id,
+                scheduling_open,
             )?)?),
             command => {
                 let id = match command {
@@ -239,8 +249,14 @@ impl JobCoordinator {
                         job_id,
                         expected_generation,
                     } => {
-                        let current =
-                            inspection(&self.shared, &workspace, lane, state.as_deref(), &job_id)?;
+                        let current = inspection(
+                            &self.shared,
+                            &workspace,
+                            lane,
+                            state.as_deref(),
+                            &job_id,
+                            scheduling_open,
+                        )?;
                         crate::require(
                             current.controls.can_resume
                                 && current.run.generation == expected_generation,
@@ -260,8 +276,14 @@ impl JobCoordinator {
                         expected_generation,
                         request_sequence,
                     } => {
-                        let current =
-                            inspection(&self.shared, &workspace, lane, state.as_deref(), &job_id)?;
+                        let current = inspection(
+                            &self.shared,
+                            &workspace,
+                            lane,
+                            state.as_deref(),
+                            &job_id,
+                            scheduling_open,
+                        )?;
                         crate::require(
                             current.controls.can_retry_settlement
                                 && current.run.generation == expected_generation
@@ -275,8 +297,16 @@ impl JobCoordinator {
                     }
                     _ => return Err(Error::Validation("Not a collection control".into())),
                 };
-                let response = inspection(&self.shared, &workspace, lane, state.as_deref(), &id)?;
+                let response = inspection(
+                    &self.shared,
+                    &workspace,
+                    lane,
+                    state.as_deref(),
+                    &id,
+                    scheduling_open,
+                )?;
                 drop(state);
+                drop(activity);
                 drop(workspace);
                 if let Some(lane) = lane {
                     lane.wake.notify_all();
@@ -298,6 +328,11 @@ impl JobCoordinator {
                 .workspace
                 .lock()
                 .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+            let _activity = self
+                .shared
+                .active
+                .lock()
+                .map_err(|_| Error::Blocked("Processing activity unavailable".into()))?;
             let state = lane
                 .state
                 .lock()
@@ -327,6 +362,11 @@ impl JobCoordinator {
             .workspace
             .lock()
             .map_err(|_| Error::Blocked("Workspace coordinator is unavailable".into()))?;
+        let activity = self
+            .shared
+            .active
+            .lock()
+            .map_err(|_| Error::Blocked("Processing activity unavailable".into()))?;
         let state = lane
             .state
             .lock()
@@ -350,8 +390,14 @@ impl JobCoordinator {
         let response = ready.inspection()?;
         #[cfg(test)]
         let response = cancel_hooks::acknowledgement(response);
-        let response =
-            decorate_inspection(&self.shared, Some(lane), Some(&state), response, available)?;
+        let response = decorate_inspection(
+            &self.shared,
+            Some(lane),
+            Some(&state),
+            response,
+            available,
+            activity.allows_resume(),
+        )?;
         // All fallible response work precedes the canonical write. A successful
         // write is followed only by current-token signalling, wakes and return.
         let value = serde_json::to_value(response)?;
@@ -368,6 +414,7 @@ impl JobCoordinator {
             }
         }
         drop(state);
+        drop(activity);
         drop(workspace);
         lane.wake.notify_all();
         self.shared.wake.notify_all();

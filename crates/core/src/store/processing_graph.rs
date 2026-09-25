@@ -300,21 +300,24 @@ impl Workspace {
     }
 }
 
-// Source-only test seam, not callable by the production coordinator. The full transaction
-// includes the Running record, actual meta C, event and capture; failures roll all back to Q.
-#[cfg(test)]
+// Exclusive coordinator claim: Running, actual C, event and capture commit together.
+// The coordinator holds workspace and admission ownership before this private call.
 impl Workspace {
-    pub(super) fn claim_graph_for_publication_test(
+    pub(crate) fn claim_graph_exclusive(
         &mut self,
-        key: &str,
+        expected_job: &ProcessingJob,
     ) -> Result<(JobTicket, GraphAttempt)> {
         require_verified_worker_exit(&self.conn)?;
         let expected = self.revision()?;
-        let mut job = self.processing_job(key)?;
+        let mut job = self.processing_job(&expected_job.id)?;
+        require(
+            serde_json::to_vec(&job)? == serde_json::to_vec(expected_job)?,
+            "Graph queued identity changed",
+        )?;
         supported_job(&job)?;
         require(
             job.state == ProcessingState::Queued && !job.cancellation_requested,
-            "Graph test claim must be queued",
+            "Graph exclusive claim must be queued",
         )?;
         let ticket = JobTicket {
             job_id: job.id.clone(),
@@ -327,7 +330,10 @@ impl Workspace {
             .conn
             .transaction_with_behavior(TransactionBehavior::Immediate)?;
         let current: u64 = conn.query_row("SELECT revision FROM meta", [], |row| row.get(0))?;
-        require(current == expected, "Graph test claim revision changed")?;
+        require(
+            current == expected,
+            "Graph exclusive claim revision changed",
+        )?;
         let captured_revision = current
             .checked_add(1)
             .ok_or_else(|| Error::Validation("Graph revision overflow".into()))?;
@@ -335,16 +341,27 @@ impl Workspace {
         job.lease = Some(ticket.lease.clone());
         job.started_at = Some(now());
         job.updated_at = now();
-        job.detail = "Private source test claim; no production worker launch".into();
+        job.detail = "Exclusive graph claim; fixed executor owns the attempt".into();
         put(&conn, "processing_job", &job.id, &job)?;
         conn.execute("UPDATE meta SET revision=?", [captured_revision])?;
         conn.execute(
             "INSERT INTO events(revision,action,at) VALUES(?,?,?)",
-            params![captured_revision, "processing.graph_test_claim", now()],
+            params![captured_revision, "processing.graph_claim", now()],
         )?;
         let attempt =
             GraphAttempt::capture_claim(&root, owner, &conn, &job, &ticket, captured_revision)?;
         conn.commit()?;
         Ok((ticket, attempt))
+    }
+}
+
+#[cfg(test)]
+impl Workspace {
+    pub(super) fn claim_graph_for_publication_test(
+        &mut self,
+        key: &str,
+    ) -> Result<(JobTicket, GraphAttempt)> {
+        let job = self.processing_job(key)?;
+        self.claim_graph_exclusive(&job)
     }
 }
