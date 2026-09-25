@@ -204,6 +204,9 @@ impl JobCoordinator {
         if collection::is_public_command(&command) {
             return self.dispatch_collection_command(command);
         }
+        if let Command::Search { query } = &command {
+            return self.dispatch_search(query);
+        }
         let cancel = match &command {
             Command::CancelProcessingJob { job_id, .. } => Some(job_id.clone()),
             _ => None,
@@ -338,6 +341,14 @@ impl JobCoordinator {
                 "A coordinator executor stopped unexpectedly".into(),
             ));
         }
+        // Synchronous Search dispatch is not one of the joined scheduler threads.
+        // Join first: graph/collection publication may still need the workspace.
+        // With stopping set, this barrier excludes every previously admitted Search
+        // and refuses release on poison; no later dispatch can pass admission.
+        let _workspace = self.shared.workspace.lock().map_err(|_| {
+            self.shared.ownership.quarantine();
+            Error::Blocked("Workspace execution teardown is unverified".into())
+        })?;
         self.shared.ownership.release()?;
         export_cleanup?;
         Ok(())
@@ -348,6 +359,8 @@ impl JobCoordinator {
 mod collection;
 #[path = "coordinator_graph.rs"]
 mod graph;
+#[path = "coordinator_search.rs"]
+mod search;
 
 fn work(shared: Arc<Shared>) {
     loop {

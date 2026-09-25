@@ -38,6 +38,7 @@ mod processing_regions;
 mod recovery;
 mod report_snapshots;
 mod review_decision_page;
+mod search;
 mod statements;
 mod transaction_analysis;
 mod transaction_balance;
@@ -570,18 +571,7 @@ impl Workspace {
                 return Ok(serde_json::to_value(self.inspect_source(&anchor)?)?);
             }
             Command::Search { query } => {
-                let runtime = self.runtime.as_ref().ok_or_else(|| {
-                    Error::Blocked(
-                        "Packaged local search runtime is not available in this build".into(),
-                    )
-                })?;
-                let result = runtime.search(
-                    &self.root.join("indexes/lucene"),
-                    self.revision()?,
-                    &all_evidence(&self.conn)?,
-                    &query,
-                )?;
-                return Ok(serde_json::to_value(result)?);
+                return Ok(serde_json::to_value(self.search_standalone(&query)?)?);
             }
             Command::PreviewCollection { input } => {
                 return Ok(serde_json::to_value(crate::collection_api::preview(

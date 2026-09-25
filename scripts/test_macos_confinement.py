@@ -16,6 +16,8 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = [
     "crates/core/src/engines.rs",
+    "crates/core/src/engines/search.rs",
+    "crates/core/src/engines/search_lifecycle.rs",
     "crates/core/src/engines/supervision.rs",
     "crates/core/src/engines/supervision/tests.rs",
     "workers/java/src/main/java/workbench/Protocol.java",

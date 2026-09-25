@@ -301,7 +301,7 @@ fn native_java_hostile_and_benign_boundaries() {
 #[test]
 #[ignore = "requires staged Java 21 and current worker JAR; run scripts/test_macos_confinement.py"]
 fn native_lucene_uses_separate_jobs_and_read_only_search_index() {
-    let root = tempfile::tempdir().unwrap();
+    let root = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
     let runtime = super::super::Runtime { root: runtime() };
     // Use the actual Rust production path, preserving revision and evidence validation.
     let evidence: crate::domain::Evidence = serde_json::from_value(serde_json::json!({

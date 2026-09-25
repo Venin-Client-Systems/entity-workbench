@@ -79,16 +79,20 @@ struct Loaded {
 
 impl Workspace {
     pub(crate) fn collection_ownership(&self) -> Result<CollectionOwnership> {
-        Ok(CollectionOwnership {
+        let owner = CollectionOwnership {
             root: self.root.clone(),
             state: Mutex::new(OwnershipState {
                 file: Some(self.lock_processing()?),
                 quarantined: false,
             }),
             lifetime: id(),
-        })
+        };
+        if self.search_recovery_required() {
+            owner.quarantine();
+        }
+        Ok(owner)
     }
-    fn collection_owner(&self, owner: &CollectionOwnership) -> Result<()> {
+    pub(super) fn collection_owner(&self, owner: &CollectionOwnership) -> Result<()> {
         require(
             owner.root == self.root && owner.held(),
             "Collection ownership is released, quarantined or belongs to another workspace",
