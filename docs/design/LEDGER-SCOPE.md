@@ -19,3 +19,8 @@ The existing real-core [1440 px ledger](review/desktop-summary/ledger-1440.png) 
 The current interface places controls in a responsive grid, expresses counts in text and keeps Export JSON beside Apply/Clear. The new specimen proposes joined count instruments and a separate export panel. Those presentation changes are not implemented by this design-only commit. The prior 110-case browser suite and actual native export proof remain tied to their recorded source; this frame does not retroactively establish those screenshots as pixel-equivalent designs.
 
 Compact frame variants, stale/unavailable/empty-state frames, native remote readback, transfer-selection and citation extensions, keyboard/manual accessibility and owner visual approval remain open. [Artifact hashes](review/ledger-scope/checksums.json) bind the inspected source and comparison images. The earlier [pagination proposal](TRANSACTION-PAGINATION-PROPOSAL.md) remains history; its page-only export idea was superseded by the implemented complete-scope export.
+
+
+## Recovered remote readback — 25 September 2026
+
+After sign-in, a fresh view of original frame 57:2 showed the expected 1120×1140 layout, industrial controls, five count instruments and export receipt. This resolves the earlier remote-frame readback timeout. It does not prove every old unsynced edit survived. The original is view-only for the current account; [the recovery record](DESIGN-WORKING-COPY.md) identifies the editable Drafts copy and the subsequent browser-control limitation. No implementation layout or design-approval claim changes.

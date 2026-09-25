@@ -201,3 +201,12 @@ After the repair, all nine Rust example tests passed on the Mac host. All
 thirteen Python receipt tests passed in ordinary and optimized Python modes.
 Strict release-profile Clippy for the example, core formatting and the patch
 whitespace check passed. These checks leave the native Windows campaign unpassed.
+
+
+## Native canonical campaign — 25 September 2026
+
+[AppContainer run 36134296949](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36134296949) passes the actual Windows Server development campaign after the envelope repair. The tested clean PR merge is `025ed706fd8144f346f5348a24135b051a23134c`, tree `29ffb34ec1b01c3fd9d5c8e4eeaba8aa58d8968c`, which matches application head `0e6d390`. GitHub commit readback confirms parents `b12271c` and `0e6d390`; the shallow checkout's own receipt has an empty parent list, retained unchanged.
+
+The [exact retained receipt](verification/windows-parser-coordinator-2026-09-25.json) passes the existing strict validator: 25 named checks, ten bound synthetic fixtures, ten expected immutable derivatives and four joined coordinators. It covers idempotent queueing, unclaimed queued cancellation, completed/partial/failed/blocked extraction outcomes, restart stability, full evidence-inclusive backup/restore, frozen-backup isolation, runtime corruption/missing/wrong-role refusals, scratch cleanup and unchanged originals/control records/runtime files. The receipt SHA-256 is `0e7aab01efcd4cb81ed1690e4251f1e1981d9cc62f3920700b967ae84a3fcd22`.
+
+Worker and Java engine steps in the same hosted run also passed. [Source campaign 36134296848](https://github.com/Venin-Client-Systems/entity-workbench/actions/runs/36134296848) passed all four source jobs at head `0e6d390`. Earlier failed campaigns remain evidence. This proves the exercised Windows Server development route; in-flight canonical cancellation is explicitly not proved by this receipt. Windows 11 clean installation, complete bundled runtimes, search/OCR application routing and signed release acceptance remain separate. No complete-release gate changes.

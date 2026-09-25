@@ -54,3 +54,10 @@ Local ignored evidence is retained under `artifacts/word-wrapping/`; the earlier
 native app proof remains in the separate `native-docx-review` worktree. Neither
 record is a signed-release, clean-install, Intel/Windows, complete report assembly
 or approved product-design claim.
+
+
+## Later native Word observation — 25 September 2026
+
+After controls became available, the file picker's explicit Open Finder item action opened the unchanged generator-2 ordinary specimen in Word. The native window identified `generator2-ordinary` in Compatibility Mode; its three-page, 481-word document showed generator `ooxml-foundation-2`. A screenshot of the first-page prose showed ordinary words wrapping at word boundaries, with the reviewed decimal calculation intact. The specimen SHA-256 remains `0b9f69392b57dd1190dea7d45c7fcc16bad97ab9fcf2b9dec3b8350b6fc74fd9`.
+
+A subsequent Whole page zoom action and state read timed out. This updates the earlier inability to open generator 2: opening and the visible first-page prose are now observed, but complete-page inspection, long-literal Word layout and generator-2 edit/save remain unverified. No document content was edited or saved, no app was force-quit and no permission changed. The managed seven-page inspection remains separate evidence.
