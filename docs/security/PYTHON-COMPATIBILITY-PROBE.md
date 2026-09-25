@@ -1,6 +1,6 @@
 # Python compatibility probe — development source contract
 
-EW-07 / issue #11. This is a **test-only, initially unexecuted** macOS arm64
+EW-07 / issue #11. This is a **test-only, development** macOS arm64
 compatibility harness for the exact offline assembled prefix. It introduces no
 application command, canonical protocol, automatic dependency installation or
 production Python worker. The ignored Rust test requires a deliberately invoked
@@ -133,8 +133,8 @@ artifact-directory traversal. They do not constitute native compatibility proof.
 After the final source/profile/fixture review, the explicit native invocation is
 `python3 scripts/test_python_compatibility.py --prefix <exact-reviewed-prefix>
 --artifacts <fresh-private-artifacts> --execute-reviewed-probe`. The script's
-flag is an execution guard, not permission by itself. Initial implementation
-handoff leaves this command **unexecuted**. Any future observation must retain its
+flag is an execution guard, not permission by itself. The initial source handoff was unexecuted. The first subsequent native campaign
+failed as recorded below. Any future observation must retain its
 exact source checkout, binary, profile, runtime, fixture identities and negative
 outcomes. A failed import does not authorize broader sandbox permissions or
 larger budgets.
@@ -144,3 +144,32 @@ limits, supervisor-crash recovery, canonical protocol activation, clean offline
 installation, signing, supported OS minima, Intel Mac/Windows and complete
 third-party notices remain separate unmet checks. Completing compatibility
 assertions inside this profile alone cannot establish those claims.
+
+## First native observation — 2026-09-25
+
+The first campaign at signed source `fdf7265398535593f3001e60cc15ca125cb8bd29`
+**failed** after reaching `imports`, with `quota-exhausted` and confirmed worker
+termination/cleanup. Its exact [outer receipt](../../packaging/evidence/python-compatibility-first-2026-09-25.json)
+and [native receipt](../../packaging/evidence/python-compatibility-first-native-2026-09-25.json)
+are retained verbatim. A preceding missing ignored artifact-parent preparation
+failed before campaign creation/build/spawn; after that ordinary precondition was
+repaired, exactly one actual candidate campaign ran. There was no native retry.
+
+The actual host was macOS 26.6.2 arm64. Both diagnostic streams were empty. The
+test log records 68.90 seconds for the entire test, including prefix verification,
+preparation and cleanup; worker-only elapsed and the particular quota category
+were not captured. The `imports` checkpoint follows successful bootstrap
+flags/path checks and all 58 version comparisons, but does not identify any
+completed individual import. The PhraseMatcher, graph, transaction and plugin
+assertions were not reached, and no structured compatibility result was accepted.
+Other development Clippy/render work ran concurrently; its effect is unmeasured
+and is not established as the cause. No limit or permission was increased.
+
+Independent post-failure verification found the exact prefix unchanged: 11,320
+files, 601,821,300 bytes and 58 installed RECORDs; see the retained
+[integrity receipt](../../packaging/evidence/python-compatibility-first-integrity-2026-09-25.json).
+The inventory's `assembled-unexecuted` / `package_code_executed: false` fields
+describe the original assembly/verifier operation, not the later campaign's
+history. The failed native execution is recorded separately and does not mutate
+that immutable installed manifest. Raw build/native logs remain private local
+artifacts. No job directories remained after confirmed cleanup.
