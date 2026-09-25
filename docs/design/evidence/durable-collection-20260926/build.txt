@@ -12,7 +12,7 @@ ui/dist/assets/maplibre-gl-worker-CNLXcz58.js    508.48 kB
 ui/dist/assets/index-DcQ5WkR6.css                127.22 kB │ gzip:  19.58 kB
 ui/dist/assets/index-C7eh031i.js               2,436.91 kB │ gzip: 712.94 kB
 
-[plugin builtin:vite-reporter] 
+[plugin builtin:vite-reporter]
 (!) Some chunks are larger than 1200 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting

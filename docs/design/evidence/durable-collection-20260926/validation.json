@@ -74,7 +74,7 @@
     "core-identity.log": {
       "raw_sha256": "bf9a70f74a3cd9748ec951a870992f6bf8fef1ab41d3c2b115d618ec0d11f425",
       "sanitized_file": "core.txt",
-      "sanitized_sha256": "abc5432d4efae52cd513483c3584f3eeb14bedf9dfc8d8011d5e61d5563263d7"
+      "sanitized_sha256": "635c8cbf797993508a04def8ff21946d1745253babcc15308790bec1a2e08973"
     },
     "clippy-identity.log": {
       "raw_sha256": "a3c1942bf345ee45cace3565b68b937e8aba2ce34e14c1cc79e8614d2fe55012",
@@ -94,7 +94,7 @@
     "ui-build-final.log": {
       "raw_sha256": "e7ca99426470b24db6ca2fd5256d87330cc4271611b5e571a810f547cc06ccf0",
       "sanitized_file": "build.txt",
-      "sanitized_sha256": "e7ca99426470b24db6ca2fd5256d87330cc4271611b5e571a810f547cc06ccf0"
+      "sanitized_sha256": "6316c9b30ea2250e468d1ba1111f3a7bc4760151ead2631352fb7f5a7b6dad3d"
     },
     "schema-generation.log": {
       "raw_sha256": "03036994319ab8b060f7308f8c6b85735fcd5e37741f6cece173af010b7d64e0",
@@ -128,10 +128,10 @@
     "app-preview.png": "a1f442c3e3d7614a9a77b013956fd8bdfc1a3d32477404da88d69235f4b6caab",
     "app-review.png": "2a98f21c211efff197615c561274209037456f5c6b3239b5c805e9227005fa74",
     "browser.txt": "009d387adc1bc92ef8cef1151055774c07d2ce235993d82cc09080a2e66fb163",
-    "build.txt": "e7ca99426470b24db6ca2fd5256d87330cc4271611b5e571a810f547cc06ccf0",
+    "build.txt": "6316c9b30ea2250e468d1ba1111f3a7bc4760151ead2631352fb7f5a7b6dad3d",
     "clippy-debug.txt": "0bb98eadaea45e93edffe45650d15d9892df9d6820ef02e8dea1f47f195905eb",
     "clippy-release.txt": "4f6c6ddc6eca7eef317be2028b43ca7b825cfc51e499c6a261ec50fc11ea2467",
-    "core.txt": "abc5432d4efae52cd513483c3584f3eeb14bedf9dfc8d8011d5e61d5563263d7",
+    "core.txt": "635c8cbf797993508a04def8ff21946d1745253babcc15308790bec1a2e08973",
     "empty-preview-axe.json": "243f80f4f47179cf034fd5a4452c2914bd4e6215090fa729b23e0c70c096bc1f",
     "figma-preview.png": "d39cca0d514f293cff437dc49debfb4d0cf79a9a3551caafb19258f82ba2b1a4",
     "figma-recovery.png": "33c2fc93b87a6d592f6336b3e858d0a28db6ca368e4a9021a1ff0187f110c3e0",
