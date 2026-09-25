@@ -1,0 +1,13 @@
+Selected frame: 2006:104; observed after normal reload and export.
+49 row (selected, collapsed) 24 / Instrument — DOCX recovery compact, Secondary Actions: Expand
+52 text 24 / Instrument — DOCX recovery compact
+53 row (selectable, collapsed) 23 / Instrument — DOCX catalogue compact, Secondary Actions: Expand
+56 text 23 / Instrument — DOCX catalogue compact
+57 row (selectable, collapsed) 22 / Instrument — DOCX capture outcomes, Secondary Actions: Expand
+60 text 22 / Instrument — DOCX capture outcomes
+61 row (selectable, collapsed) 21 / Instrument — DOCX snapshot catalogue, Secondary Actions: Expand
+64 text 21 / Instrument — DOCX snapshot catalogue
+227 stepper (settable, integer) Description: X-position, Value: 38500
+228 stepper (settable, integer) Description: Y-position, Value: -500
+255 text field (settable) Description: Width, Value: 720
+258 text field (settable) Description: Height, Value: 1330
