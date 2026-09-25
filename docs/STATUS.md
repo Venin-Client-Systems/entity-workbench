@@ -10,6 +10,8 @@ Latest [graph host integration checks](verification/integration-graph-host-b680d
 
 Other retained development evidence includes [native HTTPS cancellation/recovery](discovery/NATIVE-CANCELLATION-PROOF.md), [frozen collection exports](discovery/DURABLE-COLLECTION-SNAPSHOT.md), [reviewed account flows](design/ACCOUNT-FLOWS-UI.md), [native CSV saves](design/TYPED-CSV-EXPORT-UI.md), and the earlier [four-case graph coordinator campaign](analysis/NATIVE-GRAPH-COORDINATOR.md). Normal native collection activation remains disabled during the durable cutover. The combined relocated Python probe still exceeds its deadline; the separate fixed engine recipes retain their own passing observations.
 
+The benchmark-specific [publisher access profile](discovery/PUBLISHER-ACCESS-PROFILE.md) validates exact frozen task/seed binding, canonical publisher/subdomain URLs and only-tightening limits. It grants no access or execution authority and leaves v4 collection unchanged. Its [integrated checks](verification/integration-publisher-profile.json) pass **709 ordinary Rust tests**, strict Clippy and formatting. Durable access decisions, acquisition-scoped indexing and a real cold-corpus campaign remain open.
+
 **All twelve complete-release gates remain unpassed.** Historical entries below describe their original revisions and are superseded only by later evidence within its stated scope.
 
 | Area | Implemented and verified | Remaining work |

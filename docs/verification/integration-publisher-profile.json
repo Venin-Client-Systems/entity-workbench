@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "source": "9437a294af15c7a7d64f9d940b8ff682ebd5109f",
+  "complete_release": false,
+  "core": {
+    "passed": 709,
+    "ignored": 34
+  },
+  "checks": {
+    "core": {
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "workbench-core"
+      ],
+      "exit_code": 0,
+      "seconds": 77.39811866707169,
+      "log": {
+        "bytes": 87841,
+        "sha256": "a6213af7d8a2c4e6a70557218b7b808326ad06004571b866b0093ceb27115933"
+      }
+    },
+    "clippy": {
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "workbench-core",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "seconds": 17.260608541895635,
+      "log": {
+        "bytes": 185,
+        "sha256": "ac726dc30136c67cc95f164037e9493701549cac50fb106929f93793e20fdea0"
+      }
+    },
+    "fmt": {
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "seconds": 0.8701718749944121,
+      "log": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "unchanged": {
+    "historical_schema_directory_files": 110,
+    "frozen_benchmark_and_scorer": true,
+    "v4_collection_machine_transport_and_replay": true,
+    "interface": true
+  },
+  "scope": "Pure frozen publisher-profile admission; no collection activation, public command, network campaign, access approval or cold-corpus proof",
+  "source_files": [
+    {
+      "path": "crates/core/src/collection_profile.rs",
+      "bytes": 10455,
+      "sha256": "9bb001161fb7fd4a7baf1a022ee6633d2645d8cbecb5389968d132742ec89fde"
+    },
+    {
+      "path": "crates/core/src/collection_profile_tests.rs",
+      "bytes": 14202,
+      "sha256": "a42db4a0c3943ba272d471598aa7a56183939e5393b746521310c31f1097763a"
+    },
+    {
+      "path": "crates/core/src/lib.rs",
+      "bytes": 2412,
+      "sha256": "811e933f43505d4cb3a55f290eb7f71963021b5cc3298d292b962951b8c6b262"
+    }
+  ]
+}
