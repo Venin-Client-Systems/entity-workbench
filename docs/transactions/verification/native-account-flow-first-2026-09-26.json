@@ -1,0 +1,402 @@
+{
+  "schema_version": 1,
+  "date_local": "2026-09-26",
+  "outcome": "passed",
+  "scope": "Actual isolated macOS development UI: synthetic reviewed account flows, source drillthrough, one canonical correction and normal restart.",
+  "source_commit": "817d20032cf8a8d4a6b7cffc9f1ac334a1f92eea",
+  "source_tracked_clean": true,
+  "source_files": {
+    "desktop/tauri.conf.json": "04847857e3ac733c7dcc8748398440cf4cc7ef8a6e5a3b733fd9331d58f39527",
+    "desktop/tauri.macos.conf.json": "83d79e5f9d4cfe26b7c97b5a486e58889363ccde127bed6d3317fffbf2ce6bfc",
+    "desktop/src/main.rs": "a0b58b31e44813658805e98c0b1a570e2ab10fb240459757aa9c08be1e295483",
+    "ui/src/AccountFlows.tsx": "bbb64519926010a9da8ca6e6ff5cd581f43574aa2c8a1b597e69e992e01a53aa",
+    "ui/src/TransactionAnalysisSource.tsx": "55950377a026a49e485d6f29c23ebad50c96dae844be3bf3b9e999ccb4004a2f",
+    "ui/src/main.tsx": "9f8a71a15f111fbad68aa705333f52418468accdef433f1502e16aeca4685731",
+    "ui/tests/account-flows.spec.ts": "2de1dc76fab606e9a152c0d73475f6a8044ca1b120fd20d585b3ac72acbb86d9",
+    "Cargo.lock": "0c53f62c8afa899c9d63413e7b139a40fe5f86e459c8b947cc52ce9c84d2cd32",
+    "package-lock.json": "5f262879fbb9792559952bc8d27aaa1273f8c21d8b0a1b8898a460b5fb9b700f"
+  },
+  "bundle_identifier": "org.entityworkbench.flowreview20260926",
+  "product_name": "Entity Workbench Flow Review",
+  "configuration_sha256": "bb63836863ce82b90a5fe6370c8d256c9bcd18a37805f6a5f0f3f8afe4b7c90d",
+  "binary_sha256": "262ab649a0ba14cde827b5a3162946859020466207fd8c30a98958b5407a2ce2",
+  "canonical_cli_sha256": "dd008f7a3d551ebb51ec479f08c9d2c51be3b05140aaaa42841007050df5e4de",
+  "frontend": {
+    "assets/index-B9XA0MUo.js": "f450a3cf6ab8ec7c89e49eb4d394e22405ca082a67e3f9c333bb44e3cd2293d4",
+    "assets/index-DLIBKyiK.css": "e7cb1d6e0ede2fb9f3a80be031512dbb06b394012d55709421445be94a621bde",
+    "assets/maplibre-gl-worker-CNLXcz58.js": "80f3f1eb3fd53fa5af74341632d974122a0741fad5687b0714d5932f6ddffa87",
+    "fonts/Inter-LICENSE.txt": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+    "fonts/InterVariable.woff2": "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3",
+    "fonts/JetBrainsMono-Bold.woff2": "c503cc5ec5f8b2c7666b7ecda1adf44bd45f2e6579b2eba0fc292150416588a2",
+    "fonts/JetBrainsMono-LICENSE.txt": "60d55f23c6ce05a81099a762cb67ca2c9b6ea251c7912720998b4c89ebfd4faa",
+    "fonts/JetBrainsMono-Regular.woff2": "a9cb1cd82332b23a47e3a1239d25d13c86d16c4220695e34b243effa999f45f2",
+    "index.html": "98fbf552788b5f091c69d1c713b118caa79343113addeb539ee11a29aff4a8f8"
+  },
+  "bundle_files": {
+    "Contents/Info.plist": "e4717a30e0cb48cdbecbcad1082e9469e2eb0c04178f57204f4f5a6478f8000f",
+    "Contents/MacOS/entity-workbench": "262ab649a0ba14cde827b5a3162946859020466207fd8c30a98958b5407a2ce2",
+    "Contents/Resources/icon.icns": "16d8fd3d1afde90aead816c25fbd4754a5c9105fa0ff2ac5e230bbd2f85a5de2"
+  },
+  "worker_resources_included": false,
+  "signature": "ad-hoc linker signature; no TeamIdentifier or sealed resources; no release signing/notarization claim",
+  "host": {
+    "architecture": "arm64",
+    "macos_version": "26.6.2"
+  },
+  "input": {
+    "fixture_sha256": "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0",
+    "bytes": 556,
+    "transaction_rows": 10,
+    "canonical_seed_commands_sha256": "490fb5caf293fc1610a6682ef6afcedd36743db7585870791bfd9b7c60f7d387",
+    "revision": 12
+  },
+  "applied_scope": {
+    "date_from": "2024-01-01",
+    "date_to": "2024-01-31",
+    "account": "0001",
+    "currency": "AUD"
+  },
+  "native_before": {
+    "revision": 12,
+    "selected_rows": 6,
+    "workspace_rows": 10,
+    "support_only_rows": 2,
+    "currency": "AUD",
+    "amount": "40.00",
+    "pair_count": 2,
+    "selected_review_counts": {
+      "accepted": 4,
+      "pending": 1,
+      "rejected": 0,
+      "deferred": 1
+    }
+  },
+  "native_source_proof": {
+    "selected_row": 3,
+    "selected_value": "-20.00",
+    "support_row": 8,
+    "support_value": "20.00",
+    "both_endpoint_labels_observed": true,
+    "both_original_excerpts_observed": true,
+    "preserved_source_inspector_observed": true,
+    "exact_original_digest": "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0",
+    "row_versions_before": [
+      3,
+      3
+    ]
+  },
+  "read_only_conservation": {
+    "all_tables_unchanged": true,
+    "originals_unchanged": true,
+    "database_bytes_unchanged": true,
+    "observations": [
+      "before-native.json",
+      "after-native-read-only.json",
+      "before-native-correction.json"
+    ]
+  },
+  "native_correction": {
+    "command": "correct_transaction",
+    "expected_revision": 12,
+    "result_revision": 13,
+    "original_row": 3,
+    "old_amount": "-20.00",
+    "new_amount": "-21.00",
+    "review": "pending",
+    "version": 4,
+    "peer_unlinked": true,
+    "peer_version": 4,
+    "new_decisions": 1,
+    "changed_existing_records": [
+      {
+        "kind": "transaction",
+        "id": "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0:3",
+        "original_row": 3,
+        "changed_fields": [
+          "amount",
+          "review",
+          "duplicate_candidates",
+          "transfer_peer",
+          "version"
+        ]
+      },
+      {
+        "kind": "transaction",
+        "id": "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0:4",
+        "original_row": 4,
+        "changed_fields": [
+          "duplicate_candidates"
+        ]
+      },
+      {
+        "kind": "transaction",
+        "id": "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0:8",
+        "original_row": 8,
+        "changed_fields": [
+          "transfer_peer",
+          "version"
+        ]
+      }
+    ],
+    "originals_unchanged": true,
+    "retained_result_revision": 12,
+    "retained_stale_warning_visible": true,
+    "retained_source_actions_disabled": true
+  },
+  "native_recalculated": {
+    "revision": 13,
+    "selected_rows": 6,
+    "workspace_rows": 10,
+    "support_only_rows": 1,
+    "currency": "AUD",
+    "amount": "20.00",
+    "pair_count": 1,
+    "selected_review_counts": {
+      "accepted": 3,
+      "pending": 2,
+      "rejected": 0,
+      "deferred": 1
+    },
+    "canonical_result_sha256": "20568f9e08a266efda001be57e59a0fd738ef176be32e262e16e579d47e4508f"
+  },
+  "normal_restart": {
+    "normal_quit_requested_twice": true,
+    "process_absent_after_each_quit": true,
+    "reopened_revision": 13,
+    "reopened_rows": 10,
+    "reopened_corrected_amount": "-21.00",
+    "reopened_corrected_review": "pending",
+    "reopened_data_visible": true,
+    "new_analysis_not_automatically_requested": true,
+    "post_correction_tables_originals_and_database_bytes_unchanged": true,
+    "final_app_running": false
+  },
+  "before_table_identities": {
+    "derivative_objects": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "events": {
+      "rows": 12,
+      "sha256": "e9f3f12e2bd0ed2f91fed0988da890de49e0ff904d8da365354595d648a1da2d"
+    },
+    "history": {
+      "rows": 15,
+      "sha256": "8b941c7111d8a487858a38b515f0e52ed141d067d42d06c5cf0e4e7ed9a020e4"
+    },
+    "meta": {
+      "rows": 1,
+      "sha256": "bd9f136b622b85cf21ee24ea2aad17d5131a056dbc482a5c3d3a26e54753d667"
+    },
+    "records": {
+      "rows": 22,
+      "sha256": "ba918b00c474bfbb56bef01aec8b37338450e9ebe56f665fffe9a91de057b454"
+    }
+  },
+  "after_table_identities": {
+    "derivative_objects": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "events": {
+      "rows": 13,
+      "sha256": "1cde36ecc360c40c0fa1159ae4c1e200da2b23edf449cbd94ba06b320f1f5a1a"
+    },
+    "history": {
+      "rows": 19,
+      "sha256": "53bf17e1399b6e76fed10f0f06743e1a776e337906dc87c61208ad73cb36f3d1"
+    },
+    "meta": {
+      "rows": 1,
+      "sha256": "eeabd8e733b414a73deef88047a3ea68d22640191cf5f6c793d5389fc5ef3a7f"
+    },
+    "records": {
+      "rows": 23,
+      "sha256": "84fee9d59b5846e0b990c0d7e363b4d8bb04eab660980d4e525088846c79d9b0"
+    }
+  },
+  "originals": {
+    "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0": {
+      "bytes": 556,
+      "sha256": "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0"
+    }
+  },
+  "raw_evidence": {
+    "01-transactions.ax.txt": {
+      "bytes": 17923,
+      "sha256": "9158bf7addc108cf7ca109c6a82823b5074e794376b91bb4d45ac40ab433d53b"
+    },
+    "02-calculated.ax.txt": {
+      "bytes": 3823,
+      "sha256": "57a708a1e20764f5dccb3948e58215bb9c438add82cc6eaad9dce58ed0770c78"
+    },
+    "03-flow-visible.ax.txt": {
+      "bytes": 337,
+      "sha256": "ff4b327f990ce5d4042de832ef2e33c2a6bf3fd5ab0967fbfcdafa1db878e820"
+    },
+    "03-flow-visible.png": {
+      "bytes": 144024,
+      "sha256": "1f2dc6c577914d61cd32c7befc1aa7bf816f83cb67de301a9da92b3eb81731df"
+    },
+    "04-pairs.ax.txt": {
+      "bytes": 1391,
+      "sha256": "36f763147d3990d3764b2c4e1d5d31677533abc4a4ba02478ac29e94caad6d71"
+    },
+    "05-source-endpoints.ax.txt": {
+      "bytes": 1424,
+      "sha256": "dd37486c3e2115575eab4a83ccb366ff0629fa46b183e03e97a4f9f7460f10f6"
+    },
+    "05-source-endpoints.png": {
+      "bytes": 145749,
+      "sha256": "2f55b1c1c11beb9b40d157109c04788d0da8069de124acaa7b599ab715abf122"
+    },
+    "06-credit-review.ax.txt": {
+      "bytes": 26209,
+      "sha256": "566d5a6306faeb0b36550c30e0a38d422d221c3daef0020b306f1b858963bdfa"
+    },
+    "07-original-source.ax.txt": {
+      "bytes": 2960,
+      "sha256": "d94f5769ced524c0233d705de6bf47e5bf040c61cac89524de5add9e169fd93c"
+    },
+    "07-original-source.png": {
+      "bytes": 140074,
+      "sha256": "9542456772e8dcb0661d92465b9ced1eac60b935c4274f70813dacbe828f3fbd"
+    },
+    "08-debit-review-before-correction.ax.txt": {
+      "bytes": 26320,
+      "sha256": "98bdb903bd677cb7d2f33b3e77bee97549251daf249378b1dec9dea9475127c0"
+    },
+    "09-correction-draft.ax.txt": {
+      "bytes": 530,
+      "sha256": "aef7a52ea53290cc199725f9adab5ec00c98edcf217d3f1cd184c88fc74ac165"
+    },
+    "10-correction-stale.ax.txt": {
+      "bytes": 8693,
+      "sha256": "7415731ebeb62799ca947ecbef95d8c641567fd6fbd545abdacf2907e6a7688c"
+    },
+    "10-correction-stale.png": {
+      "bytes": 180028,
+      "sha256": "2c78987aadc86ebcc6af17af616d70f243d9fb9c1716bbde7dbbb912ac15c329"
+    },
+    "11-stale-visible.ax.txt": {
+      "bytes": 370,
+      "sha256": "ae5ceb51e0c5ccb0b2b6012aa44536a11de32bbfffc7e9ba3acb99e2300d0eb1"
+    },
+    "11-stale-visible.png": {
+      "bytes": 167632,
+      "sha256": "38f3e6dea0fb1a12f3bec3d6701ed4cffd9421c0e13a2bc4b96d17254c415dc1"
+    },
+    "12-recalculated.ax.txt": {
+      "bytes": 1046,
+      "sha256": "71f3dccac7d88efcd555791f057ab0ad518b516fecd9e016a724fd6bf72b3cf0"
+    },
+    "13-recalculated-full.ax.txt": {
+      "bytes": 21685,
+      "sha256": "108b85d6261aafb4344185f7f6d669853bbdadf60ccddad8f1f637832dfa614b"
+    },
+    "13-recalculated.png": {
+      "bytes": 147690,
+      "sha256": "47f7461754e0f64cf8641774c93f0d670a7f4e99ff56cf5f4f66b5882cbafb1d"
+    },
+    "14-reopened-overview.ax.txt": {
+      "bytes": 202,
+      "sha256": "6a691c401e25ee1cf72393184261b7efb1938668ce8804728b87c7aec9d690cc"
+    },
+    "15-reopened-ledger.ax.txt": {
+      "bytes": 17852,
+      "sha256": "d1d4e575c8b01338d5507a1e1495c10b07b113daac6797113308591411a6b4e4"
+    },
+    "15-reopened-ledger.png": {
+      "bytes": 173793,
+      "sha256": "6293e12f1ac32a695930ef5dd6891ec115dbf9d9689c828838c318a6b1bd23d9"
+    },
+    "after-native-correction.json": {
+      "bytes": 15227,
+      "sha256": "18112340d75c522ae68f3780f3f7a83eb531843bbcb39f0a30d88d3671cb2bfc"
+    },
+    "after-native-read-only.json": {
+      "bytes": 15132,
+      "sha256": "c6fabc889c167c55ca64575ad741ba66f76050e96697f32699156a49309045b3"
+    },
+    "after-normal-quit.json": {
+      "bytes": 15227,
+      "sha256": "18112340d75c522ae68f3780f3f7a83eb531843bbcb39f0a30d88d3671cb2bfc"
+    },
+    "after-reopen-final-quit.json": {
+      "bytes": 15227,
+      "sha256": "18112340d75c522ae68f3780f3f7a83eb531843bbcb39f0a30d88d3671cb2bfc"
+    },
+    "before-native-correction.json": {
+      "bytes": 15132,
+      "sha256": "c6fabc889c167c55ca64575ad741ba66f76050e96697f32699156a49309045b3"
+    },
+    "before-native.json": {
+      "bytes": 15132,
+      "sha256": "c6fabc889c167c55ca64575ad741ba66f76050e96697f32699156a49309045b3"
+    },
+    "before-normal-quit.json": {
+      "bytes": 15227,
+      "sha256": "18112340d75c522ae68f3780f3f7a83eb531843bbcb39f0a30d88d3671cb2bfc"
+    },
+    "build.log": {
+      "bytes": 2244,
+      "sha256": "db6c84af870a0d02b22904ad330e492944feab6fa326eb354d64272c1cdabdb7"
+    },
+    "bundle-identity.json": {
+      "bytes": 1130,
+      "sha256": "1f79f2b0d395296a527f5209df05c2e8a036a56f148e3f9917425b38dd0c5fc3"
+    },
+    "cli-build.log": {
+      "bytes": 524,
+      "sha256": "c001db7ab6923710834c0e8b25fae2c6e804199168c9eb52ce7ca53e880ce2b6"
+    },
+    "codesign.log": {
+      "bytes": 502,
+      "sha256": "3534901b641345be221e72f6c8779245fde8897c4e494c88045c7c2969fe03fd"
+    },
+    "expected-after.json": {
+      "bytes": 9766,
+      "sha256": "20568f9e08a266efda001be57e59a0fd738ef176be32e262e16e579d47e4508f"
+    },
+    "expected-before.json": {
+      "bytes": 11464,
+      "sha256": "98647ef07184ff24cc7425047f41c9843ad1efc7b39d7bfebcc6c63faf6681e7"
+    },
+    "fixture.py": {
+      "bytes": 4240,
+      "sha256": "c45d751b6164b2edf7036950e3c70908784a59ba4f96ee06a0eff6adfe337201"
+    },
+    "seed-commands.json": {
+      "bytes": 8462,
+      "sha256": "490fb5caf293fc1610a6682ef6afcedd36743db7585870791bfd9b7c60f7d387"
+    },
+    "seed-workspace.json": {
+      "bytes": 11388,
+      "sha256": "cc8ba7c7ea5d0a0cf6db7df976be40cb12ac4367ba26aa62dcbee7c4f0054b0d"
+    },
+    "source-identity.json": {
+      "bytes": 2101,
+      "sha256": "479106625b6b251a40aa916081324a898cc5b3f913ea6cb243b6f4252e4d7bf1"
+    },
+    "synthetic-account-flows.csv": {
+      "bytes": 556,
+      "sha256": "0e3ad8cb8fc5e4d8e32e09ef8c103330126d1bdb78c1720797f3ed3d259ef7d0"
+    },
+    "tauri.override.json": {
+      "bytes": 297,
+      "sha256": "bb63836863ce82b90a5fe6370c8d256c9bcd18a37805f6a5f0f3f8afe4b7c90d"
+    }
+  },
+  "control_observations": [
+    "Native date stepper AX setValue produced no change; normal keyboard segment entry succeeded, with exact date readback before calculation.",
+    "Normal Quit is asynchronous; immediate application inventory briefly said running. Exact process checks after each quit confirmed absent.",
+    "Raw AX/screenshots retained privately; no unrelated browser or Word interaction."
+  ],
+  "limitations": [
+    "Synthetic ten-row case on the available Apple Silicon Mac only.",
+    "Development resources override excludes engine assets; no packaged runtime, worker, Windows, Intel Mac, signing or notarization acceptance.",
+    "No timing/performance or complete accessibility claim.",
+    "No owner approval or EW-18/release completion claim.",
+    "Source unchanged; source commit is 817d200, earlier than the parent test-only teardown repair."
+  ]
+}
