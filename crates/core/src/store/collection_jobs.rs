@@ -732,3 +732,9 @@ mod html_tests;
 #[path = "collection_preparation.rs"]
 mod preparation;
 pub(crate) use preparation::{CollectionCapture, PreparedCollectionSettlement};
+
+#[path = "collection_replay.rs"]
+mod replay;
+
+#[path = "collection_reservation.rs"]
+mod reservation;

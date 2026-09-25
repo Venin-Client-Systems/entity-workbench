@@ -1,7 +1,9 @@
 //! One committed request at a time. Private and synthetic-only; no application caller.
 #![allow(dead_code)]
 use crate::{
-    collection_jobs::{CollectionInput, CollectionTicket, DurableCollectionJob, RequestTicket},
+    collection_jobs::{
+        CollectionInput, CollectionProtocol, CollectionTicket, DurableCollectionJob, RequestTicket,
+    },
     collection_transport::{self, ExecutionWindow, Observation},
     engines::CancellationToken,
     store::{CollectionOwnership, Workspace},
@@ -18,9 +20,12 @@ pub(crate) struct CollectionDriver {
     execution: CollectionTicket,
     ownership_lifetime: String,
     input: CollectionInput,
+    protocol: CollectionProtocol,
     wall_deadline_ms: i64,
     monotonic_deadline: Instant,
     not_before: Instant,
+    #[cfg(test)]
+    reservation_hook: Option<Box<dyn FnOnce() + Send>>,
 }
 /// The one response stays owned across publication failures. Retrying settlement
 /// cannot call the network. The canonical ticket and exact receipt are checked on every retry.
@@ -112,7 +117,10 @@ impl CollectionDriver {
             Duration::from_millis(remaining).min(Duration::from_secs(job.input.max_seconds));
         Ok(Self {
             execution,
+            #[cfg(test)]
+            reservation_hook: None,
             ownership_lifetime: owner.lifetime().into(),
+            protocol: job.transport_protocol()?,
             input: job.input,
             wall_deadline_ms: deadline,
             monotonic_deadline: Instant::now() + remaining,
@@ -149,7 +157,42 @@ impl CollectionDriver {
             owner.lifetime() == self.ownership_lifetime,
             "Collection execution ownership changed",
         )?;
-        let (request, previous_wall) = {
+        let capture = if self.protocol.version() == 4 {
+            let workspace = workspace
+                .lock()
+                .map_err(|_| Error::Blocked("Collection workspace lock failed".into()))?;
+            Some(workspace.capture_collection_reservation(
+                &self.execution,
+                owner,
+                self.protocol,
+                &self.input,
+                self.wall_deadline_ms,
+            )?)
+        } else {
+            None
+        };
+        let (request, previous_wall) = if let Some(capture) = capture {
+            #[cfg(test)]
+            if let Some(hook) = self.reservation_hook.take() {
+                hook();
+            }
+            let prepared = capture.prepare()?;
+            let mut workspace = workspace
+                .lock()
+                .map_err(|_| Error::Blocked("Collection workspace lock failed".into()))?;
+            let now = chrono::Utc::now().timestamp_millis();
+            let Some(request) = workspace.reserve_prepared_collection(
+                prepared,
+                &self.execution,
+                owner,
+                cancellation.is_cancelled(),
+                now,
+            )?
+            else {
+                return Ok(None);
+            };
+            (request, now)
+        } else {
             let mut workspace = workspace
                 .lock()
                 .map_err(|_| Error::Blocked("Collection workspace lock failed".into()))?;

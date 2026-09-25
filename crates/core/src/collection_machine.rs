@@ -637,10 +637,21 @@ fn valid_media(media: &Option<String>) -> Result<()> {
     )
 }
 
+#[cfg(test)]
+thread_local! {
+    static REPLAY_CALLS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+#[cfg(test)]
+pub(crate) fn replay_calls() -> usize {
+    REPLAY_CALLS.get()
+}
+
 pub(crate) fn replay(
     job: &DurableCollectionJob,
     mut original: impl FnMut(&ChargedRequest, &FetchRecord) -> Result<Option<Vec<u8>>>,
 ) -> Result<Machine> {
+    #[cfg(test)]
+    REPLAY_CALLS.set(REPLAY_CALLS.get() + 1);
     job.protocol()?;
     require(
         canonical_uuid(&job.id)

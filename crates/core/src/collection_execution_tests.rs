@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    collection_jobs::{CollectionState, RequestProgress},
+    collection_jobs::{CollectionProtocol, CollectionState, RequestProgress},
     collection_settlement::{HttpDelivery, ReceiptOutcome},
     collection_transport::{
         tests::{canonical_before_http, canonical_tls, canonical_truncated_tls},
@@ -8,10 +8,10 @@ use crate::{
     },
 };
 use rusqlite::Connection;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
 struct Fixture {
-    workspace: Mutex<Workspace>,
+    workspace: Arc<Mutex<Workspace>>,
     owner: CollectionOwnership,
     driver: CollectionDriver,
     id: String,
@@ -20,12 +20,18 @@ struct Fixture {
 }
 impl Fixture {
     fn new() -> Self {
+        Self::protocol(CollectionProtocol::SyntheticV2)
+    }
+    fn v4() -> Self {
+        Self::protocol(CollectionProtocol::SyntheticV4)
+    }
+    fn protocol(protocol: CollectionProtocol) -> Self {
         let temp = tempfile::tempdir_in(std::env::temp_dir().canonicalize().unwrap()).unwrap();
         let path = temp.path().join("case");
         let mut workspace = Workspace::open(&path).unwrap();
         let owner = workspace.collection_ownership().unwrap();
         let job = workspace
-            .queue_collection_transport(
+            .queue_collection_protocol(
                 CollectionInput {
                     urls: vec!["https://collection.invalid/start".into()],
                     max_hops: 2,
@@ -34,6 +40,7 @@ impl Fixture {
                 },
                 &uuid::Uuid::new_v4().to_string(),
                 chrono::Utc::now().timestamp_millis(),
+                protocol,
             )
             .unwrap();
         let ticket = workspace
@@ -42,7 +49,7 @@ impl Fixture {
             .unwrap();
         let driver = CollectionDriver::attach(&workspace, &owner, ticket).unwrap();
         Self {
-            workspace: Mutex::new(workspace),
+            workspace: Arc::new(Mutex::new(workspace)),
             owner,
             driver,
             id: job.id,
@@ -562,4 +569,200 @@ fn pending_response_cannot_cross_ownership_lifetimes_even_before_recovery_revoke
         RequestProgress::InterruptedUnknown { .. }
     ));
     assert!(reopened.view().unwrap().evidence.is_empty());
+}
+
+#[test]
+fn v4_driver_reservation_replays_once_outside_mutex_and_keeps_committed_tls_charge() {
+    let mut f = Fixture::v4();
+    f.settle(404, "", b"missing");
+    f.settle(200, "", b"<p>First</p><a href='/next'>Next</a>");
+    let deadline = f.inspect().checkpoint.deadline_at_ms;
+    let monotonic = f.driver.monotonic_deadline;
+    let workspace = f.workspace.clone();
+    f.driver.reservation_hook = Some(Box::new(move || {
+        // Hook is after capture, before replay. A separate canonical write commits
+        // under the same mutex, proving neither that lock nor its read tx escaped.
+        let mut w = workspace
+            .try_lock()
+            .expect("reservation replay holds workspace mutex");
+        w.import("independent.txt", b"Unrelated revision advancement")
+            .unwrap();
+    }));
+    let count = crate::collection_machine::replay_calls();
+    let pending = f.response(200, "", b"<p>Second</p>", false);
+    assert_eq!(crate::collection_machine::replay_calls() - count, 1);
+    assert_eq!(pending.request.sequence, 2);
+    assert_eq!(f.driver.monotonic_deadline, monotonic);
+    assert_eq!(f.inspect().checkpoint.deadline_at_ms, deadline);
+    let complete = pending
+        .settle(&mut f.workspace.lock().unwrap(), &f.owner)
+        .unwrap();
+    assert_eq!(complete.checkpoint.requests_used(), 3);
+}
+
+#[test]
+fn v4_driver_canonical_cancel_during_paused_replay_never_charges_or_fetches_again() {
+    let mut f = Fixture::v4();
+    f.settle(404, "", b"missing");
+    f.settle(200, "", b"<p>First</p><a href='/next'>Next</a>");
+    let before = f.inspect();
+    let workspace = f.workspace.clone();
+    let job = f.id.clone();
+    let (entered_tx, entered_rx) = std::sync::mpsc::channel();
+    let (release_tx, release_rx) = std::sync::mpsc::channel();
+    f.driver.reservation_hook = Some(Box::new(move || {
+        entered_tx.send(()).unwrap();
+        release_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+    }));
+    let join = std::thread::spawn(move || {
+        let token = CancellationToken::default();
+        let count = crate::collection_machine::replay_calls();
+        let result = f
+            .driver
+            .next_with(&f.workspace, &f.owner, &token, |_, _, _, _, _| {
+                panic!("cancelled reservation fetched")
+            });
+        assert_eq!(crate::collection_machine::replay_calls() - count, 1);
+        (f, result)
+    });
+    entered_rx.recv_timeout(Duration::from_secs(10)).unwrap();
+    {
+        let mut w = workspace
+            .try_lock()
+            .expect("paused preparation holds mutex");
+        w.cancel_durable_collection(&job, 1, chrono::Utc::now().timestamp_millis())
+            .unwrap();
+    }
+    release_tx.send(()).unwrap();
+    let (f, result) = join.join().unwrap();
+    assert!(result.unwrap().is_none());
+    let done = f.inspect();
+    assert_eq!(done.checkpoint.state, CollectionState::Cancelled);
+    assert_eq!(
+        done.checkpoint.requests_used(),
+        before.checkpoint.requests_used()
+    );
+    assert_eq!(
+        done.checkpoint.deadline_at_ms,
+        before.checkpoint.deadline_at_ms
+    );
+}
+
+#[test]
+fn v4_driver_reservation_failures_do_not_fetch_or_retry_and_cancel_writes_stay_separate() {
+    for refusal in [
+        "run_drift",
+        "source_drift",
+        "publish",
+        "cancel_then_publish",
+    ] {
+        let mut f = Fixture::v4();
+        f.settle(404, "", b"missing");
+        f.settle(200, "", b"<p>First</p><a href='/next'>Next</a>");
+        let before = f.inspect();
+        let workspace = f.workspace.clone();
+        let path = f.path.clone();
+        let execution = f.driver.execution.clone();
+        f.driver.reservation_hook = Some(Box::new(move || {
+            assert!(workspace.try_lock().is_ok());
+            let conn = Connection::open(path.join("workspace.db")).unwrap();
+            match refusal {
+                "run_drift" => {
+                    // A forged checkpoint keeps the same event prefix. It must
+                    // not be accepted as a cancellation suffix or a new ticket.
+                    let owner_free_action = format!("UPDATE records SET body=json_set(body,'$.checkpoint.generation',2) WHERE kind='collection_run' AND id='{}'", execution.job_id);
+                    conn.execute_batch(&owner_free_action).unwrap();
+                }
+                "source_drift" => {
+                    conn.execute("UPDATE records SET body=json_set(body,'$.name','changed') WHERE kind='evidence'", []).unwrap();
+                }
+                _ => {
+                    conn.execute_batch("CREATE TRIGGER refuse_driver_advance BEFORE UPDATE ON records WHEN NEW.kind='collection_run' AND json_extract(NEW.body,'$.events[#-1].event')='advance' BEGIN SELECT RAISE(ABORT,'fixed driver reservation refusal'); END;").unwrap();
+                }
+            }
+        }));
+        let token = CancellationToken::default();
+        if refusal == "cancel_then_publish" {
+            token.cancel();
+        }
+        let revision = f.workspace.lock().unwrap().revision().unwrap();
+        let count = crate::collection_machine::replay_calls();
+        assert!(f
+            .driver
+            .next_with(&f.workspace, &f.owner, &token, |_, _, _, _, _| panic!(
+                "uncommitted or drifted request fetched"
+            ))
+            .is_err());
+        assert_eq!(crate::collection_machine::replay_calls() - count, 1);
+        let conn = Connection::open(f.path.join("workspace.db")).unwrap();
+        let raw: String = conn
+            .query_row(
+                "SELECT body FROM records WHERE kind='collection_run' AND id=?",
+                [&f.id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        let after: DurableCollectionJob = serde_json::from_str(&raw).unwrap();
+        assert_eq!(
+            after.checkpoint.requests_used(),
+            before.checkpoint.requests_used()
+        );
+        assert_eq!(
+            f.workspace.lock().unwrap().revision().unwrap(),
+            revision + u64::from(refusal == "cancel_then_publish")
+        );
+        if refusal == "cancel_then_publish" {
+            assert!(after.checkpoint.cancellation_requested);
+        }
+    }
+}
+
+#[test]
+fn attached_v4_driver_refuses_historical_policy_or_mode_drift_without_legacy_fallback() {
+    for protocol in [
+        CollectionProtocol::SyntheticV2,
+        CollectionProtocol::SyntheticV3,
+        CollectionProtocol::NativeV4,
+    ] {
+        let mut f = Fixture::v4();
+        let mut changed = f.inspect();
+        changed.schema_version = protocol.version();
+        changed.collector_policy = protocol.policy().into();
+        changed.synthetic = protocol.synthetic();
+        let raw = serde_json::to_string(&changed).unwrap();
+        let conn = Connection::open(f.path.join("workspace.db")).unwrap();
+        conn.execute(
+            "UPDATE records SET body=? WHERE kind='collection_run' AND id=?",
+            [&raw, &f.id],
+        )
+        .unwrap();
+        // This is a fully replayable alternate record, not malformed JSON. It
+        // still cannot change the protocol/mode of the already attached driver.
+        assert_eq!(f.inspect(), changed);
+        let revision = f.workspace.lock().unwrap().revision().unwrap();
+        let count = crate::collection_machine::replay_calls();
+        assert!(f
+            .driver
+            .next_with(
+                &f.workspace,
+                &f.owner,
+                &CancellationToken::default(),
+                |_, _, _, _, _| panic!("protocol drift fell through to legacy fetch")
+            )
+            .is_err());
+        assert_eq!(crate::collection_machine::replay_calls(), count);
+        assert_eq!(f.workspace.lock().unwrap().revision().unwrap(), revision);
+        let after: String = conn
+            .query_row(
+                "SELECT body FROM records WHERE kind='collection_run' AND id=?",
+                [&f.id],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(after, raw);
+    }
+    // A genuinely attached historical synthetic driver keeps the existing path.
+    let mut historical = Fixture::protocol(CollectionProtocol::SyntheticV3);
+    let pending = historical.response(404, "", b"missing", false);
+    assert_eq!(pending.request.sequence, 0);
 }
